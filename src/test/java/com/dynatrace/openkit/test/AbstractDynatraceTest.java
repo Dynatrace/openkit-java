@@ -16,7 +16,7 @@ public abstract class AbstractDynatraceTest extends AbstractTest {
 
 	public static final String TEST_APPLICATION_NAME = "TestApp";
 	public static final String TEST_APPLICATION_ID = "<provide application ID here>";
-	public static final String TEST_ENDPOINT = "<provide endpoint here>";
+	public static final String TEST_ENDPOINT = "<provide endpoint here>/";
 	public static final String TEST_IP = "123.45.67.89";
 
 	protected String getDefaultEndpoint() {
