@@ -56,7 +56,8 @@ The generated javadoc will be located in the `javadoc` directory.
 
 ## Known Current Limitations
 
-* problem with SSL keysize > 1024 (used by Dynatrace) in Java 6 (maybe local problem only? unlimited policy?)
+* problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
+  * fixed in Java 6u171, which is only available via Oracle support (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8182231)
 * ignored configs: capture lifecycle, crash reporting, error reporting, session timeout
 * it's only possible to have one OpenKit instance running as providers are static
 
