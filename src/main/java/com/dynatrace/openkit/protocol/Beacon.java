@@ -31,6 +31,7 @@ public class Beacon {
 	private static final String BEACON_KEY_PLATFORM_TYPE = "pt";
 	private static final String BEACON_KEY_VISITOR_ID = "vi";
 	private static final String BEACON_KEY_SESSION_NUMBER = "sn";
+	private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
 
 	// device data constants
 	private static final String BEACON_KEY_DEVICE_OS = "os";
@@ -344,9 +345,10 @@ public class Beacon {
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, configuration.getApplicationName());
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
 
-		// visitor ID and session number
+		// visitor ID, session number and IP address
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getVisitorID());
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, sessionNumber);
+		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
 		// platform information
 		if (configuration.getDevice().getOperatingSystem() != null) {

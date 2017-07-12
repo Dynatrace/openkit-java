@@ -64,7 +64,6 @@ The generated javadoc will be located in the `javadoc` directory.
 ## TODOs
 
 * add multiple time syncs for Dynatrace
-* add client IP for Dynatrace
 * move providers from static to instance (multiple OpenKits -> multiple providers)
 * prevent re-entrances e.g. of startup/shutdown
 * HTTPS certificate verification
