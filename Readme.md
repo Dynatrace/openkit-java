@@ -31,9 +31,9 @@ TBD
 * Apache Ant 1.8.x+
   * Environment Variable PATH pointing to Ant binary
 
-### Testing the OpenKit
+### (Unit-)Testing the OpenKit
 * Java Runtime Environment (JRE) 6, 7 or 8
-* JUnit 4.x+
+* JUnit 4.x+ (incl. Hamcrest Core 1.3+)
 
 ## Building the Source
 
