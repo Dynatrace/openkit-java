@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build_java6" name="Create OpenKit Jar">
+
+    <property name="java6.boot.classpath" value="C:/workspaces/devtools/jdk1.6.0_45/jre/lib/rt.jar;C:/workspaces/devtools/jdk1.6.0_45/jre/lib/jsse.jar"/>
+    <property name="java7.boot.classpath" value="C:/workspaces/devtools/jdk1.7.0_80/jre/lib/rt.jar"/>
+    <property name="java7.boot.classpath" value="C:/workspaces/devtools/jdk1.8.0_77/jre/lib/rt.jar"/>
+
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.source" value="${dir.buildfile}/src/main/java"/>
+    <property name="dir.classes" value="${dir.buildfile}/build/ant"/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
+    <property name="dir.jarfile" value="${dir.buildfile}/dist"/>
+	
+    <target name="build_java6" depends="clean,compile_java6,create_jar">
+    </target>
+
+    <target name="build_java7" depends="clean,compile_java7,create_jar">
+    </target>
+
+    <target name="build_java8" depends="clean,compile_java8,create_jar">
+    </target>
+
+    <target name="clean">
+		<delete dir="${dir.classes}" />
+		<delete dir="${dir.jarfile}" />
+	</target>
+
+    <target name="compile_java6">
+		<mkdir dir="${dir.classes}" />
+		<javac srcdir="${dir.source}" destdir="${dir.classes}" source="1.6" target="1.6" bootclasspath="${java6.boot.classpath}" includeantruntime="false">
+			<classpath>
+				<pathelement path="${dir.source}"/>
+			</classpath>
+		</javac>
+	</target>
+
+    <target name="compile_java7">
+		<mkdir dir="${dir.classes}" />
+		<javac srcdir="${dir.source}" destdir="${dir.classes}" source="1.7" target="1.7" bootclasspath="${java7.boot.classpath}" includeantruntime="false">
+			<classpath>
+				<pathelement path="${dir.source}"/>
+			</classpath>
+		</javac>
+	</target>
+
+    <target name="compile_java8">
+		<mkdir dir="${dir.classes}" />
+		<javac srcdir="${dir.source}" destdir="${dir.classes}" source="1.8" target="1.8" bootclasspath="${java8.boot.classpath}" includeantruntime="false">
+			<classpath>
+				<pathelement path="${dir.source}"/>
+			</classpath>
+		</javac>
+	</target>
+
+    <target name="create_jar">
+		<mkdir dir="${dir.jarfile}" />
+        <jar destfile="${dir.jarfile}/openkit.jar">
+            <fileset dir="${dir.classes}">
+			</fileset>
+        </jar>
+	</target>
+
+</project>

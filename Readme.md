@@ -1,0 +1,73 @@
+# Dynatrace OpenKit - Java Reference Implementation
+
+## What is the OpenKit?
+
+TBD
+
+## What you can do with the OpenKit
+* Create Sessions and User Actions
+* Tag web requests to server-side PurePaths
+* Use it together with Dynatrace or AppMon
+
+## What you cannot do with the OpenKit
+* Create server-side PurePaths (you have to use an ADK for that)
+
+## Design Principles
+* API should be as simple and easy-to-understand as possible
+* Incorrect usage of the OpenKit should still lead to valid results, if possible
+* No usage of third-party libraries, should run without any dependencies
+* Avoid usage of newest Java APIs, should be running on older Java VMs, too
+* Avoid usage of too much Java-specific APIs to allow rather easy porting to other languages
+
+## Prerequisites
+
+### Running the OpenKit
+* Java Runtime Environment (JRE) 6, 7 or 8
+
+### Building the Source/Generating the JavaDoc
+* Java Development Kit (JDK) 6, 7 or 8
+  * Environment Variable JAVA_HOME set to JDK install directory
+  * Paths of `java[6|7|8].boot.classpath` in `build.xml` adapted to JDK install directory
+* Apache Ant 1.8.x+
+  * Environment Variable PATH pointing to Ant binary
+
+### Testing the OpenKit
+* Java Runtime Environment (JRE) 6, 7 or 8
+* JUnit 4.x+
+
+## Building the Source
+
+```
+$ ant [build_java6|build_java7|build_java8]         # default is build_java6
+```
+
+The built jar file `openkit.jar` will be located in the `dist` directory.
+
+## Generating the JavaDoc
+
+```
+$ generate_javadoc
+```
+
+The generated javadoc will be located in the `javadoc` directory.
+
+## General Concepts
+* TBD
+
+## Known Current Limitations
+
+* problem with SSL keysize > 1024 (used by Dynatrace) in Java 6 (maybe local problem only? unlimited policy?)
+* ignored configs: capture lifecycle, crash reporting, error reporting, session timeout
+* it's only possible to have one OpenKit instance running as providers are static
+
+## TODOs
+
+* add multiple time syncs for Dynatrace
+* add client IP for Dynatrace
+* move providers from static to instance (multiple OpenKits -> multiple providers)
+* prevent re-entrances e.g. of startup/shutdown
+* HTTPS certificate verification
+* HTTP optimizations (reuse connection, pool http client?)
+* provide simple samples to get started as markdown
+* mobile sampling
+* crash reporting
