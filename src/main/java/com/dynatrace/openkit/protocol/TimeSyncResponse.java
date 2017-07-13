@@ -23,7 +23,7 @@ public class TimeSyncResponse extends Response {
 	// *** constructors ***
 
 	public TimeSyncResponse(String response, int responseCode) {
-		super(response, responseCode);
+		super(responseCode);
 		parseResponse(response);
 	}
 

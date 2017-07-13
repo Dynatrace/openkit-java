@@ -65,7 +65,6 @@ public class Beacon {
 	private static final int PROTOCOL_VERSION = 3;
 	private static final int PLATFORM_TYPE_OPENKIT = 1;
 
-
 	// in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
 	public static final String CHARSET = "UTF-8";
 

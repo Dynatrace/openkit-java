@@ -29,7 +29,7 @@ public class StatusResponse extends Response {
 	// *** constructors ***
 
 	public StatusResponse(String response, int responseCode) {
-		super(response, responseCode);
+		super(responseCode);
 		parseResponse(response);
 	}
 

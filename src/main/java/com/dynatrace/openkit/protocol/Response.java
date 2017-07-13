@@ -14,7 +14,7 @@ public abstract class Response {
 
 	// *** constructors ***
 
-	public Response(String response, int responseCode) {
+	public Response(int responseCode) {
 		this.responseCode = responseCode;
 	}
 
