@@ -30,7 +30,7 @@ public class BeaconSender implements Runnable {
 	private final AtomicBoolean shutdown;
 
 	// timestamps for last beacon send and status check
-	private long lastBeaconSendTime;
+	private long lastOpenSessionBeaconSendTime;
 	private long lastStatusCheckTime;
 
 	// *** constructors ***
@@ -61,19 +61,19 @@ public class BeaconSender implements Runnable {
 				}
 
 				// check if send interval spent -> send current beacon(s) of open Sessions
-				if (System.currentTimeMillis() > lastBeaconSendTime + configuration.getSendInterval()) {
+				if (System.currentTimeMillis() > lastOpenSessionBeaconSendTime + configuration.getSendInterval()) {
 					for (SessionImpl session : openSessions.toArrayList()) {
 						statusResponse = session.sendBeacon();
 					}
+
+					// update open session beacon send timestamp in this case
+					lastOpenSessionBeaconSendTime = System.currentTimeMillis();
 				}
 
 				// if at least one beacon was sent AND a (valid) status response was received -> update settings
 				if (statusResponse != null) {
 					configuration.updateSettings(statusResponse);
 				}
-
-				// update beacon send timestamp in any case
-				lastBeaconSendTime = System.currentTimeMillis();
 			} else {
 				// check if status check interval spent -> send status request & update settings
 				if (System.currentTimeMillis() > lastStatusCheckTime + STATUS_CHECK_INTERVAL) {
@@ -107,8 +107,8 @@ public class BeaconSender implements Runnable {
 
 	// called indirectly by OpenKit.initialize(); tries to get initial settings and starts beacon sender thread
 	public void initialize() {
-		lastBeaconSendTime = System.currentTimeMillis();
-		lastStatusCheckTime = lastBeaconSendTime;
+		lastOpenSessionBeaconSendTime = System.currentTimeMillis();
+		lastStatusCheckTime = lastOpenSessionBeaconSendTime;
 
 		// try status check until max retries were executed or shutdown() is called, but at least once!
 		StatusResponse statusResponse = null;
