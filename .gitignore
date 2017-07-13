@@ -1,8 +1,7 @@
 *.class
+*.jar
 .project
 .classpath
 .settings/
-*/bin/
-*/build/
-javadoc/
-*.jar
+/bin/
+/build/
