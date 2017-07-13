@@ -19,7 +19,7 @@ public interface Session {
 	public Action enterAction(String actionName);
 
 	/**
-	 * Ends this Session and marks them as finished for sending.
+	 * Ends this Session and marks it as finished for sending.
 	 */
 	public void end();
 
