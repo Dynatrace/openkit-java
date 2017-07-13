@@ -77,4 +77,5 @@ public class StatusResponse extends Response {
 	public int getMaxBeaconSize() {
 		return maxBeaconSize;
 	}
+
 }
