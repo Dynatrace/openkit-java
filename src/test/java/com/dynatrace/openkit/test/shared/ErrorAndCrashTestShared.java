@@ -5,9 +5,6 @@
  */
 package com.dynatrace.openkit.test.shared;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
@@ -29,11 +26,8 @@ public class ErrorAndCrashTestShared {
 
 			crashException.leaveAction();
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-
-			session.reportCrash(e.getClass().getName(), e.getMessage(), sw.toString());
+			String stacktrace = "java.lang.ArithmeticException: / by zero\n\tat com.dynatrace.openkit.test.shared.ErrorAndCrashTestShared.test(ErrorAndCrashTestShared.java:27)\n\tat com.dynatrace.openkit.test.appmon.local.ErrorAndCrashTest.test(ErrorAndCrashTest.java:19)\n\t...";
+			session.reportCrash(e.getClass().getName(), e.getMessage(), stacktrace);
 		}
 
 		session.end();
