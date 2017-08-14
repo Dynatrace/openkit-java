@@ -56,7 +56,7 @@ public interface Action {
 	public Action reportValue(String valueName, String value);
 
 	/**
-	 * Reports an Error with a specified name, error code, reason and detailed description.
+	 * Reports an error with a specified name, error code and a reason.
 	 *
 	 * @param errorName			name of this error
 	 * @param errorCode			numeric error code of this error
