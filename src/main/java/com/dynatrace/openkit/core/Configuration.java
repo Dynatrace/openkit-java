@@ -37,6 +37,8 @@ public class Configuration {
 	private int serverID;						// Server ID (needed for Dynatrace cluster); is only written/read by beacon sender thread -> non-atomic
 	private int maxBeaconSize;					// max beacon size; is only written/read by beacon sender thread -> non-atomic
 
+	// application and device settings
+	private String applicationVersion;
 	private final DeviceImpl device;
 
 	private HTTPClient currentHTTPClient;		// current HTTP client (depending on endpoint, monitor, name application ID and server ID)
@@ -66,6 +68,7 @@ public class Configuration {
 		this.maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
 
 		this.device = new DeviceImpl();
+		this.applicationVersion = null;
 	}
 
 	// *** public methods ***
@@ -225,6 +228,14 @@ public class Configuration {
 
 	public int getMaxBeaconSize() {
 		return maxBeaconSize;
+	}
+
+	public String getApplicationVersion() {
+		return applicationVersion;
+	}
+
+	public void setApplicationVersion(String applicationVersion) {
+		this.applicationVersion = applicationVersion;
 	}
 
 	public DeviceImpl getDevice() {

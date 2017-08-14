@@ -28,6 +28,7 @@ public class Beacon {
 	private static final String BEACON_KEY_OPENKIT_VERSION = "va";
 	private static final String BEACON_KEY_APPLICATION_ID = "ap";
 	private static final String BEACON_KEY_APPLICATION_NAME = "an";
+	private static final String BEACON_KEY_APPLICATION_VERSION = "vn";
 	private static final String BEACON_KEY_PLATFORM_TYPE = "pt";
 	private static final String BEACON_KEY_VISITOR_ID = "vi";
 	private static final String BEACON_KEY_SESSION_NUMBER = "sn";
@@ -342,6 +343,9 @@ public class Beacon {
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, OPENKIT_VERSION);
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, configuration.getApplicationID());
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, configuration.getApplicationName());
+		if (configuration.getApplicationVersion() != null) {
+			addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
+		}
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
 
 		// visitor ID, session number and IP address

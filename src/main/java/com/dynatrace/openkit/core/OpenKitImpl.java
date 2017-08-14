@@ -72,6 +72,11 @@ public class OpenKitImpl implements OpenKit {
 	}
 
 	@Override
+	public void setApplicationVersion(String applicationVersion) {
+		configuration.setApplicationVersion(applicationVersion);
+	}
+
+	@Override
 	public Session createSession(String clientIPAddress) {
 		if (initialized.get() && configuration.isCapture()) {
 			return new SessionImpl(configuration, clientIPAddress);

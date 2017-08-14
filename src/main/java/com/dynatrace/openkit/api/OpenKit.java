@@ -22,6 +22,13 @@ public interface OpenKit {
 	public void initialize();
 
 	/**
+	 * Defines the version of the application.
+	 *
+	 * @param applicationVersion	application version
+	 */
+	public void setApplicationVersion(String applicationVersion);
+
+	/**
 	 * Returns the Device used by this OpenKit instance. This can be used to provide basic information, like operating system,
 	 * manufacturer and model information.
 	 *
