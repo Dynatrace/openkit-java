@@ -20,7 +20,7 @@ public enum EventType {
 
 	public short protocolValue() {
 		switch (this) {
-			case ACTION_MANUAL:
+			case ACTION:
 				return 1;
 			case VALUE_STRING:
 				return 11;
