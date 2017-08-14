@@ -19,7 +19,7 @@ public class SimpleActionTest extends AbstractLocalAppMonTest {
 		SimpleActionTestShared.test(openKit, TEST_IP);
 
 		ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-		String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_ID + "&an=" + TEST_APPLICATION_NAME + "&pt=1&vi=" + testConfiguration.getVisitorID() + "&sn=1&tv=1002000&ts=1001000&tx=1006000&et=19&it=1&pa=0&s0=3&t0=4000&et=1&na=SimpleAction&it=1&ca=1&pa=0&s0=1&t0=2000&s1=2&t1=1000";
+		String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_ID + "&an=" + TEST_APPLICATION_NAME + "&pt=1&vi=" + testConfiguration.getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1002000&ts=1001000&tx=1006000&et=19&it=1&pa=0&s0=3&t0=4000&et=1&na=SimpleAction&it=1&ca=1&pa=0&s0=1&t0=2000&s1=2&t1=1000";
 		validateDefaultRequests(sentRequests, expectedBeacon);
 	}
 
