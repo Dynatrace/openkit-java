@@ -242,7 +242,7 @@ public class Beacon {
 
 		buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
 
-		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
+		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
