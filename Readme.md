@@ -6,6 +6,7 @@ TBD
 
 ## What you can do with the OpenKit
 * Create Sessions and User Actions
+* Report values, events, errors and crashes
 * Tag web requests to server-side PurePaths
 * Use it together with Dynatrace or AppMon
 
