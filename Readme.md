@@ -15,6 +15,7 @@ TBD
 ## Design Principles
 * API should be as simple and easy-to-understand as possible
 * Incorrect usage of the OpenKit should still lead to valid results, if possible
+* In case of errors, the API should not throw exceptions, but only log those errors (in verbose mode)
 * No usage of third-party libraries, should run without any dependencies
 * Avoid usage of newest Java APIs, should be running on older Java VMs, too
 * Avoid usage of too much Java-specific APIs to allow rather easy porting to other languages
