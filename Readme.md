@@ -71,4 +71,3 @@ The generated javadoc will be located in the `javadoc` directory.
 * HTTP optimizations (reuse connection, pool http client?)
 * provide simple samples to get started as markdown
 * mobile sampling
-* crash reporting
