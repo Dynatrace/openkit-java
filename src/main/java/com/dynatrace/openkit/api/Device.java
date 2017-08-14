@@ -6,7 +6,7 @@
 package com.dynatrace.openkit.api;
 
 /**
- * This interface provides functionality to set basic information, like operating system, manufacturer and model information.
+ * This interface provides functionality to set basic device information, like operating system, manufacturer and model information.
  */
 public interface Device {
 
