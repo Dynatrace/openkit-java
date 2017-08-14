@@ -19,6 +19,15 @@ public interface Session {
 	public Action enterAction(String actionName);
 
 	/**
+	 * Reports a crash with a specified error name, crash reason and a stacktrace.
+	 *
+	 * @param errorName			name of the error leading to the crash (e.g. Exception class)
+	 * @param reason			reason or description of that error
+	 * @param stacktrace		stacktrace leading to that crash
+	 */
+	public void reportCrash(String errorName, String reason, String stacktrace);
+
+	/**
 	 * Ends this Session and marks it as finished for sending.
 	 */
 	public void end();

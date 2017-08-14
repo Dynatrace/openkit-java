@@ -55,10 +55,11 @@ public class Beacon {
 	private static final String BEACON_KEY_END_SEQUENCE_NUMBER = "s1";
 	private static final String BEACON_KEY_TIME_1 = "t1";
 
-	// data and error capture constants
+	// data, error & crash capture constants
 	private static final String BEACON_KEY_VALUE = "vl";
 	private static final String BEACON_KEY_ERROR_CODE = "ev";
 	private static final String BEACON_KEY_ERROR_REASON = "rs";
+	private static final String BEACON_KEY_ERROR_STACKTRACE = "st";
 	private static final String BEACON_KEY_WEBREQUEST_RESPONSECODE = "rc";
 
 	// version constants
@@ -229,6 +230,23 @@ public class Beacon {
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+
+		synchronized (eventDataList) {
+			eventDataList.add(eventBuilder.toString());
+		}
+	}
+
+	// report a crash
+	public void reportCrash(String errorName, String reason, String stacktrace) {
+		StringBuilder eventBuilder = new StringBuilder();
+
+		buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
+
+		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
+		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
+		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
 		synchronized (eventDataList) {
 			eventDataList.add(eventBuilder.toString());

@@ -16,7 +16,8 @@ public enum EventType {
 	NAMED_EVENT,			// named event
 	SESSION_END,			// session end
 	WEBREQUEST,				// tagged web request
-	ERROR;					// error
+	ERROR,					// error
+	CRASH;					// crash
 
 	public short protocolValue() {
 		switch (this) {
@@ -36,6 +37,8 @@ public enum EventType {
 				return 30;
 			case ERROR:
 				return 40;
+			case CRASH:
+				return 50;
 			default:
 				return -1;
 		}

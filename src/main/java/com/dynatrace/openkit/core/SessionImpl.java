@@ -44,6 +44,11 @@ public class SessionImpl implements Session {
 	}
 
 	@Override
+	public void reportCrash(String errorName, String reason, String stacktrace) {
+		beacon.reportCrash(errorName, reason, stacktrace);
+	}
+
+	@Override
 	public void end() {
 		// check if end() was already called before by looking at endTime
 		if (endTime != -1) {

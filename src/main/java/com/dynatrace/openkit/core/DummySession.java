@@ -22,6 +22,11 @@ public class DummySession implements Session {
 	}
 
 	@Override
+	public void reportCrash(String errorName, String reason, String stacktrace) {
+		// do nothing
+	}
+
+	@Override
 	public void end() {
 		// do nothing
 	}
