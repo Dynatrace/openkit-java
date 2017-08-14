@@ -142,7 +142,7 @@ public class Beacon {
 	public void addAction(ActionImpl action) {
 		StringBuilder actionBuilder = new StringBuilder();
 
-		buildBasicEventData(actionBuilder, EventType.ACTION_MANUAL, action.getName());
+		buildBasicEventData(actionBuilder, EventType.ACTION, action.getName());
 
 		addKeyValuePair(actionBuilder, BEACON_KEY_ACTION_ID, action.getID());
 		addKeyValuePair(actionBuilder, BEACON_KEY_PARENT_ACTION_ID, action.getParentID());
@@ -222,7 +222,7 @@ public class Beacon {
 	public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
 		StringBuilder eventBuilder = new StringBuilder();
 
-		buildBasicEventData(eventBuilder, EventType.ERROR_CODE, errorName);
+		buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
