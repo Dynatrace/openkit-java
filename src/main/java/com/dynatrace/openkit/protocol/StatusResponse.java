@@ -18,6 +18,8 @@ public class StatusResponse extends Response {
 	private static final String RESPONSE_KEY_MONITOR_NAME = "bn";
 	private static final String RESPONSE_KEY_SERVER_ID = "id";
 	private static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
+	private static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
+	private static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
 
 	// settings contained in status response
 	private boolean capture = true;
@@ -25,6 +27,8 @@ public class StatusResponse extends Response {
 	private String monitorName = null;
 	private int serverID = -1;
 	private int maxBeaconSize = -1;
+	private boolean captureErrors = true;
+	private boolean captureCrashes = true;
 
 	// *** constructors ***
 
@@ -52,6 +56,10 @@ public class StatusResponse extends Response {
 				serverID = Integer.parseInt(value);
 			} else if (RESPONSE_KEY_MAX_BEACON_SIZE.equals(key)) {
 				maxBeaconSize = Integer.parseInt(value) * 1024;
+			} else if (RESPONSE_KEY_CAPTURE_ERRORS.equals(key)) {
+				captureErrors = (Integer.parseInt(value) != 0);					// 1 (always on) and 2 (only on WiFi) are treated the same
+			} else if (RESPONSE_KEY_CAPTURE_CRASHES.equals(key)) {
+				captureCrashes = (Integer.parseInt(value) != 0);				// 1 (always on) and 2 (only on WiFi) are treated the same
 			}
 		}
 	}
@@ -76,6 +84,14 @@ public class StatusResponse extends Response {
 
 	public int getMaxBeaconSize() {
 		return maxBeaconSize;
+	}
+
+	public boolean isCaptureErrors() {
+		return captureErrors;
+	}
+
+	public boolean isCaptureCrashes() {
+		return captureCrashes;
 	}
 
 }

@@ -21,6 +21,8 @@ public class Configuration {
 	private static final boolean DEFAULT_CAPTURE = true;							// default: capture on
 	private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;					// default: wait 2m (in ms) to send beacon
 	private static final int DEFAULT_MAX_BEACON_SIZE = 30 * 1024;					// default: max 30KB (in B) to send in one beacon
+	private static final boolean DEFAULT_CAPTURE_ERRORS = true;						// default: capture errors on
+	private static final boolean DEFAULT_CAPTURE_CRASHES = true;					// default: capture crashes on
 
 	// immutable settings
 	private final OpenKitType openKitType;
@@ -36,6 +38,8 @@ public class Configuration {
 	private String monitorName;					// monitor name part of URL; is only written/read by beacon sender thread -> non-atomic
 	private int serverID;						// Server ID (needed for Dynatrace cluster); is only written/read by beacon sender thread -> non-atomic
 	private int maxBeaconSize;					// max beacon size; is only written/read by beacon sender thread -> non-atomic
+	private AtomicBoolean captureErrors;		// capture errors on/off; can be written/read by different threads -> atomic
+	private AtomicBoolean captureCrashes;		// capture crashes on/off; can be written/read by different threads -> atomic
 
 	// application and device settings
 	private String applicationVersion;
@@ -66,6 +70,8 @@ public class Configuration {
 		this.monitorName = openKitType.getDefaultMonitorName();
 		this.serverID = openKitType.getDefaultServerID();
 		this.maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
+		this.captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
+		this.captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
 		this.device = new DeviceImpl();
 		this.applicationVersion = null;
@@ -167,6 +173,10 @@ public class Configuration {
 		if (maxBeaconSize != newMaxBeaconSize) {
 			maxBeaconSize = newMaxBeaconSize;
 		}
+
+		// use capture settings for errors and crashes
+		captureErrors.set(statusResponse.isCaptureErrors());
+		captureCrashes.set(statusResponse.isCaptureCrashes());
 	}
 
 	// shut down configuration -> shut down beacon sender
@@ -228,6 +238,14 @@ public class Configuration {
 
 	public int getMaxBeaconSize() {
 		return maxBeaconSize;
+	}
+
+	public boolean isCaptureErrors() {
+		return captureErrors.get();
+	}
+
+	public boolean isCaptureCrashes() {
+		return captureCrashes.get();
 	}
 
 	public String getApplicationVersion() {

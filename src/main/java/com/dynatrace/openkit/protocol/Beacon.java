@@ -221,6 +221,11 @@ public class Beacon {
 
 	// report error on the provided Action
 	public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
+		// if capture errors is off -> do nothing
+		if (!configuration.isCaptureErrors()) {
+			return;
+		}
+
 		StringBuilder eventBuilder = new StringBuilder();
 
 		buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
@@ -238,6 +243,11 @@ public class Beacon {
 
 	// report a crash
 	public void reportCrash(String errorName, String reason, String stacktrace) {
+		// if capture crashes is off -> do nothing
+		if (!configuration.isCaptureCrashes()) {
+			return;
+		}
+
 		StringBuilder eventBuilder = new StringBuilder();
 
 		buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
