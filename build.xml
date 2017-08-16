@@ -10,14 +10,16 @@
     <property name="dir.classes" value="${dir.buildfile}/build/ant"/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="${dir.buildfile}/dist"/>
+
+    <property name="version" value="0.2"/>
 	
-    <target name="build_java6" depends="clean,compile_java6,create_jar">
+    <target name="build_java6" depends="clean,compile_java6,create_jar6">
     </target>
 
-    <target name="build_java7" depends="clean,compile_java7,create_jar">
+    <target name="build_java7" depends="clean,compile_java7,create_jar7">
     </target>
 
-    <target name="build_java8" depends="clean,compile_java8,create_jar">
+    <target name="build_java8" depends="clean,compile_java8,create_jar8">
     </target>
 
     <target name="clean">
@@ -52,9 +54,25 @@
 		</javac>
 	</target>
 
-    <target name="create_jar">
+    <target name="create_jar6">
 		<mkdir dir="${dir.jarfile}" />
-        <jar destfile="${dir.jarfile}/openkit.jar">
+        <jar destfile="${dir.jarfile}/openkit-${version}-java6.jar">
+            <fileset dir="${dir.classes}">
+			</fileset>
+        </jar>
+	</target>
+
+    <target name="create_jar7">
+		<mkdir dir="${dir.jarfile}" />
+        <jar destfile="${dir.jarfile}/openkit-${version}-java7.jar">
+            <fileset dir="${dir.classes}">
+			</fileset>
+        </jar>
+	</target>
+
+    <target name="create_jar8">
+		<mkdir dir="${dir.jarfile}" />
+        <jar destfile="${dir.jarfile}/openkit-${version}-java8.jar">
             <fileset dir="${dir.classes}">
 			</fileset>
         </jar>
