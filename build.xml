@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="build_java6" name="Create OpenKit Jar">
+<project default="build_all" name="Create OpenKit Jar">
 
     <property name="java6.boot.classpath" value="C:/workspaces/devtools/jdk1.6.0_45/jre/lib/rt.jar;C:/workspaces/devtools/jdk1.6.0_45/jre/lib/jsse.jar"/>
     <property name="java7.boot.classpath" value="C:/workspaces/devtools/jdk1.7.0_80/jre/lib/rt.jar"/>
@@ -12,6 +12,9 @@
     <property name="dir.jarfile" value="${dir.buildfile}/dist"/>
 
     <property name="version" value="0.2"/>
+
+    <target name="build_all" depends="clean,compile_java6,create_jar6,compile_java7,create_jar7,compile_java8,create_jar8">
+    </target>
 	
     <target name="build_java6" depends="clean,compile_java6,create_jar6">
     </target>
@@ -23,11 +26,11 @@
     </target>
 
     <target name="clean">
-		<delete dir="${dir.classes}" />
 		<delete dir="${dir.jarfile}" />
 	</target>
 
     <target name="compile_java6">
+		<delete dir="${dir.classes}" />
 		<mkdir dir="${dir.classes}" />
 		<javac srcdir="${dir.source}" destdir="${dir.classes}" source="1.6" target="1.6" bootclasspath="${java6.boot.classpath}" includeantruntime="false">
 			<classpath>
@@ -37,6 +40,7 @@
 	</target>
 
     <target name="compile_java7">
+		<delete dir="${dir.classes}" />
 		<mkdir dir="${dir.classes}" />
 		<javac srcdir="${dir.source}" destdir="${dir.classes}" source="1.7" target="1.7" bootclasspath="${java7.boot.classpath}" includeantruntime="false">
 			<classpath>
@@ -46,6 +50,7 @@
 	</target>
 
     <target name="compile_java8">
+		<delete dir="${dir.classes}" />
 		<mkdir dir="${dir.classes}" />
 		<javac srcdir="${dir.source}" destdir="${dir.classes}" source="1.8" target="1.8" bootclasspath="${java8.boot.classpath}" includeantruntime="false">
 			<classpath>

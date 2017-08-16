@@ -50,10 +50,10 @@ This repository contains the reference implementation in pure Java. Other implem
 ## Building the Source
 
 ```
-$ ant [build_java6|build_java7|build_java8]         # default is build_java6
+$ ant [build_java6|build_java7|build_java8]         # default is to build for Java 6, 7 & 8
 ```
 
-The built jar file `openkit.jar` will be located in the `dist` directory.
+The built jar file(s) `openkit-<version>-java<java_version>.jar` will be located in the `dist` directory.
 
 ## Generating the JavaDoc
 
