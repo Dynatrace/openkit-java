@@ -1,3 +1,8 @@
+/***************************************************
+ * (c) 2016-2017 Dynatrace LLC
+ *
+ * @author: Christian Schwarzbauer
+ */
 package com.dynatrace.openkit.core;
 
 import java.util.ArrayList;
