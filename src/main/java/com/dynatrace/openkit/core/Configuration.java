@@ -65,16 +65,16 @@ public class Configuration {
 		this.endpointURL = endpointURL;
 
 		// mutable settings
-		this.capture = new AtomicBoolean(DEFAULT_CAPTURE);
-		this.sendInterval = DEFAULT_SEND_INTERVAL;
-		this.monitorName = openKitType.getDefaultMonitorName();
-		this.serverID = openKitType.getDefaultServerID();
-		this.maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
-		this.captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
-		this.captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
+		capture = new AtomicBoolean(DEFAULT_CAPTURE);
+		sendInterval = DEFAULT_SEND_INTERVAL;
+		monitorName = openKitType.getDefaultMonitorName();
+		serverID = openKitType.getDefaultServerID();
+		maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
+		captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
+		captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
-		this.device = new DeviceImpl();
-		this.applicationVersion = null;
+		device = new DeviceImpl();
+		applicationVersion = null;
 	}
 
 	// *** public methods ***
