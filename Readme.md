@@ -2,7 +2,17 @@
 
 ## What is the OpenKit?
 
-TBD
+The OpenKit provides an easy and lightweight way to get insights into applications with Dynatrace/AppMon by instrumenting the source code of those applications.
+
+It is best suited for applications running separated from their backend and communicating via HTTP, like rich-client-applications, embedded devices, terminals, and so on.
+
+The big advantages of the OpenKit are that it's designed to
+* be as easy-to-use as possible
+* be as dependency-free as possible (no third party libraries or Dynatrace/AppMon Agent needed)
+* be easily portable to other languages and platforms
+
+This repository contains the reference implementation in pure Java. Other implementations are listed as follows:
+* .NET: https://github.com/Dynatrace/openkit-dotnet/
 
 ## What you can do with the OpenKit
 * Create Sessions and User Actions
