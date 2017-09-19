@@ -22,6 +22,7 @@ This repository contains the reference implementation in pure Java. Other implem
 
 ## What you cannot do with the OpenKit
 * Create server-side PurePaths (you have to use an ADK for that)
+* Create metrics (you have to use an ADK for that)
 
 ## Design Principles
 * API should be as simple and easy-to-understand as possible
@@ -67,18 +68,16 @@ The generated javadoc will be located in the `javadoc` directory.
 * TBD
 
 ## Known Current Limitations
-
 * problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
   * fixed in Java 6u171, which is only available via Oracle support (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8182231)
-* there is no session timeout in the OpenKit
 * it's only possible to have one OpenKit instance running as providers are static
 
 ## TODOs
-
-* add multiple time syncs for Dynatrace
+* add multiple time syncs for Dynatrace, especially for long running applications
 * move providers from static to instance (multiple OpenKits -> multiple providers)
 * prevent re-entrances e.g. of startup/shutdown
 * HTTPS certificate verification
 * HTTP optimizations (reuse connection, pool http client?)
 * provide simple samples to get started as markdown
-* mobile sampling
+* add more verbose logging
+* introduce traffic control
