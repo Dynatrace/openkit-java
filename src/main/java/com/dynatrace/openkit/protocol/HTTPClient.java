@@ -156,7 +156,6 @@ public class HTTPClient {
 						System.out.println("Beacon Payload: " + decodedData);
 					}
 
-					connection.setRequestProperty("Accept-Encoding", "identity, gzip");
 					connection.setRequestProperty("Content-Encoding", "gzip");
 					connection.setRequestProperty("Content-Length", String.valueOf(data.length));
 					connection.setDoOutput(true);
