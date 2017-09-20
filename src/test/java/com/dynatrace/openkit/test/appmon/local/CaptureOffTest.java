@@ -26,8 +26,9 @@ public class CaptureOffTest extends AbstractLocalAppMonTest {
 		CaptureOffTestShared.test(openKit, TEST_IP);
 
 		ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-		Assert.assertEquals(1, sentRequests.size());
+		Assert.assertEquals(2, sentRequests.size());
 		validateRequest(sentRequests.get(0), RequestType.STATUS, "GET", getDefaultEndpoint(), null, "");
+		validateRequest(sentRequests.get(1), RequestType.TIMESYNC, "GET", getDefaultTimeSyncEndpoint(), null, "");
 	}
 
 }

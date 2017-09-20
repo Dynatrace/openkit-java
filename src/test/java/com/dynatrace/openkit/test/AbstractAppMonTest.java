@@ -23,22 +23,16 @@ public abstract class AbstractAppMonTest extends AbstractTest {
 		return TEST_ENDPOINT + "dynaTraceMonitor?type=m&srvid=1&app=" + TEST_APPLICATION_ID + "&va=7.0.0000";
 	}
 
+	protected String getDefaultTimeSyncEndpoint() {
+		return TEST_ENDPOINT + "dynaTraceMonitor?type=mts";
+	}
+
 	protected void validateDefaultRequests(ArrayList<Request> sentRequests, String expectedBeacon) {
-		Assert.assertEquals(2, sentRequests.size());
+		Assert.assertEquals(3, sentRequests.size());
 
-		Assert.assertEquals(RequestType.STATUS, sentRequests.get(0).getRequestType());
-		Assert.assertEquals("GET", sentRequests.get(0).getMethod());
-		Assert.assertEquals(getDefaultEndpoint(), sentRequests.get(0).getUrl());
-		Assert.assertEquals(null, sentRequests.get(0).getClientIPAddress());
-		Assert.assertEquals("", sentRequests.get(0).getDecodedData());
-
-		Assert.assertEquals(RequestType.BEACON, sentRequests.get(1).getRequestType());
-		Assert.assertEquals("POST", sentRequests.get(1).getMethod());
-		Assert.assertEquals(getDefaultEndpoint(), sentRequests.get(1).getUrl());
-		Assert.assertEquals(TEST_IP, sentRequests.get(1).getClientIPAddress());
-		if (expectedBeacon != null) {
-			Assert.assertEquals(expectedBeacon, sentRequests.get(1).getDecodedData());
-		}
+		validateRequest(sentRequests.get(0), RequestType.STATUS, "GET", getDefaultEndpoint(), null, "");
+		validateRequest(sentRequests.get(1), RequestType.TIMESYNC, "GET", getDefaultTimeSyncEndpoint(), null, "");
+		validateRequest(sentRequests.get(2), RequestType.BEACON, "POST", getDefaultEndpoint(), TEST_IP, expectedBeacon);
 	}
 
 }

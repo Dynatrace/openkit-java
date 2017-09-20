@@ -135,13 +135,9 @@ public class BeaconSender implements Runnable {
 		// if status response is null, updateSettings() will turn capture off, as there were no initial settings received
 		configuration.updateSettings(statusResponse);
 
-		if (configuration.isDynatrace()) {
-			// initialize time provider with cluster time offset -> time sync
-			TimeProvider.initialize(calculateClusterTimeOffset(), true);
-		} else {
-			// initialize time provider -> no time sync
-			TimeProvider.initialize(0, false);
-		}
+
+		// try synchronizing the time provider initially
+		syncTimeProvider(true);
 
 		// start beacon sender thread
 		beaconSenderThread = new Thread(this);
@@ -190,7 +186,7 @@ public class BeaconSender implements Runnable {
 	}
 
 	// calculate the cluster time offset by doing time sync with the Dynatrace cluster
-	private long calculateClusterTimeOffset() {
+	private void syncTimeProvider(boolean initialSync) {
 		ArrayList<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
 		// no check for shutdown here, time sync has to be completed
 		while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
@@ -211,7 +207,7 @@ public class BeaconSender implements Runnable {
 
 					timeSyncOffsets.add(offset);
 				} else {
-					// if no -> stop time-sync
+					// if no -> stop time sync, it's not supported
 					break;
 				}
 			} else {
@@ -221,7 +217,12 @@ public class BeaconSender implements Runnable {
 
 		// time sync requests were *not* successful -> use 0 as cluster time offset
 		if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
-			return 0;
+			// if this is the initial sync try, we have to initialize the time provider
+			// in every other case we keep the previous setting
+			if (initialSync) {
+				TimeProvider.initialize(0, false);
+			}
+			return;
 		}
 
 		// time sync requests were successful -> calculate cluster time offset
@@ -249,7 +250,8 @@ public class BeaconSender implements Runnable {
 			}
 		}
 
-		return (long)Math.round(sum / (double) count);		// return cluster time offset
+		// initialize time provider with cluster time offset
+		TimeProvider.initialize((long)Math.round(sum / (double) count), true);
 	}
 
 }
