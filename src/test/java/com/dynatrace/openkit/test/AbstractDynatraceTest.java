@@ -15,8 +15,8 @@ import com.dynatrace.openkit.test.TestHTTPClient.Request;
 public abstract class AbstractDynatraceTest extends AbstractTest {
 
 	public static final String TEST_APPLICATION_NAME = "TestApp";
-	public static final String TEST_APPLICATION_ID = "6d17522f-387c-4620-b510-9a726adead13";
-	public static final String TEST_ENDPOINT = "https://ktp91462.live.dynatrace.com/";
+    public static final String TEST_APPLICATION_ID = "<provide application ID here>";
+    public static final String TEST_ENDPOINT = "<provide endpoint here>/";
 	public static final String TEST_IP = "123.45.67.89";
 
 	protected String getDefaultEndpoint() {
