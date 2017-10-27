@@ -1,0 +1,13 @@
+group 'com.dynatrace.openkit'
+version '0.2-SNAPSHOT'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
