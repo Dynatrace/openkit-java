@@ -3,12 +3,14 @@
  *
  * @author: Christian Schwarzbauer
  */
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.dynatrace.openkit.core.OpenKitImpl.OpenKitType;
+import com.dynatrace.openkit.core.BeaconSender;
+import com.dynatrace.openkit.core.DeviceImpl;
+import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -16,7 +18,7 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 /**
  * The Configuration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
  */
-public class Configuration {
+public abstract class Configuration {
 
 	private static final boolean DEFAULT_CAPTURE = true;							// default: capture on
 	private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;					// default: wait 2m (in ms) to send beacon
@@ -25,12 +27,13 @@ public class Configuration {
 	private static final boolean DEFAULT_CAPTURE_CRASHES = true;					// default: capture crashes on
 
 	// immutable settings
-	private final OpenKitType openKitType;
 	private final String applicationName;
 	private final String applicationID;
+	private final OpenKitType openKitType;
 	private final long visitorID;
 	private final String endpointURL;
 	private final boolean verbose;
+
 
 	// mutable settings
 	private AtomicBoolean capture;				// capture on/off; can be written/read by different threads -> atomic
@@ -53,7 +56,7 @@ public class Configuration {
 
 	// *** constructors ***
 
-	Configuration(String applicationName, String applicationID, long visitorID, String endpointURL, OpenKitType openKitType, boolean verbose) {
+	protected Configuration(OpenKitType openKitType, String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
 		this.verbose = verbose;
 
 		this.openKitType = openKitType;
@@ -67,8 +70,8 @@ public class Configuration {
 		// mutable settings
 		capture = new AtomicBoolean(DEFAULT_CAPTURE);
 		sendInterval = DEFAULT_SEND_INTERVAL;
-		monitorName = openKitType.getDefaultMonitorName();
-		serverID = openKitType.getDefaultServerID();
+		monitorName = this.openKitType.getDefaultMonitorName();
+		serverID = this.openKitType.getDefaultServerID();
 		maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
 		captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
 		captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
@@ -130,13 +133,13 @@ public class Configuration {
 		// use monitor name from beacon response or default
 		String newMonitorName = statusResponse.getMonitorName();
 		if (newMonitorName == null) {
-			newMonitorName = openKitType.getDefaultMonitorName();
+			newMonitorName = this.openKitType.getDefaultMonitorName();
 		}
 
 		// use server id from beacon response or default
 		int newServerID = statusResponse.getServerID();
 		if (newServerID == -1) {
-			newServerID = openKitType.getDefaultServerID();
+			newServerID = this.openKitType.getDefaultServerID();
 		}
 
 		// check if URL changed
@@ -190,27 +193,13 @@ public class Configuration {
 
 	// create new HTTP client and updates the current HTTP client
 	private void updateCurrentHTTPClient() {
-		this.currentHTTPClient = HTTPClientProvider.createHTTPClient(createBaseURL(), applicationID, serverID, verbose);
+		this.currentHTTPClient = HTTPClientProvider.createHTTPClient(createBaseURL(endpointURL, monitorName), applicationID, serverID, verbose);
 	}
 
 	// create base URL for HTTP client from endpoint & monitorname
-	private String createBaseURL() {
-		StringBuilder urlBuilder = new StringBuilder();
-
-		urlBuilder.append(endpointURL);
-		if (!endpointURL.endsWith("/") && !monitorName.startsWith("/")) {
-			urlBuilder.append('/');
-		}
-		urlBuilder.append(monitorName);
-
-		return urlBuilder.toString();
-    }
+	protected abstract String createBaseURL(String endpointURL, String monitorName);
 
 	// *** getter methods ***
-
-	public boolean isDynatrace() {
-		return openKitType == OpenKitType.DYNATRACE;
-	}
 
 	public String getApplicationName() {
 		return applicationName;

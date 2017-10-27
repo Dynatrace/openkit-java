@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dynatrace.openkit.core.ActionImpl;
-import com.dynatrace.openkit.core.Configuration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTagBaseImpl;
 import com.dynatrace.openkit.providers.ThreadIDProvider;

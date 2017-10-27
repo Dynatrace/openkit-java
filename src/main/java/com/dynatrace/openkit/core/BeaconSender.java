@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.TimeProvider;

@@ -7,6 +7,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.TimeProvider;
