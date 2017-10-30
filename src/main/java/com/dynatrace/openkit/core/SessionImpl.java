@@ -7,7 +7,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.TimeProvider;
@@ -20,8 +20,8 @@ public class SessionImpl implements Session {
 	// end time of this Session
 	private long endTime = -1;
 
-	// Configuration and Beacon reference
-	private Configuration configuration;
+	// AbstractConfiguration and Beacon reference
+	private AbstractConfiguration configuration;
 	private Beacon beacon;
 
 	// used for taking care to really leave all Actions at the end of this Session
@@ -29,7 +29,7 @@ public class SessionImpl implements Session {
 
 	// *** constructors ***
 
-	public SessionImpl(Configuration configuration, String clientIPAddress) {
+	public SessionImpl(AbstractConfiguration configuration, String clientIPAddress) {
 		this.configuration = configuration;
 
 		// beacon has to be created immediately, as the session start time is taken at beacon construction

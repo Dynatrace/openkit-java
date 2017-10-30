@@ -1,6 +1,6 @@
 package com.dynatrace.openkit.core.configuration;
 
-public class DynatraceManagedConfiguration extends Configuration {
+public class DynatraceManagedConfiguration extends AbstractConfiguration {
 
 	private final String tenantId;
 

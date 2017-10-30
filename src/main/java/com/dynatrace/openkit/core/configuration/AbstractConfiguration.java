@@ -16,9 +16,9 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
 /**
- * The Configuration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
+ * The AbstractConfiguration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
  */
-public abstract class Configuration {
+public abstract class AbstractConfiguration {
 
 	private static final boolean DEFAULT_CAPTURE = true;							// default: capture on
 	private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;					// default: wait 2m (in ms) to send beacon
@@ -56,7 +56,7 @@ public abstract class Configuration {
 
 	// *** constructors ***
 
-	protected Configuration(OpenKitType openKitType, String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
+	protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
 		this.verbose = verbose;
 
 		this.openKitType = openKitType;
@@ -133,13 +133,13 @@ public abstract class Configuration {
 		// use monitor name from beacon response or default
 		String newMonitorName = statusResponse.getMonitorName();
 		if (newMonitorName == null) {
-			newMonitorName = this.openKitType.getDefaultMonitorName();
+			newMonitorName = openKitType.getDefaultMonitorName();
 		}
 
 		// use server id from beacon response or default
 		int newServerID = statusResponse.getServerID();
 		if (newServerID == -1) {
-			newServerID = this.openKitType.getDefaultServerID();
+			newServerID = openKitType.getDefaultServerID();
 		}
 
 		// check if URL changed

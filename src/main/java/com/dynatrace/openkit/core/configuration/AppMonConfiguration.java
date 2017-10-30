@@ -1,6 +1,6 @@
 package com.dynatrace.openkit.core.configuration;
 
-public class AppMonConfiguration extends Configuration {
+public class AppMonConfiguration extends AbstractConfiguration {
 	public AppMonConfiguration(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
 		super(OpenKitType.APPMON, applicationName, applicationID, visitorID, endpointURL, verbose);
 	}

@@ -1,6 +1,6 @@
 package com.dynatrace.openkit.core.configuration;
 
-public class DynatraceConfiguration extends Configuration {
+public class DynatraceConfiguration extends AbstractConfiguration {
 
 	public DynatraceConfiguration(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
 		super(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, verbose);

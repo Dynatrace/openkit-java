@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dynatrace.openkit.core.ActionImpl;
-import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTagBaseImpl;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -93,8 +93,8 @@ public class Beacon {
 	// basic beacon protocol data
 	private String basicBeaconData;
 
-	// Configuration reference
-	private final Configuration configuration;
+	// AbstractConfiguration reference
+	private final AbstractConfiguration configuration;
 
 	// lists of events and actions currently on the Beacon
 	private final LinkedList<String> eventDataList = new LinkedList<String>();
@@ -102,7 +102,7 @@ public class Beacon {
 
 	// *** constructors ***
 
-	public Beacon(Configuration configuration, String clientIPAddress) {
+	public Beacon(AbstractConfiguration configuration, String clientIPAddress) {
 		this.sessionNumber = configuration.createSessionNumber();
 		this.sessionStartTime = TimeProvider.getTimestamp();
 		this.configuration = configuration;
