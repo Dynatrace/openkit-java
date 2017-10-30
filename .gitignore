@@ -8,9 +8,8 @@
 .shelf/
 bin/
 build/
+javadoc/
 out/
-classes/
-product/collector/log_*/
 .vs/
 
 # files
