@@ -7,7 +7,9 @@ package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.core.OpenKitImpl;
-import com.dynatrace.openkit.core.OpenKitImpl.OpenKitType;
+import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
+import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
+import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
 
 /**
  * This factory creates instances of the OpenKit to work with.
@@ -22,30 +24,59 @@ public class OpenKitFactory {
 	}
 
 	/**
-	 * Creates a Dynatrace SaaS/Managed instance of the OpenKit.
+	 * Creates a Dynatrace SaaS instance of the OpenKit.
 	 *
 	 * @param applicationName	the application name
 	 * @param applicationID		the application ID (must be a valid application UUID)
 	 * @param visitorID			unique visitor ID
 	 * @param endpointURL		the URL of the beacon forwarder to send the data to
-	 * @return					Dynatrace SaaS/Managed instance of the OpenKit
+	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long visitorID, String endpointURL) {
-		return new OpenKitImpl(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, false);
+		return createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL, false);
 	}
 
 	/**
-	 * Creates a Dynatrace SaaS/Managed instance of the OpenKit, optionally with verbose logging.
+	 * Creates a Dynatrace SaaS instance of the OpenKit, optionally with verbose logging.
 	 *
 	 * @param applicationName	the application name
 	 * @param applicationID		the application ID (must be a valid application UUID)
 	 * @param visitorID			unique visitor ID
 	 * @param endpointURL		the URL of the beacon forwarder to send the data to
 	 * @param verbose			if true, turn on verbose logging on stdout
-	 * @return					Dynatrace SaaS/Managed instance of the OpenKit
+	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
-		return new OpenKitImpl(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, verbose);
+		return new OpenKitImpl(new DynatraceConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
+	}
+
+	/**
+	 * Creates a Dynatrace Managed instance of the OpenKit, optionally with verbose logging.
+	 *
+	 * @param applicationName	the application name
+	 * @param applicationID		the application ID (must be a valid application UUID)
+	 * @param visitorID			unique visitor ID
+	 * @param endpointURL		the URL of the beacon forwarder to send the data to
+	 * @param tenantID			the tenant ID
+	 * @return					Dynatrace Managed instance of the OpenKit
+	 */
+	public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long visitorID, String endpointURL, String tenantID) {
+		return createDynatraceManagedInstance(applicationName, applicationID, visitorID, endpointURL, tenantID, false);
+	}
+
+	/**
+	 * Creates a Dynatrace Managed instance of the OpenKit, optionally with verbose logging.
+	 *
+	 * @param applicationName	the application name
+	 * @param applicationID		the application ID (must be a valid application UUID)
+	 * @param visitorID			unique visitor ID
+	 * @param endpointURL		the URL of the beacon forwarder to send the data to
+	 * @param tenantID			the id of the tenant
+	 * @param verbose			if true, turn on verbose logging on stdout
+	 * @return					Dynatrace Managed instance of the OpenKit
+	 */
+	public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long visitorID, String endpointURL, String tenantID, boolean verbose) {
+		return new OpenKitImpl(new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, visitorID, endpointURL, verbose));
 	}
 
 	/**
@@ -58,7 +89,7 @@ public class OpenKitFactory {
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, String applicationID, long visitorID, String endpointURL) {
-		return new OpenKitImpl(OpenKitType.APPMON, applicationName, applicationID, visitorID, endpointURL, false);
+		return createAppMonInstance(applicationName, applicationID, visitorID, endpointURL, false);
 	}
 
 	/**
@@ -72,7 +103,7 @@ public class OpenKitFactory {
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
-		return new OpenKitImpl(OpenKitType.APPMON, applicationName, applicationID, visitorID, endpointURL, verbose);
+		return new OpenKitImpl(new AppMonConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
 	}
 
 }

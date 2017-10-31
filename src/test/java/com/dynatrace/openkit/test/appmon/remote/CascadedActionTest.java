@@ -7,11 +7,13 @@ package com.dynatrace.openkit.test.appmon.remote;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.CascadedActionTestShared;
 
+@Ignore("Integration tests are ignored")
 public class CascadedActionTest extends AbstractRemoteAppMonTest {
 
 	@Test

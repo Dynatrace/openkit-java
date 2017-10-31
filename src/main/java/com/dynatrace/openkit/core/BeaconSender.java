@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.TimeProvider;
@@ -28,8 +29,8 @@ public class BeaconSender implements Runnable {
 	private SynchronizedQueue<SessionImpl> openSessions = new SynchronizedQueue<SessionImpl>();
 	private SynchronizedQueue<SessionImpl> finishedSessions = new SynchronizedQueue<SessionImpl>();
 
-	// Configuration reference
-	private Configuration configuration;
+	// AbstractConfiguration reference
+	private AbstractConfiguration configuration;
 
 	// beacon sender thread
 	private Thread beaconSenderThread;
@@ -43,7 +44,7 @@ public class BeaconSender implements Runnable {
 
 	// *** constructors ***
 
-	public BeaconSender(Configuration configuration) {
+	public BeaconSender(AbstractConfiguration configuration) {
 		this.configuration = configuration;
 		shutdown = new AtomicBoolean(false);
 	}

@@ -5,7 +5,8 @@
  */
 package com.dynatrace.openkit.test;
 
-import com.dynatrace.openkit.core.OpenKitImpl.OpenKitType;
+import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
+import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 
 public class OpenKitTestFactory {
 
@@ -16,24 +17,24 @@ public class OpenKitTestFactory {
 	}
 
 	public static OpenKitTestImpl createAppMonLocalInstance(String applicationName, String applicationID, String endpointURL, TestConfiguration testConfiguration) {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(OpenKitType.APPMON, applicationName, applicationID, testConfiguration.getVisitorID(), endpointURL, true, false);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new AppMonConfiguration(applicationName, applicationID, testConfiguration.getVisitorID(), endpointURL, true), false);
 		applyTestConfiguration(openKitTestImpl, testConfiguration);
 		return openKitTestImpl;
 	}
 
 	public static OpenKitTestImpl createAppMonRemoteInstance(String applicationName, String applicationID, long visitorID, String endpointURL) {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(OpenKitType.APPMON, applicationName, applicationID, visitorID, endpointURL, true, true);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new AppMonConfiguration(applicationName, applicationID, visitorID, endpointURL, true), true);
 		return openKitTestImpl;
 	}
 
 	public static OpenKitTestImpl createDynatraceLocalInstance(String applicationName, String applicationID, String endpointURL, TestConfiguration testConfiguration) {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(OpenKitType.DYNATRACE, applicationName, applicationID, testConfiguration.getVisitorID(), endpointURL, true, false);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DynatraceConfiguration(applicationName, applicationID, testConfiguration.getVisitorID(), endpointURL, true), false);
 		applyTestConfiguration(openKitTestImpl, testConfiguration);
 		return openKitTestImpl;
 	}
 
 	public static OpenKitTestImpl createDynatraceRemoteInstance(String applicationName, String applicationID, long visitorID, String endpointURL) {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, true, true);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DynatraceConfiguration(applicationName, applicationID, visitorID, endpointURL, true), true);
 		return openKitTestImpl;
 	}
 
