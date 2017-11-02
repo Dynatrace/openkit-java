@@ -15,7 +15,7 @@ public class DefaultHTTPClientProvider implements HTTPClientProvider {
 
 	@Override
 	public HTTPClient createClient(HttpClientConfiguration configuration) {
-		return new HTTPClient(configuration.getBaseUrl(), configuration.getApplicationID(), configuration.getServerId(), configuration.isVerbose());
+		return new HTTPClient(configuration.getBaseUrl(), configuration.getApplicationId(), configuration.getServerId(), configuration.isVerbose());
 	}
 
 }

@@ -37,7 +37,7 @@ public class HttpClientConfiguration {
 	 *
 	 * @return the application id
 	 */
-	public String getApplicationID() { return applicationId; }
+	public String getApplicationId() { return applicationId; }
 
 	/**
 	 * If {@code true} logging is enabled

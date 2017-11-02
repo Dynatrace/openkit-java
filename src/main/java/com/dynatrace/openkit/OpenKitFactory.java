@@ -10,7 +10,6 @@ import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
-import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
 
 /**
  * This factory creates instances of the OpenKit to work with.
