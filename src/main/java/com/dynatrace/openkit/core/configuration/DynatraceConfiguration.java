@@ -1,5 +1,8 @@
 package com.dynatrace.openkit.core.configuration;
 
+/**
+ * Configuration implementation for Dynatrace SaaS
+ */
 public class DynatraceConfiguration extends AbstractConfiguration {
 
 	public DynatraceConfiguration(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {

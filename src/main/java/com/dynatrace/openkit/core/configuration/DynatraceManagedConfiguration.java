@@ -1,5 +1,8 @@
 package com.dynatrace.openkit.core.configuration;
 
+/**
+ * Configuration implementation for Dynatrace Managed
+ */
 public class DynatraceManagedConfiguration extends AbstractConfiguration {
 
 	private final String tenantId;

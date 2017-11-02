@@ -7,12 +7,13 @@ package com.dynatrace.openkit.providers;
 
 import java.util.ArrayList;
 
+import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.test.TestHTTPClient;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 
-public class TestHTTPClientProvider extends HTTPClientProvider {
+public class TestHTTPClientProvider implements HTTPClientProvider {
 
 	private boolean remoteTest;
 	private TestHTTPClient testHTTPClient;
@@ -29,12 +30,13 @@ public class TestHTTPClientProvider extends HTTPClientProvider {
 	}
 
 	@Override
-	protected HTTPClient provideHTTPClient(String baseURL, String applicationID, int serverID, boolean verbose) {
+	public HTTPClient createClient(HttpClientConfiguration configuration) {
 		if (testHTTPClient != null) {
 			previouslySentRequests.addAll(testHTTPClient.getSentRequests());
 		}
 
-		testHTTPClient = new TestHTTPClient(baseURL, applicationID, serverID, remoteTest, verbose);
+		testHTTPClient = new TestHTTPClient(configuration.getBaseUrl(), configuration.getApplicationID(),
+				configuration.getServerId(), remoteTest, configuration.isVerbose());
 		if (statusResponse != null) {
 			testHTTPClient.setStatusResponse(statusResponse, statusResponseCode);
 		}

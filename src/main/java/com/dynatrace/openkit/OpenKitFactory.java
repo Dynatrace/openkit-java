@@ -10,6 +10,7 @@ import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
+import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
 
 /**
  * This factory creates instances of the OpenKit to work with.
@@ -47,7 +48,8 @@ public class OpenKitFactory {
 	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
-		return new OpenKitImpl(new DynatraceConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
+		return new OpenKitImpl(
+				new DynatraceConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
 	}
 
 	/**
@@ -76,7 +78,8 @@ public class OpenKitFactory {
 	 * @return					Dynatrace Managed instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long visitorID, String endpointURL, String tenantID, boolean verbose) {
-		return new OpenKitImpl(new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, visitorID, endpointURL, verbose));
+		return new OpenKitImpl(
+				new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, visitorID, endpointURL, verbose));
 	}
 
 	/**
@@ -103,7 +106,8 @@ public class OpenKitFactory {
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
-		return new OpenKitImpl(new AppMonConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
+		return new OpenKitImpl(
+				new AppMonConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
 	}
 
 }

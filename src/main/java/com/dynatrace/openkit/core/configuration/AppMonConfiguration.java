@@ -1,5 +1,8 @@
 package com.dynatrace.openkit.core.configuration;
 
+/**
+ * Configuration implementation for AppMon
+ */
 public class AppMonConfiguration extends AbstractConfiguration {
 	public AppMonConfiguration(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
 		super(OpenKitType.APPMON, applicationName, applicationID, visitorID, endpointURL, verbose);

@@ -5,24 +5,12 @@
  */
 package com.dynatrace.openkit.providers;
 
+import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 
 /**
  * Abstract class for providing an HTTP client. Mostly needed for testing purposes.
  */
-public abstract class HTTPClientProvider {
-
-	private static HTTPClientProvider httpClientProvider = new DefaultHTTPClientProvider();
-
-	protected abstract HTTPClient provideHTTPClient(String baseURL, String applicationID, int serverID, boolean verbose);
-
-	public static HTTPClient createHTTPClient(String baseURL, String applicationID, int serverID, boolean verbose) {
-		return httpClientProvider.provideHTTPClient(baseURL, applicationID, serverID, verbose);
-	}
-
-	// FOR TESTS ONLY: set HTTP client provider
-	public static void setHTTPClientProvider(HTTPClientProvider httpClientProvider) {
-		HTTPClientProvider.httpClientProvider = httpClientProvider;
-	}
-
+public interface HTTPClientProvider {
+	HTTPClient createClient(HttpClientConfiguration configuration);
 }

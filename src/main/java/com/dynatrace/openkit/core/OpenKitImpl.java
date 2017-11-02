@@ -11,6 +11,8 @@ import com.dynatrace.openkit.api.Device;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
 
 /**
  * Actual implementation of the {@link OpenKit} interface.
@@ -19,6 +21,9 @@ public class OpenKitImpl implements OpenKit {
 
 	// only set to true after initialized() was called and calls to the OpenKit are allowed
 	private final AtomicBoolean initialized;
+
+	// BeaconSender reference
+	private final BeaconSender beaconSender;
 
 	// AbstractConfiguration reference
 	private AbstractConfiguration configuration;
@@ -29,7 +34,12 @@ public class OpenKitImpl implements OpenKit {
 	// *** constructors ***
 
 	public OpenKitImpl(AbstractConfiguration config) {
+		this(config, new DefaultHTTPClientProvider());
+	}
+
+	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider) {
 		configuration = config;
+		beaconSender = new BeaconSender(configuration, httpClientProvider);
 		initialized = new AtomicBoolean(false);
 	}
 
@@ -37,7 +47,7 @@ public class OpenKitImpl implements OpenKit {
 
 	@Override
 	public void initialize() {
-		configuration.initialize();
+		beaconSender.initialize();
 		initialized.set(true);
 	}
 
@@ -54,7 +64,7 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public Session createSession(String clientIPAddress) {
 		if (initialized.get() && configuration.isCapture()) {
-			return new SessionImpl(configuration, clientIPAddress);
+			return new SessionImpl(configuration, clientIPAddress, beaconSender);
 		} else {
 			return dummySessionInstance;
 		}
@@ -62,7 +72,7 @@ public class OpenKitImpl implements OpenKit {
 
 	@Override
 	public void shutdown() {
-		configuration.shutdown();
+		beaconSender.shutdown();
 	}
 
 }

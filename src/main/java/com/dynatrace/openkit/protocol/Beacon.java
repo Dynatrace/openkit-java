@@ -15,6 +15,8 @@ import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTagBaseImpl;
+import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
 
@@ -80,9 +82,6 @@ public class Beacon {
 	private AtomicInteger nextID = new AtomicInteger(0);
 	private AtomicInteger nextSequenceNumber = new AtomicInteger(0);
 
-	// HTTP client to be used for this Beacon
-	private HTTPClient httpClient = null;
-
 	// session number & start time
 	private final int sessionNumber;
 	private final long sessionStartTime;
@@ -96,6 +95,9 @@ public class Beacon {
 	// AbstractConfiguration reference
 	private final AbstractConfiguration configuration;
 
+	// HttpClientConfiguration reference
+	private final HttpClientConfiguration httpConfiguration;
+
 	// lists of events and actions currently on the Beacon
 	private final LinkedList<String> eventDataList = new LinkedList<String>();
 	private final LinkedList<String> actionDataList = new LinkedList<String>();
@@ -108,10 +110,10 @@ public class Beacon {
 		this.configuration = configuration;
 		this.clientIPAddress = clientIPAddress;
 
-		basicBeaconData = createBasicBeaconData();
+		// store the current configuration
+		this.httpConfiguration = configuration.getHttpClientConfig();
 
-		// this beacon should always be sent to the same URL
-		httpClient = configuration.getCurrentHTTPClient();
+		basicBeaconData = createBasicBeaconData();
 	}
 
 	// *** public methods ***
@@ -130,7 +132,7 @@ public class Beacon {
 	public String createTag(ActionImpl parentAction, int sequenceNo) {
 		return TAG_PREFIX + "_"
 				   + PROTOCOL_VERSION + "_"
-				   + httpClient.getServerID() + "_"
+				   + httpConfiguration.getServerId() + "_"
 				   + configuration.getVisitorID() + "_"
 				   + sessionNumber + "_"
 				   + configuration.getApplicationID() + "_"
@@ -284,7 +286,8 @@ public class Beacon {
 	}
 
 	// send current state of Beacon
-	public StatusResponse send() {
+	public StatusResponse send(HTTPClientProvider provider) {
+		HTTPClient httpClient = provider.createClient(httpConfiguration);
 		ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
 		StatusResponse response = null;
 		for (byte[] beaconData : beaconDataChunks) {
@@ -316,7 +319,7 @@ public class Beacon {
 	}
 
 	// creates (possibly) multiple beacon chunks based on max beacon size
-	private ArrayList<byte[]> createBeaconDataChunks() {
+	public ArrayList<byte[]> createBeaconDataChunks() {
 		ArrayList<byte[]> beaconDataChunks = new ArrayList<byte[]>();
 
 		synchronized (eventDataList) {

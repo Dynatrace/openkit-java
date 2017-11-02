@@ -11,8 +11,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.protocol.Beacon;
+import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
@@ -30,7 +33,10 @@ public class BeaconSender implements Runnable {
 	private SynchronizedQueue<SessionImpl> finishedSessions = new SynchronizedQueue<SessionImpl>();
 
 	// AbstractConfiguration reference
-	private AbstractConfiguration configuration;
+	private final AbstractConfiguration configuration;
+
+	// reference to http client provider
+	private final HTTPClientProvider clientProvider;
 
 	// beacon sender thread
 	private Thread beaconSenderThread;
@@ -44,8 +50,9 @@ public class BeaconSender implements Runnable {
 
 	// *** constructors ***
 
-	public BeaconSender(AbstractConfiguration configuration) {
+	public BeaconSender(AbstractConfiguration configuration, HTTPClientProvider clientProvider) {
 		this.configuration = configuration;
+		this.clientProvider = clientProvider;
 		shutdown = new AtomicBoolean(false);
 	}
 
@@ -66,13 +73,13 @@ public class BeaconSender implements Runnable {
 				// check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
 				while (!finishedSessions.isEmpty()) {
 					SessionImpl session = finishedSessions.get();
-					statusResponse = session.sendBeacon();
+					statusResponse = session.sendBeacon(clientProvider);
 				}
 
 				// check if send interval spent -> send current beacon(s) of open Sessions
 				if (System.currentTimeMillis() > lastOpenSessionBeaconSendTime + configuration.getSendInterval()) {
 					for (SessionImpl session : openSessions.toArrayList()) {
-						statusResponse = session.sendBeacon();
+						statusResponse = session.sendBeacon(clientProvider);
 					}
 
 					// update open session beacon send timestamp in this case
@@ -81,16 +88,16 @@ public class BeaconSender implements Runnable {
 
 				// if at least one beacon was sent AND a (valid) status response was received -> update settings
 				if (statusResponse != null) {
-					configuration.updateSettings(statusResponse);
+					handleStatusResponse(statusResponse);
 				}
 			} else {
 				// check if status check interval spent -> send status request & update settings
 				if (System.currentTimeMillis() > lastStatusCheckTime + STATUS_CHECK_INTERVAL) {
-					statusResponse = configuration.getCurrentHTTPClient().sendStatusRequest();
+					statusResponse = clientProvider.createClient(configuration.getHttpClientConfig()).sendStatusRequest();
 
 					// if a (valid) status response was received -> update settings
 					if (statusResponse != null) {
-						configuration.updateSettings(statusResponse);
+						handleStatusResponse(statusResponse);
 					}
 
 					// update status check timestamp in any case
@@ -108,7 +115,16 @@ public class BeaconSender implements Runnable {
 		// and finally send all the (now) finished Sessions
 		while (!finishedSessions.isEmpty()) {
 			SessionImpl session = finishedSessions.get();
-			session.sendBeacon();
+			session.sendBeacon(clientProvider);
+		}
+	}
+
+	private void handleStatusResponse(StatusResponse statusResponse) {
+		configuration.updateSettings(statusResponse);
+
+		// if capture is off -> clear Sessions on beacon sender and leave other settings on their current values
+		if (!configuration.isCapture()) {
+			clearSessions();
 		}
 	}
 
@@ -124,7 +140,7 @@ public class BeaconSender implements Runnable {
     	int retry = 0;
 		do {
 			retry++;
-			statusResponse = configuration.getCurrentHTTPClient().sendStatusRequest();
+			statusResponse = clientProvider.createClient(configuration.getHttpClientConfig()).sendStatusRequest();
 
 			// if no (valid) status response was received -> sleep 1s and then retry (max 5 times altogether)
 			if (statusResponse == null) {
@@ -134,8 +150,7 @@ public class BeaconSender implements Runnable {
 
 		// update settings based on (valid) status response
 		// if status response is null, updateSettings() will turn capture off, as there were no initial settings received
-		configuration.updateSettings(statusResponse);
-
+		handleStatusResponse(statusResponse);
 
 		// try synchronizing the time provider initially
 		syncTimeProvider(true);
@@ -147,7 +162,9 @@ public class BeaconSender implements Runnable {
 
 	// when starting a new Session, put it into open Sessions
 	public void startSession(SessionImpl session) {
-		openSessions.put(session);
+		if (configuration.isCapture()) {
+			openSessions.put(session);
+		}
 	}
 
 	// when finishing a Session, remove it from open Sessions and put it into finished Sessions
@@ -193,7 +210,7 @@ public class BeaconSender implements Runnable {
 		while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
 			// execute time-sync request and take timestamps
 			long requestSendTime = TimeProvider.getTimestamp();
-			TimeSyncResponse timeSyncResponse = configuration.getCurrentHTTPClient().sendTimeSyncRequest();
+			TimeSyncResponse timeSyncResponse = clientProvider.createClient(configuration.getHttpClientConfig()).sendTimeSyncRequest();
 			long responseReceiveTime = TimeProvider.getTimestamp();
 
 			if (timeSyncResponse != null) {

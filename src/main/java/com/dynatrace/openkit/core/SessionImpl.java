@@ -5,11 +5,15 @@
  */
 package com.dynatrace.openkit.core;
 
+import java.util.ArrayList;
+
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
+import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
@@ -20,21 +24,21 @@ public class SessionImpl implements Session {
 	// end time of this Session
 	private long endTime = -1;
 
-	// AbstractConfiguration and Beacon reference
-	private AbstractConfiguration configuration;
-	private Beacon beacon;
+	// BeaconSender and Beacon reference
+	private final BeaconSender beaconSender;
+	private final Beacon beacon;
 
 	// used for taking care to really leave all Actions at the end of this Session
 	private SynchronizedQueue<Action> openRootActions = new SynchronizedQueue<Action>();
 
 	// *** constructors ***
 
-	public SessionImpl(AbstractConfiguration configuration, String clientIPAddress) {
-		this.configuration = configuration;
+	public SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender) {
+		this.beaconSender = beaconSender;
 
 		// beacon has to be created immediately, as the session start time is taken at beacon construction
 		beacon = new Beacon(configuration, clientIPAddress);
-		configuration.startSession(this);
+		beaconSender.startSession(this);
 	}
 
 	// *** Session interface methods ***
@@ -67,15 +71,15 @@ public class SessionImpl implements Session {
 		// create end session data on beacon
 		beacon.endSession(this);
 
-		// finish session on configuration and stop managing it
-		configuration.finishSession(this);
+		// finish session and stop managing it
+		beaconSender.finishSession(this);
 	}
 
 	// *** public methods ***
 
 	// sends the current Beacon state
-	public StatusResponse sendBeacon() {
-		return beacon.send();
+	public StatusResponse sendBeacon(HTTPClientProvider clientProvider) {
+		return beacon.send(clientProvider);
 	}
 
 	// *** getter methods ***
