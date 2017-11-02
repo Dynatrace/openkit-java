@@ -34,23 +34,18 @@ public abstract class AbstractConfiguration {
 	private final String endpointURL;
 	private final boolean verbose;
 
-
 	// mutable settings
-	private AtomicBoolean capture;				// capture on/off; can be written/read by different threads -> atomic
-	private int sendInterval;					// beacon send interval; is only written/read by beacon sender thread -> non-atomic
-	private String monitorName;					// monitor name part of URL; is only written/read by beacon sender thread -> non-atomic
-	private int serverID;						// Server ID (needed for Dynatrace cluster); is only written/read by beacon sender thread -> non-atomic
-	private int maxBeaconSize;					// max beacon size; is only written/read by beacon sender thread -> non-atomic
-	private AtomicBoolean captureErrors;		// capture errors on/off; can be written/read by different threads -> atomic
-	private AtomicBoolean captureCrashes;		// capture crashes on/off; can be written/read by different threads -> atomic
+	private AtomicBoolean capture;								// capture on/off; can be written/read by different threads -> atomic
+	private int sendInterval;									// beacon send interval; is only written/read by beacon sender thread -> non-atomic
+	private String monitorName;									// monitor name part of URL; is only written/read by beacon sender thread -> non-atomic
+	private int maxBeaconSize;									// max beacon size; is only written/read by beacon sender thread -> non-atomic
+	private AtomicBoolean captureErrors;						// capture errors on/off; can be written/read by different threads -> atomic
+	private AtomicBoolean captureCrashes;						// capture crashes on/off; can be written/read by different threads -> atomic
+	private HttpClientConfiguration httpClientConfiguration; 	// the current http client configuration
 
 	// application and device settings
 	private String applicationVersion;
 	private final DeviceImpl device;
-
-	private HTTPClient currentHTTPClient;		// current HTTP client (depending on endpoint, monitor, name application ID and server ID)
-
-	private BeaconSender beaconSender;
 
 	private AtomicInteger nextSessionNumber = new AtomicInteger(0);
 
@@ -70,49 +65,26 @@ public abstract class AbstractConfiguration {
 		// mutable settings
 		capture = new AtomicBoolean(DEFAULT_CAPTURE);
 		sendInterval = DEFAULT_SEND_INTERVAL;
-		monitorName = this.openKitType.getDefaultMonitorName();
-		serverID = this.openKitType.getDefaultServerID();
+		monitorName = openKitType.getDefaultMonitorName();
 		maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
 		captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
 		captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
 		device = new DeviceImpl();
 		applicationVersion = null;
+
+		httpClientConfiguration = new HttpClientConfiguration(
+				createBaseURL(endpointURL, monitorName),
+				openKitType.getDefaultServerID(),
+				applicationID,
+				verbose);
 	}
 
 	// *** public methods ***
 
-	// initializes the configuration, called by OpenKit.initialize()
-	public void initialize() {
-		// create beacon sender, but do not start beacon sender thread yet
-		beaconSender = new BeaconSender(this);
-
-		// create initial HTTP client
-		updateCurrentHTTPClient();
-
-		// block until initial settings are received; initialize beacon sender & starts thread
-		beaconSender.initialize();
-	}
-
 	// return next session number
 	public int createSessionNumber() {
 		return nextSessionNumber.incrementAndGet();
-	}
-
-	// called when new Session is created, passes Session to beacon sender to start managing it
-	public void startSession(SessionImpl session) {
-		// if capture is off, there's no need to manage open Sessions
-		if (isCapture()) {
-			beaconSender.startSession(session);
-		}
-	}
-
-	// called when Session is ended, passes Session to beacon sender to stop managing it
-	public void finishSession(SessionImpl session) {
-		// if capture is off, there's no need to manage open and finished Sessions
-		if (isCapture()) {
-			beaconSender.finishSession(session);
-		}
 	}
 
 	// updates settings based on a status response
@@ -126,7 +98,6 @@ public abstract class AbstractConfiguration {
 
 		// if capture is off -> clear Sessions on beacon sender and leave other settings on their current values
 		if (!isCapture()) {
-			beaconSender.clearSessions();
 			return;
 		}
 
@@ -142,20 +113,21 @@ public abstract class AbstractConfiguration {
 			newServerID = openKitType.getDefaultServerID();
 		}
 
-		// check if URL changed
-		boolean urlChanged = false;
-		if (!monitorName.equals(newMonitorName)) {
-			monitorName = newMonitorName;
-			urlChanged = true;
-		}
-		if (serverID != newServerID) {
-			serverID = newServerID;
-			urlChanged = true;
+		boolean httpConfigChanged = false;
+		if (!monitorName.equals(newMonitorName)
+				|| httpClientConfiguration.getServerId() != newServerID) {
+			httpConfigChanged = true;
 		}
 
-		// URL changed -> HTTP client has to be updated
-		if (urlChanged) {
-			updateCurrentHTTPClient();
+		// http config changed -> new config
+		if (httpConfigChanged) {
+			httpClientConfiguration = new HttpClientConfiguration(
+					createBaseURL(endpointURL, newMonitorName),
+					newServerID,
+					applicationID,
+					verbose);
+
+			monitorName = newMonitorName;
 		}
 
 		// use send interval from beacon response or default
@@ -180,20 +152,6 @@ public abstract class AbstractConfiguration {
 		// use capture settings for errors and crashes
 		captureErrors.set(statusResponse.isCaptureErrors());
 		captureCrashes.set(statusResponse.isCaptureCrashes());
-	}
-
-	// shut down configuration -> shut down beacon sender
-	public void shutdown() {
-		if (beaconSender != null) {
-			beaconSender.shutdown();
-		}
-	}
-
-	// *** private methods ***
-
-	// create new HTTP client and updates the current HTTP client
-	private void updateCurrentHTTPClient() {
-		this.currentHTTPClient = HTTPClientProvider.createHTTPClient(createBaseURL(endpointURL, monitorName), applicationID, serverID, verbose);
 	}
 
 	// create base URL for HTTP client from endpoint & monitorname
@@ -249,8 +207,10 @@ public abstract class AbstractConfiguration {
 		return device;
 	}
 
-	public HTTPClient getCurrentHTTPClient() {
-		return currentHTTPClient;
-	}
-
+	/**
+	 * Returns the current http client configuration
+	 *
+	 * @return
+	 */
+	public HttpClientConfiguration getHttpClientConfig() { return httpClientConfiguration; }
 }
