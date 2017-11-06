@@ -218,9 +218,7 @@ public class BeaconSender implements Runnable {
 				// check both timestamps for being > 0
 				if ((requestReceiveTime > 0) && (responseSendTime > 0)) {
 					// if yes -> continue time-sync
-					long offset = (long) (((requestReceiveTime - requestSendTime) +
-							(responseSendTime - responseReceiveTime)) / 2.0);
-
+					long offset = ((requestReceiveTime - requestSendTime) + (responseSendTime - responseReceiveTime)) / 2;
 					timeSyncOffsets.add(offset);
 				} else {
 					// if no -> stop time sync, it's not supported

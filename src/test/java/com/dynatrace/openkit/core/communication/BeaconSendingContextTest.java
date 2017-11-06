@@ -141,7 +141,7 @@ public class BeaconSendingContextTest {
 
         verifyZeroInteractions(configuration, httpClientProvider);
 
-        HTTPClient obtained = target.getClient();
+        HTTPClient obtained = target.getHTTPClient();
 
         assertThat(obtained, notNullValue());
         assertThat(obtained, is(sameInstance(mockClient)));

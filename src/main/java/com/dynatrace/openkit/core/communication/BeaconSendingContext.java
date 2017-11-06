@@ -90,7 +90,11 @@ public class BeaconSendingContext {
         initCountDownLatch.countDown();
     }
 
-    HTTPClient getClient() {
+	public HTTPClientProvider getHTTPClientProvider() {
+		return httpClientProvider;
+	}
+
+    HTTPClient getHTTPClient() {
         return httpClientProvider.createClient(configuration.getHttpClientConfig());
     }
 
@@ -122,6 +126,10 @@ public class BeaconSendingContext {
         return lastStatusCheckTime;
     }
 
+    int getSendInterval() {
+    	return configuration.getSendInterval();
+	}
+
     void handleStatusResponse(StatusResponse statusResponse) {
 
         configuration.updateSettings(statusResponse);
@@ -137,4 +145,16 @@ public class BeaconSendingContext {
         openSessions.clear();
         finishedSessions.clear();
     }
+
+    boolean isCaptureOn() {
+    	return configuration.isCapture();
+	}
+
+	public SessionImpl getNextFinishedSession() {
+		return finishedSessions.poll();
+	}
+
+	public SessionImpl[] getAllOpenSessions() {
+    	return openSessions.toArray(new SessionImpl[0]);
+	}
 }

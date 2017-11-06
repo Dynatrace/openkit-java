@@ -24,7 +24,7 @@ class BeaconSendingInitState extends BeaconSendingState {
         int retry = 0;
         do {
             retry++;
-            statusResponse = context.getClient().sendStatusRequest();
+            statusResponse = context.getHTTPClient().sendStatusRequest();
 
             // if no (valid) status response was received -> sleep 1s and then retry (max 5 times altogether)
             if (statusResponse == null) {
