@@ -13,8 +13,8 @@ import java.util.StringTokenizer;
 public class TimeSyncResponse extends Response {
 
 	// time sync response constants
-	private static final String RESPONSE_KEY_REQUEST_RECEIVE_TIME = "t1";
-	private static final String RESPONSE_KEY_RESPONSE_SEND_TIME = "t2";
+	public static final String RESPONSE_KEY_REQUEST_RECEIVE_TIME = "t1";
+	public static final String RESPONSE_KEY_RESPONSE_SEND_TIME = "t2";
 
 	// timestamps contained in time sync response
 	private long requestReceiveTime = -1;

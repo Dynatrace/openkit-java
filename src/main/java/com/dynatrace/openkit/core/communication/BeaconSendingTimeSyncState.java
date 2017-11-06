@@ -9,8 +9,8 @@ import java.util.List;
 
 class BeaconSendingTimeSyncState extends BeaconSendingState {
 
-    private static final int TIME_SYNC_REQUESTS = 5;
-    private static final int TIME_SYNC_RETRY_COUNT = 20;
+    static final int TIME_SYNC_REQUESTS = 5;
+    static final int TIME_SYNC_RETRY_COUNT = 20;
 
     private final boolean initialTimeSync;
 
@@ -43,17 +43,20 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
         TimeProvider.initialize(clusterTimeOffset, true);
     }
 
-    private List<Long> executeTimeSyncRequests(BeaconSendingContext context) {
+	/**
+	 * Execute the time synchronisation requests (HTTP requests).
+	 */
+	private List<Long> executeTimeSyncRequests(BeaconSendingContext context) {
 
         int retry = 0;
         List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
 
         // no check for shutdown here, time sync has to be completed
-        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
+        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS && retry++ < TIME_SYNC_RETRY_COUNT) {
             // execute time-sync request and take timestamps
-            long requestSendTime = TimeProvider.getTimestamp();
+            long requestSendTime = context.getCurrentTimestamp();
             TimeSyncResponse timeSyncResponse = context.getClient().sendTimeSyncRequest();
-            long responseReceiveTime = TimeProvider.getTimestamp();
+            long responseReceiveTime = context.getCurrentTimestamp();
 
             if (timeSyncResponse != null) {
                 long requestReceiveTime = timeSyncResponse.getRequestReceiveTime();
