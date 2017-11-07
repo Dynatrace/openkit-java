@@ -22,40 +22,58 @@ public class BeaconSendingContext {
     private final HTTPClientProvider httpClientProvider;
     private final TimingProvider timingProvider;
 
-    /** container storing all open sessions */
+    /**
+     * container storing all open sessions
+     */
     private final LinkedBlockingQueue<SessionImpl> openSessions = new LinkedBlockingQueue<SessionImpl>();
 
-    /** container storing all finished sessions */
+    /**
+     * container storing all finished sessions
+     */
     private final LinkedBlockingQueue<SessionImpl> finishedSessions = new LinkedBlockingQueue<SessionImpl>();
 
-    /** current state of beacon sender */
+    /**
+     * current state of beacon sender
+     */
     private AbstractBeaconSendingState currentState;
 
-    /** boolean indicating whether shutdown was requested or not */
+    /**
+     * boolean indicating whether shutdown was requested or not
+     */
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
-    /** timestamp when open sessions were last sent */
+    /**
+     * timestamp when open sessions were last sent
+     */
     private long lastOpenSessionBeaconSendTime;
-    /** timestamp when last status check was done */
+    /**
+     * timestamp when last status check was done
+     */
     private long lastStatusCheckTime;
-    /** timestamp when last time sync was done */
+    /**
+     * timestamp when last time sync was done
+     */
     private long lastTimeSyncTime = -1;
 
-    /** countdown latch updated when init was done - which can either be success or failure */
+    /**
+     * countdown latch updated when init was done - which can either be success or failure
+     */
     private final CountDownLatch initCountDownLatch = new CountDownLatch(1);
-    /** boolean indicating whether init was successful or not */
+    /**
+     * boolean indicating whether init was successful or not
+     */
     private boolean initSucceeded = false;
 
-	/**
-	 * Constructor.
-	 *
-	 * <p>
-	 *     The state is initialized to {@link BeaconSendingInitState},
-	 * </p>
-	 */
+    /**
+     * Constructor.
+     * <p>
+     * <p>
+     * The state is initialized to {@link BeaconSendingInitState},
+     * </p>
+     */
     public BeaconSendingContext(AbstractConfiguration configuration,
-                                HTTPClientProvider httpClientProvider,
-                                TimingProvider timingProvider) {
+        HTTPClientProvider httpClientProvider,
+        TimingProvider timingProvider) {
 
         this.configuration = configuration;
         this.httpClientProvider = httpClientProvider;
@@ -65,7 +83,7 @@ public class BeaconSendingContext {
     }
 
     public void executeCurrentState() {
-        currentState.doExecute(this);
+        currentState.execute(this);
     }
 
     public void requestShutdown() {
@@ -99,9 +117,9 @@ public class BeaconSendingContext {
         initCountDownLatch.countDown();
     }
 
-	HTTPClientProvider getHTTPClientProvider() {
-		return httpClientProvider;
-	}
+    HTTPClientProvider getHTTPClientProvider() {
+        return httpClientProvider;
+    }
 
     HTTPClient getHTTPClient() {
         return httpClientProvider.createClient(configuration.getHttpClientConfig());
@@ -136,8 +154,8 @@ public class BeaconSendingContext {
     }
 
     int getSendInterval() {
-    	return configuration.getSendInterval();
-	}
+        return configuration.getSendInterval();
+    }
 
     void handleStatusResponse(StatusResponse statusResponse) {
 
@@ -156,18 +174,18 @@ public class BeaconSendingContext {
     }
 
     boolean isCaptureOn() {
-    	return configuration.isCapture();
-	}
+        return configuration.isCapture();
+    }
 
-	SessionImpl getNextFinishedSession() {
-		return finishedSessions.poll();
-	}
+    SessionImpl getNextFinishedSession() {
+        return finishedSessions.poll();
+    }
 
-	SessionImpl[] getAllOpenSessions() {
-    	return openSessions.toArray(new SessionImpl[0]);
-	}
+    SessionImpl[] getAllOpenSessions() {
+        return openSessions.toArray(new SessionImpl[0]);
+    }
 
-	long getLastTimeSyncTime() {
+    long getLastTimeSyncTime() {
         return lastTimeSyncTime;
     }
 

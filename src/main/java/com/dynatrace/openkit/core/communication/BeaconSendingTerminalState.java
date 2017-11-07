@@ -2,14 +2,14 @@ package com.dynatrace.openkit.core.communication;
 
 class BeaconSendingTerminalState extends AbstractBeaconSendingState {
 
-	BeaconSendingTerminalState() {
-		super(true);
-	}
+    BeaconSendingTerminalState() {
+        super(true);
+    }
 
-	@Override
+    @Override
     void doExecute(BeaconSendingContext context) {
 
-    	// set the shutdown request - just to ensure it's set
+        // set the shutdown request - just to ensure it's set
         context.requestShutdown();
     }
 

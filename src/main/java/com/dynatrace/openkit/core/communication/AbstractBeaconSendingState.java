@@ -5,7 +5,9 @@ package com.dynatrace.openkit.core.communication;
  */
 abstract class AbstractBeaconSendingState {
 
-    /** Boolean variable indicating whether this state is a terminal state or not. */
+    /**
+     * Boolean variable indicating whether this state is a terminal state or not.
+     */
     private final boolean isTerminalState;
 
     AbstractBeaconSendingState(boolean isTerminalState) {
@@ -14,10 +16,10 @@ abstract class AbstractBeaconSendingState {
 
     /**
      * Execute the current state.
-     *
      * <p>
-     *     In case shutdown was requested, a state transition is performed by this method to the {@link AbstractBeaconSendingState}
-     *     returned by {@link AbstractBeaconSendingState#getShutdownState()}.
+     * <p>
+     * In case shutdown was requested, a state transition is performed by this method to the {@link AbstractBeaconSendingState}
+     * returned by {@link AbstractBeaconSendingState#getShutdownState()}.
      * </p>
      */
     void execute(BeaconSendingContext context) {

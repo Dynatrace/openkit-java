@@ -12,7 +12,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     static final int TIME_SYNC_REQUESTS = 5;
     static final int TIME_SYNC_RETRY_COUNT = 5;
-	static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+    static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     private final boolean initialTimeSync;
 
@@ -21,25 +21,25 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     }
 
     BeaconSendingTimeSyncState(boolean initialTimeSync) {
-		super(false);
-		this.initialTimeSync = initialTimeSync;
+        super(false);
+        this.initialTimeSync = initialTimeSync;
     }
 
     @Override
     void doExecute(BeaconSendingContext context) {
 
-		List<Long> timeSyncOffsets;
-		try {
-			timeSyncOffsets = executeTimeSyncRequests(context);
-		} catch (InterruptedException e) {
-			// assume time sync was shut down
-			context.initCompleted(false);
-			context.setCurrentState(new BeaconSendingTerminalState());
-			Thread.currentThread().interrupt(); // re-interrupt
-			return;
-		}
+        List<Long> timeSyncOffsets;
+        try {
+            timeSyncOffsets = executeTimeSyncRequests(context);
+        } catch (InterruptedException e) {
+            // assume time sync was shut down
+            context.initCompleted(false);
+            context.setCurrentState(new BeaconSendingTerminalState());
+            Thread.currentThread().interrupt(); // re-interrupt
+            return;
+        }
 
-		// time sync requests were *not* successful -> use 0 as cluster time offset
+        // time sync requests were *not* successful -> use 0 as cluster time offset
         if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
             // if this is the initial sync try, we have to initialize the time provider
             // in every other case we keep the previous setting
@@ -58,13 +58,13 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         TimeProvider.initialize(clusterTimeOffset, true);
 
         // advance to next state
-		if (context.isCaptureOn()) {
-			context.setCurrentState(new BeaconSendingStateCaptureOnState());
-		} else {
-			context.setCurrentState(new BeaconSendingStateCaptureOffState());
-		}
+        if (context.isCaptureOn()) {
+            context.setCurrentState(new BeaconSendingStateCaptureOnState());
+        } else {
+            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+        }
 
-		// mark init being completed if it's the initial time sync
+        // mark init being completed if it's the initial time sync
         if (initialTimeSync) {
             context.initCompleted(true);
         }
@@ -77,13 +77,13 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     }
 
     /**
-	 * Execute the time synchronisation requests (HTTP requests).
-	 */
-	private List<Long> executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
+     * Execute the time synchronisation requests (HTTP requests).
+     */
+    private List<Long> executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
 
         List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
 
-		int retry = 0;
+        int retry = 0;
         long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
 
         // no check for shutdown here, time sync has to be completed
@@ -126,7 +126,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // calculate variance from median
         long medianVariance = 0;
-        for (int i = 0; i < TIME_SYNC_REQUESTS; i++) {
+        for (int i = 0;
+             i < TIME_SYNC_REQUESTS;
+             i++) {
             long diff = timeSyncOffsets.get(i) - median;
             medianVariance += diff * diff;
         }
@@ -135,7 +137,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // calculate cluster time offset as arithmetic mean of all offsets that are in range of 1x standard deviation
         long sum = 0;
         long count = 0;
-        for (int i = 0; i < TIME_SYNC_REQUESTS; i++) {
+        for (int i = 0;
+             i < TIME_SYNC_REQUESTS;
+             i++) {
             long diff = timeSyncOffsets.get(i) - median;
             if (diff * diff <= medianVariance) {
                 sum += timeSyncOffsets.get(i);
@@ -143,6 +147,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             }
         }
 
-        return (long)Math.round(sum / (double) count);
+        return (long) Math.round(sum / (double) count);
     }
 }
