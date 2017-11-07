@@ -8,12 +8,8 @@ package com.dynatrace.openkit.core.configuration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.DeviceImpl;
-import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
-import com.dynatrace.openkit.providers.HTTPClientProvider;
 
 /**
  * The AbstractConfiguration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
@@ -41,7 +37,7 @@ public abstract class AbstractConfiguration {
 	private int maxBeaconSize;									// max beacon size; is only written/read by beacon sender thread -> non-atomic
 	private AtomicBoolean captureErrors;						// capture errors on/off; can be written/read by different threads -> atomic
 	private AtomicBoolean captureCrashes;						// capture crashes on/off; can be written/read by different threads -> atomic
-	private HttpClientConfiguration httpClientConfiguration; 	// the current http client configuration
+	private HTTPClientConfiguration httpClientConfiguration; 	// the current http client configuration
 
 	// application and device settings
 	private String applicationVersion;
@@ -73,7 +69,7 @@ public abstract class AbstractConfiguration {
 		device = new DeviceImpl();
 		applicationVersion = null;
 
-		httpClientConfiguration = new HttpClientConfiguration(
+		httpClientConfiguration = new HTTPClientConfiguration(
 				createBaseURL(endpointURL, monitorName),
 				openKitType.getDefaultServerID(),
 				applicationID,
@@ -96,7 +92,7 @@ public abstract class AbstractConfiguration {
 			capture.set(statusResponse.isCapture());
 		}
 
-		// if capture is off -> clear Sessions on beacon sender and leave other settings on their current values
+		// if capture is off -> leave other settings on their current values
 		if (!isCapture()) {
 			return;
 		}
@@ -115,13 +111,13 @@ public abstract class AbstractConfiguration {
 
 		boolean httpConfigChanged = false;
 		if (!monitorName.equals(newMonitorName)
-				|| httpClientConfiguration.getServerId() != newServerID) {
+				|| httpClientConfiguration.getServerID() != newServerID) {
 			httpConfigChanged = true;
 		}
 
 		// http config changed -> new config
 		if (httpConfigChanged) {
-			httpClientConfiguration = new HttpClientConfiguration(
+			httpClientConfiguration = new HTTPClientConfiguration(
 					createBaseURL(endpointURL, newMonitorName),
 					newServerID,
 					applicationID,
@@ -212,5 +208,5 @@ public abstract class AbstractConfiguration {
 	 *
 	 * @return
 	 */
-	public HttpClientConfiguration getHttpClientConfig() { return httpClientConfiguration; }
+	public HTTPClientConfiguration getHttpClientConfig() { return httpClientConfiguration; }
 }

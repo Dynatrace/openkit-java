@@ -15,7 +15,7 @@ import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTagBaseImpl;
-import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
@@ -95,8 +95,8 @@ public class Beacon {
 	// AbstractConfiguration reference
 	private final AbstractConfiguration configuration;
 
-	// HttpClientConfiguration reference
-	private final HttpClientConfiguration httpConfiguration;
+	// HTTPClientConfiguration reference
+	private final HTTPClientConfiguration httpConfiguration;
 
 	// lists of events and actions currently on the Beacon
 	private final LinkedList<String> eventDataList = new LinkedList<String>();
@@ -132,7 +132,7 @@ public class Beacon {
 	public String createTag(ActionImpl parentAction, int sequenceNo) {
 		return TAG_PREFIX + "_"
 				   + PROTOCOL_VERSION + "_"
-				   + httpConfiguration.getServerId() + "_"
+				   + httpConfiguration.getServerID() + "_"
 				   + configuration.getVisitorID() + "_"
 				   + sessionNumber + "_"
 				   + configuration.getApplicationID() + "_"
