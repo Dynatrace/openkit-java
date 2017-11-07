@@ -44,6 +44,13 @@ public class BeaconSendingContext {
     /** boolean indicating whether init was successful or not */
     private boolean initSucceeded = false;
 
+	/**
+	 * Constructor.
+	 *
+	 * <p>
+	 *     The state is initialized to {@link BeaconSendingInitState},
+	 * </p>
+	 */
     public BeaconSendingContext(AbstractConfiguration configuration,
                                 HTTPClientProvider httpClientProvider,
                                 TimingProvider timingProvider) {
@@ -90,7 +97,7 @@ public class BeaconSendingContext {
         initCountDownLatch.countDown();
     }
 
-	public HTTPClientProvider getHTTPClientProvider() {
+	HTTPClientProvider getHTTPClientProvider() {
 		return httpClientProvider;
 	}
 
@@ -102,11 +109,11 @@ public class BeaconSendingContext {
         return timingProvider.provideTimestampInMilliseconds();
     }
 
-    void sleep() {
+    void sleep() throws InterruptedException {
         sleep(DEFAULT_SLEEP_TIME_MILLISECONDS);
     }
 
-    void sleep(long millis) {
+    void sleep(long millis) throws InterruptedException {
         timingProvider.sleep(millis);
     }
 
@@ -150,11 +157,11 @@ public class BeaconSendingContext {
     	return configuration.isCapture();
 	}
 
-	public SessionImpl getNextFinishedSession() {
+	SessionImpl getNextFinishedSession() {
 		return finishedSessions.poll();
 	}
 
-	public SessionImpl[] getAllOpenSessions() {
+	SessionImpl[] getAllOpenSessions() {
     	return openSessions.toArray(new SessionImpl[0]);
 	}
 }

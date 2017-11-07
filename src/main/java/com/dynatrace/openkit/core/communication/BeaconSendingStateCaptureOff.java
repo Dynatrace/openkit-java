@@ -8,6 +8,10 @@ class BeaconSendingStateCaptureOff extends BeaconSendingState {
 
 	private StatusResponse statusResponse;
 
+	BeaconSendingStateCaptureOff() {
+		super(false);
+	}
+
 	@Override
 	void execute(BeaconSendingContext context) {
 
@@ -16,7 +20,14 @@ class BeaconSendingStateCaptureOff extends BeaconSendingState {
 		long delta =  currentTime - (context.getLastStatusCheckTime() + STATUS_CHECK_INTERVAL);
 		if (delta > 0 && !context.isShutdownRequested()) {
 			// still have some time to sleep
-			context.sleep(delta);
+			try {
+				context.sleep(delta);
+			} catch (InterruptedException e) {
+				// sleep was interrupted -> flush session
+				context.setCurrentState(new BeaconSendingFlushSessionsState());
+				Thread.currentThread().interrupt(); // re-interrupt
+				return;
+			}
 		}
 
 		// send the status request

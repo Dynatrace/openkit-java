@@ -51,7 +51,7 @@ public class BeaconSendingTimeSyncStateTest {
 	}
 
 	@Test
-	public void twentyTimeSyncRequestsAreSentToTheServerBeforeGivingUp() {
+	public void twentyTimeSyncRequestsAreSentToTheServerBeforeGivingUp() throws InterruptedException {
 
 		// given
 		when(httpClient.sendTimeSyncRequest()).thenReturn(null);
@@ -70,7 +70,7 @@ public class BeaconSendingTimeSyncStateTest {
 	}
 
 	@Test
-	public void whenTimeSyncIsNotSupportedByTheServerSyncingIsImmediatelyAborted() {
+	public void whenTimeSyncIsNotSupportedByTheServerSyncingIsImmediatelyAborted() throws InterruptedException {
 
 		// given
 		String responseOne = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-5&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1";

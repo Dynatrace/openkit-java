@@ -45,7 +45,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void stateInitializesLastOpenSessionBeaconSendTimeAndLastStatusCheckTime() {
+    public void stateInitializesLastOpenSessionBeaconSendTimeAndLastStatusCheckTime() throws InterruptedException {
 
         assertThat(stateContext.getLastOpenSessionBeaconSendTime(), is(0L));
         assertThat(stateContext.getLastStatusCheckTime(), is(0L));
@@ -69,7 +69,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void initialStatusRequestIsTriedSeveralTimesBeforeGivingUp() {
+    public void initialStatusRequestIsTriedSeveralTimesBeforeGivingUp() throws InterruptedException {
 
         // always return null
         when(httpClient.sendStatusRequest()).thenReturn(null);
@@ -95,7 +95,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void initialStatusRequestGivesUpWhenShutdownRequestIsSetDuringExecution() {
+    public void initialStatusRequestGivesUpWhenShutdownRequestIsSetDuringExecution() throws InterruptedException {
 
         // always return null
         when(httpClient.sendStatusRequest()).thenReturn(null).thenReturn(null).then(new Answer<StatusResponse>() {

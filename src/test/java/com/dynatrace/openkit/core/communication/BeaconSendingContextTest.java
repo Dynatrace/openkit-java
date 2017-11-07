@@ -129,7 +129,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void testGetClient() {
+    public void testGetHTTPClient() {
 
         HTTPClient mockClient = mock(HTTPClient.class);
         HttpClientConfiguration mockConfiguration = mock(HttpClientConfiguration.class);
@@ -169,7 +169,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void sleepDefaultTime() {
+    public void sleepDefaultTime() throws InterruptedException {
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
 
@@ -182,7 +182,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void sleepWithGivenTime() {
+    public void sleepWithGivenTime() throws InterruptedException {
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
 

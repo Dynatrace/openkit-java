@@ -8,6 +8,10 @@ class BeaconSendingStateCaptureOn extends BeaconSendingState {
 	/** store last received status response */
 	private StatusResponse statusResponse = null;
 
+	BeaconSendingStateCaptureOn() {
+		super(false);
+	}
+
 	@Override
 	void execute(BeaconSendingContext context) {
 
@@ -27,6 +31,7 @@ class BeaconSendingStateCaptureOn extends BeaconSendingState {
 		SessionImpl finishedSession = context.getNextFinishedSession();
 		while (finishedSession != null) {
 			finishedSession.sendBeacon(context.getHTTPClientProvider());
+			finishedSession = context.getNextFinishedSession();
 		}
 	}
 
@@ -43,6 +48,12 @@ class BeaconSendingStateCaptureOn extends BeaconSendingState {
 	}
 
 	private void handleStatusResponse(BeaconSendingContext context) {
+
+		if (context.isShutdownRequested()) {
+			// flush open sessions when shutdown is requested
+			context.setCurrentState(new BeaconSendingFlushSessionsState());
+			return;
+		}
 
 		if (statusResponse == null)
 			return; // nothing to handle

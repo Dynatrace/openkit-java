@@ -9,6 +9,8 @@ public interface TimingProvider {
 
     /**
      * Sleep given amount of milliseconds.
+	 *
+	 * @exception InterruptedException When the sleep call gets interrupted.
      */
-    void sleep(long milliseconds);
+    void sleep(long milliseconds) throws InterruptedException;
 }

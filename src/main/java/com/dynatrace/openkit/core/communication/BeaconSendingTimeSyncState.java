@@ -19,21 +19,33 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
     }
 
     BeaconSendingTimeSyncState(boolean initialTimeSync) {
-        this.initialTimeSync = initialTimeSync;
+		super(false);
+		this.initialTimeSync = initialTimeSync;
     }
 
     @Override
     void execute(BeaconSendingContext context) {
 
-        List<Long> timeSyncOffsets = executeTimeSyncRequests(context);
+		List<Long> timeSyncOffsets;
+		try {
+			timeSyncOffsets = executeTimeSyncRequests(context);
+		} catch (InterruptedException e) {
+			// assume time sync was shut down
+			context.initCompleted(false);
+			context.setCurrentState(new BeaconSendingTerminalState());
+			Thread.currentThread().interrupt(); // re-interrupt
+			return;
+		}
 
-        // time sync requests were *not* successful -> use 0 as cluster time offset
+		// time sync requests were *not* successful -> use 0 as cluster time offset
         if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
             // if this is the initial sync try, we have to initialize the time provider
             // in every other case we keep the previous setting
             if (initialTimeSync) {
                 TimeProvider.initialize(0, false);
             }
+            // FIXXME - stefan.eberl@dynatrace.com - No state transition -> FIX ASAP
+			// -> goto capture off state
             return;
         }
 
@@ -41,12 +53,22 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
 
         // initialize time provider with cluster time offset
         TimeProvider.initialize(clusterTimeOffset, true);
+
+        // advance to next state
+		if (context.isCaptureOn()) {
+			context.setCurrentState(new BeaconSendingStateCaptureOn());
+		} else {
+			context.setCurrentState(new BeaconSendingStateCaptureOff());
+		}
+
+		// mark init being completed
+		context.initCompleted(true);
     }
 
 	/**
 	 * Execute the time synchronisation requests (HTTP requests).
 	 */
-	private List<Long> executeTimeSyncRequests(BeaconSendingContext context) {
+	private List<Long> executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
 
         int retry = 0;
         List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
