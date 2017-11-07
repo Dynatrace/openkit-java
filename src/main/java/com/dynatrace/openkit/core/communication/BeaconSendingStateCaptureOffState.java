@@ -2,18 +2,18 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.StatusResponse;
 
-class BeaconSendingStateCaptureOff extends BeaconSendingState {
+class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
 
 	private static final int STATUS_CHECK_INTERVAL = 2 * 60 * 60 * 1000;	// wait 2h (in ms) for next status request
 
 	private StatusResponse statusResponse;
 
-	BeaconSendingStateCaptureOff() {
+	BeaconSendingStateCaptureOffState() {
 		super(false);
 	}
 
 	@Override
-	void execute(BeaconSendingContext context) {
+	void doExecute(BeaconSendingContext context) {
 
 		long currentTime = context.getCurrentTimestamp();
 
@@ -39,15 +39,20 @@ class BeaconSendingStateCaptureOff extends BeaconSendingState {
 		context.setLastStatusCheckTime(currentTime);
 	}
 
-	private void handleStatusResponse(BeaconSendingContext context) {
+    @Override
+    AbstractBeaconSendingState getShutdownState() {
+        return new BeaconSendingFlushSessionsState();
+    }
+
+    private void handleStatusResponse(BeaconSendingContext context) {
 
 		if (statusResponse == null)
 			return; // nothing to handle
 
 		context.handleStatusResponse(statusResponse);
 		if (context.isCaptureOn()) {
-			// capturing is turned on -> make state transition
-			context.setCurrentState(new BeaconSendingStateCaptureOn());
+			// capturing is turned on -> make state transition to CaptureOne (via TimeSync)
+			context.setCurrentState(new BeaconSendingTimeSyncState(false));
 		}
 	}
 }

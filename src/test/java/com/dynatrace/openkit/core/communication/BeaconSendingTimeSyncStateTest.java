@@ -58,7 +58,7 @@ public class BeaconSendingTimeSyncStateTest {
 		BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
 		// when
-		target.execute(stateContext);
+		target.doExecute(stateContext);
 
 		// verify init was not done
 		assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -81,7 +81,7 @@ public class BeaconSendingTimeSyncStateTest {
 											  .thenReturn(new TimeSyncResponse(responseThree, 200));
 
 		// when both timestamps are negative
-		new BeaconSendingTimeSyncState().execute(stateContext);
+		new BeaconSendingTimeSyncState().doExecute(stateContext);
 
 		// verify init was not done
 		assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -92,7 +92,7 @@ public class BeaconSendingTimeSyncStateTest {
 		verify(timingProvider, times(2)).provideTimestampInMilliseconds();
 
 		// when first timestamp is negative
-		new BeaconSendingTimeSyncState().execute(stateContext);
+		new BeaconSendingTimeSyncState().doExecute(stateContext);
 
 		// verify init was not done
 		assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -103,7 +103,7 @@ public class BeaconSendingTimeSyncStateTest {
 		verify(timingProvider, times(4)).provideTimestampInMilliseconds();
 
 		// when second timestamp is negative
-		new BeaconSendingTimeSyncState().execute(stateContext);
+		new BeaconSendingTimeSyncState().doExecute(stateContext);
 
 		// verify init was not done
 		assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -140,7 +140,7 @@ public class BeaconSendingTimeSyncStateTest {
 		BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
 		// when being executed
-		target.execute(stateContext);
+		target.doExecute(stateContext);
 
 		// verify init was done
 		assertThat(TimeProvider.isTimeSynced(), is(true));

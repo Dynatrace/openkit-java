@@ -27,7 +27,7 @@ public class BeaconSendingContextTest {
     private AbstractConfiguration configuration;
     private HTTPClientProvider httpClientProvider;
     private TimingProvider timingProvider;
-    private BeaconSendingState mockState;
+    private AbstractBeaconSendingState mockState;
 
     @Before
     public void setUp() {
@@ -35,7 +35,7 @@ public class BeaconSendingContextTest {
         configuration = mock(AbstractConfiguration.class);
         httpClientProvider = mock(HTTPClientProvider.class);
         timingProvider = mock(TimingProvider.class);
-        mockState = mock(BeaconSendingState.class);
+        mockState = mock(AbstractBeaconSendingState.class);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class BeaconSendingContextTest {
 
         target.executeCurrentState();
 
-        verify(mockState, times(1)).execute(target);
+        verify(mockState, times(1)).doExecute(target);
     }
 
     @Test

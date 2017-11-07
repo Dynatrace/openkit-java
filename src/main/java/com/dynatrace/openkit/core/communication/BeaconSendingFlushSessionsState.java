@@ -2,14 +2,14 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.SessionImpl;
 
-class BeaconSendingFlushSessionsState extends BeaconSendingState {
+class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
 
 	BeaconSendingFlushSessionsState() {
 		super(false);
 	}
 
 	@Override
-	void execute(BeaconSendingContext context) {
+	void doExecute(BeaconSendingContext context) {
 
 		// end open sessions -> will be finished afterwards
 		SessionImpl[] openSessions = context.getAllOpenSessions();
@@ -27,4 +27,9 @@ class BeaconSendingFlushSessionsState extends BeaconSendingState {
 		// make last state transition to terminal state
 		context.setCurrentState(new BeaconSendingTerminalState());
 	}
+
+    @Override
+    AbstractBeaconSendingState getShutdownState() {
+        return new BeaconSendingTerminalState();
+    }
 }

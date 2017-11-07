@@ -1,21 +1,43 @@
 package com.dynatrace.openkit.core.communication;
 
+import java.util.concurrent.TimeUnit;
+
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
-class BeaconSendingStateCaptureOn extends BeaconSendingState {
+class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
+
+    /** re-execute time sync every two hours */
+    private static long TIME_SYNC_RE_EXECUTE_DURATION = TimeUnit.HOURS.toMillis(2);
 
 	/** store last received status response */
 	private StatusResponse statusResponse = null;
 
-	BeaconSendingStateCaptureOn() {
+	BeaconSendingStateCaptureOnState() {
 		super(false);
 	}
 
 	@Override
-	void execute(BeaconSendingContext context) {
+	void doExecute(BeaconSendingContext context) {
 
-		// send all finished sessions
+	    // every two hours a time sync shall be performed
+        if (isTimeSyncRequired(context)) {
+            context.setCurrentState(new BeaconSendingTimeSyncState());
+            return;
+        }
+
+        try {
+            context.sleep();
+        } catch (InterruptedException e) {
+            // make transition to next state
+            context.setCurrentState(new BeaconSendingFlushSessionsState());
+            Thread.currentThread().interrupt(); // re-interrupt
+            return;
+        }
+
+        statusResponse = null;
+
+        // send all finished sessions
 		sendFinishedSessions(context);
 
 		// check if we need to send open sessions & do it if necessary
@@ -25,7 +47,20 @@ class BeaconSendingStateCaptureOn extends BeaconSendingState {
 		handleStatusResponse(context);
 	}
 
-	private void sendFinishedSessions(BeaconSendingContext context) {
+    @Override
+    AbstractBeaconSendingState getShutdownState() {
+        return new BeaconSendingFlushSessionsState();
+    }
+
+    private boolean isTimeSyncRequired(BeaconSendingContext context) {
+
+	    long timeStamp = context.getCurrentTimestamp();
+
+	    return ((context.getLastTimeSyncTime() < 0) ||
+            ((timeStamp - context.getLastTimeSyncTime()) > TIME_SYNC_RE_EXECUTE_DURATION));
+    }
+
+    private void sendFinishedSessions(BeaconSendingContext context) {
 
 		// check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
 		SessionImpl finishedSession = context.getNextFinishedSession();
@@ -49,19 +84,13 @@ class BeaconSendingStateCaptureOn extends BeaconSendingState {
 
 	private void handleStatusResponse(BeaconSendingContext context) {
 
-		if (context.isShutdownRequested()) {
-			// flush open sessions when shutdown is requested
-			context.setCurrentState(new BeaconSendingFlushSessionsState());
-			return;
-		}
-
 		if (statusResponse == null)
 			return; // nothing to handle
 
 		context.handleStatusResponse(statusResponse);
 		if (!context.isCaptureOn()) {
 			// capturing is turned off -> make state transition
-			context.setCurrentState(new BeaconSendingStateCaptureOff());
+			context.setCurrentState(new BeaconSendingStateCaptureOffState());
 		}
 	}
 }

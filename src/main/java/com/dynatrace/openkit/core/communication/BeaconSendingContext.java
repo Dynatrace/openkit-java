@@ -29,7 +29,7 @@ public class BeaconSendingContext {
     private final LinkedBlockingQueue<SessionImpl> finishedSessions = new LinkedBlockingQueue<SessionImpl>();
 
     /** current state of beacon sender */
-    private BeaconSendingState currentState;
+    private AbstractBeaconSendingState currentState;
 
     /** boolean indicating whether shutdown was requested or not */
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
@@ -38,6 +38,8 @@ public class BeaconSendingContext {
     private long lastOpenSessionBeaconSendTime;
     /** timestamp when last status check was done */
     private long lastStatusCheckTime;
+    /** timestamp when last time sync was done */
+    private long lastTimeSyncTime = -1;
 
     /** countdown latch updated when init was done - which can either be success or failure */
     private final CountDownLatch initCountDownLatch = new CountDownLatch(1);
@@ -63,7 +65,7 @@ public class BeaconSendingContext {
     }
 
     public void executeCurrentState() {
-        currentState.execute(this);
+        currentState.doExecute(this);
     }
 
     public void requestShutdown() {
@@ -84,11 +86,11 @@ public class BeaconSendingContext {
         return initSucceeded;
     }
 
-    void setCurrentState(BeaconSendingState newState) {
+    void setCurrentState(AbstractBeaconSendingState newState) {
         currentState = newState;
     }
 
-    BeaconSendingState getCurrentState() {
+    AbstractBeaconSendingState getCurrentState() {
         return currentState;
     }
 
@@ -164,4 +166,12 @@ public class BeaconSendingContext {
 	SessionImpl[] getAllOpenSessions() {
     	return openSessions.toArray(new SessionImpl[0]);
 	}
+
+	long getLastTimeSyncTime() {
+        return lastTimeSyncTime;
+    }
+
+    void setLastTimeSyncTime(long lastTimeSyncTime) {
+        this.lastTimeSyncTime = lastTimeSyncTime;
+    }
 }

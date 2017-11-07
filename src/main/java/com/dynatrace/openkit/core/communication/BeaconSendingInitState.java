@@ -1,5 +1,7 @@
 package com.dynatrace.openkit.core.communication;
 
+import java.util.concurrent.TimeUnit;
+
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
@@ -9,16 +11,17 @@ import com.dynatrace.openkit.protocol.StatusResponse;
  *     The initial state is used to retrieve the configuration from the server and update the configuration.
  * </p>
  */
-class BeaconSendingInitState extends BeaconSendingState {
+class BeaconSendingInitState extends AbstractBeaconSendingState {
 
     static final int MAX_INITIAL_STATUS_REQUEST_RETRIES = 5;
-    static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = 2 * 1000;
+    static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+
 	BeaconSendingInitState() {
 		super(false);
 	}
 
 	@Override
-    void execute(BeaconSendingContext context) {
+    void doExecute(BeaconSendingContext context) {
 
         long currentTimestamp = context.getCurrentTimestamp();
         context.setLastOpenSessionBeaconSendTime(currentTimestamp);
@@ -31,11 +34,11 @@ class BeaconSendingInitState extends BeaconSendingState {
             retry++;
             statusResponse = context.getHTTPClient().sendStatusRequest();
 
-            // if no (valid) status response was received -> sleep 1s and then retry (max 5 times altogether)
+            // if no (valid) status response was received -> sleep 2s [4s, 8s, ...] and then retry (max 5 times altogether)
             if (statusResponse == null) {
 				try {
 					context.sleep(sleepTimeInMillis);
-					sleepTimeInMillis *= 2; // double sleep time in each iteration
+					sleepTimeInMillis *= 2;
 				} catch (InterruptedException e) {
 					// just make a state transition
 					statusResponse = null;
@@ -55,5 +58,10 @@ class BeaconSendingInitState extends BeaconSendingState {
             context.handleStatusResponse(statusResponse);
             context.setCurrentState(new BeaconSendingTimeSyncState(true));
         }
+    }
+
+    @Override
+    AbstractBeaconSendingState getShutdownState() {
+        return new BeaconSendingTerminalState();
     }
 }

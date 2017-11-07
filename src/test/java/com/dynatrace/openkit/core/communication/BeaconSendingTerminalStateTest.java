@@ -36,9 +36,9 @@ public class BeaconSendingTerminalStateTest {
         // verify shutdown is not set before
         assertThat(stateContext.isShutdownRequested(), is(false));
 
-        // execute the state
+        // doExecute the state
         BeaconSendingTerminalState target = new BeaconSendingTerminalState();
-        target.execute(stateContext);
+        target.doExecute(stateContext);
 
         // verify shutdown is requested now
         assertThat(stateContext.isShutdownRequested(), is(true));

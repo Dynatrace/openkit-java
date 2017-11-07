@@ -6,11 +6,13 @@ import com.dynatrace.openkit.providers.TimeProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-class BeaconSendingTimeSyncState extends BeaconSendingState {
+class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     static final int TIME_SYNC_REQUESTS = 5;
-    static final int TIME_SYNC_RETRY_COUNT = 20;
+    static final int TIME_SYNC_RETRY_COUNT = 5;
+	static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     private final boolean initialTimeSync;
 
@@ -24,7 +26,7 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
     }
 
     @Override
-    void execute(BeaconSendingContext context) {
+    void doExecute(BeaconSendingContext context) {
 
 		List<Long> timeSyncOffsets;
 		try {
@@ -44,8 +46,9 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
             if (initialTimeSync) {
                 TimeProvider.initialize(0, false);
             }
-            // FIXXME - stefan.eberl@dynatrace.com - No state transition -> FIX ASAP
-			// -> goto capture off state
+
+            // if time sync failed, always go to capture off state
+            context.setCurrentState(new BeaconSendingStateCaptureOffState());
             return;
         }
 
@@ -56,26 +59,36 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
 
         // advance to next state
 		if (context.isCaptureOn()) {
-			context.setCurrentState(new BeaconSendingStateCaptureOn());
+			context.setCurrentState(new BeaconSendingStateCaptureOnState());
 		} else {
-			context.setCurrentState(new BeaconSendingStateCaptureOff());
+			context.setCurrentState(new BeaconSendingStateCaptureOffState());
 		}
 
-		// mark init being completed
-		context.initCompleted(true);
+		// mark init being completed if it's the initial time sync
+        if (initialTimeSync) {
+            context.initCompleted(true);
+        }
+        context.setLastTimeSyncTime(context.getCurrentTimestamp());
     }
 
-	/**
+    @Override
+    AbstractBeaconSendingState getShutdownState() {
+        return new BeaconSendingTerminalState();
+    }
+
+    /**
 	 * Execute the time synchronisation requests (HTTP requests).
 	 */
 	private List<Long> executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
 
-        int retry = 0;
         List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
 
+		int retry = 0;
+        long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
+
         // no check for shutdown here, time sync has to be completed
-        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS && retry++ < TIME_SYNC_RETRY_COUNT) {
-            // execute time-sync request and take timestamps
+        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS && retry++ < TIME_SYNC_RETRY_COUNT && !context.isShutdownRequested()) {
+            // doExecute time-sync request and take timestamps
             long requestSendTime = context.getCurrentTimestamp();
             TimeSyncResponse timeSyncResponse = context.getHTTPClient().sendTimeSyncRequest();
             long responseReceiveTime = context.getCurrentTimestamp();
@@ -89,12 +102,15 @@ class BeaconSendingTimeSyncState extends BeaconSendingState {
                     // if yes -> continue time-sync
                     long offset = ((requestReceiveTime - requestSendTime) + (responseSendTime - responseReceiveTime)) / 2;
                     timeSyncOffsets.add(offset);
+                    retry = 0; // on successful response reset the retry count & initial sleep time
+                    sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
                 } else {
                     // if no -> stop time sync, it's not supported
                     break;
                 }
             } else {
-                context.sleep();
+                context.sleep(sleepTimeInMillis);
+                sleepTimeInMillis *= 2;
             }
         }
 

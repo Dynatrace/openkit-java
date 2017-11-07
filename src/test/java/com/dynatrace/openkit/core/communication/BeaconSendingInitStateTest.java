@@ -9,7 +9,6 @@ import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -57,8 +56,8 @@ public class BeaconSendingInitStateTest {
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 
-        // execute
-        target.execute(stateContext);
+        // doExecute
+        target.doExecute(stateContext);
 
         // verify
         assertThat(stateContext.getLastOpenSessionBeaconSendTime(), is(123456789L));
@@ -81,8 +80,8 @@ public class BeaconSendingInitStateTest {
         assertThat(stateContext.getCurrentState(), is(instanceOf(BeaconSendingInitState.class)));
         verifyZeroInteractions(httpClient);
 
-        // execute
-        target.execute(stateContext);
+        // doExecute
+        target.doExecute(stateContext);
 
         // verify
         assertThat(stateContext.isShutdownRequested(), is(true));
@@ -113,8 +112,8 @@ public class BeaconSendingInitStateTest {
         assertThat(stateContext.getCurrentState(), is(instanceOf(BeaconSendingInitState.class)));
         verifyZeroInteractions(httpClient);
 
-        // execute
-        target.execute(stateContext);
+        // doExecute
+        target.doExecute(stateContext);
 
         // verify
         assertThat(stateContext.isShutdownRequested(), is(true));
