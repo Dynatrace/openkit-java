@@ -1,10 +1,13 @@
 package com.dynatrace.openkit.core.communication;
 
+import java.util.concurrent.TimeUnit;
+
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
 
-    private static final int STATUS_CHECK_INTERVAL = 2 * 60 * 60 * 1000;    // wait 2h (in ms) for next status request
+    /** maximum time to wait till next status check */
+    private static final long STATUS_CHECK_INTERVAL = TimeUnit.HOURS.toMillis(2);
 
     private StatusResponse statusResponse;
 
@@ -13,21 +16,13 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
     }
 
     @Override
-    void doExecute(BeaconSendingContext context) {
+    void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        long currentTime = context.getCurrentTimestamp();
+        long currentTime = System.currentTimeMillis(); // TODO stefan.eberl
 
-        long delta = currentTime - (context.getLastStatusCheckTime() + STATUS_CHECK_INTERVAL);
-        if (delta > 0 && !context.isShutdownRequested()) {
-            // still have some time to sleep
-            try {
-                context.sleep(delta);
-            } catch (InterruptedException e) {
-                // sleep was interrupted -> flush session
-                context.setCurrentState(new BeaconSendingFlushSessionsState());
-                Thread.currentThread().interrupt(); // re-interrupt
-                return;
-            }
+        long delta = STATUS_CHECK_INTERVAL - (currentTime - context.getLastStatusCheckTime());
+        if (delta > 0) {
+            context.sleep(delta);
         }
 
         // send the status request
@@ -53,7 +48,10 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
         context.handleStatusResponse(statusResponse);
         if (context.isCaptureOn()) {
             // capturing is turned on -> make state transition to CaptureOne (via TimeSync)
-            context.setCurrentState(new BeaconSendingTimeSyncState(false));
+            AbstractBeaconSendingState nextState = BeaconSendingTimeSyncState.isTimeSyncRequired(context)
+                ? new BeaconSendingTimeSyncState(false)
+                : new BeaconSendingStateCaptureOnState();
+            context.setCurrentState(nextState);
         }
     }
 }

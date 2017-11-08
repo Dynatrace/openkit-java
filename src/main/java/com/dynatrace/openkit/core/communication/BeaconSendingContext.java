@@ -63,6 +63,8 @@ public class BeaconSendingContext {
      * boolean indicating whether init was successful or not
      */
     private boolean initSucceeded = false;
+    /** boolean indicating whether the server supports a time sync (true) or not (false). */
+    private boolean timeSyncSupported = true;
 
     /**
      * Constructor.
@@ -102,6 +104,22 @@ public class BeaconSendingContext {
             Thread.currentThread().interrupt();
         }
         return initSucceeded;
+    }
+
+    public boolean isInTerminalState() {
+        return currentState.isTerminalState();
+    }
+
+    public boolean isCaptureOn() {
+        return configuration.isCapture();
+    }
+
+    public boolean isTimeSyncSupported() {
+        return timeSyncSupported;
+    }
+
+    public void disableTimeSyncSupport() {
+        timeSyncSupported = false;
     }
 
     void setCurrentState(AbstractBeaconSendingState newState) {
@@ -173,10 +191,6 @@ public class BeaconSendingContext {
         finishedSessions.clear();
     }
 
-    boolean isCaptureOn() {
-        return configuration.isCapture();
-    }
-
     SessionImpl getNextFinishedSession() {
         return finishedSessions.poll();
     }
@@ -191,5 +205,17 @@ public class BeaconSendingContext {
 
     void setLastTimeSyncTime(long lastTimeSyncTime) {
         this.lastTimeSyncTime = lastTimeSyncTime;
+    }
+
+    public void startSession(SessionImpl session) {
+
+        openSessions.add(session);
+    }
+
+    public void finishSession(SessionImpl session) {
+
+        if (openSessions.remove(session)) {
+            finishedSessions.add(session);
+        }
     }
 }

@@ -24,7 +24,13 @@ abstract class AbstractBeaconSendingState {
      */
     void execute(BeaconSendingContext context) {
 
-        doExecute(context);
+        try {
+            doExecute(context);
+        } catch (InterruptedException e) {
+            onInterrupted(context);
+            context.requestShutdown();
+            Thread.currentThread().interrupt();
+        }
 
         if (context.isShutdownRequested()) {
             context.setCurrentState(getShutdownState());
@@ -32,11 +38,19 @@ abstract class AbstractBeaconSendingState {
     }
 
     /**
+     * Perform cleanup on interrupt.
+     *
+     * @param context State's context.
+     */
+    void onInterrupted(BeaconSendingContext context) {
+    }
+
+    /**
      * Real state execution.
      *
      * @param context State's context.
      */
-    abstract void doExecute(BeaconSendingContext context);
+    abstract void doExecute(BeaconSendingContext context) throws InterruptedException;
 
     /**
      * Get an instance of the {@link AbstractBeaconSendingState} to which a transition is made upon shutdown request.

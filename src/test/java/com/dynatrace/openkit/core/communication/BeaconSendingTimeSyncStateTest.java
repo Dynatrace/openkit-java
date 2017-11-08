@@ -115,7 +115,7 @@ public class BeaconSendingTimeSyncStateTest {
 	}
 
 	@Test
-	public void successfulTimeSyncInitializesTimeProvider() {
+	public void successfulTimeSyncInitializesTimeProvider() throws InterruptedException {
 
 		// given
 		String responseOne = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7";

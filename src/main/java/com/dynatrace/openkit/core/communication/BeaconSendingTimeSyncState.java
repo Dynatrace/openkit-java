@@ -13,6 +13,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     static final int TIME_SYNC_REQUESTS = 5;
     static final int TIME_SYNC_RETRY_COUNT = 5;
     static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+    static final long TIME_SYNC_INTERVAL_IN_MILLIS = TimeUnit.HOURS.toMillis(2);
 
     private final boolean initialTimeSync;
 
@@ -26,49 +27,25 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     }
 
     @Override
-    void doExecute(BeaconSendingContext context) {
+    void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        List<Long> timeSyncOffsets;
-        try {
-            timeSyncOffsets = executeTimeSyncRequests(context);
-        } catch (InterruptedException e) {
-            // assume time sync was shut down
-            context.initCompleted(false);
-            context.setCurrentState(new BeaconSendingTerminalState());
-            Thread.currentThread().interrupt(); // re-interrupt
+        if (!isTimeSyncRequired(context)) {
+            // make state transition based on configuration - since time sync is not supported or not required
+            setNextState(context);
             return;
         }
 
-        // time sync requests were *not* successful -> use 0 as cluster time offset
-        if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
-            // if this is the initial sync try, we have to initialize the time provider
-            // in every other case we keep the previous setting
-            if (initialTimeSync) {
-                TimeProvider.initialize(0, false);
-            }
+        // execute time sync requests - note during initial sync it might be possible
+        // that the time sync capability is disabled.
+        List<Long> timeSyncOffsets = executeTimeSyncRequests(context);
 
-            // if time sync failed, always go to capture off state
-            context.setCurrentState(new BeaconSendingStateCaptureOffState());
-            return;
-        }
-
-        long clusterTimeOffset = computeClusterTimeOffset(timeSyncOffsets);
-
-        // initialize time provider with cluster time offset
-        TimeProvider.initialize(clusterTimeOffset, true);
-
-        // advance to next state
-        if (context.isCaptureOn()) {
-            context.setCurrentState(new BeaconSendingStateCaptureOnState());
-        } else {
-            context.setCurrentState(new BeaconSendingStateCaptureOffState());
-        }
+        handleTimeSyncResponses(context, timeSyncOffsets);
 
         // mark init being completed if it's the initial time sync
         if (initialTimeSync) {
             context.initCompleted(true);
         }
-        context.setLastTimeSyncTime(context.getCurrentTimestamp());
+        context.setLastTimeSyncTime(System.currentTimeMillis()); // TODO stefan.eberl
     }
 
     @Override
@@ -106,6 +83,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                     sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
                 } else {
                     // if no -> stop time sync, it's not supported
+                    context.disableTimeSyncSupport();
                     break;
                 }
             } else {
@@ -115,6 +93,41 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
 
         return timeSyncOffsets;
+    }
+
+    @Override
+    void onInterrupted(BeaconSendingContext context) {
+
+        if (initialTimeSync) {
+            context.initCompleted(false);
+        }
+    }
+
+    /**
+     * Helper method to check if a time sync is required.
+     *
+     * @return {@code true} if time sync is required, {@code false} otherwise.
+     */
+    static boolean isTimeSyncRequired(BeaconSendingContext context) {
+
+        if (!context.isTimeSyncSupported()) {
+            return false;
+        }
+        // time sync not supported by server, therefore not required
+
+        return ((context.getLastTimeSyncTime() < 0) || (context.getCurrentTimestamp() - context.getLastTimeSyncTime() > TIME_SYNC_INTERVAL_IN_MILLIS));
+    }
+
+    private void handleTimeSyncResponses(BeaconSendingContext context, List<Long> timeSyncOffsets) {
+
+        // time sync requests were *not* successful -> use 0 as cluster time offset
+        if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
+            handleErroneousTimeSyncRequest(context);
+            return;
+        }
+
+        // initialize time provider with cluster time offset
+        TimeProvider.initialize(computeClusterTimeOffset(timeSyncOffsets), true);
     }
 
     private long computeClusterTimeOffset(List<Long> timeSyncOffsets) {
@@ -148,5 +161,33 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
 
         return (long) Math.round(sum / (double) count);
+    }
+
+    private static void setNextState(BeaconSendingContext context) {
+
+        // advance to next state
+        if (context.isCaptureOn()) {
+            context.setCurrentState(new BeaconSendingStateCaptureOnState());
+        } else {
+            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+        }
+    }
+
+
+    private void handleErroneousTimeSyncRequest(BeaconSendingContext context) {
+
+        // if this is the initial sync try, we have to initialize the time provider
+        // in every other case we keep the previous setting
+        if (initialTimeSync) {
+            TimeProvider.initialize(0, false);
+        }
+
+        if (context.isTimeSyncSupported()) {
+            // in case of time sync failure when it's supported, go to capture off state
+            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+        } else {
+            // otherwise set the next state based on the configuration
+            setNextState(context);
+        }
     }
 }

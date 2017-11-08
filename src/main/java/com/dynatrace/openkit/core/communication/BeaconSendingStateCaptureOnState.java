@@ -1,16 +1,9 @@
 package com.dynatrace.openkit.core.communication;
 
-import java.util.concurrent.TimeUnit;
-
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
-
-    /**
-     * re-execute time sync every two hours
-     */
-    private static long TIME_SYNC_RE_EXECUTE_DURATION = TimeUnit.HOURS.toMillis(2);
 
     /**
      * store last received status response
@@ -22,22 +15,15 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
     }
 
     @Override
-    void doExecute(BeaconSendingContext context) {
+    void doExecute(BeaconSendingContext context) throws InterruptedException {
 
         // every two hours a time sync shall be performed
-        if (isTimeSyncRequired(context)) {
+        if (BeaconSendingTimeSyncState.isTimeSyncRequired(context)) {
             context.setCurrentState(new BeaconSendingTimeSyncState());
             return;
         }
 
-        try {
-            context.sleep();
-        } catch (InterruptedException e) {
-            // make transition to next state
-            context.setCurrentState(new BeaconSendingFlushSessionsState());
-            Thread.currentThread().interrupt(); // re-interrupt
-            return;
-        }
+        context.sleep();
 
         statusResponse = null;
 
@@ -56,14 +42,6 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
         return new BeaconSendingFlushSessionsState();
     }
 
-    private boolean isTimeSyncRequired(BeaconSendingContext context) {
-
-        long timeStamp = context.getCurrentTimestamp();
-
-        return ((context.getLastTimeSyncTime() < 0) ||
-            ((timeStamp - context.getLastTimeSyncTime()) > TIME_SYNC_RE_EXECUTE_DURATION));
-    }
-
     private void sendFinishedSessions(BeaconSendingContext context) {
 
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
@@ -76,7 +54,7 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
 
     private void sendOpenSessions(BeaconSendingContext context) {
 
-        long currentTimestamp = context.getCurrentTimestamp();
+        long currentTimestamp = System.currentTimeMillis(); // TODO stefan.eberl
         if (currentTimestamp <= context.getLastOpenSessionBeaconSendTime() + context.getSendInterval()) {
             return; // still some time to send open sessions
         }

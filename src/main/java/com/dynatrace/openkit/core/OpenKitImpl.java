@@ -12,7 +12,11 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
+import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.TimingProvider;
+
+import jdk.nashorn.internal.runtime.Timing;
 
 /**
  * Actual implementation of the {@link OpenKit} interface.
@@ -34,12 +38,12 @@ public class OpenKitImpl implements OpenKit {
 	// *** constructors ***
 
 	public OpenKitImpl(AbstractConfiguration config) {
-		this(config, new DefaultHTTPClientProvider());
+		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider());
 	}
 
-	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider) {
+	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider) {
 		configuration = config;
-		beaconSender = new BeaconSender(configuration, httpClientProvider);
+		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
 		initialized = new AtomicBoolean(false);
 	}
 

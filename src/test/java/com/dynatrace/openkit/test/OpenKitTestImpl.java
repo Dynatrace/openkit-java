@@ -5,7 +5,13 @@
  */
 package com.dynatrace.openkit.test;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
@@ -14,6 +20,7 @@ import com.dynatrace.openkit.providers.TestThreadIDProvider;
 import com.dynatrace.openkit.providers.TestTimeProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
+import com.dynatrace.openkit.providers.TimingProvider;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 
 public class OpenKitTestImpl extends OpenKitImpl {
@@ -21,11 +28,11 @@ public class OpenKitTestImpl extends OpenKitImpl {
 	TestHTTPClientProvider testHttpClientProvider;
 
 	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) {
-		this(config, remoteTest, new TestHTTPClientProvider(remoteTest));
+		this(config, remoteTest, new TestHTTPClientProvider(remoteTest), createMockTimingProvider());
 	}
 
-	private OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest, TestHTTPClientProvider provider) {
-		super(config, provider);
+	private OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest, TestHTTPClientProvider provider, TimingProvider timingProvider) {
+		super(config, provider, timingProvider);
 
 		testHttpClientProvider = provider;
 
@@ -47,5 +54,19 @@ public class OpenKitTestImpl extends OpenKitImpl {
 	public void setTimeSyncResponse(String response, int responseCode) {
 		testHttpClientProvider.setTimeSyncResponse(response, responseCode);
 	}
+
+	private static TimingProvider createMockTimingProvider() {
+
+        TimingProvider provider = mock(TimingProvider.class);
+        when(provider.provideTimestampInMilliseconds()).thenAnswer(new Answer<Long>() {
+
+            @Override
+            public Long answer(InvocationOnMock invocation) throws Throwable {
+                return TimeProvider.getTimestamp();
+            }
+        });
+
+        return provider;
+    }
 
 }

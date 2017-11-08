@@ -58,7 +58,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void executeCurrentStateCallsExecuteOnCurrentState() {
+    public void executeCurrentStateCallsExecuteOnCurrentState() throws InterruptedException {
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
         target.setCurrentState(mockState);

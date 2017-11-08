@@ -21,9 +21,9 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
 	}
 
 	@Override
-    void doExecute(BeaconSendingContext context) {
+    void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        long currentTimestamp = context.getCurrentTimestamp();
+        long currentTimestamp = System.currentTimeMillis(); // TODO stefan.eberl - FIXME
         context.setLastOpenSessionBeaconSendTime(currentTimestamp);
         context.setLastStatusCheckTime(currentTimestamp);
 
@@ -36,21 +36,13 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
 
             // if no (valid) status response was received -> sleep 2s [4s, 8s, ...] and then retry (max 5 times altogether)
             if (statusResponse == null) {
-				try {
-					context.sleep(sleepTimeInMillis);
-					sleepTimeInMillis *= 2;
-				} catch (InterruptedException e) {
-					// just make a state transition
-					statusResponse = null;
-					Thread.currentThread().interrupt();
-					break;
-				}
+                context.sleep(sleepTimeInMillis);
+                sleepTimeInMillis *= 2;
 			}
         } while (!context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES));
 
         if (context.isShutdownRequested() || (statusResponse == null)) {
             // initial configuration request was either terminated from outside or the config could not be retrieved
-            // TODO stefan.eberl@dynatrace.com - Define some better error handling if init failed!
             context.initCompleted(false);
             context.setCurrentState(new BeaconSendingTerminalState());
         } else {
@@ -63,5 +55,11 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     @Override
     AbstractBeaconSendingState getShutdownState() {
         return new BeaconSendingTerminalState();
+    }
+
+    @Override
+    void onInterrupted(BeaconSendingContext context) {
+
+	    context.initCompleted(false);
     }
 }
