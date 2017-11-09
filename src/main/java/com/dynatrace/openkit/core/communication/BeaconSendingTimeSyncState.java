@@ -87,8 +87,10 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                     break;
                 }
             } else {
-                context.sleep(sleepTimeInMillis);
-                sleepTimeInMillis *= 2;
+                if (retry < TIME_SYNC_RETRY_COUNT) {
+                    context.sleep(sleepTimeInMillis);
+                    sleepTimeInMillis *= 2;
+                }
             }
         }
 
