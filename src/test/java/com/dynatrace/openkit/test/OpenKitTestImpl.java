@@ -5,8 +5,8 @@
  */
 package com.dynatrace.openkit.test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 
@@ -27,7 +27,7 @@ public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
-	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) {
+	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) throws InterruptedException {
 		this(config, remoteTest, new TestHTTPClientProvider(remoteTest), createMockTimingProvider());
 	}
 
@@ -55,7 +55,7 @@ public class OpenKitTestImpl extends OpenKitImpl {
 		testHttpClientProvider.setTimeSyncResponse(response, responseCode);
 	}
 
-	private static TimingProvider createMockTimingProvider() {
+	private static TimingProvider createMockTimingProvider() throws InterruptedException {
 
         TimingProvider provider = mock(TimingProvider.class);
         when(provider.provideTimestampInMilliseconds()).thenAnswer(new Answer<Long>() {
@@ -65,6 +65,14 @@ public class OpenKitTestImpl extends OpenKitImpl {
                 return TimeProvider.getTimestamp();
             }
         });
+        doAnswer(new Answer() {
+
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Thread.sleep(invocation.getArgumentAt(0, Long.class));
+                return null;
+            }
+        }).when(provider).sleep(anyLong());
 
         return provider;
     }

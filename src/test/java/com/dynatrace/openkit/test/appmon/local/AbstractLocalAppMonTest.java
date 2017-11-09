@@ -26,7 +26,7 @@ public abstract class AbstractLocalAppMonTest extends AbstractAppMonTest {
 	}
 
 	@Before
-	public void setup() {
+	public void setup() throws InterruptedException {
 		openKitTestImpl = OpenKitTestFactory.createAppMonLocalInstance(TEST_APPLICATION_NAME, TEST_APPLICATION_ID, TEST_ENDPOINT, testConfiguration);
 		openKit = openKitTestImpl;
 		openKit.initialize();

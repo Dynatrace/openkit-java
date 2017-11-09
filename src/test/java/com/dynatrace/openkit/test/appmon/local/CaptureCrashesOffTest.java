@@ -14,7 +14,7 @@ import com.dynatrace.openkit.test.shared.CaptureCrashesOffTestShared;
 
 public class CaptureCrashesOffTest extends AbstractLocalAppMonTest {
 
-	public void setup() {
+	public void setup() throws InterruptedException {
 		CaptureCrashesOffTestShared.setup(testConfiguration);
 		super.setup();
 	}

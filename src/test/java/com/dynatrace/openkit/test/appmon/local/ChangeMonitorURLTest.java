@@ -16,7 +16,7 @@ import com.dynatrace.openkit.test.shared.ChangeMonitorURLTestShared;
 
 public class ChangeMonitorURLTest extends AbstractLocalAppMonTest {
 
-	public void setup() {
+	public void setup() throws InterruptedException {
 		ChangeMonitorURLTestShared.setup(testConfiguration);
 		super.setup();
 	}

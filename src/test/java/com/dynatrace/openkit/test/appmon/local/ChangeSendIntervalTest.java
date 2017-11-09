@@ -16,7 +16,7 @@ import com.dynatrace.openkit.test.shared.ChangeSendIntervalTestShared;
 
 public class ChangeSendIntervalTest extends AbstractLocalAppMonTest {
 
-	public void setup() {
+	public void setup() throws InterruptedException {
 		ChangeSendIntervalTestShared.setup(testConfiguration);
 		super.setup();
 	}
