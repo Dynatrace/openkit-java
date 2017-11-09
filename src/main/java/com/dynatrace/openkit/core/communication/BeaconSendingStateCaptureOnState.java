@@ -5,6 +5,8 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 
 class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
 
+    static final int BEACON_SEND_RETRY_ATTEMPTS = 3;
+
     /**
      * store last received status response
      */
@@ -42,17 +44,17 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
         return new BeaconSendingFlushSessionsState();
     }
 
-    private void sendFinishedSessions(BeaconSendingContext context) {
+    private void sendFinishedSessions(BeaconSendingContext context) throws InterruptedException {
 
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
         SessionImpl finishedSession = context.getNextFinishedSession();
         while (finishedSession != null) {
-            finishedSession.sendBeacon(context.getHTTPClientProvider());
+            finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
             finishedSession = context.getNextFinishedSession();
         }
     }
 
-    private void sendOpenSessions(BeaconSendingContext context) {
+    private void sendOpenSessions(BeaconSendingContext context) throws InterruptedException {
 
         long currentTimestamp = System.currentTimeMillis(); // TODO stefan.eberl
         if (currentTimestamp <= context.getLastOpenSessionBeaconSendTime() + context.getSendInterval()) {
@@ -61,7 +63,7 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
 
         SessionImpl[] openSessions = context.getAllOpenSessions();
         for (SessionImpl session : openSessions) {
-            session.sendBeacon(context.getHTTPClientProvider());
+            session.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
         }
     }
 

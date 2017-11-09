@@ -77,8 +77,8 @@ public class SessionImpl implements Session {
 	// *** public methods ***
 
 	// sends the current Beacon state
-	public StatusResponse sendBeacon(HTTPClientProvider clientProvider) {
-		return beacon.send(clientProvider);
+	public StatusResponse sendBeacon(HTTPClientProvider clientProvider, int numRetries) throws InterruptedException {
+		return beacon.send(clientProvider, numRetries);
 	}
 
 	// *** getter methods ***
