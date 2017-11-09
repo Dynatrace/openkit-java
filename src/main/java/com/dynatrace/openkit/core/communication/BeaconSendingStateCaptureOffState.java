@@ -21,7 +21,7 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        long currentTime = System.currentTimeMillis(); // TODO stefan.eberl
+        long currentTime = context.getCurrentTimestamp();
 
         long delta = STATUS_CHECK_INTERVAL - (currentTime - context.getLastStatusCheckTime());
         if (delta > 0) {

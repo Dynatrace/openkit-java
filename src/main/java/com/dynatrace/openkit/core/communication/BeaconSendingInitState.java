@@ -23,7 +23,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
 	@Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        long currentTimestamp = System.currentTimeMillis(); // TODO stefan.eberl - FIXME
+        long currentTimestamp = context.getCurrentTimestamp();
         context.setLastOpenSessionBeaconSendTime(currentTimestamp);
         context.setLastStatusCheckTime(currentTimestamp);
 

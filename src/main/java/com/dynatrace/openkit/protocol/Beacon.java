@@ -311,8 +311,9 @@ public class Beacon {
         while (retry++ < numRetries) {
 
             response = httpClient.sendBeaconRequest(clientIPAddress, beaconData);
-            if (response != null)
+            if (response != null) {
                 break; // success
+            }
 
             if (retry < numRetries) {
                 Thread.sleep(retrySleepMillis);

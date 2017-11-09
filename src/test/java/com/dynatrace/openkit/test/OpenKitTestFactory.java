@@ -54,5 +54,4 @@ public class OpenKitTestFactory {
 			openKitTestImpl.setTimeSyncResponse(testConfiguration.getTimeSyncResponse(), testConfiguration.getTimeSyncResponseCode());
 		}
 	}
-
 }
