@@ -120,7 +120,7 @@ public class BeaconSender implements Runnable {
 	private void handleStatusResponse(StatusResponse statusResponse) {
 		configuration.updateSettings(statusResponse);
 
-		// if capture is off -> clear Sessions on beacon sender and leave other settings on their current values
+		// if capture is off -> clear Sessions
 		if (!configuration.isCapture()) {
 			clearSessions();
 		}

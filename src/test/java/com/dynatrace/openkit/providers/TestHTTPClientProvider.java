@@ -7,7 +7,7 @@ package com.dynatrace.openkit.providers;
 
 import java.util.ArrayList;
 
-import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.test.TestHTTPClient;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
@@ -29,13 +29,13 @@ public class TestHTTPClientProvider implements HTTPClientProvider {
 	}
 
 	@Override
-	public HTTPClient createClient(HttpClientConfiguration configuration) {
+	public HTTPClient createClient(HTTPClientConfiguration configuration) {
 		if (testHTTPClient != null) {
 			previouslySentRequests.addAll(testHTTPClient.getSentRequests());
 		}
 
-		testHTTPClient = new TestHTTPClient(configuration.getBaseUrl(), configuration.getApplicationId(),
-				configuration.getServerId(), remoteTest, configuration.isVerbose());
+		testHTTPClient = new TestHTTPClient(configuration.getBaseUrl(), configuration.getApplicationID(),
+				configuration.getServerID(), remoteTest, configuration.isVerbose());
 		if (statusResponse != null) {
 			testHTTPClient.setStatusResponse(statusResponse, statusResponseCode);
 		}
