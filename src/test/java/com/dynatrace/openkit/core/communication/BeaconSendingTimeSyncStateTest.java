@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -36,12 +36,12 @@ public class BeaconSendingTimeSyncStateTest {
 		AbstractConfiguration configuration = mock(AbstractConfiguration.class);
 		HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
 		httpClient = mock(HTTPClient.class);
-		HttpClientConfiguration httpClientConfiguration = mock(HttpClientConfiguration.class);
+        HTTPClientConfiguration httpClientConfiguration = mock(HTTPClientConfiguration.class);
 		timingProvider = mock(TimingProvider.class);
 		stateContext = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
 
 		when(configuration.getHttpClientConfig()).thenReturn(httpClientConfiguration);
-		when(httpClientProvider.createClient(any(HttpClientConfiguration.class))).thenReturn(httpClient);
+		when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 	}
 
 	@After

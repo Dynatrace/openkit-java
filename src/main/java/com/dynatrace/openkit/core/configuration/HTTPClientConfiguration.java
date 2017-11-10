@@ -1,20 +1,20 @@
 package com.dynatrace.openkit.core.configuration;
 
 /**
- * The HttpClientConfiguration holds all http client related settings
+ * The HTTPClientConfiguration holds all http client related settings
  */
-public class HttpClientConfiguration {
+public class HTTPClientConfiguration {
 
 	// all fields are immutable
 	private final String baseUrl;
 	private final int serverId;
-	private final String applicationId;
+	private final String applicationID;
 	private final boolean verbose;
 
-	public HttpClientConfiguration(String baseUrl, int serverId, String applicationId, boolean verbose) {
+	public HTTPClientConfiguration(String baseUrl, int serverID, String applicationID, boolean verbose) {
 		this.baseUrl = baseUrl;
-		this.serverId = serverId;
-		this.applicationId = applicationId;
+		this.serverId = serverID;
+		this.applicationID = applicationID;
 		this.verbose = verbose;
 	}
 
@@ -30,14 +30,14 @@ public class HttpClientConfiguration {
 	 *
 	 * @return the server id
 	 */
-	public int getServerId() { return serverId; }
+	public int getServerID() { return serverId; }
 
 	/**
 	 * The application id for the http client
 	 *
 	 * @return the application id
 	 */
-	public String getApplicationId() { return applicationId; }
+	public String getApplicationID() { return applicationID; }
 
 	/**
 	 * If {@code true} logging is enabled

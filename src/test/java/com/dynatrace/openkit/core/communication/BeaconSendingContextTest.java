@@ -1,7 +1,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.core.configuration.HttpClientConfiguration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -132,10 +132,10 @@ public class BeaconSendingContextTest {
     public void testGetHTTPClient() {
 
         HTTPClient mockClient = mock(HTTPClient.class);
-        HttpClientConfiguration mockConfiguration = mock(HttpClientConfiguration.class);
+        HTTPClientConfiguration mockConfiguration = mock(HTTPClientConfiguration.class);
 
         when(configuration.getHttpClientConfig()).thenReturn(mockConfiguration);
-        when(httpClientProvider.createClient(any(HttpClientConfiguration.class))).thenReturn(mockClient);
+        when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(mockClient);
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
 
