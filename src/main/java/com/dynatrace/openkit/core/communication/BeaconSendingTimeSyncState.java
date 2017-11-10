@@ -113,11 +113,11 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     static boolean isTimeSyncRequired(BeaconSendingContext context) {
 
         if (!context.isTimeSyncSupported()) {
-            return false;
+            return false; // time sync not supported by server, therefore not required
         }
-        // time sync not supported by server, therefore not required
 
-        return ((context.getLastTimeSyncTime() < 0) || (context.getCurrentTimestamp() - context.getLastTimeSyncTime() > TIME_SYNC_INTERVAL_IN_MILLIS));
+        return ((context.getLastTimeSyncTime() < 0)
+            || (context.getCurrentTimestamp() - context.getLastTimeSyncTime() > TIME_SYNC_INTERVAL_IN_MILLIS));
     }
 
     private void handleTimeSyncResponses(BeaconSendingContext context, List<Long> timeSyncOffsets) {

@@ -63,7 +63,9 @@ public class BeaconSendingContext {
      * boolean indicating whether init was successful or not
      */
     private boolean initSucceeded = false;
-    /** boolean indicating whether the server supports a time sync (true) or not (false). */
+    /**
+     * boolean indicating whether the server supports a time sync (true) or not (false).
+     */
     private boolean timeSyncSupported = true;
 
     /**

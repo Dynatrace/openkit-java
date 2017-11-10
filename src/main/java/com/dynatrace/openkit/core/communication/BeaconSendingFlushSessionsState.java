@@ -6,29 +6,29 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
 
     static final int BEACON_SEND_RETRY_ATTEMPTS = 1;
 
-	BeaconSendingFlushSessionsState() {
-		super(false);
-	}
+    BeaconSendingFlushSessionsState() {
+        super(false);
+    }
 
-	@Override
-	void doExecute(BeaconSendingContext context) throws InterruptedException {
+    @Override
+    void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-		// end open sessions -> will be finished afterwards
-		SessionImpl[] openSessions = context.getAllOpenSessions();
-		for (SessionImpl openSession : openSessions) {
-			openSession.end();
-		}
+        // end open sessions -> will be finished afterwards
+        SessionImpl[] openSessions = context.getAllOpenSessions();
+        for (SessionImpl openSession : openSessions) {
+            openSession.end();
+        }
 
-		// flush already finished (and previously opened) sessions
-		SessionImpl finishedSession = context.getNextFinishedSession();
-		while (finishedSession != null) {
-			finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
-			finishedSession = context.getNextFinishedSession();
-		}
+        // flush already finished (and previously opened) sessions
+        SessionImpl finishedSession = context.getNextFinishedSession();
+        while (finishedSession != null) {
+            finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
+            finishedSession = context.getNextFinishedSession();
+        }
 
-		// make last state transition to terminal state
-		context.setCurrentState(new BeaconSendingTerminalState());
-	}
+        // make last state transition to terminal state
+        context.setCurrentState(new BeaconSendingTerminalState());
+    }
 
     @Override
     AbstractBeaconSendingState getShutdownState() {

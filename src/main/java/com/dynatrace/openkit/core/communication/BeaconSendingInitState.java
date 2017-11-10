@@ -16,11 +16,11 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     static final int MAX_INITIAL_STATUS_REQUEST_RETRIES = 5;
     static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
-	BeaconSendingInitState() {
-		super(false);
-	}
+    BeaconSendingInitState() {
+        super(false);
+    }
 
-	@Override
+    @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
         long currentTimestamp = context.getCurrentTimestamp();
@@ -38,7 +38,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             if (statusResponse == null && retry < MAX_INITIAL_STATUS_REQUEST_RETRIES) {
                 context.sleep(sleepTimeInMillis);
                 sleepTimeInMillis *= 2;
-			}
+            }
         } while (!context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES));
 
         if (context.isShutdownRequested() || (statusResponse == null)) {
@@ -60,6 +60,6 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     @Override
     void onInterrupted(BeaconSendingContext context) {
 
-	    context.initCompleted(false);
+        context.initCompleted(false);
     }
 }

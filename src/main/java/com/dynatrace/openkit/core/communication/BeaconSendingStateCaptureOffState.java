@@ -6,10 +6,14 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 
 class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
 
-    /** number of retries for the status request */
+    /**
+     * number of retries for the status request
+     */
     static final int STATUS_REQUEST_RETRIES = 5;
     static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
-    /** maximum time to wait till next status check */
+    /**
+     * maximum time to wait till next status check
+     */
     private static final long STATUS_CHECK_INTERVAL = TimeUnit.HOURS.toMillis(2);
 
     private StatusResponse statusResponse;
@@ -49,14 +53,14 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
         while (retry++ < STATUS_REQUEST_RETRIES && !context.isShutdownRequested()) {
 
             statusResponse = context.getHTTPClient().sendStatusRequest();
-            if (statusResponse != null)
+            if (statusResponse != null) {
                 break; // got a response
+            }
 
             if (retry < STATUS_REQUEST_RETRIES) {
                 context.sleep(sleepTimeInMillis);
                 sleepTimeInMillis *= 2;
             }
-
         }
     }
 
