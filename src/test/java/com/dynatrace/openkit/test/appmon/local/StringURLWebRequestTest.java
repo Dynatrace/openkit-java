@@ -20,7 +20,7 @@ public class StringURLWebRequestTest extends AbstractLocalAppMonTest {
 		String tag = StringURLWebRequestTestShared.test(openKit, TEST_IP);
 
 		ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-		String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_ID + "&an=" + TEST_APPLICATION_NAME + "&pt=1&vi=" + testConfiguration.getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1005000&ts=1004000&tx=1011000&et=30&na=http%3A%2F%2Fwww.google.com%2Fsearch.html&it=1&pa=1&s0=2&t0=3000&s1=3&t1=1000&et=19&it=1&pa=0&s0=5&t0=6000&et=1&na=StringUrlWebRequestAction&it=1&ca=1&pa=0&s0=1&t0=2000&s1=4&t1=3000";
+		String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_ID + "&an=" + TEST_APPLICATION_NAME + "&pt=1&vi=" + testConfiguration.getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1006000&ts=1004000&tx=1012000&et=30&na=http%3A%2F%2Fwww.google.com%2Fsearch.html&it=1&pa=1&s0=2&t0=4000&s1=3&t1=1000&et=19&it=1&pa=0&s0=5&t0=7000&et=1&na=StringUrlWebRequestAction&it=1&ca=1&pa=0&s0=1&t0=3000&s1=4&t1=3000";
 		validateDefaultRequests(sentRequests, expectedBeacon);
 
 		String expectedTag = "MT_3_1_" + testConfiguration.getVisitorID() + "_1_" + TEST_APPLICATION_ID + "_1_1_2";

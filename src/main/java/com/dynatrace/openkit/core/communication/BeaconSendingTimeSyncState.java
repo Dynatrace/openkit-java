@@ -45,7 +45,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         if (initialTimeSync) {
             context.initCompleted(true);
         }
-        context.setLastTimeSyncTime(System.currentTimeMillis()); // TODO stefan.eberl
+        context.setLastTimeSyncTime(context.getCurrentTimestamp());
     }
 
     @Override

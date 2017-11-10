@@ -69,7 +69,7 @@ public class OpenKitTestImpl extends OpenKitImpl {
 
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                Thread.sleep(invocation.getArgumentAt(0, Long.class));
+                Thread.sleep(invocation.getArgumentAt(0, Long.class)); // fake times - make sleep longer
                 return null;
             }
         }).when(provider).sleep(anyLong());
