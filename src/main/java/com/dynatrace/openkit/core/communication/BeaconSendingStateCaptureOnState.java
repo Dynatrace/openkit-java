@@ -56,7 +56,7 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
 
     private void sendOpenSessions(BeaconSendingContext context) throws InterruptedException {
 
-        long currentTimestamp = System.currentTimeMillis(); // TODO stefan.eberl
+        long currentTimestamp = context.getCurrentTimestamp();
         if (currentTimestamp <= context.getLastOpenSessionBeaconSendTime() + context.getSendInterval()) {
             return; // still some time to send open sessions
         }

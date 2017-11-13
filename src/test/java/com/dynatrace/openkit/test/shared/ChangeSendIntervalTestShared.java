@@ -22,7 +22,7 @@ public class ChangeSendIntervalTestShared {
 		action1.leaveAction();
 
 		try {
-			Thread.sleep(3000);
+			Thread.sleep(2700);
 		} catch (InterruptedException e) {
 		}
 

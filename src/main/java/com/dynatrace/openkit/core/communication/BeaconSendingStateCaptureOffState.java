@@ -1,8 +1,8 @@
 package com.dynatrace.openkit.core.communication;
 
-import java.util.concurrent.TimeUnit;
-
 import com.dynatrace.openkit.protocol.StatusResponse;
+
+import java.util.concurrent.TimeUnit;
 
 class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
 

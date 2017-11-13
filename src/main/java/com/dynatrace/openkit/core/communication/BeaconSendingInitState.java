@@ -1,14 +1,14 @@
 package com.dynatrace.openkit.core.communication;
 
-import java.util.concurrent.TimeUnit;
-
 import com.dynatrace.openkit.protocol.StatusResponse;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Initial state for beacon sending.
- *
  * <p>
- *     The initial state is used to retrieve the configuration from the server and update the configuration.
+ * <p>
+ * The initial state is used to retrieve the configuration from the server and update the configuration.
  * </p>
  */
 class BeaconSendingInitState extends AbstractBeaconSendingState {
@@ -39,7 +39,8 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
                 context.sleep(sleepTimeInMillis);
                 sleepTimeInMillis *= 2;
             }
-        } while (!context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES));
+        }
+        while (!context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES));
 
         if (context.isShutdownRequested() || (statusResponse == null)) {
             // initial configuration request was either terminated from outside or the config could not be retrieved

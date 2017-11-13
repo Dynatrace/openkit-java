@@ -43,6 +43,7 @@ abstract class AbstractBeaconSendingState {
      * @param context State's context.
      */
     void onInterrupted(BeaconSendingContext context) {
+        // default -> do nothing
     }
 
     /**

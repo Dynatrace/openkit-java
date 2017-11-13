@@ -31,17 +31,18 @@ public class BeaconSendingContext {
      * container storing all finished sessions
      */
     private final LinkedBlockingQueue<SessionImpl> finishedSessions = new LinkedBlockingQueue<SessionImpl>();
-
-    /**
-     * current state of beacon sender
-     */
-    private AbstractBeaconSendingState currentState;
-
     /**
      * boolean indicating whether shutdown was requested or not
      */
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
-
+    /**
+     * countdown latch updated when init was done - which can either be success or failure
+     */
+    private final CountDownLatch initCountDownLatch = new CountDownLatch(1);
+    /**
+     * current state of beacon sender
+     */
+    private AbstractBeaconSendingState currentState;
     /**
      * timestamp when open sessions were last sent
      */
@@ -54,11 +55,6 @@ public class BeaconSendingContext {
      * timestamp when last time sync was done
      */
     private long lastTimeSyncTime = -1;
-
-    /**
-     * countdown latch updated when init was done - which can either be success or failure
-     */
-    private final CountDownLatch initCountDownLatch = new CountDownLatch(1);
     /**
      * boolean indicating whether init was successful or not
      */
@@ -76,8 +72,8 @@ public class BeaconSendingContext {
      * </p>
      */
     public BeaconSendingContext(AbstractConfiguration configuration,
-        HTTPClientProvider httpClientProvider,
-        TimingProvider timingProvider) {
+                                HTTPClientProvider httpClientProvider,
+                                TimingProvider timingProvider) {
 
         this.configuration = configuration;
         this.httpClientProvider = httpClientProvider;
@@ -124,12 +120,12 @@ public class BeaconSendingContext {
         timeSyncSupported = false;
     }
 
-    void setCurrentState(AbstractBeaconSendingState newState) {
-        currentState = newState;
-    }
-
     AbstractBeaconSendingState getCurrentState() {
         return currentState;
+    }
+
+    void setCurrentState(AbstractBeaconSendingState newState) {
+        currentState = newState;
     }
 
     void initCompleted(boolean success) {
@@ -157,20 +153,20 @@ public class BeaconSendingContext {
         timingProvider.sleep(millis);
     }
 
-    void setLastOpenSessionBeaconSendTime(long timestamp) {
-        lastOpenSessionBeaconSendTime = timestamp;
-    }
-
     long getLastOpenSessionBeaconSendTime() {
         return lastOpenSessionBeaconSendTime;
     }
 
-    void setLastStatusCheckTime(long timestamp) {
-        lastStatusCheckTime = timestamp;
+    void setLastOpenSessionBeaconSendTime(long timestamp) {
+        lastOpenSessionBeaconSendTime = timestamp;
     }
 
     long getLastStatusCheckTime() {
         return lastStatusCheckTime;
+    }
+
+    void setLastStatusCheckTime(long timestamp) {
+        lastStatusCheckTime = timestamp;
     }
 
     int getSendInterval() {

@@ -26,6 +26,31 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         this.initialTimeSync = initialTimeSync;
     }
 
+    /**
+     * Helper method to check if a time sync is required.
+     *
+     * @return {@code true} if time sync is required, {@code false} otherwise.
+     */
+    static boolean isTimeSyncRequired(BeaconSendingContext context) {
+
+        if (!context.isTimeSyncSupported()) {
+            return false; // time sync not supported by server, therefore not required
+        }
+
+        return ((context.getLastTimeSyncTime() < 0)
+            || (context.getCurrentTimestamp() - context.getLastTimeSyncTime() > TIME_SYNC_INTERVAL_IN_MILLIS));
+    }
+
+    private static void setNextState(BeaconSendingContext context) {
+
+        // advance to next state
+        if (context.isCaptureOn()) {
+            context.setCurrentState(new BeaconSendingStateCaptureOnState());
+        } else {
+            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+        }
+    }
+
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
@@ -105,21 +130,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
     }
 
-    /**
-     * Helper method to check if a time sync is required.
-     *
-     * @return {@code true} if time sync is required, {@code false} otherwise.
-     */
-    static boolean isTimeSyncRequired(BeaconSendingContext context) {
-
-        if (!context.isTimeSyncSupported()) {
-            return false; // time sync not supported by server, therefore not required
-        }
-
-        return ((context.getLastTimeSyncTime() < 0)
-            || (context.getCurrentTimestamp() - context.getLastTimeSyncTime() > TIME_SYNC_INTERVAL_IN_MILLIS));
-    }
-
     private void handleTimeSyncResponses(BeaconSendingContext context, List<Long> timeSyncOffsets) {
 
         // time sync requests were *not* successful -> use 0 as cluster time offset
@@ -164,17 +174,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         return (long) Math.round(sum / (double) count);
     }
-
-    private static void setNextState(BeaconSendingContext context) {
-
-        // advance to next state
-        if (context.isCaptureOn()) {
-            context.setCurrentState(new BeaconSendingStateCaptureOnState());
-        } else {
-            context.setCurrentState(new BeaconSendingStateCaptureOffState());
-        }
-    }
-
 
     private void handleErroneousTimeSyncRequest(BeaconSendingContext context) {
 
