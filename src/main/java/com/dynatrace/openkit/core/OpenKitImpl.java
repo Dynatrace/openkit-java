@@ -5,8 +5,6 @@
  */
 package com.dynatrace.openkit.core;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.dynatrace.openkit.api.Device;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
@@ -16,7 +14,7 @@ import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-import jdk.nashorn.internal.runtime.Timing;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Actual implementation of the {@link OpenKit} interface.
