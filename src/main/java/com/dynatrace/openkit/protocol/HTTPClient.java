@@ -17,9 +17,7 @@ import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.zip.GZIPOutputStream;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
+import javax.net.ssl.*;
 
 /**
  * HTTP client helper which abstracts the 3 basic request types:
@@ -55,6 +53,10 @@ public class HTTPClient {
 	private static final String QUERY_KEY_SERVER_ID = "srvid";
 	private static final String QUERY_KEY_APPLICATION = "app";
 	private static final String QUERY_KEY_VERSION = "va";
+	private static final String QUERY_KEY_PLATFORM_TYPE = "pt";
+
+	// constant query parameter values
+	private static final String PLATFORM_TYPE_OPENKIT = "1";
 
 	// connection constants
 	private static final int MAX_SEND_RETRIES = 3;
@@ -164,32 +166,45 @@ public class HTTPClient {
 					outputStream.close();
 				}
 
-				// reading HTTP response
-		        byte[] buffer = new byte[1024];
-		        int length = 0;
-		        InputStream inputStream = connection.getInputStream();
-		        StringBuilder responseBuilder = new StringBuilder();
-		        while((length = inputStream.read(buffer)) > 0) {
-		            responseBuilder.append(new String(buffer, 0, length, Beacon.CHARSET));
-		        }
-		        inputStream.close();
+				// get response code
+				int responseCode = connection.getResponseCode();
 
-		        String response = responseBuilder.toString();
-		        int responseCode = connection.getResponseCode();
+				// check response code
+				if (responseCode >= 400) {
+					// process error
 
-				if (verbose) {
-					System.out.println("HTTP Response: " + response);
-					System.out.println("HTTP Response Code: " + responseCode);
+					// read error response
+					String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
+
+					if (verbose) {
+						System.out.println("HTTP Response: " + response);
+						System.out.println("HTTP Response Code: " + responseCode);
+					}
+
+					// return null if error occurred
+					return null;
+
+				} else {
+					// process status response
+
+					// reading HTTP response
+					String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
+
+					if (verbose) {
+						System.out.println("HTTP Response: " + response);
+						System.out.println("HTTP Response Code: " + responseCode);
+					}
+
+					// create typed response based on response content
+					if (response.startsWith(REQUEST_TYPE_TIMESYNC)) {
+						return new TimeSyncResponse(response, responseCode);
+					} else if (response.startsWith(REQUEST_TYPE_MOBILE)) {
+						return new StatusResponse(response, responseCode);
+					} else {
+						return null;
+					}
 				}
 
-				// create typed response based on response content
-				if (response.startsWith(REQUEST_TYPE_TIMESYNC)) {
-					return new TimeSyncResponse(response, responseCode);
-				} else if (response.startsWith(REQUEST_TYPE_MOBILE)) {
-		        	return new StatusResponse(response, responseCode);
-		        } else {
-		        	return null;
-		        }
 			} catch (IOException exception) {
 				retry++;
 				if (retry > MAX_SEND_RETRIES) {
@@ -215,6 +230,7 @@ public class HTTPClient {
 		appendQueryParam(monitorURLBuilder, QUERY_KEY_SERVER_ID, Integer.toString(serverID));
     	appendQueryParam(monitorURLBuilder, QUERY_KEY_APPLICATION, applicationID);
     	appendQueryParam(monitorURLBuilder, QUERY_KEY_VERSION, Beacon.OPENKIT_VERSION);
+    	appendQueryParam(monitorURLBuilder, QUERY_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
 
     	return monitorURLBuilder.toString();
 	}
@@ -259,6 +275,23 @@ public class HTTPClient {
 
 	public int getServerID() {
 		return serverID;
+	}
+
+	private static String readResponse(InputStream inputStream) throws IOException {
+		StringBuilder responseBuilder = new StringBuilder();
+
+		// reading HTTP response
+		try {
+			byte[] buffer = new byte[1024];
+			int length = 0;
+			while((length = inputStream.read(buffer)) > 0) {
+				responseBuilder.append(new String(buffer, 0, length, Beacon.CHARSET));
+			}
+		} finally {
+			inputStream.close();
+		}
+
+		return responseBuilder.toString();
 	}
 
 }
