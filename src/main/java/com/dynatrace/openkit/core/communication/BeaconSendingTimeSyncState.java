@@ -167,9 +167,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // calculate variance from median
         long medianVariance = 0;
-        for (int i = 0;
-             i < TIME_SYNC_REQUESTS;
-             i++) {
+        for (int i = 0; i < TIME_SYNC_REQUESTS; i++) {
             long diff = timeSyncOffsets.get(i) - median;
             medianVariance += diff * diff;
         }
@@ -178,9 +176,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // calculate cluster time offset as arithmetic mean of all offsets that are in range of 1x standard deviation
         long sum = 0;
         long count = 0;
-        for (int i = 0;
-             i < TIME_SYNC_REQUESTS;
-             i++) {
+        for (int i = 0; i < TIME_SYNC_REQUESTS; i++) {
             long diff = timeSyncOffsets.get(i) - median;
             if (diff * diff <= medianVariance) {
                 sum += timeSyncOffsets.get(i);
