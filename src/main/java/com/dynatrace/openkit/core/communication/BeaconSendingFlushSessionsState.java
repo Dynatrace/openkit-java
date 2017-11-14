@@ -2,6 +2,16 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.SessionImpl;
 
+/**
+ * Un this state open sessions are finished. After that all sessions are sent tot the server.
+ *
+ * <p>
+ *     Transition to:
+ *     <ul>
+ *         <li>{@link BeaconSendingTerminalState}</li>
+ *     </ul>
+ * </p>
+ */
 class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
 
     static final int BEACON_SEND_RETRY_ATTEMPTS = 1;

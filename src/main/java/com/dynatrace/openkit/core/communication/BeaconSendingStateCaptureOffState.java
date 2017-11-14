@@ -4,6 +4,19 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * State where no data is captured. Periodically issues a status request to check if capturing shall be re-enabled.
+ * The check interval is defined in {@link BeaconSendingStateCaptureOffState#INITIAL_RETRY_SLEEP_TIME_MILLISECONDS}.
+ *
+ * <p>
+ *     Transition to:
+ *     <ul>
+ *         <li>{@link BeaconSendingTimeSyncState} if capturing is re-enabled and time sync is required</li>
+ *         <li>{@link BeaconSendingStateCaptureOnState} if capturing is re-enabled and time sync is not required</li>
+ *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
+ *     </ul>
+ * </p>
+ */
 class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
 
     /**
@@ -72,7 +85,7 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
 
         context.handleStatusResponse(statusResponse);
         if (context.isCaptureOn()) {
-            // capturing is turned on -> make state transition to CaptureOne (via TimeSync)
+            // capturing is re-enabled again
             AbstractBeaconSendingState nextState = BeaconSendingTimeSyncState.isTimeSyncRequired(context)
                 ? new BeaconSendingTimeSyncState(false)
                 : new BeaconSendingStateCaptureOnState();

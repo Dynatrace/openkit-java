@@ -8,6 +8,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The state responsible for the time sync
+ *
+ * <p>
+ *     In this state a time sync is performed.
+ * </p>
+ *
+ * <p>
+ *     Transition to:
+ *     <ul>
+ *         <li>{@link BeaconSendingStateCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
+ *         <li>{@link BeaconSendingStateCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false})</li>
+ *         <li>{@link BeaconSendingTerminalState} on shutdown</li>
+ *     </ul>
+ * </p>
+ */
 class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     static final int TIME_SYNC_REQUESTS = 5;

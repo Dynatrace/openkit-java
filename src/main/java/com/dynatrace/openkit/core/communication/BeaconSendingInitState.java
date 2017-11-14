@@ -6,9 +6,17 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Initial state for beacon sending.
+ *
  * <p>
+ *     The initial state is used to retrieve the configuration from the server and update the configuration.
+ * </p>
+ *
  * <p>
- * The initial state is used to retrieve the configuration from the server and update the configuration.
+ *     Transition to:
+ *     <ul>
+ *         <li>{@link BeaconSendingTerminalState} if initial status request failed or on shutdown</li>
+ *         <li>{@link BeaconSendingTimeSyncState} if initial status request succeeded</li>
+ *     </ul>
  * </p>
  */
 class BeaconSendingInitState extends AbstractBeaconSendingState {

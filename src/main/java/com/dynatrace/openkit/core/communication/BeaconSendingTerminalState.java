@@ -1,5 +1,8 @@
 package com.dynatrace.openkit.core.communication;
 
+/**
+ * Terminal state for beacon sending.
+ */
 class BeaconSendingTerminalState extends AbstractBeaconSendingState {
 
     BeaconSendingTerminalState() {

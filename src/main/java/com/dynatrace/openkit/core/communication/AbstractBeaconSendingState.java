@@ -2,6 +2,13 @@ package com.dynatrace.openkit.core.communication;
 
 /**
  * Base class for all beacon sending states.
+ *
+ * <p>
+ *     Transition to:
+ *     <ul>
+ *         <li>{@link AbstractBeaconSendingState#getShutdownState()}</li>
+ *     </ul>
+ * </p>
  */
 abstract class AbstractBeaconSendingState {
 
@@ -16,10 +23,10 @@ abstract class AbstractBeaconSendingState {
 
     /**
      * Execute the current state.
+     *
      * <p>
-     * <p>
-     * In case shutdown was requested, a state transition is performed by this method to the {@link AbstractBeaconSendingState}
-     * returned by {@link AbstractBeaconSendingState#getShutdownState()}.
+     *     In case shutdown was requested, a state transition is performed by this method to the {@link AbstractBeaconSendingState}
+     *     returned by {@link AbstractBeaconSendingState#getShutdownState()}.
      * </p>
      */
     void execute(BeaconSendingContext context) {

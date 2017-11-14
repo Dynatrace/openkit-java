@@ -3,6 +3,18 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
+/**
+ * The sending state, when init is completed and capturing is turned on.
+ *
+ * <p>
+ *     Transitions to:
+ *     <ul>
+ *         <li>{@link BeaconSendingTimeSyncState} if {@link BeaconSendingTimeSyncState#isTimeSyncRequired(BeaconSendingContext)} is {@code true}</li>
+ *         <li>{@link BeaconSendingStateCaptureOffState} if capturing is turned off</li>
+ *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
+ *     </ul>
+ * </p>
+ */
 class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
 
     static final int BEACON_SEND_RETRY_ATTEMPTS = 3;
@@ -19,7 +31,6 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        // every two hours a time sync shall be performed
         if (BeaconSendingTimeSyncState.isTimeSyncRequired(context)) {
             context.setCurrentState(new BeaconSendingTimeSyncState());
             return;
