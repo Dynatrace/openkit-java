@@ -166,13 +166,15 @@ public class HTTPClient {
 					outputStream.close();
 				}
 
+				// get response code
+				int responseCode = connection.getResponseCode();
+
 				// check response code
-				if (connection.getResponseCode() >= 400) {
+				if (responseCode >= 400) {
 					// process error
 
 					// read error response
-					String response = readResponse(connection.getErrorStream());
-					int responseCode = connection.getResponseCode();
+					String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
 
 					if (verbose) {
 						System.out.println("HTTP Response: " + response);
@@ -186,8 +188,7 @@ public class HTTPClient {
 					// process status response
 
 					// reading HTTP response
-					String response = readResponse(connection.getInputStream());
-					int responseCode = connection.getResponseCode();
+					String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
 
 					if (verbose) {
 						System.out.println("HTTP Response: " + response);
@@ -277,14 +278,18 @@ public class HTTPClient {
 	}
 
 	private static String readResponse(InputStream inputStream) throws IOException {
-		// reading HTTP response
-		byte[] buffer = new byte[1024];
-		int length = 0;
 		StringBuilder responseBuilder = new StringBuilder();
-		while((length = inputStream.read(buffer)) > 0) {
-			responseBuilder.append(new String(buffer, 0, length, Beacon.CHARSET));
+
+		// reading HTTP response
+		try {
+			byte[] buffer = new byte[1024];
+			int length = 0;
+			while((length = inputStream.read(buffer)) > 0) {
+				responseBuilder.append(new String(buffer, 0, length, Beacon.CHARSET));
+			}
+		} finally {
+			inputStream.close();
 		}
-		inputStream.close();
 
 		return responseBuilder.toString();
 	}
