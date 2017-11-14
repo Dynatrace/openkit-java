@@ -1,155 +1,251 @@
 package com.dynatrace.openkit.core.communication;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import java.util.concurrent.TimeUnit;
-
+import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.TimeSyncResponse;
+import com.dynatrace.openkit.providers.TimeProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
+import org.mockito.InOrder;
 
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
-import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.TimeSyncResponse;
-import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.providers.TimeProvider;
-import com.dynatrace.openkit.providers.TimingProvider;
+import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 public class BeaconSendingTimeSyncStateTest {
 
-	@Rule
-	public Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
+    @Rule
+    public Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
 
-	private HTTPClient httpClient;
-	private TimingProvider timingProvider;
-	private BeaconSendingContext stateContext;
+    private HTTPClient httpClient;
+    private BeaconSendingContext stateContext;
 
-	@Before
-	public void setUp() {
+    @Before
+    public void setUp() {
 
-		AbstractConfiguration configuration = mock(AbstractConfiguration.class);
-		HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
-		httpClient = mock(HTTPClient.class);
-        HTTPClientConfiguration httpClientConfiguration = mock(HTTPClientConfiguration.class);
-		timingProvider = mock(TimingProvider.class);
-		stateContext = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        httpClient = mock(HTTPClient.class);
+        stateContext = mock(BeaconSendingContext.class);
 
-		when(configuration.getHttpClientConfig()).thenReturn(httpClientConfiguration);
-		when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
-	}
+        when(stateContext.isTimeSyncSupported()).thenReturn(true); // by set time sync support to enabled
+        when(stateContext.getLastTimeSyncTime()).thenReturn(-1L);
+        when(stateContext.getHTTPClient()).thenReturn(httpClient);
+    }
 
-	@After
-	public void tearDown() {
-		// reset the TimeProvider
-		TimeProvider.initialize(0, false);
-	}
+    @After
+    public void tearDown() {
+        TimeProvider.initialize(0, false); // reset TimeProvider to default values
+    }
 
-	@Test
-	public void twentyTimeSyncRequestsAreSentToTheServerBeforeGivingUp() throws InterruptedException {
+    @Test
+    public void timeSyncStateIsNotATerminalState() {
 
-		// given
-		when(httpClient.sendTimeSyncRequest()).thenReturn(null);
-		BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+        // given
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
-		// when
-		target.doExecute(stateContext);
+        // when/then
+        assertThat(target.isTerminalState(), is(false));
+    }
 
-		// verify init was not done
-		assertThat(TimeProvider.isTimeSynced(), is(false));
+    @Test
+    public void getShutdownStateGivesABeaconSendingTerminalStateInstance() {
 
-		// then verify the number of retries
-		verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_RETRY_COUNT)).sendTimeSyncRequest();
-		verify(timingProvider, times(BeaconSendingTimeSyncState.TIME_SYNC_RETRY_COUNT)).sleep(BeaconSendingContext.DEFAULT_SLEEP_TIME_MILLISECONDS);
-		verify(timingProvider, times(2 * BeaconSendingTimeSyncState.TIME_SYNC_RETRY_COUNT)).provideTimestampInMilliseconds();
-	}
+        // given
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
-	@Test
-	public void whenTimeSyncIsNotSupportedByTheServerSyncingIsImmediatelyAborted() throws InterruptedException {
+        // when
+        AbstractBeaconSendingState obtained = target.getShutdownState();
 
-		// given
-		String responseOne = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-5&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1";
-		String responseTwo = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-4&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=1";
-		String responseThree = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=4&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1";
-		when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(responseOne, 200))
-											  .thenReturn(new TimeSyncResponse(responseTwo, 200))
-											  .thenReturn(new TimeSyncResponse(responseThree, 200));
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(BeaconSendingTerminalState.class)));
+    }
 
-		// when both timestamps are negative
-		new BeaconSendingTimeSyncState().doExecute(stateContext);
+    @Test
+    public void isTimeSyncRequiredReturnsFalseImmediatelyIfTimeSyncIsNotSupported() {
 
-		// verify init was not done
-		assertThat(TimeProvider.isTimeSynced(), is(false));
+        // given
+        when(stateContext.isTimeSyncSupported()).thenReturn(false);
+        when(stateContext.getLastTimeSyncTime()).thenReturn(-1L);
 
-		// then verify the number of retries
-		verify(httpClient, times(1)).sendTimeSyncRequest();
-		verify(timingProvider, times(0)).sleep(anyLong());
-		verify(timingProvider, times(2)).provideTimestampInMilliseconds();
+        // when/then
+        assertThat(BeaconSendingTimeSyncState.isTimeSyncRequired(stateContext), is(false));
+    }
 
-		// when first timestamp is negative
-		new BeaconSendingTimeSyncState().doExecute(stateContext);
+    @Test
+    public void timeSyncIsRequiredWhenLastTimeSyncTimeIsNegative() {
 
-		// verify init was not done
-		assertThat(TimeProvider.isTimeSynced(), is(false));
+        // given
+        when(stateContext.getLastTimeSyncTime()).thenReturn(-1L);
 
-		// then verify the number of retries
-		verify(httpClient, times(2)).sendTimeSyncRequest();
-		verify(timingProvider, times(0)).sleep(anyLong());
-		verify(timingProvider, times(4)).provideTimestampInMilliseconds();
+        // when/then
+        assertThat(BeaconSendingTimeSyncState.isTimeSyncRequired(stateContext), is(true));
+    }
 
-		// when second timestamp is negative
-		new BeaconSendingTimeSyncState().doExecute(stateContext);
+    @Test
+    public void isTimeSyncRequiredBoundaries() {
 
-		// verify init was not done
-		assertThat(TimeProvider.isTimeSynced(), is(false));
+        // given
+        when(stateContext.getLastTimeSyncTime()).thenReturn(0L);
 
-		// then verify the number of retries
-		verify(httpClient, times(3)).sendTimeSyncRequest();
-		verify(timingProvider, times(0)).sleep(anyLong());
-		verify(timingProvider, times(6)).provideTimestampInMilliseconds();
-	}
+        // when the last sync time is TIME_SYNC_INTERVAL_IN_MILLIS - 1 milliseconds ago
+        when(stateContext.getCurrentTimestamp()).thenReturn(BeaconSendingTimeSyncState.TIME_SYNC_INTERVAL_IN_MILLIS - 1);
 
-	@Test
-	public void successfulTimeSyncInitializesTimeProvider() throws InterruptedException {
+        // then
+        assertThat(BeaconSendingTimeSyncState.isTimeSyncRequired(stateContext), is(false));
 
-		// given
-		String responseOne = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7";
-		String responseTwo = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22";
-		String responseThree = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41";
-		String responseFour = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50";
-		String responseFive = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61";
+        // when the last sync time is TIME_SYNC_INTERVAL_IN_MILLIS milliseconds ago
+        when(stateContext.getCurrentTimestamp()).thenReturn(BeaconSendingTimeSyncState.TIME_SYNC_INTERVAL_IN_MILLIS);
 
-		when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(responseOne, 200))
-				.thenReturn(new TimeSyncResponse(responseTwo, 200))
-				.thenReturn(new TimeSyncResponse(responseThree, 200))
-				.thenReturn(new TimeSyncResponse(responseFour, 200))
-				.thenReturn(new TimeSyncResponse(responseFive, 200));
+        // then
+        assertThat(BeaconSendingTimeSyncState.isTimeSyncRequired(stateContext), is(false));
 
-		when(timingProvider.provideTimestampInMilliseconds())
-				.thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-				.thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-				.thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-				.thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-				.thenReturn(54L).thenReturn(62L); // times on client side for responseFive --> time sync offset = 2
+        // when the last sync time is TIME_SYNC_INTERVAL_IN_MILLIS + 1 milliseconds ago
+        when(stateContext.getCurrentTimestamp()).thenReturn(BeaconSendingTimeSyncState.TIME_SYNC_INTERVAL_IN_MILLIS + 1);
 
-		BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+        // then
+        assertThat(BeaconSendingTimeSyncState.isTimeSyncRequired(stateContext), is(true));
+    }
 
-		// when being executed
-		target.doExecute(stateContext);
+    @Test
+    public void timeSyncNotRequiredAndCaptureOnTruePerformsStateTransitionToCaptureOnState() throws InterruptedException {
 
-		// verify init was done
-		assertThat(TimeProvider.isTimeSynced(), is(true));
-		assertThat(TimeProvider.convertToClusterTime(0), is(2L));
+        // given
+        when(stateContext.isTimeSyncSupported()).thenReturn(false);
+        when(stateContext.isCaptureOn()).thenReturn(true);
 
-		// verify number of method calls
-		verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
-		verify(timingProvider, times(2 * BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).provideTimestampInMilliseconds();
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
-		verifyNoMoreInteractions(timingProvider); // no sleeps
-	}
+        // when
+        target.doExecute(stateContext);
+
+        // then
+        assertThat(TimeProvider.isTimeSynced(), is(false));
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingStateCaptureOnState.class));
+    }
+
+    @Test
+    public void timeSyncNotRequiredAndCaptureOnFalsePerformsStateTransitionToCaptureOffState() throws InterruptedException {
+
+        // given
+        when(stateContext.isTimeSyncSupported()).thenReturn(false);
+        when(stateContext.isCaptureOn()).thenReturn(false);
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when
+        target.doExecute(stateContext);
+
+        // then
+        assertThat(TimeProvider.isTimeSynced(), is(false));
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingStateCaptureOffState.class));
+    }
+
+    @Test
+    public void timeSyncRequestsAreInterruptedAfterUnsuccessfulRetries() throws InterruptedException {
+
+        // given
+        when(httpClient.sendTimeSyncRequest()).thenReturn(null); // unsuccessful
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when
+        target.doExecute(stateContext);
+
+        // then
+        verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
+    }
+
+    @Test
+    public void sleepTimeDoublesBetweenConsecutiveTimeSyncRequests() throws InterruptedException {
+
+        // given
+        when(httpClient.sendTimeSyncRequest()).thenReturn(null); // unsuccessful
+        InOrder inOrder = inOrder(stateContext);
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when
+        target.doExecute(stateContext);
+
+        // then
+        verify(stateContext, times(4)).sleep(anyLong()); // verify it's four, since we have 4 further checks
+        inOrder.verify(stateContext).sleep(BeaconSendingTimeSyncState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
+        inOrder.verify(stateContext).sleep(BeaconSendingTimeSyncState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
+        inOrder.verify(stateContext).sleep(BeaconSendingTimeSyncState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 4);
+        inOrder.verify(stateContext).sleep(BeaconSendingTimeSyncState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
+    }
+
+    @Test
+    public void successfulTimeSyncInitializesTimeProvider() throws InterruptedException {
+
+        // given
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+
+        when(stateContext.getCurrentTimestamp())
+            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+            .thenReturn(66L); // time set as last time sync time
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when being executed
+        target.doExecute(stateContext);
+
+        // verify init was done
+        assertThat(TimeProvider.isTimeSynced(), is(true));
+        assertThat(TimeProvider.convertToClusterTime(0), is(2L));
+
+        // verify number of method calls
+        verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
+        verify(stateContext, times(2 * BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS + 1)).getCurrentTimestamp();
+
+        verify(stateContext, times(1)).setLastTimeSyncTime(66L);
+        verify(stateContext, times(0)).initCompleted(anyBoolean());
+    }
+
+    @Test
+    public void successfulTimeSyncSetSuccessfulInitCompletionInContextWhenItIsInitialTimeSync() throws InterruptedException {
+
+        // given
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+
+        when(stateContext.getCurrentTimestamp())
+            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+            .thenReturn(66L); // time set as last time sync time
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
+
+        // when being executed
+        target.doExecute(stateContext);
+
+        // verify init was done
+        assertThat(TimeProvider.isTimeSynced(), is(true));
+        assertThat(TimeProvider.convertToClusterTime(0), is(2L));
+
+        // verify number of method calls
+        verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
+        verify(stateContext, times(2 * BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS + 1)).getCurrentTimestamp();
+
+        verify(stateContext, times(1)).setLastTimeSyncTime(66L);
+        verify(stateContext, times(1)).initCompleted(true);
+    }
 }

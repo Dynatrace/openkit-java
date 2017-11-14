@@ -1,8 +1,5 @@
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,8 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.isNotNull;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 public class BeaconSendingTerminalStateTest {
 
@@ -25,10 +21,7 @@ public class BeaconSendingTerminalStateTest {
     @Before
     public void setUp() {
 
-        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
-        HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
-        TimingProvider timingProvider = mock(TimingProvider.class);
-        stateContext = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        stateContext = mock(BeaconSendingContext.class);
     }
 
     @Test
@@ -53,20 +46,20 @@ public class BeaconSendingTerminalStateTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained, is(instanceOf(BeaconSendingTerminalState.class)));
-        assertThat((BeaconSendingTerminalState)obtained, is(sameInstance(target)));
+        assertThat((BeaconSendingTerminalState) obtained, is(sameInstance(target)));
     }
 
     @Test
     public void executeRequestsShutdown() {
 
-        // verify shutdown is not set before
-        assertThat(stateContext.isShutdownRequested(), is(false));
+        // given
+        BeaconSendingTerminalState target = new BeaconSendingTerminalState();
 
         // when executing the state
-        BeaconSendingTerminalState target = new BeaconSendingTerminalState();
         target.doExecute(stateContext);
 
         // verify shutdown is requested now
-        assertThat(stateContext.isShutdownRequested(), is(true));
+        verify(stateContext, times(1)).requestShutdown();
+        verifyNoMoreInteractions();
     }
 }

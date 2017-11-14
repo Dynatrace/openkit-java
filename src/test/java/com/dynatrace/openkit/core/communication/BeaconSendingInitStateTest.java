@@ -138,7 +138,7 @@ public class BeaconSendingInitStateTest {
         verify(httpClient, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES)).sendStatusRequest();
 
         // verify sleeps between each retry
-        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES  - 1)).sleep(anyLong());
+        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES - 1)).sleep(anyLong());
     }
 
     @Test
@@ -167,7 +167,11 @@ public class BeaconSendingInitStateTest {
 
         // given
         when(httpClient.sendStatusRequest()).thenReturn(null);
-        when(stateContext.isShutdownRequested()).thenReturn(false).thenReturn(false).thenReturn(false).thenReturn(false).thenReturn(true);
+        when(stateContext.isShutdownRequested()).thenReturn(false)
+                                                .thenReturn(false)
+                                                .thenReturn(false)
+                                                .thenReturn(false)
+                                                .thenReturn(true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 
