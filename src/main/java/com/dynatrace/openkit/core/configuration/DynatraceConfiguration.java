@@ -7,6 +7,13 @@ public class DynatraceConfiguration extends AbstractConfiguration {
 
 	public DynatraceConfiguration(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
 		super(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, verbose);
+
+		setHttpClientConfiguration(
+			new HTTPClientConfiguration(
+				createBaseURL(endpointURL, OpenKitType.DYNATRACE.getDefaultMonitorName()),
+				OpenKitType.DYNATRACE.getDefaultServerID(),
+				applicationID,
+				verbose));
 	}
 
 	@Override

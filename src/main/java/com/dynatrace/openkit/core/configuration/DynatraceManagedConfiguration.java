@@ -10,8 +10,14 @@ public class DynatraceManagedConfiguration extends AbstractConfiguration {
 	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long visitorID,
 			String endpointURL, boolean verbose) {
 		super(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, verbose);
-
 		this.tenantId = tenantId;
+
+        setHttpClientConfiguration(
+            new HTTPClientConfiguration(
+                createBaseURL(endpointURL, OpenKitType.DYNATRACE.getDefaultMonitorName()),
+                OpenKitType.DYNATRACE.getDefaultServerID(),
+                applicationID,
+                verbose));
 	}
 
 	@Override
