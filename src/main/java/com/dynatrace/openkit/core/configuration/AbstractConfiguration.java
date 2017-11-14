@@ -7,6 +7,7 @@ package com.dynatrace.openkit.core.configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.dynatrace.openkit.core.DeviceImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
@@ -37,7 +38,7 @@ public abstract class AbstractConfiguration {
 	private int maxBeaconSize;									// max beacon size; is only written/read by beacon sender thread -> non-atomic
 	private AtomicBoolean captureErrors;						// capture errors on/off; can be written/read by different threads -> atomic
 	private AtomicBoolean captureCrashes;						// capture crashes on/off; can be written/read by different threads -> atomic
-	private HTTPClientConfiguration httpClientConfiguration; 	// the current http client configuration
+    private HTTPClientConfiguration httpClientConfiguration; 	// the current http client configuration
 
 	// application and device settings
 	private String applicationVersion;
@@ -68,12 +69,7 @@ public abstract class AbstractConfiguration {
 
 		device = new DeviceImpl();
 		applicationVersion = null;
-
-		httpClientConfiguration = new HTTPClientConfiguration(
-				createBaseURL(endpointURL, monitorName),
-				openKitType.getDefaultServerID(),
-				applicationID,
-				verbose);
+        httpClientConfiguration = null;
 	}
 
 	// *** public methods ***
@@ -109,21 +105,15 @@ public abstract class AbstractConfiguration {
 			newServerID = openKitType.getDefaultServerID();
 		}
 
-		boolean httpConfigChanged = false;
+		// check if http config changed
 		if (!monitorName.equals(newMonitorName)
 				|| httpClientConfiguration.getServerID() != newServerID) {
-			httpConfigChanged = true;
-		}
-
-		// http config changed -> new config
-		if (httpConfigChanged) {
-			httpClientConfiguration = new HTTPClientConfiguration(
-					createBaseURL(endpointURL, newMonitorName),
-					newServerID,
-					applicationID,
-					verbose);
-
-			monitorName = newMonitorName;
+            httpClientConfiguration = new HTTPClientConfiguration(
+                createBaseURL(endpointURL, newMonitorName),
+                newServerID,
+                applicationID,
+                verbose);
+            monitorName = newMonitorName;
 		}
 
 		// use send interval from beacon response or default
@@ -209,4 +199,8 @@ public abstract class AbstractConfiguration {
 	 * @return
 	 */
 	public HTTPClientConfiguration getHttpClientConfig() { return httpClientConfiguration; }
+
+	protected void setHttpClientConfiguration(HTTPClientConfiguration configuration) {
+	    httpClientConfiguration = configuration;
+    }
 }
