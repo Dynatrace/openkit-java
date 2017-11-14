@@ -10,8 +10,9 @@ import org.junit.rules.Timeout;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.mock;
 
 public class BeaconSendingTerminalStateTest {
@@ -31,12 +32,37 @@ public class BeaconSendingTerminalStateTest {
     }
 
     @Test
+    public void isTerminalStateIsTrueForTheTerminalState() {
+
+        // given
+        BeaconSendingTerminalState target = new BeaconSendingTerminalState();
+
+        // when/then
+        assertThat(target.isTerminalState(), is(true));
+    }
+
+    @Test
+    public void theShutdownStateIsAlwaysTheSameReference() {
+
+        // given
+        BeaconSendingTerminalState target = new BeaconSendingTerminalState();
+
+        // when
+        AbstractBeaconSendingState obtained = target.getShutdownState();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(BeaconSendingTerminalState.class)));
+        assertThat((BeaconSendingTerminalState)obtained, is(sameInstance(target)));
+    }
+
+    @Test
     public void executeRequestsShutdown() {
 
         // verify shutdown is not set before
         assertThat(stateContext.isShutdownRequested(), is(false));
 
-        // doExecute the state
+        // when executing the state
         BeaconSendingTerminalState target = new BeaconSendingTerminalState();
         target.doExecute(stateContext);
 
