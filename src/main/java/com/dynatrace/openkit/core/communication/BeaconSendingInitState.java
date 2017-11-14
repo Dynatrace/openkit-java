@@ -43,12 +43,12 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             statusResponse = context.getHTTPClient().sendStatusRequest();
 
             // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s] and then retry (max 5 times altogether)
-            if (statusResponse == null && retry < MAX_INITIAL_STATUS_REQUEST_RETRIES) {
+            if (retryStatusRequest(context, statusResponse, retry)) {
                 context.sleep(sleepTimeInMillis);
                 sleepTimeInMillis *= 2;
             }
         }
-        while (!context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES));
+        while (retryStatusRequest(context, statusResponse, retry));
 
         if (context.isShutdownRequested() || (statusResponse == null)) {
             // initial configuration request was either terminated from outside or the config could not be retrieved
@@ -59,6 +59,13 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             context.handleStatusResponse(statusResponse);
             context.setCurrentState(new BeaconSendingTimeSyncState(true));
         }
+    }
+
+    private boolean retryStatusRequest(BeaconSendingContext context, StatusResponse statusResponse, int retry) {
+
+        return !context.isShutdownRequested()
+            && (statusResponse == null)
+            && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES);
     }
 
     @Override
