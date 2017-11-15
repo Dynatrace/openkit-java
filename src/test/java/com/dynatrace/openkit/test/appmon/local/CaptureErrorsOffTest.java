@@ -24,7 +24,7 @@ public class CaptureErrorsOffTest extends AbstractLocalAppMonTest {
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
         String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_ID + "&an=" + TEST_APPLICATION_NAME + "&pt=1&vi=" + testConfiguration
-            .getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1006000&ts=1004000&tx=1011000&et=50&na=SEGFAULT+crash&it=1&pa=0&s0=3&t0=5000&rs=sometimes+bad+stuff+happens&st=...&et=19&it=1&pa=0&s0=4&t0=6000&et=1&na=CaptureErrorsOffAction&it=1&ca=1&pa=0&s0=1&t0=3000&s1=2&t1=1000";
+            .getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1005000&ts=1004000&tx=1010000&et=50&na=SEGFAULT+crash&it=1&pa=0&s0=3&t0=4000&rs=sometimes+bad+stuff+happens&st=...&et=19&it=1&pa=0&s0=4&t0=5000&et=1&na=CaptureErrorsOffAction&it=1&ca=1&pa=0&s0=1&t0=2000&s1=2&t1=1000";
         validateDefaultRequests(sentRequests, expectedBeacon);
     }
 

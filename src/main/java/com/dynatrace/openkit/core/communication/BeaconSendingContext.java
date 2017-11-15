@@ -174,7 +174,6 @@ public class BeaconSendingContext {
     }
 
     void handleStatusResponse(StatusResponse statusResponse) {
-
         configuration.updateSettings(statusResponse);
 
         if (!configuration.isCapture()) {
@@ -184,7 +183,6 @@ public class BeaconSendingContext {
     }
 
     private void clearAllSessions() {
-
         openSessions.clear();
         finishedSessions.clear();
     }
@@ -206,12 +204,10 @@ public class BeaconSendingContext {
     }
 
     public void startSession(SessionImpl session) {
-
         openSessions.add(session);
     }
 
     public void finishSession(SessionImpl session) {
-
         if (openSessions.remove(session)) {
             finishedSessions.add(session);
         }

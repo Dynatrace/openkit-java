@@ -6,32 +6,29 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * State where no data is captured. Periodically issues a status request to check if capturing shall be re-enabled.
- * The check interval is defined in {@link BeaconSendingStateCaptureOffState#INITIAL_RETRY_SLEEP_TIME_MILLISECONDS}.
+ * The check interval is defined in {@link BeaconSendingCaptureOffState#INITIAL_RETRY_SLEEP_TIME_MILLISECONDS}.
  *
  * <p>
  *     Transition to:
  *     <ul>
- *         <li>{@link BeaconSendingTimeSyncState} if capturing is re-enabled and time sync is required</li>
- *         <li>{@link BeaconSendingStateCaptureOnState} if capturing is re-enabled and time sync is not required</li>
+ *         <li>{@link BeaconSendingCaptureOnState} if capturing is re-enabled</li>
  *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
  *     </ul>
  * </p>
  */
-class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
+class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
 
     /**
      * number of retries for the status request
      */
-    static final int STATUS_REQUEST_RETRIES = 5;
-    static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+    private static final int STATUS_REQUEST_RETRIES = 5;
+    private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
     /**
      * maximum time to wait till next status check
      */
     private static final long STATUS_CHECK_INTERVAL = TimeUnit.HOURS.toMillis(2);
 
-    private StatusResponse statusResponse;
-
-    BeaconSendingStateCaptureOffState() {
+    BeaconSendingCaptureOffState() {
         super(false);
     }
 
@@ -44,11 +41,8 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
         if (delta > 0) {
             context.sleep(delta);
         }
-
-        statusResponse = null;
-
-        sendStatusRequests(context);
-        handleStatusResponse(context);
+        StatusResponse statusResponse = sendStatusRequest(context);
+        handleStatusResponse(context, statusResponse);
 
         // update the last status check time in any case
         context.setLastStatusCheckTime(currentTime);
@@ -59,25 +53,36 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
         return new BeaconSendingFlushSessionsState();
     }
 
-    private void sendStatusRequests(BeaconSendingContext context) throws InterruptedException {
+    private static StatusResponse sendStatusRequest(BeaconSendingContext context) throws InterruptedException {
 
+        StatusResponse statusResponse;
         int retry = 0;
         long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
-        while (retry++ < STATUS_REQUEST_RETRIES && !context.isShutdownRequested()) {
 
+        while (true) {
             statusResponse = context.getHTTPClient().sendStatusRequest();
-            if (statusResponse != null) {
-                break; // got a response
+
+            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s] and then retry (max 5 times altogether)
+            if (!retryStatusRequest(context, statusResponse, retry)) {
+                break;
             }
 
-            if (retry < STATUS_REQUEST_RETRIES) {
-                context.sleep(sleepTimeInMillis);
-                sleepTimeInMillis *= 2;
-            }
+            context.sleep(sleepTimeInMillis);
+            sleepTimeInMillis *= 2;
+            retry++;
         }
+
+        return statusResponse;
     }
 
-    private void handleStatusResponse(BeaconSendingContext context) {
+    private static boolean retryStatusRequest(BeaconSendingContext context, StatusResponse statusResponse, int retry) {
+
+        return !context.isShutdownRequested()
+            && (statusResponse == null)
+            && (retry < STATUS_REQUEST_RETRIES);
+    }
+
+    private static void handleStatusResponse(BeaconSendingContext context, StatusResponse statusResponse) {
 
         if (statusResponse == null) {
             return; // nothing to handle
@@ -86,10 +91,7 @@ class BeaconSendingStateCaptureOffState extends AbstractBeaconSendingState {
         context.handleStatusResponse(statusResponse);
         if (context.isCaptureOn()) {
             // capturing is re-enabled again
-            AbstractBeaconSendingState nextState = BeaconSendingTimeSyncState.isTimeSyncRequired(context)
-                ? new BeaconSendingTimeSyncState(false)
-                : new BeaconSendingStateCaptureOnState();
-            context.setCurrentState(nextState);
+            context.setCurrentState(new BeaconSendingCaptureOnState());
         }
     }
 }

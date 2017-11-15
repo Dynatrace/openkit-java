@@ -19,7 +19,7 @@ public class ActionValuesTest extends AbstractLocalAppMonTest {
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
         String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_ID + "&an=" + TEST_APPLICATION_NAME + "&pt=1&vi=" + testConfiguration
-            .getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1006000&ts=1004000&tx=1013000&et=13&na=DoubleValue&it=1&pa=1&s0=2&t0=4000&vl=3.141592654&et=12&na=IntValue&it=1&pa=1&s0=3&t0=5000&vl=42&et=11&na=StringValue&it=1&pa=1&s0=4&t0=6000&vl=nice+value%21&et=19&it=1&pa=0&s0=6&t0=8000&et=1&na=ActionValues&it=1&ca=1&pa=0&s0=1&t0=3000&s1=5&t1=4000";
+            .getVisitorID() + "&sn=1&ip=" + TEST_IP + "&tv=1005000&ts=1004000&tx=1012000&et=13&na=DoubleValue&it=1&pa=1&s0=2&t0=3000&vl=3.141592654&et=12&na=IntValue&it=1&pa=1&s0=3&t0=4000&vl=42&et=11&na=StringValue&it=1&pa=1&s0=4&t0=5000&vl=nice+value%21&et=19&it=1&pa=0&s0=6&t0=7000&et=1&na=ActionValues&it=1&ca=1&pa=0&s0=1&t0=2000&s1=5&t1=4000";
         validateDefaultRequests(sentRequests, expectedBeacon);
     }
 

@@ -23,13 +23,13 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        // end open sessions -> will be finished afterwards
+        // end open sessions -> will be flushed afterwards
         SessionImpl[] openSessions = context.getAllOpenSessions();
         for (SessionImpl openSession : openSessions) {
             openSession.end();
         }
 
-        // flush already finished (and previously opened) sessions
+        // flush already finished (and previously ended) sessions
         SessionImpl finishedSession = context.getNextFinishedSession();
         while (finishedSession != null) {
             finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);

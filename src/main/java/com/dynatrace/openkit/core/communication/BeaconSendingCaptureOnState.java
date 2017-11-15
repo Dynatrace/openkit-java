@@ -10,28 +10,30 @@ import com.dynatrace.openkit.protocol.StatusResponse;
  *     Transitions to:
  *     <ul>
  *         <li>{@link BeaconSendingTimeSyncState} if {@link BeaconSendingTimeSyncState#isTimeSyncRequired(BeaconSendingContext)} is {@code true}</li>
- *         <li>{@link BeaconSendingStateCaptureOffState} if capturing is turned off</li>
+ *         <li>{@link BeaconSendingCaptureOffState} if capturing is turned off</li>
  *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
  *     </ul>
  * </p>
  */
-class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
+class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
-    static final int BEACON_SEND_RETRY_ATTEMPTS = 3;
+    private static final int BEACON_SEND_RETRY_ATTEMPTS = 3;
 
     /**
      * store last received status response
      */
     private StatusResponse statusResponse = null;
 
-    BeaconSendingStateCaptureOnState() {
+    BeaconSendingCaptureOnState() {
         super(false);
     }
 
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
+        // check if time sync is required (from time to time a re-sync must be performed)
         if (BeaconSendingTimeSyncState.isTimeSyncRequired(context)) {
+            // time re-sync required -> transition
             context.setCurrentState(new BeaconSendingTimeSyncState());
             return;
         }
@@ -40,14 +42,14 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
 
         statusResponse = null;
 
-        // send all finished sessions
+        // send all finished sessions (this method may set this.statusResponse)
         sendFinishedSessions(context);
 
-        // check if we need to send open sessions & do it if necessary
+        // check if we need to send open sessions & do it if necessary (this method may set this.statusResponse)
         sendOpenSessions(context);
 
-        // check if send interval spent -> send current beacon(s) of open Sessions
-        handleStatusResponse(context);
+        // handle the last statusResponse received (or null if none was received) from the server
+        handleStatusResponse(context, statusResponse);
     }
 
     @Override
@@ -55,30 +57,41 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
         return new BeaconSendingFlushSessionsState();
     }
 
+    /**
+     * Send all sessions which have been finished previously.
+     * @param context Context.
+     */
     private void sendFinishedSessions(BeaconSendingContext context) throws InterruptedException {
 
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
         SessionImpl finishedSession = context.getNextFinishedSession();
         while (finishedSession != null) {
-            finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
+            statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
             finishedSession = context.getNextFinishedSession();
         }
     }
 
+    /**
+     * Check if the send interval (configured by server) has expired and start to send open sessions if it has expired.
+     * @param context
+     * @throws InterruptedException
+     */
     private void sendOpenSessions(BeaconSendingContext context) throws InterruptedException {
 
         long currentTimestamp = context.getCurrentTimestamp();
         if (currentTimestamp <= context.getLastOpenSessionBeaconSendTime() + context.getSendInterval()) {
-            return; // still some time to send open sessions
+            return; // send interval to send open sessions has not expired yet
         }
 
         SessionImpl[] openSessions = context.getAllOpenSessions();
         for (SessionImpl session : openSessions) {
-            session.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
+            statusResponse = session.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
         }
+
+        context.setLastOpenSessionBeaconSendTime(currentTimestamp);
     }
 
-    private void handleStatusResponse(BeaconSendingContext context) {
+    private static void handleStatusResponse(BeaconSendingContext context, StatusResponse statusResponse) {
 
         if (statusResponse == null) {
             return; // nothing to handle
@@ -87,7 +100,7 @@ class BeaconSendingStateCaptureOnState extends AbstractBeaconSendingState {
         context.handleStatusResponse(statusResponse);
         if (!context.isCaptureOn()) {
             // capturing is turned off -> make state transition
-            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+            context.setCurrentState(new BeaconSendingCaptureOffState());
         }
     }
 }

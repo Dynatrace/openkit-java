@@ -60,6 +60,6 @@ public class BeaconSendingTerminalStateTest {
 
         // verify shutdown is requested now
         verify(stateContext, times(1)).requestShutdown();
-        verifyNoMoreInteractions();
+        verifyNoMoreInteractions(stateContext);
     }
 }

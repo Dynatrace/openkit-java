@@ -134,11 +134,11 @@ public class BeaconSendingInitStateTest {
         verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingTerminalState.class)); // state transition to terminal state
 
         // verify that the requests where sent N times - defined as constants in the state itself
-        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES)).getHTTPClient();
-        verify(httpClient, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES)).sendStatusRequest();
+        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES + 1)).getHTTPClient();
+        verify(httpClient, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES + 1)).sendStatusRequest();
 
         // verify sleeps between each retry
-        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES - 1)).sleep(anyLong());
+        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES)).sleep(anyLong());
     }
 
     @Test
@@ -154,11 +154,12 @@ public class BeaconSendingInitStateTest {
         target.doExecute(stateContext);
 
         // then
-        verify(stateContext, times(4)).sleep(anyLong()); // verify it's four, since we have 4 further checks
+        verify(stateContext, times(5)).sleep(anyLong()); // verify it's five, since we have 5 further checks
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 4);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
 
     }
 
@@ -168,8 +169,6 @@ public class BeaconSendingInitStateTest {
         // given
         when(httpClient.sendStatusRequest()).thenReturn(null);
         when(stateContext.isShutdownRequested()).thenReturn(false)
-                                                .thenReturn(false)
-                                                .thenReturn(false)
                                                 .thenReturn(false)
                                                 .thenReturn(true);
 

@@ -304,21 +304,20 @@ public class Beacon {
 
     private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
 
-        StatusResponse response = null;
+        StatusResponse response;
         int retry = 0;
         long retrySleepMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
 
-        while (retry++ < numRetries) {
+        while (true) {
 
             response = httpClient.sendBeaconRequest(clientIPAddress, beaconData);
-            if (response != null) {
-                break; // success
+            if (response != null || (retry >= numRetries)) {
+                break; // success or max retry count reached
             }
 
-            if (retry < numRetries) {
-                Thread.sleep(retrySleepMillis);
-                retrySleepMillis *= 2;
-            }
+            Thread.sleep(retrySleepMillis);
+            retrySleepMillis *= 2;
+            retry++;
         }
 
         return response;

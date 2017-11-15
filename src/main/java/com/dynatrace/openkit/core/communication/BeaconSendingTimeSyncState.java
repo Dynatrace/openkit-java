@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
  * <p>
  *     Transition to:
  *     <ul>
- *         <li>{@link BeaconSendingStateCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
- *         <li>{@link BeaconSendingStateCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false})</li>
+ *         <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
+ *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false})</li>
  *         <li>{@link BeaconSendingTerminalState} on shutdown</li>
  *     </ul>
  * </p>
@@ -61,9 +61,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // advance to next state
         if (context.isCaptureOn()) {
-            context.setCurrentState(new BeaconSendingStateCaptureOnState());
+            context.setCurrentState(new BeaconSendingCaptureOnState());
         } else {
-            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+            context.setCurrentState(new BeaconSendingCaptureOffState());
         }
     }
 
@@ -86,7 +86,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         if (initialTimeSync) {
             context.initCompleted(true);
         }
-        context.setLastTimeSyncTime(context.getCurrentTimestamp());
     }
 
     @Override
@@ -105,7 +104,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
 
         // no check for shutdown here, time sync has to be completed
-        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS && retry++ < TIME_SYNC_RETRY_COUNT && !context.isShutdownRequested()) {
+        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS && !context.isShutdownRequested()) {
             // doExecute time-sync request and take timestamps
             long requestSendTime = context.getCurrentTimestamp();
             TimeSyncResponse timeSyncResponse = context.getHTTPClient().sendTimeSyncRequest();
@@ -127,11 +126,13 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                     context.disableTimeSyncSupport();
                     break;
                 }
+            } else if (retry >= TIME_SYNC_RETRY_COUNT) {
+                // retry limits exceeded
+                break;
             } else {
-                if (retry < TIME_SYNC_RETRY_COUNT) {
-                    context.sleep(sleepTimeInMillis);
-                    sleepTimeInMillis *= 2;
-                }
+                context.sleep(sleepTimeInMillis);
+                sleepTimeInMillis *= 2;
+                retry++;
             }
         }
 
@@ -148,7 +149,10 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     private void handleTimeSyncResponses(BeaconSendingContext context, List<Long> timeSyncOffsets) {
 
-        // time sync requests were *not* successful -> use 0 as cluster time offset
+        // time sync requests were *not* successful
+        // -OR-
+        //
+        // -> use 0 as cluster time offset
         if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
             handleErroneousTimeSyncRequest(context);
             return;
@@ -156,6 +160,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // initialize time provider with cluster time offset
         TimeProvider.initialize(computeClusterTimeOffset(timeSyncOffsets), true);
+
+        // also update the time when last time sync was performed to now
+        context.setLastTimeSyncTime(context.getCurrentTimestamp());
     }
 
     private long computeClusterTimeOffset(List<Long> timeSyncOffsets) {
@@ -197,7 +204,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         if (context.isTimeSyncSupported()) {
             // in case of time sync failure when it's supported, go to capture off state
-            context.setCurrentState(new BeaconSendingStateCaptureOffState());
+            context.setCurrentState(new BeaconSendingCaptureOffState());
         } else {
             // otherwise set the next state based on the configuration
             setNextState(context);
