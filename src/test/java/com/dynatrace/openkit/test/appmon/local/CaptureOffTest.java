@@ -5,30 +5,29 @@
  */
 package com.dynatrace.openkit.test.appmon.local;
 
-import java.util.ArrayList;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.CaptureOffTestShared;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
 
 public class CaptureOffTest extends AbstractLocalAppMonTest {
 
-	public void setup() {
-		CaptureOffTestShared.setup(testConfiguration);
-		super.setup();
-	}
+    public void setup() throws InterruptedException {
+        CaptureOffTestShared.setup(testConfiguration);
+        super.setup();
+    }
 
-	@Test
-	public void test() {
-		CaptureOffTestShared.test(openKit, TEST_IP);
+    @Test
+    public void test() {
+        CaptureOffTestShared.test(openKit, TEST_IP);
 
-		ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-		Assert.assertEquals(2, sentRequests.size());
-		validateRequest(sentRequests.get(0), RequestType.STATUS, "GET", getDefaultEndpoint(), null, "");
-		validateRequest(sentRequests.get(1), RequestType.TIMESYNC, "GET", getDefaultTimeSyncEndpoint(), null, "");
-	}
+        ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
+        Assert.assertEquals(2, sentRequests.size());
+        validateRequest(sentRequests.get(0), RequestType.STATUS, "GET", getDefaultEndpoint(), null, "");
+        validateRequest(sentRequests.get(1), RequestType.TIMESYNC, "GET", getDefaultTimeSyncEndpoint(), null, "");
+    }
 
 }

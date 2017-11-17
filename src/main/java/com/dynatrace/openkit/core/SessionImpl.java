@@ -11,7 +11,6 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
@@ -78,8 +77,8 @@ public class SessionImpl implements Session {
 	// *** public methods ***
 
 	// sends the current Beacon state
-	public StatusResponse sendBeacon(HTTPClientProvider clientProvider) {
-		return beacon.send(clientProvider);
+	public StatusResponse sendBeacon(HTTPClientProvider clientProvider, int numRetries) throws InterruptedException {
+		return beacon.send(clientProvider, numRetries);
 	}
 
 	// *** getter methods ***

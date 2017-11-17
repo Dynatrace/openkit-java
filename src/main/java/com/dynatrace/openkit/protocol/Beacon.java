@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dynatrace.openkit.core.ActionImpl;
@@ -77,6 +78,9 @@ public class Beacon {
 
 	// web request tag prefix constant
 	private static final String TAG_PREFIX = "MT";
+
+	/** Initial time to sleep after the first failed beacon send attempt. */
+    private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
 	// next ID and sequence number
 	private AtomicInteger nextID = new AtomicInteger(0);
@@ -286,19 +290,40 @@ public class Beacon {
 	}
 
 	// send current state of Beacon
-	public StatusResponse send(HTTPClientProvider provider) {
+	public StatusResponse send(HTTPClientProvider provider, int numRetries) throws InterruptedException {
 		HTTPClient httpClient = provider.createClient(httpConfiguration);
 		ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
 		StatusResponse response = null;
 		for (byte[] beaconData : beaconDataChunks) {
-			response = httpClient.sendBeaconRequest(clientIPAddress, beaconData);
+		    response = sendBeaconRequest(httpClient, beaconData, numRetries);
 		}
 
 		// only return last status response for updating the settings
 		return response;
 	}
 
-	// *** private methods ***
+    private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
+
+        StatusResponse response;
+        int retry = 0;
+        long retrySleepMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
+
+        while (true) {
+
+            response = httpClient.sendBeaconRequest(clientIPAddress, beaconData);
+            if (response != null || (retry >= numRetries)) {
+                break; // success or max retry count reached
+            }
+
+            Thread.sleep(retrySleepMillis);
+            retrySleepMillis *= 2;
+            retry++;
+        }
+
+        return response;
+    }
+
+    // *** private methods ***
 
 	// helper method for building events
 	private void buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {

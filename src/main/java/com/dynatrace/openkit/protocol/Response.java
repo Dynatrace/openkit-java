@@ -14,7 +14,7 @@ public abstract class Response {
 
 	// *** constructors ***
 
-	public Response(int responseCode) {
+	Response(int responseCode) {
 		this.responseCode = responseCode;
 	}
 
@@ -23,5 +23,4 @@ public abstract class Response {
 	public int getResponseCode() {
 		return responseCode;
 	}
-
 }
