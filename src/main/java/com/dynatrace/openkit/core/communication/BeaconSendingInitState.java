@@ -39,11 +39,9 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
         int retry = 0;
         long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
 
-        while (true)
-        {
+        while (true) {
             statusResponse = context.getHTTPClient().sendStatusRequest();
-            if (!retryStatusRequest(context, statusResponse, retry))
-            {
+            if (!retryStatusRequest(context, statusResponse, retry)) {
                 break;
             }
 
@@ -65,10 +63,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     }
 
     private boolean retryStatusRequest(BeaconSendingContext context, StatusResponse statusResponse, int retry) {
-
-        return !context.isShutdownRequested()
-            && (statusResponse == null)
-            && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES);
+        return !context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES);
     }
 
     @Override
@@ -78,7 +73,6 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
 
     @Override
     void onInterrupted(BeaconSendingContext context) {
-
         context.initCompleted(false);
     }
 }

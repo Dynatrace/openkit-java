@@ -150,9 +150,11 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     private void handleTimeSyncResponses(BeaconSendingContext context, List<Long> timeSyncOffsets) {
 
         // time sync requests were *not* successful
+        // either because of networking issues
         // -OR-
+        // the server does not support time sync at all (e.g. AppMon).
         //
-        // -> use 0 as cluster time offset
+        // -> handle this case
         if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
             handleErroneousTimeSyncRequest(context);
             return;
