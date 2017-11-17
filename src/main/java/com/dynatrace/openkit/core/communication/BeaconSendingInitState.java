@@ -45,7 +45,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
                 break;
             }
 
-            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s, 16s] and then retry (max 5 times altogether)
+            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s, 16s] and then retry (max 6 times altogether)
             context.sleep(sleepTimeInMillis);
             sleepTimeInMillis *= 2;
             retry++;

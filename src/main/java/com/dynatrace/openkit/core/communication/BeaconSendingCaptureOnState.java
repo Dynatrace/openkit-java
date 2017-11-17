@@ -17,7 +17,7 @@ import com.dynatrace.openkit.protocol.StatusResponse;
  */
 class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
-    private static final int BEACON_SEND_RETRY_ATTEMPTS = 3;
+    private static final int BEACON_SEND_RETRY_ATTEMPTS = 2;
 
     /**
      * store last received status response

@@ -62,7 +62,7 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
         while (true) {
             statusResponse = context.getHTTPClient().sendStatusRequest();
 
-            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s] and then retry (max 5 times altogether)
+            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s, 16s] and then retry (max 6 times altogether)
             if (!retryStatusRequest(context, statusResponse, retry)) {
                 break;
             }

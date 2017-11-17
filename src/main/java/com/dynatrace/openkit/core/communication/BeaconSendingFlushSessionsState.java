@@ -14,7 +14,10 @@ import com.dynatrace.openkit.core.SessionImpl;
  */
 class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
 
-    static final int BEACON_SEND_RETRY_ATTEMPTS = 1;
+    /**
+     * Do not retry beacon sending on error.
+     */
+    static final int BEACON_SEND_RETRY_ATTEMPTS = 0;
 
     BeaconSendingFlushSessionsState() {
         super(false);

@@ -66,9 +66,9 @@ public class BeaconSendingContext {
 
     /**
      * Constructor.
+     *
      * <p>
-     * <p>
-     * The state is initialized to {@link BeaconSendingInitState},
+     *     The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
     public BeaconSendingContext(AbstractConfiguration configuration,
@@ -176,7 +176,7 @@ public class BeaconSendingContext {
     void handleStatusResponse(StatusResponse statusResponse) {
         configuration.updateSettings(statusResponse);
 
-        if (!configuration.isCapture()) {
+        if (!isCaptureOn()) {
             // capturing was turned off
             clearAllSessions();
         }

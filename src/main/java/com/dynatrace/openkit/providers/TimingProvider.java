@@ -1,5 +1,8 @@
 package com.dynatrace.openkit.providers;
 
+/**
+ * Interface providing timing related functionality.
+ */
 public interface TimingProvider {
 
     /**
