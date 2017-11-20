@@ -429,11 +429,23 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncS() throws InterruptedException {
+    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncIsSupportedAndCapturingIsEnabled() throws InterruptedException {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(null);
+        when(stateContext.isCaptureOn()).thenReturn(true);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+        when(stateContext.getCurrentTimestamp())
+            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+            .thenReturn(66L); // time set as last time sync time
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
@@ -441,8 +453,61 @@ public class BeaconSendingTimeSyncStateTest {
         target.doExecute(stateContext);
 
         // then
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
+    }
+
+    @Test
+    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncIsSupportedAndCapturingIsDisabled() throws InterruptedException {
+
+        // given
+        when(stateContext.isTimeSyncSupported()).thenReturn(true);
+        when(stateContext.isCaptureOn()).thenReturn(false);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+        when(stateContext.getCurrentTimestamp())
+            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+            .thenReturn(66L); // time set as last time sync time
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when
+        target.doExecute(stateContext);
+
+        // then
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
         verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
     }
 
+    @Test
+    public void stateTransitionToInitIsMadeIfInitialTimeSyncFails() throws InterruptedException {
 
+        // given
+        when(stateContext.isTimeSyncSupported()).thenReturn(true);
+        when(stateContext.isCaptureOn()).thenReturn(true);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(null);
+        when(stateContext.getCurrentTimestamp())
+            .thenReturn(2L).thenReturn(8L)
+            .thenReturn(10L).thenReturn(23L)
+            .thenReturn(32L).thenReturn(42L)
+            .thenReturn(44L).thenReturn(52L)
+            .thenReturn(54L).thenReturn(62L)
+            .thenReturn(66L);
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
+
+        // when
+        target.doExecute(stateContext);
+
+        // then
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
+        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingInitState.class));
+    }
 }

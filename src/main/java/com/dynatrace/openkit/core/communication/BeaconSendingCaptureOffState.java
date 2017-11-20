@@ -41,7 +41,7 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
         if (delta > 0) {
             context.sleep(delta);
         }
-        StatusResponse statusResponse = sendStatusRequest(context);
+        StatusResponse statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         handleStatusResponse(context, statusResponse);
 
         // update the last status check time in any case
@@ -51,35 +51,6 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
     @Override
     AbstractBeaconSendingState getShutdownState() {
         return new BeaconSendingFlushSessionsState();
-    }
-
-    private static StatusResponse sendStatusRequest(BeaconSendingContext context) throws InterruptedException {
-
-        StatusResponse statusResponse;
-        int retry = 0;
-        long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
-
-        while (true) {
-            statusResponse = context.getHTTPClient().sendStatusRequest();
-
-            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s, 16s] and then retry (max 6 times altogether)
-            if (!retryStatusRequest(context, statusResponse, retry)) {
-                break;
-            }
-
-            context.sleep(sleepTimeInMillis);
-            sleepTimeInMillis *= 2;
-            retry++;
-        }
-
-        return statusResponse;
-    }
-
-    private static boolean retryStatusRequest(BeaconSendingContext context, StatusResponse statusResponse, int retry) {
-
-        return !context.isShutdownRequested()
-            && (statusResponse == null)
-            && (retry < STATUS_REQUEST_RETRIES);
     }
 
     private static void handleStatusResponse(BeaconSendingContext context, StatusResponse statusResponse) {
@@ -95,3 +66,4 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
         }
     }
 }
+

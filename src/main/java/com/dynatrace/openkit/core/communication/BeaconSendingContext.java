@@ -9,6 +9,7 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -16,7 +17,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class BeaconSendingContext {
 
-    static final long DEFAULT_SLEEP_TIME_MILLISECONDS = 1000;
+    /**
+     * Default sleep time in milliseconds (used by {@link #sleep()}).
+     */
+    static final long DEFAULT_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     private final AbstractConfiguration configuration;
     private final HTTPClientProvider httpClientProvider;
@@ -82,18 +86,36 @@ public class BeaconSendingContext {
         currentState = new BeaconSendingInitState();
     }
 
+    /**
+     * Executes the current state.
+     */
     public void executeCurrentState() {
         currentState.execute(this);
     }
 
+    /**
+     * Requests a shutdown.
+     */
     public void requestShutdown() {
         shutdown.set(true);
     }
 
+    /**
+     * Gets a boolean flag indicating whether shutdown was requested before or not.
+     */
     public boolean isShutdownRequested() {
         return shutdown.get();
     }
 
+    /**
+     * Wait until OpenKit has been fully initialized.
+     *
+     * <p>
+     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     * </p>
+     *
+     * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted.
+     */
     public boolean waitForInit() {
         try {
             initCountDownLatch.await();
@@ -104,47 +126,103 @@ public class BeaconSendingContext {
         return initSucceeded;
     }
 
+    /**
+     * Gets a boolean indicating whether the current state is a terminal state or not.
+     *
+     * @return {@code true} if the current state is a terminal state, {@code false} otherwise.
+     */
     public boolean isInTerminalState() {
         return currentState.isTerminalState();
     }
 
+    /**
+     * Gets a boolean flag indicating whether capturing is turned on or off.
+     *
+     * @return {@code true} if capturing is turned on, {@code false} otherwise.
+     */
     public boolean isCaptureOn() {
         return configuration.isCapture();
     }
 
-    public boolean isTimeSyncSupported() {
+    /**
+     * Gets a boolean flag indicating whether time sync is supported or not.
+     *
+     * @return {@code true} if time sync is supported, {@code false} otherwise.
+     */
+    boolean isTimeSyncSupported() {
         return timeSyncSupported;
     }
 
-    public void disableTimeSyncSupport() {
+    /**
+     * Disable the time sync support.
+     *
+     * <p>
+     *     Note: There is no way to re-enable it, because as soon as a server tells OpenKit it does not support
+     *     time syncing, a time sync request is never again re-executed.
+     * </p>
+     */
+    void disableTimeSyncSupport() {
         timeSyncSupported = false;
     }
 
+    /**
+     * Gets the current state.
+     * @return current state.
+     */
     AbstractBeaconSendingState getCurrentState() {
         return currentState;
     }
 
+    /**
+     * Sets the current state.
+     * @param newState The "new" current state, after performing state transition.
+     */
     void setCurrentState(AbstractBeaconSendingState newState) {
         currentState = newState;
     }
 
+    /**
+     * Complete OpenKit initialization.
+     *
+     * <p>
+     *     This will wake up every caller waiting in the {@link #waitForInit()} method.
+     * </p>
+     *
+     * @param success {@code true} if OpenKit was successfully initialized, {@code false} if it was interrupted.
+     */
     void initCompleted(boolean success) {
         initSucceeded = success;
         initCountDownLatch.countDown();
     }
 
+    /**
+     * Gets the HTTP client provider.
+     * @return A class responsible for retrieving an instance of {@link HTTPClient}.
+     */
     HTTPClientProvider getHTTPClientProvider() {
         return httpClientProvider;
     }
 
+    /**
+     * Convenience method to retrieve an HTTP client.
+     * @return HTTP client received from {@link HTTPClientProvider}.
+     */
     HTTPClient getHTTPClient() {
         return httpClientProvider.createClient(configuration.getHttpClientConfig());
     }
 
+    /**
+     * Gets the current timestamp.
+     * @return current timestamp as milliseconds elapsed since epoch (1970-01-01T00:00:00.000)
+     */
     long getCurrentTimestamp() {
         return timingProvider.provideTimestampInMilliseconds();
     }
 
+    /**
+     * Sleep some time ({@link #DEFAULT_SLEEP_TIME_MILLISECONDS}.
+     * @throws InterruptedException When sleeping thread got interrupted.
+     */
     void sleep() throws InterruptedException {
         sleep(DEFAULT_SLEEP_TIME_MILLISECONDS);
     }
