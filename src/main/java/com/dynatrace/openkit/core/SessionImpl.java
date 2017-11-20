@@ -5,8 +5,6 @@
  */
 package com.dynatrace.openkit.core;
 
-import java.util.ArrayList;
-
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
@@ -32,7 +30,7 @@ public class SessionImpl implements Session {
 
 	// *** constructors ***
 
-	public SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender) {
+	SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender) {
 		this.beaconSender = beaconSender;
 
 		// beacon has to be created immediately, as the session start time is taken at beacon construction

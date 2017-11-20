@@ -62,7 +62,7 @@ public class BeaconSendingContext {
     /**
      * boolean indicating whether init was successful or not
      */
-    private boolean initSucceeded = false;
+    private AtomicBoolean initSucceeded = new AtomicBoolean(false);
     /**
      * boolean indicating whether the server supports a time sync (true) or not (false).
      */
@@ -123,7 +123,16 @@ public class BeaconSendingContext {
             requestShutdown();
             Thread.currentThread().interrupt();
         }
-        return initSucceeded;
+        return initSucceeded.get();
+    }
+
+    /**
+     * Get a boolean indicating whether OpenKit is initialized or not.
+     *
+     * @return {@code true} if OpenKit is initialized, {@code false} otherwise.
+     */
+    public boolean isInitialized() {
+        return initSucceeded.get();
     }
 
     /**
@@ -191,7 +200,7 @@ public class BeaconSendingContext {
      * @param success {@code true} if OpenKit was successfully initialized, {@code false} if it was interrupted.
      */
     void initCompleted(boolean success) {
-        initSucceeded = success;
+        initSucceeded.set(success);
         initCountDownLatch.countDown();
     }
 
@@ -227,30 +236,55 @@ public class BeaconSendingContext {
         sleep(DEFAULT_SLEEP_TIME_MILLISECONDS);
     }
 
+    /**
+     * Sleep given amount of milliseconds.
+     *
+     * @param millis The number of milliseconds to sleep.
+     *
+     * @throws InterruptedException When sleeping thread got interrupted.
+     */
     void sleep(long millis) throws InterruptedException {
         timingProvider.sleep(millis);
     }
 
+    /**
+     * Get timestamp when open sessions were sent last.
+     */
     long getLastOpenSessionBeaconSendTime() {
         return lastOpenSessionBeaconSendTime;
     }
 
+    /**
+     * Set timestamp when open sessions were sent last.
+     */
     void setLastOpenSessionBeaconSendTime(long timestamp) {
         lastOpenSessionBeaconSendTime = timestamp;
     }
 
+    /**
+     * Get timestamp when last status check was performed.
+     */
     long getLastStatusCheckTime() {
         return lastStatusCheckTime;
     }
 
+    /**
+     * Set timestamp when last status check was performed.
+     */
     void setLastStatusCheckTime(long timestamp) {
         lastStatusCheckTime = timestamp;
     }
 
+    /**
+     * Get the send interval for open sessions.
+     */
     int getSendInterval() {
         return configuration.getSendInterval();
     }
 
+    /**
+     * Handle the status response received from the server.
+     */
     void handleStatusResponse(StatusResponse statusResponse) {
         configuration.updateSettings(statusResponse);
 
@@ -260,31 +294,76 @@ public class BeaconSendingContext {
         }
     }
 
+    /**
+     * Clear all sessions.
+     */
     private void clearAllSessions() {
         openSessions.clear();
         finishedSessions.clear();
     }
 
+    /**
+     * Gets the next finished session from the list of all finished sessions.
+     *
+     * <p>
+     *     This call also removes the session from the underlying data structure.
+     *     If there are no finished sessions any more, this method returns null.
+     * </p>
+     *
+     * @return A finished session or {@code null} if there is no finished session.
+     */
     SessionImpl getNextFinishedSession() {
         return finishedSessions.poll();
     }
 
+    /**
+     * Gets all open sessions.
+     *
+     * <p>
+     *     This returns a shallow copy of all open sessions.
+     * </p>
+     */
     SessionImpl[] getAllOpenSessions() {
         return openSessions.toArray(new SessionImpl[0]);
     }
 
+    /**
+     * Gets the timestamp when time sync was executed last time.
+     */
     long getLastTimeSyncTime() {
         return lastTimeSyncTime;
     }
 
+    /**
+     * Sets the timestamp when time sync was executed last time.
+     */
     void setLastTimeSyncTime(long lastTimeSyncTime) {
         this.lastTimeSyncTime = lastTimeSyncTime;
     }
 
+    /**
+     * Start a new session.
+     *
+     * <p>
+     *     This add the {@code session} to the internal container of open sessions.
+     * </p>
+     *
+     * @param session The new session to start.
+     */
     public void startSession(SessionImpl session) {
         openSessions.add(session);
     }
 
+    /**
+     * Finish a session which has been started previously using {@link #startSession(SessionImpl)}.
+     *
+     * <p>
+     *     If the session cannot be found in the container storing all open sessions, the parameter is ignored,
+     *     otherwise it's removed from the container storing open sessions and added to the finished session container.
+     * </p>
+     *
+     * @param session The session to finish.
+     */
     public void finishSession(SessionImpl session) {
         if (openSessions.remove(session)) {
             finishedSessions.add(session);

@@ -41,11 +41,15 @@ public class BeaconSender {
 	}
 
     /**
-     * Start and initialize the beacon sending.
+     * Start beacon sender thread.
      *
-     * @return {@code true} if BeaconSender was successfully initialized, {@code false} otherwise.
+     * <p>
+     *     Note: The beacon sender has to perform some initialization code, which is done in the background,
+     *     before it actually starts sending beacons.
+     *     If it's a must to have OpenKit fully initialized use the {@link #waitForInit()} method to wait until initialized.
+     * </p>
      */
-	public boolean initialize() {
+	public void initialize() {
 
 	    // create and start the sending thread
 	    beaconSenderThread = new Thread(new Runnable() {
@@ -58,22 +62,29 @@ public class BeaconSender {
             }
         });
 	    beaconSenderThread.start();
-
-	    // wait until the "init stage" completed
-	    boolean success = context.waitForInit();
-
-	    if (!success) {
-	        // current behaviour: if init was not successful, the BeaconSender thread terminates (wait for it)
-            // NOTE: This will be changed in the future, as there will be several startup strategies
-            try {
-                beaconSenderThread.join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        return success;
 	}
+
+    /**
+     * Wait until OpenKit is fully initialized or a shutdown request has been made.
+     *
+     * <p>
+     *     This method might hang forever.
+     * </p>
+     *
+     * @return {@code true} if OpenKit is fully initialized, or {@code false} if shutdown has been requested during init phase.
+     */
+	public boolean waitForInit() {
+	    return context.waitForInit();
+    }
+
+    /**
+     * Get a boolean indicating whether OpenKit has been initialized or not.
+     *
+     * @return {@code true} if OpenKit has been initialized, {@code false} otherwise.
+     */
+    public boolean isInitialized() {
+	    return context.isInitialized();
+    }
 
     /**
      * Shutdown the BeaconSender and wait until it's shutdown (at most {@link BeaconSender#SHUTDOWN_TIMEOUT} milliseconds.
