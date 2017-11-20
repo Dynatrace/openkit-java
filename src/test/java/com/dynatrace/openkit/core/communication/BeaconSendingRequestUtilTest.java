@@ -50,20 +50,20 @@ public class BeaconSendingRequestUtilTest {
     public void sendStatusRequestIsAbortedIfTheNumberOfRetriesIsExceeded() throws InterruptedException {
 
         // given
-        when(context.isShutdownRequested()).thenReturn(true);
+        when(context.isShutdownRequested()).thenReturn(false);
         when(httpClient.sendStatusRequest()).thenReturn(null);
 
         // when
-        StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 0, 1000L);
+        StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 3, 1000L);
 
         // then
         assertThat(obtained, is(nullValue()));
 
-        verify(context, times(1)).getHTTPClient();
+        verify(context, times(4)).getHTTPClient();
+        verify(context, times(3)).sleep(anyLong());
+        verify(httpClient, times(4)).sendStatusRequest();
 
-        verify(httpClient, times(1)).sendStatusRequest();
-
-        verifyNoMoreInteractions(context, httpClient);
+        verifyNoMoreInteractions(httpClient);
     }
 
     @Test
