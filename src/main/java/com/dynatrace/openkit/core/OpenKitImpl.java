@@ -52,6 +52,11 @@ public class OpenKitImpl implements OpenKit {
 	}
 
 	@Override
+	public boolean waitForInitCompletion(long timeoutMillis) {
+		return beaconSender.waitForInit(timeoutMillis);
+	}
+
+	@Override
 	public boolean isInitialized() {
 		return beaconSender.isInitialized();
 	}

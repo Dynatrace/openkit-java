@@ -50,7 +50,7 @@ public class BeaconSendingContextTest {
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
 
-        target.setCurrentState(mockState);
+        target.setNextState(mockState);
 
         assertThat(target.getCurrentState(), is(sameInstance(mockState)));
     }
@@ -60,7 +60,7 @@ public class BeaconSendingContextTest {
 
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
-        target.setCurrentState(mockState);
+        target.setNextState(mockState);
 
         verifyZeroInteractions(mockState);
 

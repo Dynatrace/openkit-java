@@ -40,7 +40,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         }
 
         // make last state transition to terminal state
-        context.setCurrentState(new BeaconSendingTerminalState());
+        context.setNextState(new BeaconSendingTerminalState());
     }
 
     @Override

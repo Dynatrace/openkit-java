@@ -78,6 +78,17 @@ public class BeaconSender {
     }
 
     /**
+     * Wait until OpenKit is fully initialized or a shutdown request has been made or given timeout expired.
+     *
+     * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
+     *
+     * @return {@code true} if OpenKit is fully initialized, or {@code false} if shutdown has been requested during init phase.
+     */
+    public boolean waitForInit(long timeoutMillis) {
+        return context.waitForInit(timeoutMillis);
+    }
+
+    /**
      * Get a boolean indicating whether OpenKit has been initialized or not.
      *
      * @return {@code true} if OpenKit has been initialized, {@code false} otherwise.

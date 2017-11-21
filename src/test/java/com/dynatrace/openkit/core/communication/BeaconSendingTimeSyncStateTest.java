@@ -147,7 +147,7 @@ public class BeaconSendingTimeSyncStateTest {
 
         // then
         assertThat(TimeProvider.isTimeSynced(), is(false));
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class BeaconSendingTimeSyncStateTest {
 
         // then
         assertThat(TimeProvider.isTimeSynced(), is(false));
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
     }
 
     @Test
@@ -425,7 +425,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.doExecute(stateContext);
 
         // then
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
     }
 
     @Test
@@ -453,8 +453,8 @@ public class BeaconSendingTimeSyncStateTest {
         target.doExecute(stateContext);
 
         // then
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
     }
 
     @Test
@@ -482,8 +482,8 @@ public class BeaconSendingTimeSyncStateTest {
         target.doExecute(stateContext);
 
         // then
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
     }
 
     @Test
@@ -507,7 +507,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.doExecute(stateContext);
 
         // then
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingInitState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingInitState.class));
     }
 }

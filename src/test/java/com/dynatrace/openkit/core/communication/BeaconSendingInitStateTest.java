@@ -7,6 +7,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.TimeUnit;
 
@@ -91,7 +93,8 @@ public class BeaconSendingInitStateTest {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
-        stateContext.requestShutdown(); // requests are not executed, since shutdown is initially requested
+        when(stateContext.isShutdownRequested()).thenReturn(true);
+        when(stateContext.isShutdownRequested()).thenReturn(true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 
@@ -107,7 +110,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
-        stateContext.requestShutdown(); // requests are not executed, since shutdown is initially requested
+        when(stateContext.isShutdownRequested()).thenReturn(true); // requests are not executed, since shutdown is initially requested
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 
@@ -119,34 +122,20 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void initialStatusRequestIsTriedSeveralTimesBeforeGivingUp() throws InterruptedException {
-
-        // given
-        when(httpClient.sendStatusRequest()).thenReturn(null); // always return null -> means erroneous response
-
-        BeaconSendingInitState target = new BeaconSendingInitState();
-
-        // when executing the state
-        target.doExecute(stateContext);
-
-        // then
-        // verify that the requests where sent N times - defined as constants in the state itself
-        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES + 1)).getHTTPClient();
-        verify(httpClient, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES + 1)).sendStatusRequest();
-
-        // verify sleeps between each retry
-        verify(stateContext, times(BeaconSendingInitState.MAX_INITIAL_STATUS_REQUEST_RETRIES)).sleep(anyLong());
-
-        // verify init is not yet complete & no state transition was performed
-        verify(stateContext, times(0)).initCompleted(anyBoolean());
-        verify(stateContext, times(0)).setCurrentState(org.mockito.Matchers.any(BeaconSendingTerminalState.class)); // state transition to terminal state
-    }
-
-    @Test
     public void reInitializeSleepsBeforeSendingStatusRequestsAgain() throws InterruptedException {
 
         // given
+
         when(httpClient.sendStatusRequest()).thenReturn(null); // always return null -> means erroneous response
+        when(stateContext.isShutdownRequested()).thenAnswer(new Answer<Boolean>() {
+            private int count = 0;
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                return count++ > 40;
+            }
+        });
+
         InOrder inOrder = inOrder(stateContext);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
@@ -224,6 +213,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         when(httpClient.sendStatusRequest()).thenReturn(null); // always return null -> means erroneous response
+        when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, true);
         InOrder inOrder = inOrder(stateContext);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
@@ -257,7 +247,7 @@ public class BeaconSendingInitStateTest {
 
         // then
         verify(stateContext, times(1)).initCompleted(false); // int completed with error
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingTerminalState.class)); // state transition to terminal state
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTerminalState.class)); // state transition to terminal state
 
         // verify that the requests where sent N times - defined as constants in the state itself
         verify(stateContext, times(3)).getHTTPClient();
@@ -281,6 +271,6 @@ public class BeaconSendingInitStateTest {
 
         // verify state transition
         verify(stateContext, times(1)).handleStatusResponse(statusResponse);
-        verify(stateContext, times(1)).setCurrentState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
     }
 }

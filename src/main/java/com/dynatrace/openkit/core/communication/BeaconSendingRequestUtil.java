@@ -21,7 +21,7 @@ class BeaconSendingRequestUtil {
      */
     static StatusResponse sendStatusRequest(BeaconSendingContext context, int numRetries, long initialRetryDelayInMillis) throws InterruptedException {
 
-        StatusResponse statusResponse = null;
+        StatusResponse statusResponse;
         long sleepTimeInMillis = initialRetryDelayInMillis;
         int retry = 0;
 
@@ -31,7 +31,7 @@ class BeaconSendingRequestUtil {
                 break;
             }
 
-            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s, 16s] and then retry (max 6 times altogether)
+            // if no (valid) status response was received -> sleep and double the delay for each retry
             context.sleep(sleepTimeInMillis);
             sleepTimeInMillis *= 2;
             retry++;

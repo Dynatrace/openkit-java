@@ -62,9 +62,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // advance to next state
         if (context.isCaptureOn()) {
-            context.setCurrentState(new BeaconSendingCaptureOnState());
+            context.setNextState(new BeaconSendingCaptureOnState());
         } else {
-            context.setCurrentState(new BeaconSendingCaptureOffState());
+            context.setNextState(new BeaconSendingCaptureOffState());
         }
     }
 
@@ -210,7 +210,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         if (context.isTimeSyncSupported()) {
             // server supports time sync
-            context.setCurrentState(initialTimeSync ? new BeaconSendingInitState() : new BeaconSendingCaptureOffState());
+            context.setNextState(initialTimeSync ? new BeaconSendingInitState() : new BeaconSendingCaptureOffState());
         } else {
             // otherwise set the next state based on the configuration
             setNextState(context);

@@ -38,7 +38,7 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
         long currentTime = context.getCurrentTimestamp();
 
         long delta = STATUS_CHECK_INTERVAL - (currentTime - context.getLastStatusCheckTime());
-        if (delta > 0) {
+        if (delta > 0 && !context.isShutdownRequested()) {
             context.sleep(delta);
         }
         StatusResponse statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
@@ -62,7 +62,7 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
         context.handleStatusResponse(statusResponse);
         if (context.isCaptureOn()) {
             // capturing is re-enabled again
-            context.setCurrentState(new BeaconSendingCaptureOnState());
+            context.setNextState(new BeaconSendingCaptureOnState());
         }
     }
 }

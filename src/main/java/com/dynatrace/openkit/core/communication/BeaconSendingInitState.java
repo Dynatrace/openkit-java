@@ -42,10 +42,6 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
      * Index to re-initialize delays.
      */
     private int reInitializeDelayIndex = 0;
-    /**
-     * Boolean indicating whether it's re-initialize or normal initialize.
-     */
-    private boolean isReInitialize = false;
 
     BeaconSendingInitState() {
         super(false);
@@ -54,32 +50,33 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        if (isReInitialize) {
-            // not successful -> OpenKit is re-initialized
+        StatusResponse statusResponse;
+        while (true) {
+            long currentTimestamp = context.getCurrentTimestamp();
+            context.setLastOpenSessionBeaconSendTime(currentTimestamp);
+            context.setLastStatusCheckTime(currentTimestamp);
+
+            statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
+            if (context.isShutdownRequested() || statusResponse != null) {
+                // shutdown was requested or a status response was received
+                break;
+            }
+
+            // status request needs to be sent again after some delay
             context.sleep(RE_INIT_DELAY_MILLISECONDS[reInitializeDelayIndex]);
-            // just in case - increase the delay, if re-init is required more than once
+
             reInitializeDelayIndex = Math.min(reInitializeDelayIndex + 1, RE_INIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
         }
 
-        long currentTimestamp = context.getCurrentTimestamp();
-        context.setLastOpenSessionBeaconSendTime(currentTimestamp);
-        context.setLastStatusCheckTime(currentTimestamp);
-
-        StatusResponse statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         if (context.isShutdownRequested()) {
-            // shutdown was requested, terminate OpenKit beacon sending
+            // shutdown was requested -> go to shutdown state
             context.initCompleted(false);
-            context.setCurrentState(new BeaconSendingTerminalState());
-            return;
+            context.setNextState(getShutdownState());
         }
-
-        if (statusResponse == null) {
-            // not successful -> OpenKit needs to be re-initialized
-            isReInitialize = true;
-        } else {
+        if (statusResponse != null) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
-            context.setCurrentState(new BeaconSendingTimeSyncState(true));
+            context.setNextState(new BeaconSendingTimeSyncState(true));
         }
     }
 

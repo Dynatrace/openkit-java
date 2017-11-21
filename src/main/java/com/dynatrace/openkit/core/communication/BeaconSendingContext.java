@@ -127,6 +127,30 @@ public class BeaconSendingContext {
     }
 
     /**
+     * Wait until OpenKit has been fully initialized or timeout expired.
+     *
+     * <p>
+     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     * </p>
+     *
+     * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
+     *
+     * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted or time to wait expired.
+     */
+    public boolean waitForInit(long timeoutMillis) {
+        try {
+            if (!initCountDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                return false; // timeout expired
+            }
+        } catch (InterruptedException e) {
+            requestShutdown();
+            Thread.currentThread().interrupt();
+        }
+
+        return initSucceeded.get();
+    }
+
+    /**
      * Get a boolean indicating whether OpenKit is initialized or not.
      *
      * @return {@code true} if OpenKit is initialized, {@code false} otherwise.
@@ -183,11 +207,12 @@ public class BeaconSendingContext {
     }
 
     /**
-     * Sets the current state.
-     * @param newState The "new" current state, after performing state transition.
+     * Sets the next state.
+     *
+     * @param nextState Next state when state transition is performed.
      */
-    void setCurrentState(AbstractBeaconSendingState newState) {
-        currentState = newState;
+    void setNextState(AbstractBeaconSendingState nextState) {
+        currentState = nextState;
     }
 
     /**
