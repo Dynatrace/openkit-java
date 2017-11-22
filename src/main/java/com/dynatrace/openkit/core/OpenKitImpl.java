@@ -14,15 +14,10 @@ import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Actual implementation of the {@link OpenKit} interface.
  */
 public class OpenKitImpl implements OpenKit {
-
-	// only set to true after initialized() was called and calls to the OpenKit are allowed
-	private final AtomicBoolean initialized;
 
 	// BeaconSender reference
 	private final BeaconSender beaconSender;
@@ -42,7 +37,6 @@ public class OpenKitImpl implements OpenKit {
 	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider) {
 		configuration = config;
 		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
-		initialized = new AtomicBoolean(false);
 	}
 
 	// *** OpenKit interface methods ***
@@ -50,7 +44,21 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public void initialize() {
 		beaconSender.initialize();
-		initialized.set(true);
+	}
+
+	@Override
+	public boolean waitForInitCompletion() {
+		return beaconSender.waitForInit();
+	}
+
+	@Override
+	public boolean waitForInitCompletion(long timeoutMillis) {
+		return beaconSender.waitForInit(timeoutMillis);
+	}
+
+	@Override
+	public boolean isInitialized() {
+		return beaconSender.isInitialized();
 	}
 
 	@Override
@@ -65,7 +73,7 @@ public class OpenKitImpl implements OpenKit {
 
 	@Override
 	public Session createSession(String clientIPAddress) {
-		if (initialized.get() && configuration.isCapture()) {
+		if (isInitialized() && configuration.isCapture()) {
 			return new SessionImpl(configuration, clientIPAddress, beaconSender);
 		} else {
 			return dummySessionInstance;

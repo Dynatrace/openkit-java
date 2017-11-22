@@ -18,8 +18,9 @@ import java.util.concurrent.TimeUnit;
  * <p>
  *     Transition to:
  *     <ul>
+ *         <li>{@link BeaconSendingInitState} if initial time sync failed</li>
  *         <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
- *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false})</li>
+ *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false}) or time sync failed</li>
  *         <li>{@link BeaconSendingTerminalState} on shutdown</li>
  *     </ul>
  * </p>
@@ -61,9 +62,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // advance to next state
         if (context.isCaptureOn()) {
-            context.setCurrentState(new BeaconSendingCaptureOnState());
+            context.setNextState(new BeaconSendingCaptureOnState());
         } else {
-            context.setCurrentState(new BeaconSendingCaptureOffState());
+            context.setNextState(new BeaconSendingCaptureOffState());
         }
     }
 
@@ -165,6 +166,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // also update the time when last time sync was performed to now
         context.setLastTimeSyncTime(context.getCurrentTimestamp());
+
+        // set the next state
+        setNextState(context);
     }
 
     private long computeClusterTimeOffset(List<Long> timeSyncOffsets) {
@@ -205,8 +209,8 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
 
         if (context.isTimeSyncSupported()) {
-            // in case of time sync failure when it's supported, go to capture off state
-            context.setCurrentState(new BeaconSendingCaptureOffState());
+            // server supports time sync
+            context.setNextState(initialTimeSync ? new BeaconSendingInitState() : new BeaconSendingCaptureOffState());
         } else {
             // otherwise set the next state based on the configuration
             setNextState(context);

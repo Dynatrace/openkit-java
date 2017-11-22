@@ -40,7 +40,7 @@ abstract class AbstractBeaconSendingState {
         }
 
         if (context.isShutdownRequested()) {
-            context.setCurrentState(getShutdownState());
+            context.setNextState(getShutdownState());
         }
     }
 

@@ -9,8 +9,12 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 
 /**
- * Abstract class for providing an HTTP client. Mostly needed for testing purposes.
+ * Interface for providing an HTTP client. Mostly needed for testing purposes.
  */
 public interface HTTPClientProvider {
+
+	/**
+	 * Returns an HTTPClient based on the provided configuration.
+	 */
 	HTTPClient createClient(HTTPClientConfiguration configuration);
 }

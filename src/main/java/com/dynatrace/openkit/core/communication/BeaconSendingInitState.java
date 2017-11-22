@@ -14,15 +14,34 @@ import java.util.concurrent.TimeUnit;
  * <p>
  *     Transition to:
  *     <ul>
- *         <li>{@link BeaconSendingTerminalState} if initial status request failed or on shutdown</li>
+ *         <li>{@link BeaconSendingTerminalState} upon shutdown request</li>
  *         <li>{@link BeaconSendingTimeSyncState} if initial status request succeeded</li>
  *     </ul>
  * </p>
  */
 class BeaconSendingInitState extends AbstractBeaconSendingState {
 
+    /**
+     * Times to use as delay between consecutive re-executions of this state, when no state transition is performed.
+     */
+    static final long[] RE_INIT_DELAY_MILLISECONDS = {
+        TimeUnit.MINUTES.toMillis(1),
+        TimeUnit.MINUTES.toMillis(5),
+        TimeUnit.MINUTES.toMillis(15),
+        TimeUnit.HOURS.toMillis(1),
+        TimeUnit.HOURS.toMillis(2),
+    };
+
+    /**
+     * Maximum number of retries
+     */
     static final int MAX_INITIAL_STATUS_REQUEST_RETRIES = 5;
     static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+
+    /**
+     * Index to re-initialize delays.
+     */
+    private int reinitializeDelayIndex = 0;
 
     BeaconSendingInitState() {
         super(false);
@@ -31,39 +50,34 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        long currentTimestamp = context.getCurrentTimestamp();
-        context.setLastOpenSessionBeaconSendTime(currentTimestamp);
-        context.setLastStatusCheckTime(currentTimestamp);
-
         StatusResponse statusResponse;
-        int retry = 0;
-        long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
-
         while (true) {
-            statusResponse = context.getHTTPClient().sendStatusRequest();
-            if (!retryStatusRequest(context, statusResponse, retry)) {
+            long currentTimestamp = context.getCurrentTimestamp();
+            context.setLastOpenSessionBeaconSendTime(currentTimestamp);
+            context.setLastStatusCheckTime(currentTimestamp);
+
+            statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
+            if (context.isShutdownRequested() || statusResponse != null) {
+                // shutdown was requested or a status response was received
                 break;
             }
 
-            // if no (valid) status response was received -> sleep 1s [2s, 4s, 8s, 16s] and then retry (max 5 times altogether)
-            context.sleep(sleepTimeInMillis);
-            sleepTimeInMillis *= 2;
-            retry++;
+            // status request needs to be sent again after some delay
+            context.sleep(RE_INIT_DELAY_MILLISECONDS[reinitializeDelayIndex]);
+
+            reinitializeDelayIndex = Math.min(reinitializeDelayIndex + 1, RE_INIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
         }
 
-        if (context.isShutdownRequested() || (statusResponse == null)) {
-            // initial configuration request was either terminated from outside or the config could not be retrieved
+        if (context.isShutdownRequested()) {
+            // shutdown was requested -> go to shutdown state
             context.initCompleted(false);
-            context.setCurrentState(new BeaconSendingTerminalState());
-        } else {
+            context.setNextState(getShutdownState());
+        }
+        if (statusResponse != null) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
-            context.setCurrentState(new BeaconSendingTimeSyncState(true));
+            context.setNextState(new BeaconSendingTimeSyncState(true));
         }
-    }
-
-    private boolean retryStatusRequest(BeaconSendingContext context, StatusResponse statusResponse, int retry) {
-        return !context.isShutdownRequested() && (statusResponse == null) && (retry < MAX_INITIAL_STATUS_REQUEST_RETRIES);
     }
 
     @Override

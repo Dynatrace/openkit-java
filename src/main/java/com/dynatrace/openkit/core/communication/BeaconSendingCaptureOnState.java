@@ -17,7 +17,7 @@ import com.dynatrace.openkit.protocol.StatusResponse;
  */
 class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
-    private static final int BEACON_SEND_RETRY_ATTEMPTS = 3;
+    private static final int BEACON_SEND_RETRY_ATTEMPTS = 2;
 
     /**
      * store last received status response
@@ -34,7 +34,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         // check if time sync is required (from time to time a re-sync must be performed)
         if (BeaconSendingTimeSyncState.isTimeSyncRequired(context)) {
             // time re-sync required -> transition
-            context.setCurrentState(new BeaconSendingTimeSyncState());
+            context.setNextState(new BeaconSendingTimeSyncState());
             return;
         }
 
@@ -100,7 +100,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         context.handleStatusResponse(statusResponse);
         if (!context.isCaptureOn()) {
             // capturing is turned off -> make state transition
-            context.setCurrentState(new BeaconSendingCaptureOffState());
+            context.setNextState(new BeaconSendingCaptureOffState());
         }
     }
 }
