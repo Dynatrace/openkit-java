@@ -41,7 +41,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     /**
      * Index to re-initialize delays.
      */
-    private int reInitializeDelayIndex = 0;
+    private int reinitializeDelayIndex = 0;
 
     BeaconSendingInitState() {
         super(false);
@@ -63,9 +63,9 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             }
 
             // status request needs to be sent again after some delay
-            context.sleep(RE_INIT_DELAY_MILLISECONDS[reInitializeDelayIndex]);
+            context.sleep(RE_INIT_DELAY_MILLISECONDS[reinitializeDelayIndex]);
 
-            reInitializeDelayIndex = Math.min(reInitializeDelayIndex + 1, RE_INIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
+            reinitializeDelayIndex = Math.min(reinitializeDelayIndex + 1, RE_INIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
         }
 
         if (context.isShutdownRequested()) {
