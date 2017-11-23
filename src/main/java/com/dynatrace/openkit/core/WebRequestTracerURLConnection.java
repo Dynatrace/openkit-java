@@ -12,14 +12,14 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.protocol.Beacon;
 
 /**
- * Inherited class of {@link WebRequestTagBaseImpl} which can be used for tagging and timing of a web request provided as a URLConnection.
+ * Inherited class of {@link WebRequestTracerBaseImpl} which can be used for tagging and timing of a web request provided as a URLConnection.
  */
-public class WebRequestTagURLConnection extends WebRequestTagBaseImpl {
+public class WebRequestTracerURLConnection extends WebRequestTracerBaseImpl {
 
 	// *** constructors ***
 
 	// creates web request tag with a URLConnection
-	public WebRequestTagURLConnection(Beacon beacon, ActionImpl action, URLConnection connection) {
+	public WebRequestTracerURLConnection(Beacon beacon, ActionImpl action, URLConnection connection) {
 		super(beacon, action);
 
 		// only set tag header and URL if connection is not null

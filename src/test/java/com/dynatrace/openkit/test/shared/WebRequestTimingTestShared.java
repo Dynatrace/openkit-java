@@ -10,12 +10,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import com.dynatrace.openkit.api.WebRequestTracer;
 import org.junit.Assert;
 
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.api.WebRequestTag;
 
 public class WebRequestTimingTestShared {
 
@@ -33,7 +33,7 @@ public class WebRequestTimingTestShared {
 			Assert.fail(e.toString());
 			return;
 		}
-		WebRequestTag webRequestTiming = action.tagWebRequest(connection);
+		WebRequestTracer webRequestTiming = action.traceWebRequest(connection);
 		webRequestTiming.startTiming();
 
 		// we could actually execute the request, but as it's not needed for this test, we don't

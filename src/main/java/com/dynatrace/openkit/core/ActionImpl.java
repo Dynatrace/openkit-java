@@ -8,7 +8,7 @@ package com.dynatrace.openkit.core;
 import java.net.URLConnection;
 
 import com.dynatrace.openkit.api.Action;
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.TimeProvider;
 
@@ -85,13 +85,13 @@ public class ActionImpl implements Action {
 	}
 
 	@Override
-	public WebRequestTag tagWebRequest(URLConnection connection) {
-		return new WebRequestTagURLConnection(beacon, this, connection);
+	public WebRequestTracer traceWebRequest(URLConnection connection) {
+		return new WebRequestTracerURLConnection(beacon, this, connection);
 	}
 
 	@Override
-	public WebRequestTag tagWebRequest(String url) {
-		return new WebRequestTagStringURL(beacon, this, url);
+	public WebRequestTracer traceWebRequest(String url) {
+		return new WebRequestTracerStringURL(beacon, this, url);
 	}
 
 	@Override

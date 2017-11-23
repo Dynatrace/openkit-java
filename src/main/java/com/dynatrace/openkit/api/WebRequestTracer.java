@@ -8,7 +8,7 @@ package com.dynatrace.openkit.api;
 /**
  * This interface allows tagging and timing of a web request.
  */
-public interface WebRequestTag {
+public interface WebRequestTracer {
 
 	/**
 	 * Returns the Dynatrace tag which has to be set manually as Dynatrace HTTP header
@@ -20,7 +20,7 @@ public interface WebRequestTag {
 	public String getTag();
 
 	/**
-	 * Sets the response code of this web request. Has to be called before {@link WebRequestTag#stopTiming()}.
+	 * Sets the response code of this web request. Has to be called before {@link WebRequestTracer#stopTiming()}.
 	 *
 	 * @param responseCode		response code of this web request
 	 */

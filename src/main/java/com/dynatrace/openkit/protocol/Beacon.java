@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.core.WebRequestTagBaseImpl;
+import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -270,18 +270,18 @@ public class Beacon {
 	}
 
 	// add web request to the provided Action
-	public void addWebRequest(ActionImpl parentAction, WebRequestTagBaseImpl webRequestTag) {
+	public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
 		StringBuilder eventBuilder = new StringBuilder();
 
-		buildBasicEventData(eventBuilder, EventType.WEBREQUEST, webRequestTag.getURL());
+		buildBasicEventData(eventBuilder, EventType.WEBREQUEST, webRequestTracer.getURL());
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
-		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTag.getStartSequenceNo());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime(webRequestTag.getStartTime()));
-		addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTag.getEndSequenceNo());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTag.getEndTime() - webRequestTag.getStartTime());
-		if (webRequestTag.getResponseCode() != -1) {
-			addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTag.getResponseCode());
+		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTracer.getStartSequenceNo());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime(webRequestTracer.getStartTime()));
+		addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
+		if (webRequestTracer.getResponseCode() != -1) {
+			addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
 		}
 
 		synchronized (eventDataList) {

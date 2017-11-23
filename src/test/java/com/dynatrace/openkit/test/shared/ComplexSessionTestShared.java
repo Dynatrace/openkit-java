@@ -32,11 +32,11 @@ public class ComplexSessionTestShared {
 
 		// simulate the tagged web request - we dont actually need to send it
 		URL url;
-		WebRequestTag timing;
+		WebRequestTracer timing;
 		try {
 			url = new URL("http://mydomain/app/search.php");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			timing = actionOne.tagWebRequest(conn);			// tags the request
+			timing = actionOne.traceWebRequest(conn);			// tags the request
 			timing.startTiming();							// starts the timing
 			// no request is performed - but that's OK
 			timing.stopTiming();							// stop the timing and generate the beacon signal
