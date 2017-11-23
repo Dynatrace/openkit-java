@@ -56,10 +56,11 @@ public class BeaconSendingTerminalStateTest {
         BeaconSendingTerminalState target = new BeaconSendingTerminalState();
 
         // when executing the state
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify shutdown is requested now
         verify(stateContext, times(1)).requestShutdown();
+        verify(stateContext, times(1)).isShutdownRequested();
         verifyNoMoreInteractions(stateContext);
     }
 }

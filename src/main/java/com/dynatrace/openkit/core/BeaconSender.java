@@ -14,6 +14,10 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 /**
  * The BeaconSender is responsible for asynchronously sending the Beacons to the provided endpoint.
+ *
+ * <p>
+ *     The {@code BeaconSender} manages the thread running OpenKit communication in the background.
+ * </p>
  */
 public class BeaconSender {
 

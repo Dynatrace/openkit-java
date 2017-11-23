@@ -24,7 +24,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     /**
      * Times to use as delay between consecutive re-executions of this state, when no state transition is performed.
      */
-    static final long[] RE_INIT_DELAY_MILLISECONDS = {
+    static final long[] REINIT_DELAY_MILLISECONDS = {
         TimeUnit.MINUTES.toMillis(1),
         TimeUnit.MINUTES.toMillis(5),
         TimeUnit.MINUTES.toMillis(15),
@@ -63,17 +63,16 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             }
 
             // status request needs to be sent again after some delay
-            context.sleep(RE_INIT_DELAY_MILLISECONDS[reinitializeDelayIndex]);
+            context.sleep(REINIT_DELAY_MILLISECONDS[reinitializeDelayIndex]);
 
-            reinitializeDelayIndex = Math.min(reinitializeDelayIndex + 1, RE_INIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
+            reinitializeDelayIndex = Math.min(reinitializeDelayIndex + 1, REINIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
         }
 
         if (context.isShutdownRequested()) {
-            // shutdown was requested -> go to shutdown state
+            // shutdown was requested -> abort init with failure
+            // transition to shutdown state is handled by base class
             context.initCompleted(false);
-            context.setNextState(getShutdownState());
-        }
-        if (statusResponse != null) {
+        } else if (statusResponse != null) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
             context.setNextState(new BeaconSendingTimeSyncState(true));

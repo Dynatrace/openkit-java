@@ -60,7 +60,6 @@ public interface OpenKit {
      */
     boolean waitForInitCompletion(long timeoutMillis);
 
-
     /**
      * Gets a boolean flag indicating whether OpenKit is initialized or not.
      *

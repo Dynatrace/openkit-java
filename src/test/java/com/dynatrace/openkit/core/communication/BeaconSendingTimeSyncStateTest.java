@@ -143,7 +143,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -160,7 +160,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -176,7 +176,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS + 1)).sendTimeSyncRequest();
@@ -192,7 +192,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(5)).sleep(anyLong()); // verify it's five, since we have 5 further checks
@@ -252,7 +252,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then verify init was done
         assertThat(TimeProvider.isTimeSynced(), is(true));
@@ -301,7 +301,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when being executed
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify init was done
         assertThat(TimeProvider.isTimeSynced(), is(true));
@@ -336,7 +336,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
         // when being executed
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify init was done
         assertThat(TimeProvider.isTimeSynced(), is(true));
@@ -359,7 +359,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when being executed
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify that time sync was disabled
         verify(stateContext, times(1)).disableTimeSyncSupport();
@@ -374,7 +374,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when being executed
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify that time sync was disabled
         verify(stateContext, times(1)).disableTimeSyncSupport();
@@ -389,7 +389,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when being executed
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify that time sync was disabled
         verify(stateContext, times(1)).disableTimeSyncSupport();
@@ -405,7 +405,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         assertThat(TimeProvider.isTimeSynced(), is(false));
@@ -422,7 +422,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
@@ -450,7 +450,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
@@ -479,7 +479,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
@@ -504,7 +504,7 @@ public class BeaconSendingTimeSyncStateTest {
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
