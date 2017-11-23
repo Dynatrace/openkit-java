@@ -89,7 +89,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void doExecuteSetsLastOpenSessionBeaconSendTime() throws InterruptedException {
+    public void executeSetsLastOpenSessionBeaconSendTime() throws InterruptedException {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -106,7 +106,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void doExecuteSetsLastStatusCheckTime() throws InterruptedException {
+    public void executeSetsLastStatusCheckTime() throws InterruptedException {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -241,7 +241,6 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 4);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
-
     }
 
     @Test
