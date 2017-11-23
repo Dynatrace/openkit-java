@@ -8,12 +8,13 @@ package com.dynatrace.openkit.core;
 import java.net.URLConnection;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTag;
 
 /**
  * Dummy implementation of the {@link Action} interface, used when capture is off.
  */
-public class DummyAction implements Action {
+public class DummyAction implements RootAction {
 
 	private static DummyWebRequestTag dummyWebRequestTagInstance = new DummyWebRequestTag();
 

@@ -13,14 +13,6 @@ import java.net.URLConnection;
 public interface Action {
 
 	/**
-	 * Enters a (child) Action with a specified name on this Action.
-	 *
-	 * @param actionName	name of the Action
-	 * @return				Action instance to work with
-	 */
-	public Action enterAction(String actionName);
-
-	/**
 	 * Reports an event with a specified name (but without any value).
 	 *
 	 * @param eventName		name of the event

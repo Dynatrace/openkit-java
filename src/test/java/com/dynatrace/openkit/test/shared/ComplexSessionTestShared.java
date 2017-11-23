@@ -9,17 +9,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import com.dynatrace.openkit.api.Action;
-import com.dynatrace.openkit.api.OpenKit;
-import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.*;
 
 public class ComplexSessionTestShared {
 
 	public static void test(OpenKit openKit, String ipAddress) {
 		Session session = openKit.createSession(ipAddress);
 
-		Action actionOne = session.enterAction("ActionOne");
+		RootAction actionOne = session.enterAction("ActionOne");
 
 		actionOne.reportValue("IntegerValue", 45);
 		actionOne.reportValue("DoubleValue", 9.2);

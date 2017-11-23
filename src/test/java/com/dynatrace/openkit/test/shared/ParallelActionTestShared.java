@@ -7,13 +7,14 @@ package com.dynatrace.openkit.test.shared;
 
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 
 public class ParallelActionTestShared {
 
 	public static void test(OpenKit openKit, String ipAddress) {
 		Session session = openKit.createSession(ipAddress);
-		Action rootAction = session.enterAction("RootAction");
+		RootAction rootAction = session.enterAction("RootAction");
 
 		Action parallelAction1 = rootAction.enterAction("ParallelAction-1");
 		Action parallelAction2 = rootAction.enterAction("ParallelAction-2");

@@ -6,6 +6,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
@@ -41,8 +42,8 @@ public class SessionImpl implements Session {
 	// *** Session interface methods ***
 
 	@Override
-	public Action enterAction(String actionName) {
-		return new ActionImpl(beacon, actionName, openRootActions);
+	public RootAction enterAction(String actionName) {
+		return new RootActionImpl(beacon, actionName, openRootActions);
 	}
 
 	@Override
