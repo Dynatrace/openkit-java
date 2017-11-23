@@ -1,6 +1,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.providers.TimeProvider;
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  *     <ul>
  *         <li>{@link BeaconSendingCaptureOnState} if capturing is re-enabled</li>
  *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
+ *         <li>{@link BeaconSendingTimeSyncState} if initial time sync failed</li>
  *     </ul>
  * </p>
  */
@@ -55,13 +57,15 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
 
     private static void handleStatusResponse(BeaconSendingContext context, StatusResponse statusResponse) {
 
-        if (statusResponse == null) {
-            return; // nothing to handle
+        if (statusResponse != null) {
+            context.handleStatusResponse(statusResponse);
         }
-
-        context.handleStatusResponse(statusResponse);
-        if (context.isCaptureOn()) {
-            // capturing is re-enabled again
+        // if initial time sync failed before
+        if (context.isTimeSyncSupported() && !TimeProvider.isTimeSynced()) {
+            // then retry initial time sync
+            context.setNextState(new BeaconSendingTimeSyncState(true));
+        } else if (statusResponse != null && context.isCaptureOn()) {
+            // capturing is re-enabled again, but only if we received a response from the server
             context.setNextState(new BeaconSendingCaptureOnState());
         }
     }

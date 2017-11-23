@@ -28,7 +28,6 @@ public interface OpenKit {
      * Must be done before any other calls to the OpenKit, otherwise those calls to the OpenKit will do nothing.
      */
     void initialize();
-
     /**
      * Waits until OpenKit is fully initialized.
      *
@@ -52,7 +51,7 @@ public interface OpenKit {
      *     {@link #shutdown()} method or the timeout expired..
      *
      *     Due to misconfiguration in the {@link com.dynatrace.openkit.OpenKitFactory} when creating the
-     *     instance (e.g. wrong endpoint URL) this method might hang indefinitely, unless {@link #shutdown()} is called.
+     *     instance (e.g. wrong endpoint URL) this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
      * </p>
      *
      * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.

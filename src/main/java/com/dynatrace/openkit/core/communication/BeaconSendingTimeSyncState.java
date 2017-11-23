@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  * <p>
  *     Transition to:
  *     <ul>
- *         <li>{@link BeaconSendingInitState} if initial time sync failed</li>
  *         <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
  *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false}) or time sync failed</li>
  *         <li>{@link BeaconSendingTerminalState} on shutdown</li>

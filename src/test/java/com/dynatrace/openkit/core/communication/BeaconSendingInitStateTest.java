@@ -89,7 +89,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void doExecuteSetsLastOpenSessionBeaconSendTime() throws InterruptedException {
+    public void executeSetsLastOpenSessionBeaconSendTime() throws InterruptedException {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -99,14 +99,14 @@ public class BeaconSendingInitStateTest {
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).setLastOpenSessionBeaconSendTime(123456789L);
     }
 
     @Test
-    public void doExecuteSetsLastStatusCheckTime() throws InterruptedException {
+    public void executeSetsLastStatusCheckTime() throws InterruptedException {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -115,14 +115,33 @@ public class BeaconSendingInitStateTest {
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).setLastStatusCheckTime(123456789L);
     }
 
+
     @Test
-    public void reInitializeSleepsBeforeSendingStatusRequestsAgain() throws InterruptedException {
+    public void initIsTerminatedIfShutdownRequestedWithValidResponse() throws InterruptedException {
+
+        // given
+        when(httpClient.sendStatusRequest()).thenReturn(mock(StatusResponse.class));
+        when(stateContext.isShutdownRequested()).thenReturn(true);
+
+        BeaconSendingInitState target = new BeaconSendingInitState();
+
+        // when
+        target.execute(stateContext);
+
+        // then
+        verify(stateContext, times(1)).initCompleted(false);
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTerminalState.class));
+
+    }
+
+    @Test
+    public void reinitializeSleepsBeforeSendingStatusRequestsAgain() throws InterruptedException {
 
         // given
 
@@ -141,13 +160,7 @@ public class BeaconSendingInitStateTest {
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when executing the state multiple times (7 times)
-        target.doExecute(stateContext);
-        target.doExecute(stateContext);
-        target.doExecute(stateContext);
-        target.doExecute(stateContext);
-        target.doExecute(stateContext);
-        target.doExecute(stateContext);
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         // verify sleeps
@@ -159,7 +172,7 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
         // delay between first and second attempt
-        inOrder.verify(stateContext).sleep(BeaconSendingInitState.RE_INIT_DELAY_MILLISECONDS[0]);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.REINIT_DELAY_MILLISECONDS[0]);
         // and again the sequence
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
@@ -167,7 +180,7 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
         // delay between second and third attempt
-        inOrder.verify(stateContext).sleep(BeaconSendingInitState.RE_INIT_DELAY_MILLISECONDS[1]);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.REINIT_DELAY_MILLISECONDS[1]);
         // and again the sequence
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
@@ -175,7 +188,7 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
         // delay between third and fourth attempt
-        inOrder.verify(stateContext).sleep(BeaconSendingInitState.RE_INIT_DELAY_MILLISECONDS[2]);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.REINIT_DELAY_MILLISECONDS[2]);
         // and again the sequence
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
@@ -183,7 +196,7 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
         // delay between fourth and fifth attempt
-        inOrder.verify(stateContext).sleep(BeaconSendingInitState.RE_INIT_DELAY_MILLISECONDS[3]);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.REINIT_DELAY_MILLISECONDS[3]);
         // and again the sequence
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
@@ -191,7 +204,7 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
         // delay between fifth and sixth attempt
-        inOrder.verify(stateContext).sleep(BeaconSendingInitState.RE_INIT_DELAY_MILLISECONDS[4]);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.REINIT_DELAY_MILLISECONDS[4]);
         // and again the sequence
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
@@ -199,7 +212,7 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
         // delay between sixth and seventh attempt
-        inOrder.verify(stateContext).sleep(BeaconSendingInitState.RE_INIT_DELAY_MILLISECONDS[4]);
+        inOrder.verify(stateContext).sleep(BeaconSendingInitState.REINIT_DELAY_MILLISECONDS[4]);
         // and again the sequence
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 2);
@@ -219,7 +232,7 @@ public class BeaconSendingInitStateTest {
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when executing the state
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(5)).sleep(anyLong()); // verify it's five, since we have 5 further checks
@@ -228,7 +241,6 @@ public class BeaconSendingInitStateTest {
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 4);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 8);
         inOrder.verify(stateContext).sleep(BeaconSendingInitState.INITIAL_RETRY_SLEEP_TIME_MILLISECONDS * 16);
-
     }
 
     @Test
@@ -243,7 +255,7 @@ public class BeaconSendingInitStateTest {
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when executing the state
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // then
         verify(stateContext, times(1)).initCompleted(false); // int completed with error
@@ -267,7 +279,7 @@ public class BeaconSendingInitStateTest {
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when
-        target.doExecute(stateContext);
+        target.execute(stateContext);
 
         // verify state transition
         verify(stateContext, times(1)).handleStatusResponse(statusResponse);
