@@ -20,7 +20,7 @@ public abstract class AbstractAppMonTest extends AbstractTest {
 	public static final String TEST_IP = "123.45.67.89";
 
 	protected String getDefaultEndpoint() {
-		return TEST_ENDPOINT + "dynaTraceMonitor?type=m&srvid=1&app=" + TEST_APPLICATION_ID + "&va=7.0.0000";
+		return TEST_ENDPOINT + "dynaTraceMonitor?type=m&srvid=1&app=" + TEST_APPLICATION_ID + "&va=7.0.0000&pt=1";
 	}
 
 	protected String getDefaultTimeSyncEndpoint() {
