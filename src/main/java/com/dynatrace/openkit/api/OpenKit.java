@@ -11,7 +11,7 @@ package com.dynatrace.openkit.api;
 public interface OpenKit {
 
     /**
-     * Name of Dynatrace HTTP header which is used for tagging web requests.
+     * Name of Dynatrace HTTP header which is used for tracing web requests.
      */
     String WEBREQUEST_TAG_HEADER = "X-dynaTrace";
 

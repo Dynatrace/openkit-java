@@ -16,7 +16,7 @@ public interface Session {
 	 * @param actionName	name of the Action
 	 * @return				Action instance to work with
 	 */
-	public Action enterAction(String actionName);
+	public RootAction enterAction(String actionName);
 
 	/**
 	 * Reports a crash with a specified error name, crash reason and a stacktrace.

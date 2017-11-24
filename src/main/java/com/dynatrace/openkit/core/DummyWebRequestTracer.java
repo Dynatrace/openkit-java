@@ -5,12 +5,12 @@
  */
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.WebRequestTracer;
 
 /**
- * Dummy implementation of the {@link WebRequestTag} interface, used when capture is off.
+ * Dummy implementation of the {@link WebRequestTracer} interface, used when capture is off.
  */
-public class DummyWebRequestTag implements WebRequestTag {
+public class DummyWebRequestTracer implements WebRequestTracer {
 
 	@Override
 	public String getTag() {

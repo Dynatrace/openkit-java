@@ -8,7 +8,7 @@ package com.dynatrace.openkit.core;
 import java.net.URLConnection;
 
 import com.dynatrace.openkit.api.Action;
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.TimeProvider;
 
@@ -31,8 +31,6 @@ public class ActionImpl implements Action {
 	// Beacon reference
 	private Beacon beacon;
 
-	// data structures for managing Action hierarchies
-	private SynchronizedQueue<Action> openChildActions = new SynchronizedQueue<Action>();
 	private SynchronizedQueue<Action> thisLevelActions = null;
 
 	// *** constructors ***
@@ -55,11 +53,6 @@ public class ActionImpl implements Action {
 	}
 
 	// *** Action interface methods ***
-
-	@Override
-	public Action enterAction(String actionName) {
-		return new ActionImpl(beacon, actionName, this, openChildActions);
-	}
 
 	@Override
 	public Action reportEvent(String eventName) {
@@ -92,13 +85,13 @@ public class ActionImpl implements Action {
 	}
 
 	@Override
-	public WebRequestTag tagWebRequest(URLConnection connection) {
-		return new WebRequestTagURLConnection(beacon, this, connection);
+	public WebRequestTracer traceWebRequest(URLConnection connection) {
+		return new WebRequestTracerURLConnection(beacon, this, connection);
 	}
 
 	@Override
-	public WebRequestTag tagWebRequest(String url) {
-		return new WebRequestTagStringURL(beacon, this, url);
+	public WebRequestTracer traceWebRequest(String url) {
+		return new WebRequestTracerStringURL(beacon, this, url);
 	}
 
 	@Override
@@ -108,12 +101,10 @@ public class ActionImpl implements Action {
 			return parentAction;
 		}
 
-		// leave all open Child-Actions
-		while (!openChildActions.isEmpty()) {
-			Action action = openChildActions.get();
-			action.leaveAction();
-		}
+		return doLeaveAction();
+	}
 
+	protected Action doLeaveAction() {
 		// set end time and end sequence number
 		endTime = TimeProvider.getTimestamp();
 		endSequenceNo = beacon.createSequenceNumber();

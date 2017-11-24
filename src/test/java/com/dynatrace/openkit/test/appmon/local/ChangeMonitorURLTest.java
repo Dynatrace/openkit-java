@@ -30,7 +30,7 @@ public class ChangeMonitorURLTest extends AbstractLocalAppMonTest {
         Assert.assertEquals(3, sentRequests.size());
         validateRequest(sentRequests.get(0), RequestType.STATUS, "GET", getDefaultEndpoint(), null, "");
         validateRequest(sentRequests.get(1), RequestType.TIMESYNC, "GET", TEST_ENDPOINT + "changedMonitorURL?type=mts", null, "");
-        validateRequest(sentRequests.get(2), RequestType.BEACON, "POST", TEST_ENDPOINT + "changedMonitorURL?type=m&srvid=1&app=" + TEST_APPLICATION_ID + "&va=7.0.0000", TEST_IP, expectedBeacon);
+        validateRequest(sentRequests.get(2), RequestType.BEACON, "POST", TEST_ENDPOINT + "changedMonitorURL?type=m&srvid=1&app=" + TEST_APPLICATION_ID + "&va=7.0.0000&pt=1", TEST_IP, expectedBeacon);
     }
 
 }

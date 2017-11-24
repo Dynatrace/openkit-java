@@ -8,17 +8,9 @@ package com.dynatrace.openkit.api;
 import java.net.URLConnection;
 
 /**
- * This interface provides functionality to create (child) Actions, report events/values/errors and tag web requests.
+ * This interface provides functionality to create (child) Actions, report events/values/errors and tracing web requests.
  */
 public interface Action {
-
-	/**
-	 * Enters a (child) Action with a specified name on this Action.
-	 *
-	 * @param actionName	name of the Action
-	 * @return				Action instance to work with
-	 */
-	public Action enterAction(String actionName);
 
 	/**
 	 * Reports an event with a specified name (but without any value).
@@ -66,26 +58,26 @@ public interface Action {
 	public Action reportError(String errorName, int errorCode, String reason);
 
 	/**
-	 * Tags a web request - which is provided as a URLConnection - and allows adding timing information to this request.
+	 * Traces a web request - which is provided as a URLConnection - and allows adding timing information to this request.
 	 * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
 	 * the resulting server-side PurePath.
 	 *
 	 * @param connection	the URLConnection of the HTTP request to be tagged and timed
-	 * @return				a WebRequestTag which allows adding timing information
+	 * @return				a WebRequestTracer which allows adding timing information
 	 */
-	public WebRequestTag tagWebRequest(URLConnection connection);
+	public WebRequestTracer traceWebRequest(URLConnection connection);
 
 	/**
-	 * Allows tagging and timing of a web request handled by any 3rd party HTTP Client (e.g. Apache, Google, Jetty, ...).
+	 * Allows tracing and timing of a web request handled by any 3rd party HTTP Client (e.g. Apache, Google, Jetty, ...).
 	 * In this case the Dynatrace HTTP header ({@link OpenKit#WEBREQUEST_TAG_HEADER}) has to be set manually to the
-	 * tag value of this WebRequestTag. <br>
+	 * tag value of this WebRequestTracer. <br>
 	 * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
 	 * the resulting server-side PurePath.
 	 *
 	 * @param url		the URL of the web request to be tagged and timed
-	 * @return			a WebRequestTag which allows getting the tag value and adding timing information
+	 * @return			a WebRequestTracer which allows getting the tag value and adding timing information
 	 */
-	public WebRequestTag tagWebRequest(String url);
+	public WebRequestTracer traceWebRequest(String url);
 
 	/**
 	 * Leaves this Action.

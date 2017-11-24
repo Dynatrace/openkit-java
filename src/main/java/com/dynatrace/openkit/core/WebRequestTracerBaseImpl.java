@@ -5,16 +5,16 @@
  */
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
- * Abstract base class implementation of the {@link WebRequestTag} interface.
+ * Abstract base class implementation of the {@link WebRequestTracer} interface.
  */
-public abstract class WebRequestTagBaseImpl implements WebRequestTag {
+public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
-	// Dynatrace tag that has to be used for tagging the web request
+	// Dynatrace tag that has to be used for tracing the web request
 	private String tag = null;
 
 	// HTTP information: URL & response code
@@ -33,7 +33,7 @@ public abstract class WebRequestTagBaseImpl implements WebRequestTag {
 
 	// *** constructors ***
 
-	public WebRequestTagBaseImpl(Beacon beacon, ActionImpl action) {
+	public WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
 		this.beacon = beacon;
 		this.action = action;
 
@@ -43,7 +43,7 @@ public abstract class WebRequestTagBaseImpl implements WebRequestTag {
 		tag = beacon.createTag(action, startSequenceNo);
 	}
 
-	// *** WebRequestTag interface methods ***
+	// *** WebRequestTracer interface methods ***
 
 	@Override
 	public String getTag() {

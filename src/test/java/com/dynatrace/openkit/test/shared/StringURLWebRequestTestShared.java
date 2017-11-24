@@ -8,7 +8,7 @@ package com.dynatrace.openkit.test.shared;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.WebRequestTracer;
 
 public class StringURLWebRequestTestShared {
 
@@ -16,7 +16,7 @@ public class StringURLWebRequestTestShared {
 		Session session = openKit.createSession(ipAddress);
 		Action action = session.enterAction("StringUrlWebRequestAction");
 
-		WebRequestTag webRequestTiming = action.tagWebRequest("http://www.google.com/search.html?q=test&p=10");
+		WebRequestTracer webRequestTiming = action.traceWebRequest("http://www.google.com/search.html?q=test&p=10");
 		webRequestTiming.startTiming();
 
 		String tag = webRequestTiming.getTag();

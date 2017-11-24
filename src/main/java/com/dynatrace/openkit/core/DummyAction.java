@@ -8,14 +8,15 @@ package com.dynatrace.openkit.core;
 import java.net.URLConnection;
 
 import com.dynatrace.openkit.api.Action;
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.RootAction;
+import com.dynatrace.openkit.api.WebRequestTracer;
 
 /**
  * Dummy implementation of the {@link Action} interface, used when capture is off.
  */
-public class DummyAction implements Action {
+public class DummyAction implements RootAction {
 
-	private static DummyWebRequestTag dummyWebRequestTagInstance = new DummyWebRequestTag();
+	private static DummyWebRequestTracer dummyWebRequestTracerInstance = new DummyWebRequestTracer();
 
 	@Override
 	public Action enterAction(String actionName) {
@@ -54,15 +55,15 @@ public class DummyAction implements Action {
 	}
 
 	@Override
-	public WebRequestTag tagWebRequest(URLConnection connection) {
-		// return DummyWebRequestTag and do nothing
-		return dummyWebRequestTagInstance;
+	public WebRequestTracer traceWebRequest(URLConnection connection) {
+		// return DummyWebRequestTracer and do nothing
+		return dummyWebRequestTracerInstance;
 	}
 
 	@Override
-	public WebRequestTag tagWebRequest(String url) {
-		// return DummyWebRequestTag and do nothing
-		return dummyWebRequestTagInstance;
+	public WebRequestTracer traceWebRequest(String url) {
+		// return DummyWebRequestTracer and do nothing
+		return dummyWebRequestTracerInstance;
 	}
 
 	@Override

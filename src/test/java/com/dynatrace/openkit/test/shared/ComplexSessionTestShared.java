@@ -9,17 +9,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import com.dynatrace.openkit.api.Action;
-import com.dynatrace.openkit.api.OpenKit;
-import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.api.WebRequestTag;
+import com.dynatrace.openkit.api.*;
 
 public class ComplexSessionTestShared {
 
 	public static void test(OpenKit openKit, String ipAddress) {
 		Session session = openKit.createSession(ipAddress);
 
-		Action actionOne = session.enterAction("ActionOne");
+		RootAction actionOne = session.enterAction("ActionOne");
 
 		actionOne.reportValue("IntegerValue", 45);
 		actionOne.reportValue("DoubleValue", 9.2);
@@ -35,11 +32,11 @@ public class ComplexSessionTestShared {
 
 		// simulate the tagged web request - we dont actually need to send it
 		URL url;
-		WebRequestTag timing;
+		WebRequestTracer timing;
 		try {
 			url = new URL("http://mydomain/app/search.php");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			timing = actionOne.tagWebRequest(conn);			// tags the request
+			timing = actionOne.traceWebRequest(conn);			// tags the request
 			timing.startTiming();							// starts the timing
 			// no request is performed - but that's OK
 			timing.stopTiming();							// stop the timing and generate the beacon signal

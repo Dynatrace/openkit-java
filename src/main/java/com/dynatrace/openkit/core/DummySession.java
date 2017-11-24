@@ -6,6 +6,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 
 /**
@@ -16,7 +17,7 @@ public class DummySession implements Session {
 	private static DummyAction dummyActionInstance = new DummyAction();
 
 	@Override
-	public Action enterAction(String actionName) {
+	public RootAction enterAction(String actionName) {
 		// return DummyAction and do nothing
 		return dummyActionInstance;
 	}
