@@ -8,7 +8,7 @@ package com.dynatrace.openkit.protocol;
 import java.util.StringTokenizer;
 
 /**
- * Implements a status response which is sent for the request types status check & beacon send.
+ * Implements a status response which is sent for the request types status check and beacon send.
  */
 public class StatusResponse extends Response {
 

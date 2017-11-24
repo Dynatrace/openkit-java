@@ -9,8 +9,8 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.protocol.Beacon;
 
 /**
+ * Setting the Dynatrace tag to the {@link OpenKit#WEBREQUEST_TAG_HEADER} HTTP header has to be done manually by the user.
  * Inherited class of {@link WebRequestTracerBaseImpl} which can be used for tracing and timing of a web request handled by any 3rd party HTTP Client.
- * Setting the Dynatrace tag to the {@link OpenKit.WEBREQUEST_TAG_HEADER} HTTP header has to be done manually by the user.
  */
 public class WebRequestTracerStringURL extends WebRequestTracerBaseImpl {
 
