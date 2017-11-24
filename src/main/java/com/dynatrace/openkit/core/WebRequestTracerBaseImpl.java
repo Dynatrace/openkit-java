@@ -14,7 +14,7 @@ import com.dynatrace.openkit.providers.TimeProvider;
  */
 public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
-	// Dynatrace tag that has to be used for tagging the web request
+	// Dynatrace tag that has to be used for tracing the web request
 	private String tag = null;
 
 	// HTTP information: URL & response code

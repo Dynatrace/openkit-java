@@ -8,7 +8,7 @@ package com.dynatrace.openkit.api;
 import java.net.URLConnection;
 
 /**
- * This interface provides functionality to create (child) Actions, report events/values/errors and tag web requests.
+ * This interface provides functionality to create (child) Actions, report events/values/errors and tracing web requests.
  */
 public interface Action {
 
@@ -58,7 +58,7 @@ public interface Action {
 	public Action reportError(String errorName, int errorCode, String reason);
 
 	/**
-	 * Tags a web request - which is provided as a URLConnection - and allows adding timing information to this request.
+	 * Traces a web request - which is provided as a URLConnection - and allows adding timing information to this request.
 	 * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
 	 * the resulting server-side PurePath.
 	 *
@@ -68,7 +68,7 @@ public interface Action {
 	public WebRequestTracer traceWebRequest(URLConnection connection);
 
 	/**
-	 * Allows tagging and timing of a web request handled by any 3rd party HTTP Client (e.g. Apache, Google, Jetty, ...).
+	 * Allows tracing and timing of a web request handled by any 3rd party HTTP Client (e.g. Apache, Google, Jetty, ...).
 	 * In this case the Dynatrace HTTP header ({@link OpenKit#WEBREQUEST_TAG_HEADER}) has to be set manually to the
 	 * tag value of this WebRequestTracer. <br>
 	 * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to

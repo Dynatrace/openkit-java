@@ -1,7 +1,7 @@
 package com.dynatrace.openkit.api;
 
 /**
- * This interface provides functionality to create (child) Actions, report events/values/errors and tag web requests.
+ * This interface provides the same functionality as Action and in addition allows to create child Actions
  */
 public interface RootAction extends Action {
     /**
