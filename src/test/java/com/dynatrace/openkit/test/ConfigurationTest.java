@@ -16,7 +16,7 @@ public class ConfigurationTest {
     private static final String applicationName = "testApp";
 
     @Test
-    public void SaasUrlIsCorrect() {
+    public void saasUrlIsCorrect() {
         String tenantUrl = String.format("https://%s.%s", tenantId, host);
 
         AbstractConfiguration configuration =
@@ -28,7 +28,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void MangedUrlIsCorrect() {
+    public void mangedUrlIsCorrect() {
         String managedHost = String.format("http://%s", host);
 
         AbstractConfiguration configuration =
@@ -40,7 +40,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void AppMonUrlIsCorrect() {
+    public void appMonUrlIsCorrect() {
         String appMonHost = String.format("https://%s", host);
 
         AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17,appMonHost,false);
@@ -51,7 +51,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void ApplicationIdAndApplicationNameIdenticalForAppMonConfig()
+    public void applicationIdAndApplicationNameIdenticalForAppMonConfig()
     {
         AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17, "", false);
 
