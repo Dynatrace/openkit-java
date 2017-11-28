@@ -67,7 +67,7 @@ The generated javadoc will be located in the `build/docs/javadoc` directory.
 ## General Concepts
 
 In this part the concepts used throughout OpenKit are explained. A short sample how to use OpenKit is
-also provided. For detailed code samples an own markdown page is used.
+also provided. For detailed code samples have a look into [example.md](docs/example.md).
 
 ### OpenKit
 
@@ -130,17 +130,16 @@ Detailed explanation is available in [example.md](docs/example.md).
 
 ```java
 String applicationName = "My OpenKit application";
-String applicationId = "application-id";
-long visitorId = 42;
-String endpointUrl = "https://tenantid.beaconurl.com";
-boolean verbose = true;
+String applicationID = "application-id";
+long visitorID = 42;
+String endpointURL = "https://tenantid.beaconurl.com";
 
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationId, visitorId, endpointUrl, verbose);
+OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL);
 openKit.initialize();
 openKit.waitForInitCompletion();
 
-String clientIp = "8.8.8.8";
-Session session = openKit.createSession(clientIp);
+String clientIP = "8.8.8.8";
+Session session = openKit.createSession(clientIP);
 
 String rootActionName = "rootActionName";
 RootAction rootAction = session.enterAction(rootActionName);
