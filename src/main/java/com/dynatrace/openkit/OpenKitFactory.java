@@ -85,28 +85,26 @@ public class OpenKitFactory {
 	 * Creates a Dynatrace AppMon instance of the OpenKit.
 	 *
 	 * @param applicationName	the application name
-	 * @param applicationID		the application ID
 	 * @param visitorID			unique visitor ID
 	 * @param endpointURL		the URL of the Java/Webserver Agent to send the data to
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
-	public static OpenKit createAppMonInstance(String applicationName, String applicationID, long visitorID, String endpointURL) {
-		return createAppMonInstance(applicationName, applicationID, visitorID, endpointURL, false);
+	public static OpenKit createAppMonInstance(String applicationName, long visitorID, String endpointURL) {
+		return createAppMonInstance(applicationName, visitorID, endpointURL, false);
 	}
 
 	/**
 	 * Creates a Dynatrace AppMon instance of the OpenKit, optionally with verbose logging.
 	 *
 	 * @param applicationName	the application name
-	 * @param applicationID		the application ID
 	 * @param visitorID			unique visitor ID
 	 * @param endpointURL		the URL of the Java/Webserver Agent to send the data to
 	 * @param verbose			if true, turn on verbose logging on stdout
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
-	public static OpenKit createAppMonInstance(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
+	public static OpenKit createAppMonInstance(String applicationName, long visitorID, String endpointURL, boolean verbose) {
 		return new OpenKitImpl(
-				new AppMonConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
+				new AppMonConfiguration(applicationName, visitorID, endpointURL, verbose));
 	}
 
 }
