@@ -48,9 +48,14 @@ public class ConfigurationTest {
         String expected = String.format("%s/dynaTraceMonitor", appMonHost);
 
         assertEquals(expected, configuration.getHttpClientConfig().getBaseUrl());
+    }
+
+    @Test
+    public void ApplicationIdAndApplicationNameIdenticalForAppMonConfig()
+    {
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17, "", false);
+
         assertThat(applicationName, is(configuration.getApplicationID()));
         assertThat(applicationName, is(configuration.getApplicationName()));
     }
-
-
 }

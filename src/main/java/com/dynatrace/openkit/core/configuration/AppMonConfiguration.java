@@ -5,8 +5,10 @@ package com.dynatrace.openkit.core.configuration;
  */
 public class AppMonConfiguration extends AbstractConfiguration {
 	public AppMonConfiguration(String applicationName, long visitorID, String endpointURL, boolean verbose) {
+		/**
+		 * For AppMon applicationId and applicationName are identical. Use application name to initialize both fields.
+		 */
 		super(OpenKitType.APPMON, applicationName, applicationName, visitorID, endpointURL, verbose);
-
 		setHttpClientConfiguration(
 			new HTTPClientConfiguration(
 				createBaseURL(endpointURL, OpenKitType.APPMON.getDefaultMonitorName()),
