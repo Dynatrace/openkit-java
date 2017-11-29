@@ -1,13 +1,13 @@
 # Dynatrace OpenKit - Java example
 
-The following document shall give the reader an in depth overview, how OpenKit can be used from
+The following document shall provide the reader an in depth overview, how OpenKit can be used from
 developer point of view. It explains the usage of all the API methods.
 
 ## Obtaining an OpenKit instance
 
-Generally speaking all OpenKit instances are obtained from the `OpenKitFactory` class.  
-Only the OpenKit creation functions vary based on the used backend system (Dynatrace SaaS/Dynatrace Managed/AppMon), all
-further methods are the same for the different endpoints used.
+OpenKit instances are obtained from the `OpenKitFactory` class.  
+Depending on the used backend system (Dynatace ..), the factory provides different methods to create a new 
+OpenKit instance. Despite from this, the developer does not need to distinguish between different backend systems.
 
 ### Dynatrace SaaS
  
@@ -22,12 +22,14 @@ OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applic
 ```
 
 * The `applicationName` parameter is the application's name created before in Dynatrace SaaS.
-* The `applicationID` parameter is the unique identifier of the application in Dynatrace Saas.
+* The `applicationID` parameter is the unique identifier of the application in Dynatrace Saas. The
+application's id can be found in the settings page of the custom application in Dynatrace.
 * The `visitorID` is a unique identifier, which might be used to uniquely identify a device.
 * The `endpointURL` denotes the Dynatrace SaaS cluster endpoint OpenKit communicates with and 
   is shown when creating the application in Dynatrace SaaS.
+The endpoint URL can be found in the settings page of the custom application in Dynatrace.
 
-By default OpenKit does not log it's own output. This feature might come in quite handy during development,
+OpenKit provides extended log output by activating the verbose mode. This feature might come in quite handy during development,
 therefore an overloaded method exists, where verbose mode can be enabled or disabled.  
 To enable verbose mode, use the following example.
 
@@ -57,9 +59,11 @@ OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName,
 ```
 
 * The `applicationName` parameter is the application's name created before in Dynatrace Managed.
-* The `applicationID` parameter is the unique identifier of the application in Dynatrace Managed.
+* The `applicationID` parameter is the unique identifier of the application in Dynatrace Managed. The
+application's id can be found in the settings page of the custom application in Dynatrace.
 * The `visitorID` is a unique identifier, which might be used to uniquely identify a device.
-* The `endpointURL` denotes the Dynatrace Managed endpoint OpenKit communicates with.
+* The `endpointURL` denotes the Dynatrace Managed endpoint OpenKit communicates with. The endpoint URL can be found in 
+the settings page of the custom application in Dynatrace.
 * The `tenantID` is the tenant used by Dynatrace Managed.
 
 Again an overloaded method exists to enable verbose logging, as shown below.
@@ -67,7 +71,7 @@ Again an overloaded method exists to enable verbose logging, as shown below.
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
 long visitorID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
+String endpointURL = "https://beaconurl.com";
 String tenantID = "tenant-id";
 boolean verbose = true;
 
@@ -81,7 +85,7 @@ The example below demonstrates how to connect an OpenKit application to an AppMo
 ```java
 String applicationName = "My OpenKit application";
 long visitorID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
+String endpointURL = "https://beaconurl.com";
 
 // by default verbose logging is disabled
 OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, visitorID, endpointURL);
@@ -116,8 +120,8 @@ openKit.initialize();
 boolean success = openKit.waitForInitCompletion();
 ```
 
-The method `waitForInitCompletion` blocks the calling thread until OpenKit is initialized, which
-might block the calling thread - in case of misconfiguration - indefinitely. The return value
+The method `waitForInitCompletion` blocks the calling thread until OpenKit is initialized. In case
+of misconfiguration this might block the calling thread indefinitely. The return value
 indicates whether the OpenKit instance has been initialized or `shutdown` has been called meanwhile.    
 An overloaded method exists to wait a given amount of time for OpenKit to initialize as shown in the
 following example.
@@ -175,17 +179,25 @@ openKit.getDevice().setModelID(deviceID);
 
 After setting application version and device information, which is not mandatory, but might be useful,
 a `Session` can be created by invoking the `createSession` method.  
-The `createSession` method takes an IP address as string argument, which might be a valid IPv4 or
-IPv6 address. If the argument is not a valid IP address a reasonable default is used.  
-The example shows how to create a new Session.
+There are two `createSession` method:
+1. Taking an IP address as string argument, which might be a valid IPv4 or IPv6 address.
+If the argument is not a valid IP address a reasonable default value is used.
+2. An overload taking no arguments. In this case the IP which communicates with the server is assigned
+on the server.
+
+The example shows how to create sessions.
 ```java
+// create a session and pass an IP address
 String clientIPAddress = "12.34.56.78";
-Session session = openKit.createSession(clientIPAddress);
+Session sessionWithArgument = openKit.createSession(clientIPAddress);
+
+// create a session and let the IP be assigned on the server side
+Session sessionWithoutArgument = openKit.createSession();
 ```
 
 ## Finishing a session
 
-When a `Session` is no longer needed, a Session shall be ended by invoking the `end` method.  
+When a `Session` is no longer needed, a Session should be ended by invoking the `end` method.  
 Although all open sessions are automatically ended when OpenKit is shut down (see "Terminating the OpenKit instance")
 it's highly recommended to end sessions which are no longer in use manually.
 ```java
@@ -220,7 +232,7 @@ The example below shows how an exception might be reported.
 ## Starting a RootAction
 
 As mentioned in the [README](#../README.md) root actions and actions are hierarchical named events, where
-a `RootAction` represents the first hierarchy level. A `RootAction` can have child actions (`Action`)and
+a `RootAction` represents the first hierarchy level. A `RootAction` can have child actions (`Action`) and
 is created from a `Session` as shown in the example below.
 ```java
 String rootActionName = "rootActionName";
@@ -301,8 +313,7 @@ action.reportError(errorName, errorCode, reason);
 
 One of the most powerful OpenKit features is web request tracing. When the application starts a web
 request (e.g. HTTP GET) a special tag can be attached to the header. This special header allows
-Dynatrace SaaS/Dynatrace Managed/AppMon to correlate the OpenKit and server side calls (if the service
-is monitored) into a PurePath. 
+Dynatrace SaaS/Dynatrace Managed/AppMon to correlate with a server side PurePath. 
 
 An example is shown below.
 ```java
@@ -356,7 +367,7 @@ webRequestTracer.stopTiming();
 ## Terminating the OpenKit instance
 
 When an OpenKit instance is no longer needed (e.g. the application using OpenKit is shut down), the previously
-obtained instance shall be cleared by invoking the `shutdown` method.  
+obtained instance can be cleared by invoking the `shutdown` method.  
 Calling the `shutdown` method blocks the calling thread while the OpenKit flushes data which has not been
 transmitted yet to the backend (Dynatrace SaaS/Dynatrace Managed/AppMon).  
 Details are explained in [internals.md](#internals.md)

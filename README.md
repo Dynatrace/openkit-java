@@ -44,7 +44,7 @@ This repository contains the reference implementation in pure Java. Other implem
 
 ### (Unit-)Testing the OpenKit
 * Java Runtime Environment (JRE) 6, 7 or 8  
-  All further dependencies for testing (JUnit, Hamcrest, Mockito) are managed by Gradle.
+  Dependencies for testing (JUnit, Hamcrest, Mockito) are managed by Gradle.
 
 ## Building the Source
 
@@ -71,7 +71,7 @@ also provided. For detailed code samples have a look into [example.md](docs/exam
 
 ### OpenKit
 
-The `OpenKit` interface is responsible for getting and setting application relevant information, e.g.
+An `OpenKit` instance is responsible for getting and setting application relevant information, e.g.
 the application's version and device specific information.  
 Furthermore the `OpenKit` is responsible for creating user sessions (see `Session`).
   
@@ -79,53 +79,55 @@ Although it would be possible to have multiple `OpenKit` instances connected to 
 (Dynatrace/AppMon) within one process, there should be one unique instance. `OpenKit` is designed to be
 thread safe and therefore the instance can be shared among threads.  
 
-When the application is shut down `OpenKit` needs to be shutdown by the developer.
+On application shutdown, `shutdown()` needs to be called on the OpenKit instance.
 
 ### Device
 
-The `Device` interface, which can be retrieved from an `OpenKit` instance, contains methods
+A `Device` instance, which can be retrieved from an `OpenKit` instance, contains methods
 for setting device specific information. It's not mandatory for the application developer to
-provide this information, reasonable default values exist.
+provide this information, reasonable default values exist.  
+However when the application is run on multiple different devices it might be quite handy
+to know details about the used device (e.g device identifier, device manufacturer, operating system).
 
 ### Session
 
-The `Session` interface represents kind of a user session, similar to a browser session in web application.
-However the application developer is free to choose how to treat `Session` objects.  
+A `Session` represents kind of a user session, similar to a browser session in a web application.
+However the application developer is free to choose how to treat a `Session`.  
 The `Session` is used to create `RootAction` instances and report application crashes.  
 
-When a `Session` is no longer required, it's highly recommended to end it, using the `Session.end()` method.
+When a `Session` is no longer required, it's highly recommended to end it, using the `Session.end()` method. 
 
 ### RootAction and Action
 
 The `RootAction` and `Action` are named hierarchical nodes for timing and attaching further details.
 A `RootAction` is created from the `Session` and it can create `Action` instances. Both, `RootAction` and
-`Action`, can have key-value pairs attached, named events, and are used for tracing web request.
+`Action`, provide the possibility to attach key-value pairs and named events, and are used 
+for tracing web requests.
 
 ### WebRequestTracer
 
-When the application developer wants to trace a web requested started from the OpenKit application, which
-is going to a service instrumented by a Dynatrace OneAgent, a `WebRequestTracer` should be used, which can be
+When the application developer wants to trace a web request, which is served by a service 
+instrumented by Dynatrace, a `WebRequestTracer` should be used, which can be
 requested from an action (`RootAction` or `Action`).  
 
-### Events
+### Named Events
 
-A named `Event` is attached to an `Action` (or `RootAction`) and contains a name. No children can
-be added to an event.
+A named `Event` is attached to an `Action` (or `RootAction`) and contains a name.
 
 ### Key-Value pairs
 
-For an `Action` or a `RootAction` key-value pairs can also be reported. The key is always a string
+For an `Action` or a `RootAction` key-value pairs can also be reported. The key is always a String
 and the value may be an Integer (int), a floating point (double) or a String.
 
 ### Errors & Crashes
 
 Errors are a way to report an erroneous condition on an `Action` (also `RootAction`).  
-Crashes is rather a way to report an exception (unhandled exception) on a `Session`.
+Crashes are used to report (unhandled) exceptions on a `Session`.
 
 
 ## Example
 
-This small example gives a rough overview how OpenKit can be used.  
+This small example provides a rough overview how OpenKit can be used.  
 Detailed explanation is available in [example.md](docs/example.md).
 
 ```java
