@@ -101,27 +101,27 @@ When a `Session` is no longer required, it's highly recommended to end it, using
 
 The `RootAction` and `Action` are named hierarchical nodes for timing and attaching further details.
 A `RootAction` is created from the `Session` and it can create `Action` instances. Both, `RootAction` and
-`Action`, provide the possibility to attach key-value pairs and named events, and are used 
+`Action`, provide the possibility to attach key-value pairs, named events and errors, and are used 
 for tracing web requests.
 
 ### WebRequestTracer
 
 When the application developer wants to trace a web request, which is served by a service 
 instrumented by Dynatrace, a `WebRequestTracer` should be used, which can be
-requested from an action (`RootAction` or `Action`).  
+requested from an `Action`.  
 
 ### Named Events
 
-A named `Event` is attached to an `Action` (or `RootAction`) and contains a name.
+A named `Event` is attached to an `Action` and contains a name.
 
 ### Key-Value pairs
 
-For an `Action` or a `RootAction` key-value pairs can also be reported. The key is always a String
+For an `Action` key-value pairs can also be reported. The key is always a String
 and the value may be an Integer (int), a floating point (double) or a String.
 
 ### Errors & Crashes
 
-Errors are a way to report an erroneous condition on an `Action` (also `RootAction`).  
+Errors are a way to report an erroneous condition on an `Action`.  
 Crashes are used to report (unhandled) exceptions on a `Session`.
 
 
