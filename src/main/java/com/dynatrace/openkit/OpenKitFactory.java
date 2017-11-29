@@ -52,7 +52,7 @@ public class OpenKitFactory {
 	}
 
 	/**
-	 * Creates a Dynatrace Managed instance of the OpenKit, optionally with verbose logging.
+	 * Creates a Dynatrace Managed instance of the OpenKit.
 	 *
 	 * @param applicationName	the application name
 	 * @param applicationID		the application ID (must be a valid application UUID)

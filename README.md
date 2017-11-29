@@ -31,6 +31,7 @@ This repository contains the reference implementation in pure Java. Other implem
 * No usage of third-party libraries, should run without any dependencies
 * Avoid usage of newest Java APIs, should be running on older Java VMs, too
 * Avoid usage of too much Java-specific APIs to allow rather easy porting to other languages
+* Design reentrant APIs and document them
 
 ## Prerequisites
 
@@ -40,32 +41,120 @@ This repository contains the reference implementation in pure Java. Other implem
 ### Building the Source/Generating the JavaDoc
 * Java Development Kit (JDK) 6, 7 or 8
   * Environment Variable JAVA_HOME set to JDK install directory
-  * Paths of `java[6|7|8].boot.classpath` in `build.xml` adapted to JDK install directory
-* Apache Ant 1.8.x+
-  * Environment Variable PATH pointing to Ant binary
 
 ### (Unit-)Testing the OpenKit
-* Java Runtime Environment (JRE) 6, 7 or 8
-* JUnit 4.x+ (incl. Hamcrest Core 1.3+)
+* Java Runtime Environment (JRE) 6, 7 or 8  
+  Dependencies for testing (JUnit, Hamcrest, Mockito) are managed by Gradle.
 
 ## Building the Source
 
-```
-$ ant [build_java6|build_java7|build_java8]         # default is to build for Java 6, 7 & 8
+Assuming you are in OpenKit's top level directory  
+
+```shell
+gradlew jar
 ```
 
-The built jar file(s) `openkit-<version>-java<java_version>.jar` will be located in the `dist` directory.
+The built jar file(s) `openkit-<version>-java<java_version>.jar` will be located in the `build/dist` directory.
 
 ## Generating the JavaDoc
 
-```
-$ generate_javadoc
+```shell
+gradlew javadoc
 ```
 
-The generated javadoc will be located in the `javadoc` directory.
+The generated javadoc will be located in the `build/docs/javadoc` directory.
 
 ## General Concepts
-* TBD
+
+In this part the concepts used throughout OpenKit are explained. A short sample how to use OpenKit is
+also provided. For detailed code samples have a look into [example.md](docs/example.md).
+
+### OpenKit
+
+An `OpenKit` instance is responsible for getting and setting application relevant information, e.g.
+the application's version and device specific information.  
+Furthermore the `OpenKit` is responsible for creating user sessions (see `Session`).
+  
+Although it would be possible to have multiple `OpenKit` instances connected to the same endpoint
+(Dynatrace/AppMon) within one process, there should be one unique instance. `OpenKit` is designed to be
+thread safe and therefore the instance can be shared among threads.  
+
+On application shutdown, `shutdown()` needs to be called on the OpenKit instance.
+
+### Device
+
+A `Device` instance, which can be retrieved from an `OpenKit` instance, contains methods
+for setting device specific information. It's not mandatory for the application developer to
+provide this information, reasonable default values exist.  
+However when the application is run on multiple different devices it might be quite handy
+to know details about the used device (e.g device identifier, device manufacturer, operating system).
+
+### Session
+
+A `Session` represents kind of a user session, similar to a browser session in a web application.
+However the application developer is free to choose how to treat a `Session`.  
+The `Session` is used to create `RootAction` instances and report application crashes.  
+
+When a `Session` is no longer required, it's highly recommended to end it, using the `Session.end()` method. 
+
+### RootAction and Action
+
+The `RootAction` and `Action` are named hierarchical nodes for timing and attaching further details.
+A `RootAction` is created from the `Session` and it can create `Action` instances. Both, `RootAction` and
+`Action`, provide the possibility to attach key-value pairs and named events, and are used 
+for tracing web requests.
+
+### WebRequestTracer
+
+When the application developer wants to trace a web request, which is served by a service 
+instrumented by Dynatrace, a `WebRequestTracer` should be used, which can be
+requested from an action (`RootAction` or `Action`).  
+
+### Named Events
+
+A named `Event` is attached to an `Action` (or `RootAction`) and contains a name.
+
+### Key-Value pairs
+
+For an `Action` or a `RootAction` key-value pairs can also be reported. The key is always a String
+and the value may be an Integer (int), a floating point (double) or a String.
+
+### Errors & Crashes
+
+Errors are a way to report an erroneous condition on an `Action` (also `RootAction`).  
+Crashes are used to report (unhandled) exceptions on a `Session`.
+
+
+## Example
+
+This small example provides a rough overview how OpenKit can be used.  
+Detailed explanation is available in [example.md](docs/example.md).
+
+```java
+String applicationName = "My OpenKit application";
+String applicationID = "application-id";
+long visitorID = 42;
+String endpointURL = "https://tenantid.beaconurl.com";
+
+OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL);
+openKit.initialize();
+openKit.waitForInitCompletion();
+
+String clientIP = "8.8.8.8";
+Session session = openKit.createSession(clientIP);
+
+String rootActionName = "rootActionName";
+RootAction rootAction = session.enterAction(rootActionName);
+
+String childActionName = "childAction";
+Action childAction = rootAction.enterAction(childActionName);
+
+childAction.leaveAction();
+rootAction.leaveAction();
+session.end();
+openKit.shutDown();
+``` 
+
 
 ## Known Current Limitations
 * problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
@@ -73,7 +162,6 @@ The generated javadoc will be located in the `javadoc` directory.
 * it's only possible to have one OpenKit instance running as providers are static
 
 ## TODOs
-* add multiple time syncs for Dynatrace, especially for long running applications
 * move providers from static to instance (multiple OpenKits -> multiple providers)
 * prevent re-entrances e.g. of startup/shutdown
 * HTTPS certificate verification
