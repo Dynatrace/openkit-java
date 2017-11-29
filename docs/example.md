@@ -6,8 +6,9 @@ developer point of view. It explains the usage of all the API methods.
 ## Obtaining an OpenKit instance
 
 OpenKit instances are obtained from the `OpenKitFactory` class.  
-Depending on the used backend system (Dynatace ..), the factory provides different methods to create a new 
-OpenKit instance. Despite from this, the developer does not need to distinguish between different backend systems.
+Depending on the used backend system (Dynatrace SaaS/Dynatrace Managed/AppMon), the factory provides 
+different methods to create a new  OpenKit instance. Despite from this, the developer does not 
+need to distinguish between different backend systems.
 
 ### Dynatrace SaaS
  
