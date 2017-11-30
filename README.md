@@ -17,7 +17,7 @@ This repository contains the reference implementation in pure Java. Other implem
 ## What you can do with the OpenKit
 * Create Sessions and User Actions
 * Report values, events, errors and crashes
-* Tag web requests to server-side PurePaths
+* Trace web requests to server-side PurePaths
 * Use it together with Dynatrace or AppMon
 
 ## What you cannot do with the OpenKit

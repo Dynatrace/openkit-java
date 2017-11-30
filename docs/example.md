@@ -169,7 +169,7 @@ openKit.getDevice().setOperatingSystem(operatingSystem);
 
 // set device manufacturer
 String deviceManufacturer = "ACME Inc.";
-openKit.getDevice().setOperatingSystem(deviceManufacturer);
+openKit.getDevice().setManufacturer(deviceManufacturer);
 
 // set device/model identifier
 String deviceID = "12-34-56-78-90";
@@ -180,7 +180,7 @@ openKit.getDevice().setModelID(deviceID);
 
 After setting application version and device information, which is not mandatory, but might be useful,
 a `Session` can be created by invoking the `createSession` method.  
-There are two `createSession` method:
+There are two `createSession` methods:
 1. Taking an IP address as string argument, which might be a valid IPv4 or IPv6 address.
 If the argument is not a valid IP address a reasonable default value is used.
 2. An overload taking no arguments. In this case the IP which communicates with the server is assigned
@@ -198,7 +198,7 @@ Session sessionWithoutArgument = openKit.createSession();
 
 ## Finishing a Session
 
-When a `Session` is no longer needed, a Session should be ended by invoking the `end` method.  
+When a `Session` is no longer needed, it should be ended by invoking the `end` method.  
 Although all open sessions are automatically ended when OpenKit is shut down (see "Terminating the OpenKit instance")
 it's highly recommended to end sessions which are no longer in use manually.
 ```java
@@ -240,7 +240,7 @@ String rootActionName = "rootActionName";
 RootAction rootAction = session.enterAction(rootActionName);
 ```
 
-Since `RootAction` extends the `Action` all further methods are the same for both interfaces, except
+Since `RootAction` extends the `Action` interface all further methods are the same for both interfaces, except
 for creating child actions, which can only be done with a `RootAction`.
 
 ## Entering a child Action
@@ -265,7 +265,7 @@ Action parent = parentAsAction.leave(); // will always return null
 
 ## Report Named Event
 
-To report a named event use the `reportEvent` method on `Action` (including of course `RootAction`).
+To report a named event use the `reportEvent` method on `Action`.
 ```java
 String eventName = "eventName";
 action.reportEvent(eventName);
@@ -274,9 +274,9 @@ action.reportEvent(eventName);
 rootAction.reportEvent(eventName);
 ```
 
-## Report key-value pairs
+## Report Key-value pairs
 
-Key-value pairs can also be reported via an `Action` or a `RootAction` as shown in the example below.
+Key-value pairs can also be reported via an `Action` as shown in the example below.
 Overloaded methods exist for the following value types:
 * int
 * double
@@ -300,7 +300,7 @@ action.reportValue(keyStringType, valueString);
 
 ## Report an Error
 
-An `Action` (including `RootAction`) also has the possibility to report an error with a given 
+An `Action` also has the possibility to report an error with a given 
 name, code and a reason. The code fragment below shows how.
 ```java
 String errorName = "Unknown Error";
@@ -361,7 +361,6 @@ webRequestTracer.startTiming();
 
 webRequestTracer.setResponseCode(200);
 webRequestTracer.stopTiming();
-
 ```
 
 
