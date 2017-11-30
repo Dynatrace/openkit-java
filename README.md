@@ -114,7 +114,7 @@ requested from an `Action`.
 
 A named `Event` is attached to an `Action` and contains a name.
 
-### Key-Value pairs
+### Key-Value Pairs
 
 For an `Action` key-value pairs can also be reported. The key is always a String
 and the value may be an Integer (int), a floating point (double) or a String.
