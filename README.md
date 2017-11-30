@@ -116,7 +116,7 @@ A named `Event` is attached to an `Action` and contains a name.
 
 ### Key-Value Pairs
 
-For an `Action` Key-Value Pairs can also be reported. The key is always a String
+For an `Action` key-value pairs can also be reported. The key is always a String
 and the value may be an Integer (int), a floating point (double) or a String.
 
 ### Errors & Crashes
