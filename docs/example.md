@@ -1,7 +1,7 @@
 # Dynatrace OpenKit - Java example
 
-The following document shall provide the reader an in depth overview, how OpenKit can be used from
-developer point of view. It explains the usage of all the API methods.
+The following document shall provide an in depth overview, how OpenKit can be used from
+developer's point of view. It explains the usage of all the API methods.
 
 ## Obtaining an OpenKit instance
 
@@ -148,7 +148,7 @@ if (isInitialized) {
 }
 ```
 
-## Providing further application information
+## Providing further Application information
 
 If multiple version's of the same applications are monitored by OpenKit, it's quite useful
 to set the application's version in OpenKit.  
@@ -158,7 +158,7 @@ String applicationVersion = "1.2.3.4";
 openKit.setApplicationVersion(applicationVersion);
 ```
 
-## Providing device specific information
+## Providing Device specific information
 
 Sometimes it might also be quite useful to provide information about the device the application
 is running on. The example below shows how to achieve this.
@@ -169,18 +169,18 @@ openKit.getDevice().setOperatingSystem(operatingSystem);
 
 // set device manufacturer
 String deviceManufacturer = "ACME Inc.";
-openKit.getDevice().setOperatingSystem(deviceManufacturer);
+openKit.getDevice().setManufacturer(deviceManufacturer);
 
 // set device/model identifier
 String deviceID = "12-34-56-78-90";
 openKit.getDevice().setModelID(deviceID);
 ```
 
-## Creating a session
+## Creating a Session
 
 After setting application version and device information, which is not mandatory, but might be useful,
 a `Session` can be created by invoking the `createSession` method.  
-There are two `createSession` method:
+There are two `createSession` methods:
 1. Taking an IP address as string argument, which might be a valid IPv4 or IPv6 address.
 If the argument is not a valid IP address a reasonable default value is used.
 2. An overload taking no arguments. In this case the IP which communicates with the server is assigned
@@ -196,9 +196,9 @@ Session sessionWithArgument = openKit.createSession(clientIPAddress);
 Session sessionWithoutArgument = openKit.createSession();
 ```
 
-## Finishing a session
+## Finishing a Session
 
-When a `Session` is no longer needed, a Session should be ended by invoking the `end` method.  
+When a `Session` is no longer needed, it should be ended by invoking the `end` method.  
 Although all open sessions are automatically ended when OpenKit is shut down (see "Terminating the OpenKit instance")
 it's highly recommended to end sessions which are no longer in use manually.
 ```java
@@ -206,7 +206,7 @@ session.end();
 session = null; // not needed, just used to indicate that the session is no longer valid.
 ```
 
-## Reporting a crash
+## Reporting a Crash
 
 Unexpected application crashes can be reported via a `Session` by invoking the `reportCrash` method.  
 The example below shows how an exception might be reported.
@@ -240,7 +240,7 @@ String rootActionName = "rootActionName";
 RootAction rootAction = session.enterAction(rootActionName);
 ```
 
-Since `RootAction` extends the `Action` all further methods are the same for both interfaces, except
+Since `RootAction` extends the `Action` interface all further methods are the same for both interfaces, except
 for creating child actions, which can only be done with a `RootAction`.
 
 ## Entering a child Action
@@ -253,7 +253,7 @@ String childActionName = "childActionName";
 Action childAction = rootAction.enterAction(childActionName);
 ```
 
-## Leaving actions
+## Leaving Actions
 
 To leave an `Action` simply use the `leave` method. The method returns the parent action or `null`
 if it has no parent.
@@ -263,9 +263,9 @@ Action parentAsAction = action.leave(); // returns the appropriate RootAction
 Action parent = parentAsAction.leave(); // will always return null
 ```
 
-## Report named Event
+## Report Named Event
 
-To report a named event use the `reportEvent` method on `Action` (including of course `RootAction`).
+To report a named event use the `reportEvent` method on `Action`.
 ```java
 String eventName = "eventName";
 action.reportEvent(eventName);
@@ -274,9 +274,9 @@ action.reportEvent(eventName);
 rootAction.reportEvent(eventName);
 ```
 
-## Report key-value pairs
+## Report Key-value pairs
 
-Key-value pairs can also be reported via an `Action` or a `RootAction` as shown in the example below.
+Key-value pairs can also be reported via an `Action` as shown in the example below.
 Overloaded methods exist for the following value types:
 * int
 * double
@@ -300,7 +300,7 @@ action.reportValue(keyStringType, valueString);
 
 ## Report an Error
 
-An `Action` (including `RootAction`) also has the possibility to report an error with a given 
+An `Action` also has the possibility to report an error with a given 
 name, code and a reason. The code fragment below shows how.
 ```java
 String errorName = "Unknown Error";
@@ -310,7 +310,7 @@ String reason = "Not sure what's going on here";
 action.reportError(errorName, errorCode, reason);
 ```
 
-## Tracing web requests
+## Tracing Web Requests
 
 One of the most powerful OpenKit features is web request tracing. When the application starts a web
 request (e.g. HTTP GET) a special tag can be attached to the header. This special header allows
@@ -361,7 +361,6 @@ webRequestTracer.startTiming();
 
 webRequestTracer.setResponseCode(200);
 webRequestTracer.stopTiming();
-
 ```
 
 
