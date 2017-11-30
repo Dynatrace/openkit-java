@@ -1,9 +1,9 @@
-# Dynatrace OpenKit - Java example
+# Dynatrace OpenKit - Java Example
 
-The following document shall provide an in depth overview, how OpenKit can be used from
+The following document provides an in depth overview, how OpenKit can be used from
 developer's point of view. It explains the usage of all the API methods.
 
-## Obtaining an OpenKit instance
+## Obtaining an OpenKit Instance
 
 OpenKit instances are obtained from the `OpenKitFactory` class.  
 Depending on the used backend system (Dynatrace SaaS/Dynatrace Managed/AppMon), the factory provides 
@@ -135,7 +135,7 @@ long timeoutInMilliseconds = 10 * 1000;
 boolean success = openKit.waitForInitCompletion(timeoutInMilliseconds);
 ```
 
-The method returns `false` in case the timeout expired or `shutdown` has been invoked in the mean time
+The method returns `false` in case the timeout expired or `shutdown` has been invoked in the meantime
 and `true` to indicate successful initialization.  
 
 To verify if OpenKit has been initialized, use the `isInitialized` method as shown in the example below.
@@ -148,7 +148,7 @@ if (isInitialized) {
 }
 ```
 
-## Providing further Application information
+## Providing further Application Information
 
 If multiple version's of the same applications are monitored by OpenKit, it's quite useful
 to set the application's version in OpenKit.  
@@ -158,7 +158,7 @@ String applicationVersion = "1.2.3.4";
 openKit.setApplicationVersion(applicationVersion);
 ```
 
-## Providing Device specific information
+## Providing Device specific Information
 
 Sometimes it might also be quite useful to provide information about the device the application
 is running on. The example below shows how to achieve this.
@@ -243,7 +243,7 @@ RootAction rootAction = session.enterAction(rootActionName);
 Since `RootAction` extends the `Action` interface all further methods are the same for both interfaces, except
 for creating child actions, which can only be done with a `RootAction`.
 
-## Entering a child Action
+## Entering a Child Action
 
 To start a child `Action` from a previously started `RootAction` use the `enterAction` method from
 `RootAction`, as demonstrated below.
@@ -274,9 +274,9 @@ action.reportEvent(eventName);
 rootAction.reportEvent(eventName);
 ```
 
-## Report Key-value pairs
+## Report Key-Value Pairs
 
-Key-value pairs can also be reported via an `Action` as shown in the example below.
+Key-Value Pairs can also be reported via an `Action` as shown in the example below.
 Overloaded methods exist for the following value types:
 * int
 * double
@@ -314,7 +314,7 @@ action.reportError(errorName, errorCode, reason);
 
 One of the most powerful OpenKit features is web request tracing. When the application starts a web
 request (e.g. HTTP GET) a special tag can be attached to the header. This special header allows
-Dynatrace SaaS/Dynatrace Managed/AppMon to correlate with a server side PurePath. 
+Dynatrace SaaS/Dynatrace Managed/AppMon to correlate Actions with a server side PurePath. 
 
 An example is shown below.
 ```java
@@ -364,7 +364,7 @@ webRequestTracer.stopTiming();
 ```
 
 
-## Terminating the OpenKit instance
+## Terminating the OpenKit Instance
 
 When an OpenKit instance is no longer needed (e.g. the application using OpenKit is shut down), the previously
 obtained instance can be cleared by invoking the `shutdown` method.  
