@@ -19,7 +19,7 @@ public class AbstractRemoteAppMonTest extends AbstractAppMonTest {
 
 	@Before
 	public void setup() throws InterruptedException {
-		openKitTestImpl = OpenKitTestFactory.createAppMonRemoteInstance(TEST_APPLICATION_NAME, TEST_APPLICATION_ID, new Random(System.currentTimeMillis()).nextLong(), TEST_ENDPOINT);
+		openKitTestImpl = OpenKitTestFactory.createAppMonRemoteInstance(TEST_APPLICATION_NAME, new Random(System.currentTimeMillis()).nextLong(), TEST_ENDPOINT);
 		openKit = openKitTestImpl;
 		openKit.initialize();
 	}
