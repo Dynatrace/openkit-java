@@ -18,7 +18,7 @@ delays between consecutive retries.
 If the server returned a status response a state transition to TimeSync is performed, otherwise
 OpenKit stays in the Initialize state, but sleeps some time until the next status request is sent. 
  
-If OpenKit.shutdown() is called while OpenKit is in the Init state, 
+If `OpenKit.shutdown()` is called while OpenKit is in the Init state, 
 a transition to the Terminal state is performed.
 
 ## TimeSync
