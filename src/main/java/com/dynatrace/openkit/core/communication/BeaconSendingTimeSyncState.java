@@ -90,7 +90,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     @Override
     AbstractBeaconSendingState getShutdownState() {
-        return new BeaconSendingTerminalState();
+        return initialTimeSync ? new BeaconSendingTerminalState() : new BeaconSendingFlushSessionsState();
     }
 
     /**
