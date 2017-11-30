@@ -39,12 +39,19 @@ public class OpenKitImpl implements OpenKit {
 		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
 	}
 
-	// *** OpenKit interface methods ***
-
-	@Override
+	/**
+	 * Initialize this OpenKit instance.
+	 *
+	 * <p>
+	 *     This method starts the {@link BeaconSender} and is called directly after
+     *     the instance has been created in {@link com.dynatrace.openkit.OpenKitFactory}.
+	 * </p>
+	 */
 	public void initialize() {
 		beaconSender.initialize();
 	}
+
+	// *** OpenKit interface methods ***
 
 	@Override
 	public boolean waitForInitCompletion() {
