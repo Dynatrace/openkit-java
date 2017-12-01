@@ -3,11 +3,10 @@
 ## Data Sending (Beacon sending)
 
 All data sending, including synchronization with the backend (Dynatrace SaaS/Dynatrace Managed/AppMon)
-happens asynchronously by starting an own Thread when OpenKit is initialized.  
+happens asynchronously by starting an own thread when OpenKit is initialized.  
 
-This sending thread runs through several states, before sending data actually happens.  
-
-The following diagram illustrates these states. Each of them, including transitions, is explained later.
+Beacon sending in OpenKit is implemented using a state pattern. The following 
+diagram illustrates the states.
 
 ![diagram](./pics/OpenKit-state_diagram.svg)
 
@@ -19,30 +18,27 @@ delays between consecutive retries.
 If the server returned a status response a state transition to TimeSync is performed, otherwise
 OpenKit stays in the Initialize state, but sleeps some time until the next status request is sent. 
  
-In case the application developer calls `OpenKit.shutdown()` while in Init state, an immediate 
-transition to the Terminal state is performed.
+If `OpenKit.shutdown()` is called while OpenKit is in the Init state, 
+a transition to the Terminal state is performed.
 
 ## TimeSync
 
 In the TimeSync state (class `BeaconSendingTimeSyncState`) 5 time sync timestamp pairs, in total
-10 timestamps, are fetched from the server to calculate the time offset to the backend. To retrieve
-a pair of timestamps one time sync request is sent with a maximum amount of retries 
+10 timestamps, are fetched. The timestamps are used to calculate the time offset to the backend. 
+To retrieve a pair of timestamps one time sync request is sent with a maximum amount of retries 
 (by default 5 retries, therefore in total 6 requests for one timestamp pair).  
-If a server does not support time sync (e.g. AppMon), indicated by at least one negative timestamp
-returned in a time sync response, all further retries are skipped and no further time sync will happen. 
-In this case a transition to either CaptureOn state or CaptureOff state is performed, based on the 
-initial configuration obtained in Init state.
+If a server does not support time sync (e.g. AppMon) all further retries are skipped and no 
+further time sync will happen.  In this case a transition to either CaptureOn state or CaptureOff 
+state is performed, based on the initial configuration obtained in Init state.
 If the number of time sync retries is exceeded the time sync is unsuccessful and therefore a
 transition to CaptureOff is performed.
-In case the time sync was successful a transition to either CaptureOn state or CaptureOff 
-state is performed, based on the initial configuration obtained in Init state.  
  
 The algorithm used to compute the cluster time offset is similar to the algorithm used by 
 [NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm).
 
-In case the application developer calls `OpenKit.shutdown()` while in TimeSync state a transition
-to TerminalState is performed if it's the initial time sync, otherwise a transition to 
-FlushSessions state is done.
+If `OpenKit.shutdown()` is called while OpenKit is in the TimeSync state, a transition to either 
+Terminal state or FlushSession state is performed. The transition to the Terminal state 
+is only performed if the initial time sync was not completed before the call to `shutdown()`.
 
 ## CaptureOff
 
@@ -51,7 +47,7 @@ status request was sent to the server and sleeps some time before performing the
 request.  
 If time sync is supported by the server and the initial time sync failed a state transition
 to time sync is performed.  
-In case an initial time sync is not needed any more a transition to CaptureOn state is performed
+If the initial time sync was successfully performed, a transition to CaptureOn state is performed
 if capturing was enabled by the server's status response. If capturing is disabled
 then no transition is performed and the state machine stays in CaptureOff state.  
 
@@ -78,4 +74,4 @@ data which has not been transferred so far to the server.
 
 The Terminal state (class `BeaconSendingTerminalState`) is the last state in OpenKit's internal 
 state machine. After this state is reached the background thread responsible for sending data 
-will end itself.
+is terminated gracefully.
