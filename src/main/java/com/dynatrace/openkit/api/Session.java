@@ -16,7 +16,7 @@ public interface Session {
 	 * @param actionName	name of the Action
 	 * @return				Action instance to work with
 	 */
-	public RootAction enterAction(String actionName);
+	RootAction enterAction(String actionName);
 
 	/**
 	 * Reports a crash with a specified error name, crash reason and a stacktrace.
@@ -25,11 +25,11 @@ public interface Session {
 	 * @param reason			reason or description of that error
 	 * @param stacktrace		stacktrace leading to that crash
 	 */
-	public void reportCrash(String errorName, String reason, String stacktrace);
+	void reportCrash(String errorName, String reason, String stacktrace);
 
 	/**
 	 * Ends this Session and marks it as finished for sending.
 	 */
-	public void end();
+	void end();
 
 }
