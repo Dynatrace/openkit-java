@@ -1,6 +1,6 @@
 #OpenKit - Internals
 
-## Data Sending (Beacon sending)
+## Data Sending (Beacon Sending)
 
 All data sending, including synchronization with the backend (Dynatrace SaaS/Dynatrace Managed/AppMon)
 happens asynchronously by starting an own thread when OpenKit is initialized.  
