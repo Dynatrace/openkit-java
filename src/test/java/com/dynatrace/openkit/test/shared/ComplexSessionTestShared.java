@@ -37,9 +37,9 @@ public class ComplexSessionTestShared {
 			url = new URL("http://mydomain/app/search.php");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			timing = actionOne.traceWebRequest(conn);			// tags the request
-			timing.startTiming();							// starts the timing
+			timing.start();							// starts the timing
 			// no request is performed - but that's OK
-			timing.stopTiming();							// stop the timing and generate the beacon signal
+			timing.stop();							// stop the timing and generate the beacon signal
 		} catch (IOException e) {
 			System.out.println(e.toString());
 		}

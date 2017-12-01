@@ -10,5 +10,5 @@ public interface RootAction extends Action {
      * @param actionName	name of the Action
      * @return				Action instance to work with
      */
-    public Action enterAction(String actionName);
+    Action enterAction(String actionName);
 }

@@ -17,23 +17,22 @@ public interface WebRequestTracer {
 	 *
 	 * @return		the Dynatrace tag to be set as HTTP header value or an empty String if capture is off
 	 */
-	public String getTag();
+	String getTag();
 
 	/**
-	 * Sets the response code of this web request. Has to be called before {@link WebRequestTracer#stopTiming()}.
+	 * Sets the response code of this web request. Has to be called before {@link WebRequestTracer#stop()}.
 	 *
 	 * @param responseCode		response code of this web request
 	 */
-	public void setResponseCode(int responseCode);
+	void setResponseCode(int responseCode);
 
 	/**
 	 * Starts the web request timing. Should be called when the web request is initiated.
 	 */
-	public void startTiming();
+	void start();
 
 	/**
 	 * Stops the web request timing. Should be called when the web request is finished.
 	 */
-	public void stopTiming();
-
+	void stop();
 }

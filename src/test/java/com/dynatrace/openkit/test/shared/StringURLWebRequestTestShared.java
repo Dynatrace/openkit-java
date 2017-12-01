@@ -17,12 +17,12 @@ public class StringURLWebRequestTestShared {
 		Action action = session.enterAction("StringUrlWebRequestAction");
 
 		WebRequestTracer webRequestTiming = action.traceWebRequest("http://www.google.com/search.html?q=test&p=10");
-		webRequestTiming.startTiming();
+		webRequestTiming.start();
 
 		String tag = webRequestTiming.getTag();
 		// at this point the user should use the tag to set on the corresponding HTTP header
 
-		webRequestTiming.stopTiming();
+		webRequestTiming.stop();
 
 		action.leaveAction();
 		session.end();
