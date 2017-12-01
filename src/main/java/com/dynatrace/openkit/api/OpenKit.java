@@ -25,7 +25,7 @@ public interface OpenKit {
      *     fully initialized.
      * </p>
      *
-     * Must be done before any other calls to the OpenKit, otherwise those calls to the OpenKit will do nothing.
+     * Must be done before any other call to OpenKit, otherwise calls to OpenKit will do nothing.
      */
     void initialize();
     /**

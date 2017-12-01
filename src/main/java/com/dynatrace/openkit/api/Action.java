@@ -82,7 +82,7 @@ public interface Action {
 	/**
 	 * Leaves this Action.
 	 *
-	 * @return	this Action (for usage as fluent API)
+	 * @return	the parent Action
 	 */
 	public Action leaveAction();
 
