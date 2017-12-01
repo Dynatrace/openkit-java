@@ -34,11 +34,11 @@ public class WebRequestTimingTestShared {
 			return;
 		}
 		WebRequestTracer webRequestTiming = action.traceWebRequest(connection);
-		webRequestTiming.startTiming();
+		webRequestTiming.start();
 
 		// we could actually execute the request, but as it's not needed for this test, we don't
 
-		webRequestTiming.stopTiming();
+		webRequestTiming.stop();
 
 		action.leaveAction();
 		session.end();

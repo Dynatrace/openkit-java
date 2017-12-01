@@ -24,12 +24,12 @@ public class DummyWebRequestTracer implements WebRequestTracer {
 	}
 
 	@Override
-	public void startTiming() {
+	public void start() {
 		// do nothing
 	}
 
 	@Override
-	public void stopTiming() {
+	public void stop() {
 		// do nothing
 	}
 

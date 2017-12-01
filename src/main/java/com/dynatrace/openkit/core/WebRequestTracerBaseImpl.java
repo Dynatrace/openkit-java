@@ -56,12 +56,12 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	}
 
 	@Override
-	public void startTiming() {
+	public void start() {
 		startTime = TimeProvider.getTimestamp();
 	}
 
 	@Override
-	public void stopTiming() {
+	public void stop() {
 		endTime = TimeProvider.getTimestamp();
 		endSequenceNo = beacon.createSequenceNumber();
 
