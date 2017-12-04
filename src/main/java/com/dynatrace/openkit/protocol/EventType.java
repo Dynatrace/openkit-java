@@ -9,7 +9,7 @@ package com.dynatrace.openkit.protocol;
  * Event types used in the beacon protocol.
  */
 public enum EventType {
-	ACTION,			// Action
+	ACTION,					// Action
 	VALUE_STRING,			// captured string
 	VALUE_INT,				// captured int
 	VALUE_DOUBLE,			// captured double
@@ -17,7 +17,8 @@ public enum EventType {
 	SESSION_END,			// session end
 	WEBREQUEST,				// tagged web request
 	ERROR,					// error
-	CRASH;					// crash
+	CRASH,					// crash
+	IDENTIFY_USER;			// identify user
 
 	public short protocolValue() {
 		switch (this) {
@@ -39,6 +40,8 @@ public enum EventType {
 				return 40;
 			case CRASH:
 				return 50;
+			case IDENTIFY_USER:
+				return 60;
 			default:
 				return -1;
 		}

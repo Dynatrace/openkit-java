@@ -47,6 +47,11 @@ public class SessionImpl implements Session {
 	}
 
 	@Override
+	public void identifyUser(String userId) {
+		beacon.identifyUser(userId);
+	}
+
+	@Override
 	public void reportCrash(String errorName, String reason, String stacktrace) {
 		beacon.reportCrash(errorName, reason, stacktrace);
 	}
