@@ -12,6 +12,7 @@ import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
@@ -31,11 +32,11 @@ public class SessionImpl implements Session {
 
 	// *** constructors ***
 
-	SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender) {
+	SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender, ThreadIDProvider threadIDProvider) {
 		this.beaconSender = beaconSender;
 
 		// beacon has to be created immediately, as the session start time is taken at beacon construction
-		beacon = new Beacon(configuration, clientIPAddress);
+		beacon = new Beacon(configuration, clientIPAddress, threadIDProvider);
 		beaconSender.startSession(this);
 	}
 

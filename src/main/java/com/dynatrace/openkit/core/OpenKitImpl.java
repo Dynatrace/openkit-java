@@ -9,10 +9,7 @@ import com.dynatrace.openkit.api.Device;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
-import com.dynatrace.openkit.providers.DefaultTimingProvider;
-import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.providers.TimingProvider;
+import com.dynatrace.openkit.providers.*;
 
 /**
  * Actual implementation of the {@link OpenKit} interface.
@@ -24,6 +21,7 @@ public class OpenKitImpl implements OpenKit {
 
 	// AbstractConfiguration reference
 	private AbstractConfiguration configuration;
+	private final ThreadIDProvider threadIDProvider;
 
 	// dummy Session implementation, used if capture is set to off
 	private static DummySession dummySessionInstance = new DummySession();
@@ -31,11 +29,12 @@ public class OpenKitImpl implements OpenKit {
 	// *** constructors ***
 
 	public OpenKitImpl(AbstractConfiguration config) {
-		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider());
+		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
-	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider) {
+	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
 		configuration = config;
+		this.threadIDProvider = threadIDProvider;
 		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
 	}
 
@@ -81,7 +80,7 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public Session createSession(String clientIPAddress) {
 		if (isInitialized() && configuration.isCapture()) {
-			return new SessionImpl(configuration, clientIPAddress, beaconSender);
+			return new SessionImpl(configuration, clientIPAddress, beaconSender, threadIDProvider);
 		} else {
 			return dummySessionInstance;
 		}
