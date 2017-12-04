@@ -14,6 +14,7 @@ public class ConfigurationTest {
     private static final String host = "localhost:9999";
     private static final String tenantId = "asdf";
     private static final String applicationName = "testApp";
+    private static final String applicationVersion = "0.3";
 
     @Test
     public void saasUrlIsCorrect() {
@@ -51,11 +52,17 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void applicationIdAndApplicationNameIdenticalForAppMonConfig()
-    {
+    public void applicationIdAndApplicationNameIdenticalForAppMonConfig() {
         AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17, "", false);
 
         assertThat(applicationName, is(configuration.getApplicationID()));
         assertThat(applicationName, is(configuration.getApplicationName()));
+    }
+
+    @Test
+    public void defaultApplicationVersionIsCorrect() {
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17, "", false);
+
+        assertThat(applicationVersion, is(configuration.getApplicationVersion()));
     }
 }
