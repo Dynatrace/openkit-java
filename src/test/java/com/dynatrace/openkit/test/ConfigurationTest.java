@@ -44,7 +44,7 @@ public class ConfigurationTest {
     public void appMonUrlIsCorrect() {
         String appMonHost = String.format("https://%s", host);
 
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17,appMonHost,false);
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, appMonHost, false);
 
         String expected = String.format("%s/dynaTraceMonitor", appMonHost);
 
@@ -53,7 +53,7 @@ public class ConfigurationTest {
 
     @Test
     public void applicationIdAndApplicationNameIdenticalForAppMonConfig() {
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17, "", false);
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false);
 
         assertThat(applicationName, is(configuration.getApplicationID()));
         assertThat(applicationName, is(configuration.getApplicationName()));
@@ -61,7 +61,7 @@ public class ConfigurationTest {
 
     @Test
     public void defaultApplicationVersionIsCorrect() {
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName,17, "", false);
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false);
 
         assertThat(applicationVersion, is(configuration.getApplicationVersion()));
     }

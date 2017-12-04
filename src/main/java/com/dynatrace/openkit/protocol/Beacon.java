@@ -113,7 +113,7 @@ public class Beacon {
 		this.sessionStartTime = TimeProvider.getTimestamp();
 		this.configuration = configuration;
 
-		if( InetAddressValidator.isValidIP(clientIPAddress)) {
+		if(InetAddressValidator.isValidIP(clientIPAddress)) {
 			this.clientIPAddress = clientIPAddress;
 		} else {
 			this.clientIPAddress = "";

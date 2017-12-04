@@ -25,21 +25,21 @@ public class DeviceImpl implements Device {
 
 	@Override
 	public void setOperatingSystem(String operatingSystem) {
-		if(operatingSystem != null && operatingSystem.length() > 0) {
+		if(operatingSystem != null && !operatingSystem.isEmpty()) {
 			this.operatingSystem = operatingSystem;
 		}
 	}
 
 	@Override
 	public void setManufacturer(String manufacturer) {
-		if(manufacturer != null && manufacturer.length() > 0) {
+		if(manufacturer != null && !manufacturer.isEmpty()) {
 			this.manufacturer = manufacturer;
 		}
 	}
 
 	@Override
 	public void setModelID(String modelID) {
-		if(modelID != null && modelID.length() > 0) {
+		if(modelID != null && !modelID.isEmpty()) {
 			this.modelID = modelID;
 		}
 	}

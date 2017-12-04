@@ -3,17 +3,8 @@ package com.dynatrace.openkit.core.util;
 import java.util.regex.Pattern;
 
 /**
- * THIS FILE HAS BEEN COPIED FROM cdd.gen.ccdd.sdk.agent.shared - ideally it needs to be
- * copied here as part of the build process
- *
- * WARNING: THIS FILE IS COPIED FROM AGENT.SHARED DURING BUILD. DO NOT MODIFY HERE!
- *
- * Utility class for validating an IP address against regular expression patterns.
- *
- * !!!!!!!!!! NOTE !!!!!!!!!!
- * This class is a duplication of com.dynatrace.diagnostics.core.realtime.analyzers.enduser.ClientLocation.InetAddressValidator.
- * Duplication is necessary, otherwise instrumentation of dtserver fails !
- *
+ * This class provides static methods to check for valid Inet addresses in IPv4, IPv6 or
+ * mixed notation.
  */
 public class InetAddressValidator {
 
@@ -47,32 +38,90 @@ public class InetAddressValidator {
 
 
 
+    /**
+     * Check if <code>input</code> is a valid IPv4 address
+     *
+     * <p>
+     *     The format is 'xxx.xxx.xxx.xxx'. Four blocks of integer numbers ranging from 0 to 255
+     *     are required. Letters are not allowed.
+     * </p>
+     *
+     * @param input ip-address to check
+     * @return true if <code>input</code> is in correct IPv4 notation.
+     */
     public static boolean isIPv4Address(final String input) {
         return IPV4_PATTERN.matcher(input).matches();
     }
 
+    /**
+     * Check if the given address is a valid IPv6 address in the standard format
+     *
+     * <p>
+     *     The format is 'xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx'. Eight blocks of hexadecimal digits
+     *     are required.
+     * </p>
+     *
+     * @param input ip-address to check
+     * @return true if <code>input</code> is in correct IPv6 notation.
+     */
     public static boolean isIPv6StdAddress(final String input) {
         return IPV6_STD_PATTERN.matcher(input).matches();
     }
 
-
+    /**
+     * Check if the given address is a valid IPv6 address in the hex-compressed notation
+     *
+     * <p>
+     *     The format is 'xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx'. If all digits in a block are '0'
+     *     the block can be left empty.
+     * </p>
+     *
+     * @param input ip-address to check
+     * @return true if <code>input</code> is in correct IPv6 (hex-compressed) notation.
+     */
     public static boolean isIPv6HexCompressedAddress(final String input) {
         return IPV6_HEX_COMPRESSED_PATTERN.matcher(input).matches();
     }
 
+    /**
+     * Check if <code>input</code> is a IPv6 address.
+     * <p>
+     *     Possible notations for valid IPv6 are:
+     *     - Standard IPv6 address
+     *     - Hex-compressed IPv6 address
+     *     - Link-local IPv6 address
+     *     - IPv4-mapped-to-IPV6 address
+     *     - IPv6 mixed address
+     * </p>
+     *
+     * @param input ip-address to check
+     * @return true if <code>input</code> is in correct IPv6 notation.
+     */
     public static boolean isIPv6Address(final String input) {
         return isIPv6StdAddress(input) || isIPv6HexCompressedAddress(input) || isLinkLocalIPv6WithZoneIndex(input)
                 || isIPv6IPv4MappedAddress( input) || isIPv6MixedAddress( input) ;
     }
 
-    // format x:x:x:x:x:x:d.d.d.d
-    // InetAddress.getByName(strAddr); returns an IPv6 Address for this format
+    /**
+     * Check if the given address is a valid IPv6 address in the mixed-standard or mixed-compressed notation.
+     *
+     * @param input ip-address to check
+     * @return true if <code>input</code> is in correct IPv6 (mixed-standard or mixed-compressed) notation.
+     */
     public static boolean isIPv6MixedAddress( final String input ) {
         return IPV6_MIXED_STD_OR_COMPRESSED_PATTERN.matcher(input).matches();
     }
 
-    // format ::ffff:d.d.d.d
-    // InetAddress.getByName(strAddr); returns an IPv4 address for this format
+    /**
+     * Check if <code>input</code> is an IPv4 address mapped into a IPv6 address. These are
+     * starting with "::fff:" followed by the IPv4 address in a dot-seperated notation.
+     * <p>
+     *     The format is '::ffff:d.d.d.d'
+     * </p>
+     *
+     * @param input ip-address to check
+     * @return true if address part is in correct IPv6 notation containing an IPv4 address
+     */
     public static boolean isIPv6IPv4MappedAddress( final String input) {
         // InetAddress automatically convert this type of address down to an IPv4 address
         // It always starts '::ffff:' then contains an IPv4 address
@@ -85,36 +134,11 @@ public class InetAddressValidator {
     }
 
     /**
-     * getIPv4AddressFromIPv6MixedAddress( )
-     * returns the IPv4 part of an IPv6 address assuming it has already been identified that this is a mixed mode address
-     *
-     * callers should check that this is a mixed mode IPv6 address with ( isIPv6MixedStdOrCompressedAddress(() ) before making the call
-     * even though we test for this in the method
-     *
-     * @param input
-     * @return IPv4 address as a string
-     */
-    public static String getIPv4AddressFromIPv6MixedAddress( final String input ) {
-        if ( isIPv6MixedAddress( input ) ) {
-            // pull out the IPv4 address from the end of the string
-            // find last colon
-            int i = input.lastIndexOf(":");
-            if (i != -1) {
-                // it must find the colon as the regEx test passed
-                return input.substring( i + 1 );
-            }
-        }
-        return "";
-    }
-
-
-    /**
-     * Check if <code>input</code> is a link local IPv6 addresses starting with "fe80:" and containing
+     * Check if <code>input</code> is a link local IPv6 address starting with "fe80:" and containing
      * a zone index with "%xxx". The zone index will not be checked.
      *
      * @param input ip-address to check
-     * @return true if address part is in correct IPv6 notation.
-     * @author cwat-plang
+     * @return true if address part of <code>input</code> is in correct IPv6 notation.
      */
     public static boolean isLinkLocalIPv6WithZoneIndex(String input) {
         if (input.length()>5 && input.substring(0, 5).equalsIgnoreCase("fe80:")) {
@@ -128,55 +152,10 @@ public class InetAddressValidator {
     }
 
     /**
-     * Returns the long value of the IPv4 address.
-     * Returns -1 if the string did not contain a valid IPv4.
+     * Check if <code>input</code> is a valid IPv4 or IPv6 address.
      *
      * @param ipAddress
-     * @return
-     * @author richard.vogl
-     */
-    public final static long parseIPv4Address(String ipAddress){
-        if (ipAddress == null || ipAddress.length() < 1){
-            return -1;
-        }
-        if (ipAddress.endsWith(".")){
-            return -1;
-        }
-
-        String[] parts = ipAddress.split( "\\." );
-
-        if ( parts.length != 4 ){
-            return -1;
-        }
-
-        long value = 0;
-        long mult = 0x1000000;
-        for (int j = 0; j < parts.length; j++) {
-            String s = parts[j];
-
-            int i;
-            try {
-                i = Integer.parseInt( s );
-            }catch (NumberFormatException e){
-                return -1;
-            }
-
-            if ( (i < 0) || (i > 255) ){
-                return -1;
-            }
-            value += i*mult;
-            mult /= 0x100;
-        }
-
-        return value;
-    }
-
-    /**
-     * Returns true, if <code>ipAddress</code> is either a valid IPv4 or IPv6 address.
-     *
-     * @param ipAddress
-     * @return
-     * @author clemens.fuchs
+     * @return <code>true</code> if <code>ipAddress</code> is a valid ip-address
      */
     public static boolean isValidIP(String ipAddress) {
         if(ipAddress == null || ipAddress.length() == 0) {
