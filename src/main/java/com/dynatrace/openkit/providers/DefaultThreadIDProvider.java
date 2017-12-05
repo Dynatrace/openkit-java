@@ -8,10 +8,10 @@ package com.dynatrace.openkit.providers;
 /**
  * Simple ThreadIDProvider implementation for getting the current thread ID.
  */
-public class DefaultThreadIDProvider extends ThreadIDProvider {
+public class DefaultThreadIDProvider implements ThreadIDProvider {
 
 	@Override
-	public long provideThreadID() {
+	public long getThreadID() {
 		return Thread.currentThread().getId();
 	}
 
