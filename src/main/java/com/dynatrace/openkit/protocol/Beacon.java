@@ -88,6 +88,7 @@ public class Beacon {
 
 	// session number & start time
 	private final int sessionNumber;
+	private final ThreadIDProvider threadIDProvider;
 	private final long sessionStartTime;
 
 	// client IP address
@@ -108,11 +109,12 @@ public class Beacon {
 
 	// *** constructors ***
 
-	public Beacon(AbstractConfiguration configuration, String clientIPAddress) {
+	public Beacon(AbstractConfiguration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider) {
 		this.sessionNumber = configuration.createSessionNumber();
 		this.sessionStartTime = TimeProvider.getTimestamp();
 		this.configuration = configuration;
 		this.clientIPAddress = clientIPAddress;
+		this.threadIDProvider = threadIDProvider;
 
 		// store the current configuration
 		this.httpConfiguration = configuration.getHttpClientConfig();
@@ -141,7 +143,7 @@ public class Beacon {
 				   + sessionNumber + "_"
 				   + configuration.getApplicationID() + "_"
 				   + parentAction.getID() + "_"
-				   + ThreadIDProvider.getThreadID() + "_"
+				   + threadIDProvider.getThreadID() + "_"
 				   + sequenceNo;
 	}
 
@@ -355,7 +357,7 @@ public class Beacon {
 		if (name != null) {
 			addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
 		}
-		addKeyValuePair(builder, BEACON_KEY_THREAD_ID, ThreadIDProvider.getThreadID());
+		addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
 	}
 
 	// creates (possibly) multiple beacon chunks based on max beacon size
