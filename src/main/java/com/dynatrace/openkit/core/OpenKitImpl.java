@@ -25,9 +25,6 @@ public class OpenKitImpl implements OpenKit {
 	// AbstractConfiguration reference
 	private AbstractConfiguration configuration;
 
-	// dummy Session implementation, used if capture is set to off
-	private static DummySession dummySessionInstance = new DummySession();
-
 	// *** constructors ***
 
 	public OpenKitImpl(AbstractConfiguration config) {
@@ -80,16 +77,11 @@ public class OpenKitImpl implements OpenKit {
 
 	@Override
 	public Session createSession(String clientIPAddress) {
-		if (isInitialized() && configuration.isCapture()) {
-			return new SessionImpl(configuration, clientIPAddress, beaconSender);
-		} else {
-			return dummySessionInstance;
-		}
+		return new SessionImpl(configuration, clientIPAddress, beaconSender);
 	}
 
 	@Override
 	public void shutdown() {
 		beaconSender.shutdown();
 	}
-
 }
