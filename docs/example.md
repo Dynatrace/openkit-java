@@ -196,6 +196,15 @@ Session sessionWithArgument = openKit.createSession(clientIPAddress);
 Session sessionWithoutArgument = openKit.createSession();
 ```
 
+## Identify User
+
+Users can be identified by calling `identifyUser` on a `Session` instance. This enables you to search and 
+filter specific user sessions and analyze individual user behavior over time in the backend.
+
+```java
+session.identifyUser("jane.doe@example.com");
+```
+
 ## Finishing a Session
 
 When a `Session` is no longer needed, it should be ended by invoking the `end` method.  
