@@ -300,6 +300,21 @@ public class Beacon {
         }
     }
 
+	// identify the user
+	public void identifyUser(String userID) {
+		StringBuilder eventBuilder = new StringBuilder();
+
+		buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userID);
+
+		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
+		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
+
+		synchronized (eventDataList) {
+			eventDataList.add(eventBuilder.toString());
+		}
+	}
+
 	// send current state of Beacon
 	public StatusResponse send(HTTPClientProvider provider, int numRetries) throws InterruptedException {
 		HTTPClient httpClient = provider.createClient(httpConfiguration);
@@ -312,6 +327,8 @@ public class Beacon {
 		// only return last status response for updating the settings
 		return response;
 	}
+
+	// *** private methods ***
 
     private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
 
@@ -333,8 +350,6 @@ public class Beacon {
 
         return response;
     }
-
-    // *** private methods ***
 
 	// helper method for building events
 	private void buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
