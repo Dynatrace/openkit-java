@@ -60,7 +60,7 @@ public class InetAddressValidatorTest {
     @Test
     public void IPV6AddressIsInvalidDueTo5HexDigitNumber(){
         String invalidIPV6Address = "2045:FEFE3:0D22:0123:DAD2:3345:ABB2:0003";
-        assertThat(InetAddressValidator.isValidIP(invalidIPV6Address), is(true));
+        assertThat(InetAddressValidator.isValidIP(invalidIPV6Address), is(false));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class InetAddressValidatorTest {
 
     @Test
     public void IPV6AddressWithLessThanEightBlocksIsValid(){
-        String invalidIPV6Address = "2045:DEFE:0D22:0123:DAD2";
+        String invalidIPV6Address = "2045:defe:d22:123::1241:1444";
         assertThat(InetAddressValidator.isValidIP(invalidIPV6Address), is(true));
     }
 

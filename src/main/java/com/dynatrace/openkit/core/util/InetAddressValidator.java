@@ -120,7 +120,7 @@ public class InetAddressValidator {
      * </p>
      *
      * @param input ip-address to check
-     * @return true if address part is in correct IPv6 notation containing an IPv4 address
+     * @return true if <code>input</code> is in correct IPv6 notation containing an IPv4 address
      */
     public static boolean isIPv6IPv4MappedAddress( final String input) {
         // InetAddress automatically convert this type of address down to an IPv4 address
@@ -154,7 +154,7 @@ public class InetAddressValidator {
     /**
      * Check if <code>input</code> is a valid IPv4 or IPv6 address.
      *
-     * @param ipAddress
+     * @param ipAddress ip-adress to check
      * @return <code>true</code> if <code>ipAddress</code> is a valid ip-address
      */
     public static boolean isValidIP(String ipAddress) {
