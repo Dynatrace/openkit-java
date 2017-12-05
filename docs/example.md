@@ -268,8 +268,8 @@ To leave an `Action` simply use the `leave` method. The method returns the paren
 if it has no parent.
 
 ```java
-Action parentAsAction = action.leave(); // returns the appropriate RootAction
-Action parent = parentAsAction.leave(); // will always return null
+Action parentAction = action.leave(); // returns the appropriate RootAction
+Action parent = parentAction.leave(); // will always return null
 ```
 
 ## Report Named Event
