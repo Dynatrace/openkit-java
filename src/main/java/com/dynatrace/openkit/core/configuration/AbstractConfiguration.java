@@ -79,7 +79,7 @@ public abstract class AbstractConfiguration {
     }
 
     // updates settings based on a status response
-    public final void updateSettings(StatusResponse statusResponse) {
+    public void updateSettings(StatusResponse statusResponse) {
         // if invalid status response OR response code != 200 -> capture off
         if ((statusResponse == null) || (statusResponse.getResponseCode() != 200)) {
             disableCapture();

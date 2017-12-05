@@ -308,6 +308,15 @@ public class BeaconSendingContext {
     }
 
     /**
+     * Disable data capturing.
+     */
+    void disableCapture() {
+        // first disable in configuration, so no further data will get collected
+        configuration.disableCapture();
+        clearAllSessionData();
+    }
+
+    /**
      * Handle the status response received from the server.
      */
     void handleStatusResponse(StatusResponse statusResponse) {
@@ -315,16 +324,22 @@ public class BeaconSendingContext {
 
         if (!isCaptureOn()) {
             // capturing was turned off
-            clearAllSessions();
+            clearAllSessionData();
         }
     }
 
     /**
-     * Clear all sessions.
+     * Clear captured data from all sessions.
      */
-    private void clearAllSessions() {
-        openSessions.clear();
-        finishedSessions.clear();
+    private void clearAllSessionData() {
+        // clear captured data from finished sessions
+        for (SessionImpl session : finishedSessions) {
+            session.clearCapturedData();
+        }
+        // clear captured data from open sessions
+        for (SessionImpl session : openSessions) {
+            session.clearCapturedData();
+        }
     }
 
     /**
@@ -350,6 +365,18 @@ public class BeaconSendingContext {
      */
     SessionImpl[] getAllOpenSessions() {
         return openSessions.toArray(new SessionImpl[0]);
+    }
+
+    /**
+     * Gets all finished sessions.
+     *
+     * <p>
+     *     This returns a shallow copy of all finished sessions and is intended only
+     *     for testing purposes.
+     * </p>
+     */
+    SessionImpl[] getAllFinishedSessions() {
+        return finishedSessions.toArray(new SessionImpl[0]);
     }
 
     /**
