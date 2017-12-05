@@ -18,6 +18,7 @@ This repository contains the reference implementation in pure Java. Other implem
 * Create Sessions and User Actions
 * Report values, events, errors and crashes
 * Trace web requests to server-side PurePaths
+* Sessions can be tagged with a user id
 * Use it together with Dynatrace or AppMon
 
 ## What you cannot do with the OpenKit
@@ -124,6 +125,10 @@ and the value may be an Integer (int), a floating point (double) or a String.
 Errors are a way to report an erroneous condition on an `Action`.  
 Crashes are used to report (unhandled) exceptions on a `Session`.
 
+### Identify Users
+
+OpenKit enables you to tag sessions with unique user ids. The user id is a String 
+that allows to uniquely identify a single user.
 
 ## Example
 
@@ -142,6 +147,8 @@ openKit.waitForInitCompletion();
 
 String clientIP = "8.8.8.8";
 Session session = openKit.createSession(clientIP);
+
+session.identifyUser("jane.doe@example.com");
 
 String rootActionName = "rootActionName";
 RootAction rootAction = session.enterAction(rootActionName);

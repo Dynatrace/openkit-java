@@ -23,6 +23,11 @@ public class DummySession implements Session {
 	}
 
 	@Override
+	public void identifyUser(String userId) {
+		// do nothing
+	}
+
+	@Override
 	public void reportCrash(String errorName, String reason, String stacktrace) {
 		// do nothing
 	}
