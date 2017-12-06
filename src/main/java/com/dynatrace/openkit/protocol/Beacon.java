@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -278,32 +279,6 @@ public class Beacon {
         addEventData(eventBuilder);
     }
 
-    private void addActionData(StringBuilder actionBuilder) {
-        synchronized (actionDataList) {
-            if (configuration.isCapture()) {
-                actionDataList.add(actionBuilder.toString());
-            }
-        }
-    }
-
-    private void addEventData(StringBuilder eventBuilder) {
-        synchronized (eventDataList) {
-            if (configuration.isCapture()) {
-                eventDataList.add(eventBuilder.toString());
-            }
-        }
-    }
-
-    public void clearData() {
-
-        synchronized (eventDataList) {
-            synchronized (actionDataList) {
-                eventDataList.clear();
-                actionDataList.clear();
-            }
-        }
-    }
-
 	// identify the user
 	public void identifyUser(String userID) {
 		StringBuilder eventBuilder = new StringBuilder();
@@ -332,7 +307,55 @@ public class Beacon {
 		return response;
 	}
 
+
+	/**
+	 * Gets all events.
+	 *
+	 * <p>
+	 *     This returns a shallow copy of events entries and is intended only
+	 *     for testing purposes.
+	 * </p>
+	 */
+	String[] getEvents() { return eventDataList.toArray(new String[0]); }
+
+	/**
+	 * Gets all actions.
+	 *
+	 * <p>
+	 *     This returns a shallow copy of all actions and is intended only
+	 *     for testing purposes.
+	 * </p>
+	 */
+	String[] getActions() { return actionDataList.toArray(new String[0]); }
+
+
 	// *** private methods ***
+
+	private void addActionData(StringBuilder actionBuilder) {
+		synchronized (actionDataList) {
+			if (configuration.isCapture()) {
+				actionDataList.add(actionBuilder.toString());
+			}
+		}
+	}
+
+	private void addEventData(StringBuilder eventBuilder) {
+		synchronized (eventDataList) {
+			if (configuration.isCapture()) {
+				eventDataList.add(eventBuilder.toString());
+			}
+		}
+	}
+
+	public void clearData() {
+
+		synchronized (eventDataList) {
+			synchronized (actionDataList) {
+				eventDataList.clear();
+				actionDataList.clear();
+			}
+		}
+	}
 
     private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
 
