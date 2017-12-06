@@ -91,4 +91,15 @@ public class SessionImpl implements Session {
 		return endTime;
 	}
 
+	/**
+	 * Clears data that has been captured so far.
+	 *
+	 * <p>
+	 *     This is called, when capturing is turned off to avoid having too much data.
+	 * </p>
+	 */
+	public void clearCapturedData() {
+
+		beacon.clearData();
+	}
 }

@@ -6,7 +6,7 @@
 package com.dynatrace.openkit.api;
 
 /**
- * This interface provides basic OpenKit functionality, like creating a Session and shutting down the OpenKit.
+ * This interface provides basic OpenKit functionality, like creating a Session and shutting down OpenKit.
  */
 public interface OpenKit {
 
@@ -22,8 +22,8 @@ public interface OpenKit {
      *     The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      *     {@link #shutdown()} method.
      *
-     *     Due to misconfiguration in the {@link com.dynatrace.openkit.OpenKitFactory} when creating the
-     *     instance (e.g. wrong endpoint URL) this method might hang indefinitely, unless {@link #shutdown()} is called.
+     *     Be aware, if {@link com.dynatrace.openkit.OpenKitFactory} is wrongly configured, for example when creating an
+     *     instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called.
      * </p>
      *
      * @return {@code true} when OpenKit is fully initialized, {@code false} when a shutdown request was made.
@@ -37,8 +37,8 @@ public interface OpenKit {
      *     The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      *     {@link #shutdown()} method or the timeout expired..
      *
-     *     Due to misconfiguration in the {@link com.dynatrace.openkit.OpenKitFactory} when creating the
-     *     instance (e.g. wrong endpoint URL) this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
+     *     Be aware, if {@link com.dynatrace.openkit.OpenKitFactory} is wrongly configured, for example when creating an
+     *     instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
      * </p>
      *
      * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
@@ -48,7 +48,7 @@ public interface OpenKit {
     boolean waitForInitCompletion(long timeoutMillis);
 
     /**
-     * Gets a boolean flag indicating whether OpenKit is initialized or not.
+     * Returns whether OpenKit is initialized or not.
      *
      * @return {@code true} if OpenKit is fully initialized, {@code false} if OpenKit still performs initialization.
      */
@@ -79,7 +79,7 @@ public interface OpenKit {
     Session createSession(String clientIPAddress);
 
     /**
-     * Shuts down the OpenKit, ending all open Sessions and waiting for them to be sent.
+     * Shuts down OpenKit, ending all open Sessions and waiting for them to be sent.
      */
     void shutdown();
 

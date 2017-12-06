@@ -16,11 +16,12 @@ import com.dynatrace.openkit.protocol.StatusResponse;
  */
 public abstract class AbstractConfiguration {
 
-    private static final boolean DEFAULT_CAPTURE = true;                            // default: capture on
+    private static final boolean DEFAULT_CAPTURE = false;                           // default: capture off
     private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;                 // default: wait 2m (in ms) to send beacon
     private static final int DEFAULT_MAX_BEACON_SIZE = 30 * 1024;                   // default: max 30KB (in B) to send in one beacon
     private static final boolean DEFAULT_CAPTURE_ERRORS = true;                     // default: capture errors on
     private static final boolean DEFAULT_CAPTURE_CRASHES = true;                    // default: capture crashes on
+    private static final String DEFAULT_APPLICATION_VERSION = "0.3";                // default: '0.3'
 
     // immutable settings
     private final String applicationName;
@@ -67,7 +68,7 @@ public abstract class AbstractConfiguration {
         captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
         device = new DeviceImpl();
-        applicationVersion = null;
+        applicationVersion = DEFAULT_APPLICATION_VERSION;
         httpClientConfiguration = null;
     }
 
@@ -79,10 +80,10 @@ public abstract class AbstractConfiguration {
     }
 
     // updates settings based on a status response
-    public final void updateSettings(StatusResponse statusResponse) {
+    public void updateSettings(StatusResponse statusResponse) {
         // if invalid status response OR response code != 200 -> capture off
         if ((statusResponse == null) || (statusResponse.getResponseCode() != 200)) {
-            capture.set(false);
+            disableCapture();
         } else {
             capture.set(statusResponse.isCapture());
         }
@@ -160,6 +161,25 @@ public abstract class AbstractConfiguration {
         return verbose;
     }
 
+    /**
+     * Enable capturing.
+     */
+    public void enableCapture() {
+        capture.set(true);
+    }
+
+    /**
+     * Disable capturing.
+     */
+    public void disableCapture() {
+        capture.set(false);
+    }
+
+    /**
+     * Get a boolean indicating whether capturing is enabled or not.
+     *
+     * @return {@code true} if capturing is enabled, {@code false} otherwise.
+     */
     public boolean isCapture() {
         return capture.get();
     }
@@ -185,7 +205,9 @@ public abstract class AbstractConfiguration {
     }
 
     public void setApplicationVersion(String applicationVersion) {
-        this.applicationVersion = applicationVersion;
+        if(applicationVersion != null && !applicationVersion.isEmpty()) {
+            this.applicationVersion = applicationVersion;
+        }
     }
 
     public DeviceImpl getDevice() {
