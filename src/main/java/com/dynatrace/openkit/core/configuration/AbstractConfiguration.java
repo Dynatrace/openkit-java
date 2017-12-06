@@ -205,7 +205,7 @@ public abstract class AbstractConfiguration {
     }
 
     public void setApplicationVersion(String applicationVersion) {
-        if(applicationVersion != null && applicationVersion.length() > 0) {
+        if(applicationVersion != null && !applicationVersion.isEmpty()) {
             this.applicationVersion = applicationVersion;
         }
     }
