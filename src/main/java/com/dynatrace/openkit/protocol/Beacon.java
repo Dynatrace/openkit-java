@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dynatrace.openkit.core.ActionImpl;
@@ -88,6 +89,7 @@ public class Beacon {
 
 	// session number & start time
 	private final int sessionNumber;
+	private final ThreadIDProvider threadIDProvider;
 	private final long sessionStartTime;
 
 	// client IP address
@@ -108,11 +110,12 @@ public class Beacon {
 
 	// *** constructors ***
 
-	public Beacon(AbstractConfiguration configuration, String clientIPAddress) {
+	public Beacon(AbstractConfiguration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider) {
 		this.sessionNumber = configuration.createSessionNumber();
 		this.sessionStartTime = TimeProvider.getTimestamp();
 		this.configuration = configuration;
 		this.clientIPAddress = clientIPAddress;
+		this.threadIDProvider = threadIDProvider;
 
 		// store the current configuration
 		this.httpConfiguration = configuration.getHttpClientConfig();
@@ -141,7 +144,7 @@ public class Beacon {
 				   + sessionNumber + "_"
 				   + configuration.getApplicationID() + "_"
 				   + parentAction.getID() + "_"
-				   + ThreadIDProvider.getThreadID() + "_"
+				   + threadIDProvider.getThreadID() + "_"
 				   + sequenceNo;
 	}
 
@@ -158,14 +161,12 @@ public class Beacon {
 		addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
 		addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
-		synchronized (actionDataList) {
-			actionDataList.add(actionBuilder.toString());
-		}
-	}
+        addActionData(actionBuilder);
+    }
 
-	// end Session on this Beacon
+    // end Session on this Beacon
 	public void endSession(SessionImpl session) {
-		StringBuilder eventBuilder = new StringBuilder();
+        StringBuilder eventBuilder = new StringBuilder();
 
 		buildBasicEventData(eventBuilder, EventType.SESSION_END, null);
 
@@ -173,64 +174,54 @@ public class Beacon {
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime(session.getEndTime()));
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
-	}
+        addEventData(eventBuilder);
+    }
 
-	// report int value on the provided Action
+    // report int value on the provided Action
 	public void reportValue(ActionImpl parentAction, String valueName, int value) {
 		StringBuilder eventBuilder = new StringBuilder();
 
 		buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
 		addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
-	}
+        addEventData(eventBuilder);
+    }
 
 	// report double value on the provided Action
 	public void reportValue(ActionImpl parentAction, String valueName, double value) {
-		StringBuilder eventBuilder = new StringBuilder();
+        StringBuilder eventBuilder = new StringBuilder();
 
 		buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
 		addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
-	}
+        addEventData(eventBuilder);
+    }
 
 	// report string value on the provided Action
 	public void reportValue(ActionImpl parentAction, String valueName, String value) {
-		StringBuilder eventBuilder = new StringBuilder();
+        StringBuilder eventBuilder = new StringBuilder();
 
 		buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
 		addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, truncate(value));
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
-	}
+        addEventData(eventBuilder);
+    }
 
 	// report named event on the provided Action
 	public void reportEvent(ActionImpl parentAction, String eventName) {
-		StringBuilder eventBuilder = new StringBuilder();
+        StringBuilder eventBuilder = new StringBuilder();
 
 		buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
-	}
+        addEventData(eventBuilder);
+    }
 
 	// report error on the provided Action
 	public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
-		// if capture errors is off -> do nothing
-		if (!configuration.isCaptureErrors()) {
-			return;
-		}
+        // if capture errors is off -> do nothing
+        if (!configuration.isCaptureErrors()) {
+            return;
+        }
 
 		StringBuilder eventBuilder = new StringBuilder();
 
@@ -242,17 +233,15 @@ public class Beacon {
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
+		addEventData(eventBuilder);
 	}
 
 	// report a crash
 	public void reportCrash(String errorName, String reason, String stacktrace) {
-		// if capture crashes is off -> do nothing
-		if (!configuration.isCaptureCrashes()) {
-			return;
-		}
+        // if capture crashes is off -> do nothing
+        if (!configuration.isCaptureCrashes()) {
+	        return;
+        }
 
 		StringBuilder eventBuilder = new StringBuilder();
 
@@ -264,14 +253,12 @@ public class Beacon {
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
+        addEventData(eventBuilder);
 	}
 
 	// add web request to the provided Action
 	public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
-		StringBuilder eventBuilder = new StringBuilder();
+        StringBuilder eventBuilder = new StringBuilder();
 
 		buildBasicEventData(eventBuilder, EventType.WEBREQUEST, webRequestTracer.getURL());
 
@@ -283,6 +270,45 @@ public class Beacon {
 		if (webRequestTracer.getResponseCode() != -1) {
 			addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
 		}
+
+        addEventData(eventBuilder);
+    }
+
+    private void addActionData(StringBuilder actionBuilder) {
+        synchronized (actionDataList) {
+            if (configuration.isCapture()) {
+                actionDataList.add(actionBuilder.toString());
+            }
+        }
+    }
+
+    private void addEventData(StringBuilder eventBuilder) {
+        synchronized (eventDataList) {
+            if (configuration.isCapture()) {
+                eventDataList.add(eventBuilder.toString());
+            }
+        }
+    }
+
+    public void clearData() {
+
+        synchronized (eventDataList) {
+            synchronized (actionDataList) {
+                eventDataList.clear();
+                actionDataList.clear();
+            }
+        }
+    }
+
+	// identify the user
+	public void identifyUser(String userID) {
+		StringBuilder eventBuilder = new StringBuilder();
+
+		buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userID);
+
+		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
+		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
 
 		synchronized (eventDataList) {
 			eventDataList.add(eventBuilder.toString());
@@ -301,6 +327,8 @@ public class Beacon {
 		// only return last status response for updating the settings
 		return response;
 	}
+
+	// *** private methods ***
 
     private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
 
@@ -323,8 +351,6 @@ public class Beacon {
         return response;
     }
 
-    // *** private methods ***
-
 	// helper method for building events
 	private void buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
 		buildBasicEventData(builder, eventType, name);
@@ -340,7 +366,7 @@ public class Beacon {
 		if (name != null) {
 			addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
 		}
-		addKeyValuePair(builder, BEACON_KEY_THREAD_ID, ThreadIDProvider.getThreadID());
+		addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
 	}
 
 	// creates (possibly) multiple beacon chunks based on max beacon size

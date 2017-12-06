@@ -12,6 +12,7 @@ import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
@@ -31,11 +32,11 @@ public class SessionImpl implements Session {
 
 	// *** constructors ***
 
-	SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender) {
+	SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender, ThreadIDProvider threadIDProvider) {
 		this.beaconSender = beaconSender;
 
 		// beacon has to be created immediately, as the session start time is taken at beacon construction
-		beacon = new Beacon(configuration, clientIPAddress);
+		beacon = new Beacon(configuration, clientIPAddress, threadIDProvider);
 		beaconSender.startSession(this);
 	}
 
@@ -44,6 +45,11 @@ public class SessionImpl implements Session {
 	@Override
 	public RootAction enterAction(String actionName) {
 		return new RootActionImpl(beacon, actionName, openRootActions);
+	}
+
+	@Override
+	public void identifyUser(String userId) {
+		beacon.identifyUser(userId);
 	}
 
 	@Override
@@ -86,4 +92,15 @@ public class SessionImpl implements Session {
 		return endTime;
 	}
 
+	/**
+	 * Clears data that has been captured so far.
+	 *
+	 * <p>
+	 *     This is called, when capturing is turned off to avoid having too much data.
+	 * </p>
+	 */
+	public void clearCapturedData() {
+
+		beacon.clearData();
+	}
 }
