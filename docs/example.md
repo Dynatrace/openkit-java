@@ -196,6 +196,15 @@ Session sessionWithArgument = openKit.createSession(clientIPAddress);
 Session sessionWithoutArgument = openKit.createSession();
 ```
 
+## Identify User
+
+Users can be identified by calling `identifyUser` on a `Session` instance. This enables you to search and 
+filter specific user sessions and analyze individual user behavior over time in the backend.
+
+```java
+session.identifyUser("jane.doe@example.com");
+```
+
 ## Finishing a Session
 
 When a `Session` is no longer needed, it should be ended by invoking the `end` method.  
@@ -259,8 +268,8 @@ To leave an `Action` simply use the `leave` method. The method returns the paren
 if it has no parent.
 
 ```java
-Action parentAsAction = action.leave(); // returns the appropriate RootAction
-Action parent = parentAsAction.leave(); // will always return null
+Action parentAction = action.leave(); // returns the appropriate RootAction
+Action parent = parentAction.leave(); // will always return null
 ```
 
 ## Report Named Event

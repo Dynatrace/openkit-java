@@ -19,6 +19,13 @@ public interface Session {
 	RootAction enterAction(String actionName);
 
 	/**
+	 * Tags a session with the provided userId
+	 *
+	 * @param userId	id of the user
+	 */
+	void identifyUser(String userId);
+
+	/**
 	 * Reports a crash with a specified error name, crash reason and a stacktrace.
 	 *
 	 * @param errorName			name of the error leading to the crash (e.g. Exception class)
@@ -31,5 +38,4 @@ public interface Session {
 	 * Ends this Session and marks it as finished for sending.
 	 */
 	void end();
-
 }
