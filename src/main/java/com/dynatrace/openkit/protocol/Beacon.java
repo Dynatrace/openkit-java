@@ -21,7 +21,7 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimeProvider;
-
+import com.dynatrace.openkit.core.util.InetAddressValidator;
 /**
  * The Beacon class holds all the beacon data and the beacon protocol implementation.
  */
@@ -114,9 +114,13 @@ public class Beacon {
 		this.sessionNumber = configuration.createSessionNumber();
 		this.sessionStartTime = TimeProvider.getTimestamp();
 		this.configuration = configuration;
-		this.clientIPAddress = clientIPAddress;
 		this.threadIDProvider = threadIDProvider;
 
+		if(InetAddressValidator.isValidIP(clientIPAddress)) {
+			this.clientIPAddress = clientIPAddress;
+		} else {
+			this.clientIPAddress = "";
+		}
 		// store the current configuration
 		this.httpConfiguration = configuration.getHttpClientConfig();
 
