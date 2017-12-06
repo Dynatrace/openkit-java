@@ -48,7 +48,7 @@ public interface Action {
 	Action reportValue(String valueName, String value);
 
 	/**
-	 * Reports an error with a specified name, error code and a reason.
+	 * Reports an error with a specified name, error code and reason.
 	 *
 	 * @param errorName			name of this error
 	 * @param errorCode			numeric error code of this error
@@ -82,7 +82,7 @@ public interface Action {
 	/**
 	 * Leaves this Action.
 	 *
-	 * @return	this Action (for usage as fluent API)
+	 * @return	the parent Action, or null if there is no parent Action
 	 */
 	Action leaveAction();
 
