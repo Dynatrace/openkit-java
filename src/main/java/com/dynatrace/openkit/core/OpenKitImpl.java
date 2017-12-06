@@ -9,6 +9,7 @@ import com.dynatrace.openkit.api.Device;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.*;
 
 /**
@@ -80,7 +81,10 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public Session createSession(String clientIPAddress) {
 		if (isInitialized() && configuration.isCapture()) {
-			return new SessionImpl(configuration, clientIPAddress, beaconSender, threadIDProvider);
+			// create beacon for session
+			Beacon beacon = new Beacon(configuration, clientIPAddress, threadIDProvider);
+			// create session
+			return new SessionImpl(beaconSender, beacon);
 		} else {
 			return dummySessionInstance;
 		}
