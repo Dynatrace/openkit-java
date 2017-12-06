@@ -47,8 +47,11 @@ public class OpenKitFactory {
 	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
-		return new OpenKitImpl(
+		OpenKitImpl openKit = new OpenKitImpl(
 				new DynatraceConfiguration(applicationName, applicationID, visitorID, endpointURL, verbose));
+		openKit.initialize();
+
+		return openKit;
 	}
 
 	/**
@@ -77,8 +80,11 @@ public class OpenKitFactory {
 	 * @return					Dynatrace Managed instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long visitorID, String endpointURL, String tenantID, boolean verbose) {
-		return new OpenKitImpl(
+        OpenKitImpl openKit = new OpenKitImpl(
 				new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, visitorID, endpointURL, verbose));
+        openKit.initialize();
+
+        return openKit;
 	}
 
 	/**
@@ -103,8 +109,11 @@ public class OpenKitFactory {
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, long visitorID, String endpointURL, boolean verbose) {
-		return new OpenKitImpl(
+        OpenKitImpl openKit = new OpenKitImpl(
 				new AppMonConfiguration(applicationName, visitorID, endpointURL, verbose));
+        openKit.initialize();
+
+        return openKit;
 	}
 
 }

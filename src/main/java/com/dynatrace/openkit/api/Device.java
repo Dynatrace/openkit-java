@@ -15,20 +15,20 @@ public interface Device {
 	 *
 	 * @param operatingSystem	name of operating system
 	 */
-	public void setOperatingSystem(String operatingSystem);
+	void setOperatingSystem(String operatingSystem);
 
 	/**
 	 * Sets manufacturer name.
 	 *
 	 * @param manufacturer		name of manufacturer
 	 */
-	public void setManufacturer(String manufacturer);
+	void setManufacturer(String manufacturer);
 
 	/**
 	 * Sets a model identifier.
 	 *
 	 * @param modelID		model identifier
 	 */
-	public void setModelID(String modelID);
+	void setModelID(String modelID);
 
 }

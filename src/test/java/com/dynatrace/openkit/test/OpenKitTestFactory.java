@@ -21,12 +21,14 @@ public class OpenKitTestFactory {
 
 		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new AppMonConfiguration(applicationName, testConfiguration.getVisitorID(), endpointURL, true), false);
 		applyTestConfiguration(openKitTestImpl, testConfiguration);
+		openKitTestImpl.initialize();
 		return openKitTestImpl;
 	}
 
 	public static OpenKitTestImpl createAppMonRemoteInstance(String applicationName, long visitorID, String endpointURL)
         throws InterruptedException {
 		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new AppMonConfiguration(applicationName, visitorID, endpointURL, true), true);
+		openKitTestImpl.initialize();
 		return openKitTestImpl;
 	}
 
@@ -34,12 +36,14 @@ public class OpenKitTestFactory {
         throws InterruptedException {
 		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DynatraceConfiguration(applicationName, applicationID, testConfiguration.getVisitorID(), endpointURL, true), false);
 		applyTestConfiguration(openKitTestImpl, testConfiguration);
+		openKitTestImpl.initialize();
 		return openKitTestImpl;
 	}
 
 	public static OpenKitTestImpl createDynatraceRemoteInstance(String applicationName, String applicationID, long visitorID, String endpointURL)
         throws InterruptedException {
 		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DynatraceConfiguration(applicationName, applicationID, visitorID, endpointURL, true), true);
+		openKitTestImpl.initialize();
 		return openKitTestImpl;
 	}
 

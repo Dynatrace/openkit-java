@@ -51,7 +51,21 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void getShutdownStateGivesABeaconSendingTerminalStateInstance() {
+    public void getShutdownStateGivesATerminalStateInstanceForInitialTimeSync() {
+
+        // given
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
+
+        // when
+        AbstractBeaconSendingState obtained = target.getShutdownState();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(BeaconSendingTerminalState.class)));
+    }
+
+    @Test
+    public void getShutdownStateGivesAFlushSessionsStateInstanceForInitialTimeSync() {
 
         // given
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
@@ -61,7 +75,7 @@ public class BeaconSendingTimeSyncStateTest {
 
         // then
         assertThat(obtained, is(notNullValue()));
-        assertThat(obtained, is(instanceOf(BeaconSendingTerminalState.class)));
+        assertThat(obtained, is(instanceOf(BeaconSendingFlushSessionsState.class)));
     }
 
     @Test

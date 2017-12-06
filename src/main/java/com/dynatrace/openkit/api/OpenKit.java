@@ -16,19 +16,6 @@ public interface OpenKit {
     String WEBREQUEST_TAG_HEADER = "X-dynaTrace";
 
     /**
-     * Initializes the OpenKit.
-     * <p>
-     *     The initial settings are received in a background thread, allowing the OpenKit user to continue
-     *     without waiting for OpenKit to be initialized.
-     *
-     *     After calling this method {@link #waitForInitCompletion()} can be used to wait until OpenKit is
-     *     fully initialized.
-     * </p>
-     *
-     * Must be done before any other call to OpenKit, otherwise calls to OpenKit will do nothing.
-     */
-    void initialize();
-    /**
      * Waits until OpenKit is fully initialized.
      *
      * <p>
