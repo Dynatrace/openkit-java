@@ -35,7 +35,7 @@ public interface Session {
 	void reportCrash(String errorName, String reason, String stacktrace);
 
 	/**
-	 * Ends this Session and marks it as ready for sending.
+	 * Ends this Session and marks it as ready for immediate sending.
 	 */
 	void end();
 }
