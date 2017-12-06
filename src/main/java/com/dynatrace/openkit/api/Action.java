@@ -82,7 +82,7 @@ public interface Action {
 	/**
 	 * Leaves this Action.
 	 *
-	 * @return	the parent Action
+	 * @return	the parent Action, or null if there is no parent Action
 	 */
 	Action leaveAction();
 

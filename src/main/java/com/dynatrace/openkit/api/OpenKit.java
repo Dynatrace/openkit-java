@@ -23,7 +23,7 @@ public interface OpenKit {
      *     {@link #shutdown()} method.
      *
      *     Be aware, if {@link com.dynatrace.openkit.OpenKitFactory} is wrongly configured, for example when creating an
-     *     instance with a incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called.
+     *     instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called.
      * </p>
      *
      * @return {@code true} when OpenKit is fully initialized, {@code false} when a shutdown request was made.
@@ -38,7 +38,7 @@ public interface OpenKit {
      *     {@link #shutdown()} method or the timeout expired..
      *
      *     Be aware, if {@link com.dynatrace.openkit.OpenKitFactory} is wrongly configured, for example when creating an
-     *     instance with a incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
+     *     instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
      * </p>
      *
      * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
