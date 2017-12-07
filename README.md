@@ -142,7 +142,6 @@ long visitorID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 
 OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL);
-openKit.initialize();
 openKit.waitForInitCompletion();
 
 String clientIP = "8.8.8.8";

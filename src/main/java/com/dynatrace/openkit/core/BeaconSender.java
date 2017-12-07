@@ -131,9 +131,7 @@ public class BeaconSender {
      * @param session Session to start.
      */
 	public void startSession(SessionImpl session) {
-		if (context.isCaptureOn()) {
-			context.startSession(session);
-		}
+	    context.startSession(session);
 	}
 
     /**
@@ -146,7 +144,6 @@ public class BeaconSender {
      * @param session Session to finish.
      */
 	public void finishSession(SessionImpl session) {
-
 	    context.finishSession(session);
 	}
 }

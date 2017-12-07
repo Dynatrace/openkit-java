@@ -109,15 +109,12 @@ OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, visitorID
 
 ## Initializing OpenKit
 
-After the OpenKit instance is obtained, the `initialize` method must be called. Since initialization
-happens asynchronously the application developer might want to wait until initialization completes, as
-shown in the example below.
+When obtaining an OpenKit instance from `OpenKitFactory` the instance starts an automatic 
+initialization phase. Since initialization happens asynchronously the application developers 
+might want to wait until initialization completes, as shown in the example below.
 
 ```java
-// initialize previously obtained OpenKit instance
-openKit.initialize();
-
-// and wait until it's fully initialized
+// wait until the OpenKit instance is fully initialized
 boolean success = openKit.waitForInitCompletion();
 ```
 
@@ -127,10 +124,7 @@ indicates whether the OpenKit instance has been initialized or `shutdown` has be
 An overloaded method exists to wait a given amount of time for OpenKit to initialize as shown in the
 following example.
 ```java
-// initialize previously obtained OpenKit instance
-openKit.initialize();
-
-// wait 10 seconds for OpenKit
+// wait 10 seconds for OpenKit to complete initialization
 long timeoutInMilliseconds = 10 * 1000;
 boolean success = openKit.waitForInitCompletion(timeoutInMilliseconds);
 ```
