@@ -16,7 +16,7 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
     // *** constructors ***
 
-    public RootActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
+    RootActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
         super(beacon, name, parentActions);
         this.beacon = beacon;
     }

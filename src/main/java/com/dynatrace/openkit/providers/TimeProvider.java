@@ -10,7 +10,7 @@ package com.dynatrace.openkit.providers;
  */
 public abstract class TimeProvider {
 
-	private static TimeProvider timeProvider = new LocalTimeProvider();
+	public static TimeProvider timeProvider = new LocalTimeProvider();
 	private static long lastInitTime = 0;
 	private static long clusterTimeOffset = 0;
 	private static boolean timeSynced = false;

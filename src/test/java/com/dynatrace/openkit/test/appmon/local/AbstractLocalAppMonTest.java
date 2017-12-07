@@ -5,6 +5,9 @@
  */
 package com.dynatrace.openkit.test.appmon.local;
 
+import com.dynatrace.openkit.providers.LocalTimeProvider;
+import com.dynatrace.openkit.providers.TestTimeProvider;
+import com.dynatrace.openkit.providers.TimeProvider;
 import com.dynatrace.openkit.test.AbstractAppMonTest;
 import com.dynatrace.openkit.test.OpenKitTestFactory;
 import com.dynatrace.openkit.test.TestConfiguration;
@@ -26,9 +29,19 @@ public abstract class AbstractLocalAppMonTest extends AbstractAppMonTest {
 
     @Before
     public void setup() throws InterruptedException {
+        // set test time provider
+        TimeProvider.setTimeProvider(new TestTimeProvider());
+
         openKitTestImpl = OpenKitTestFactory.createAppMonLocalInstance(TEST_APPLICATION_NAME, TEST_ENDPOINT, testConfiguration);
         openKit = openKitTestImpl;
         openKit.waitForInitCompletion();
+    }
+
+
+    @After
+    public void teardown() {
+        // reset time provider
+        TimeProvider.setTimeProvider(new LocalTimeProvider());
     }
 
     @Before

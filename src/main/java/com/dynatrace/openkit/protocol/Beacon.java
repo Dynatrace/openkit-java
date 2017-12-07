@@ -5,24 +5,22 @@
  */
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.core.ActionImpl;
+import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
+import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.util.InetAddressValidator;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.ThreadIDProvider;
+import com.dynatrace.openkit.providers.TimeProvider;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.dynatrace.openkit.core.ActionImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
-import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.providers.ThreadIDProvider;
-import com.dynatrace.openkit.providers.TimeProvider;
-import com.dynatrace.openkit.core.util.InetAddressValidator;
 /**
  * The Beacon class holds all the beacon data and the beacon protocol implementation.
  */
