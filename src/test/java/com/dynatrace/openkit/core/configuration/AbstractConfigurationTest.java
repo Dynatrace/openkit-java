@@ -64,7 +64,7 @@ public class AbstractConfigurationTest {
         when(response.isCapture()).thenReturn(true);
         when(response.getResponseCode()).thenReturn(400);
 
-        // when status response to handle is null
+        // when status response indicates erroneous response
         target.updateSettings(response);
 
         // then
@@ -81,7 +81,7 @@ public class AbstractConfigurationTest {
         when(response.isCapture()).thenReturn(true);
         when(response.getResponseCode()).thenReturn(200);
 
-        // when status response to handle is null
+        // when capturing is enabled in status response
         target.updateSettings(response);
 
         // then
@@ -98,7 +98,7 @@ public class AbstractConfigurationTest {
         when(response.isCapture()).thenReturn(false);
         when(response.getResponseCode()).thenReturn(200);
 
-        // when status response to handle is null
+        // when capturing is disabled in status response
         target.updateSettings(response);
 
         // then

@@ -7,12 +7,11 @@ import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.TimeUnit;
 
@@ -60,7 +59,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void executeCurrentStateCallsExecuteOnCurrentState() throws InterruptedException {
+    public void executeCurrentStateCallsExecuteOnCurrentState() {
 
 
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
@@ -534,7 +533,7 @@ public class BeaconSendingContextTest {
 
         // then
         assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo, mockSessionThree })));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[] { mockSessionOne, mockSessionFour })));
+        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
 
         verify(configuration, times(1)).disableCapture();
         verify(mockSessionOne, times(1)).clearCapturedData();
@@ -599,7 +598,7 @@ public class BeaconSendingContextTest {
 
         // then
         assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo, mockSessionThree })));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[] { mockSessionOne, mockSessionFour })));
+        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
 
         verify(configuration, times(1)).updateSettings(mockStatusResponse);
         verify(configuration, times(1)).isCapture();

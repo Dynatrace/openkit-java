@@ -336,6 +336,8 @@ public class BeaconSendingContext {
         for (SessionImpl session : finishedSessions) {
             session.clearCapturedData();
         }
+        finishedSessions.clear(); // clear finished sessions also
+
         // clear captured data from open sessions
         for (SessionImpl session : openSessions) {
             session.clearCapturedData();
