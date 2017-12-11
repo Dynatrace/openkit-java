@@ -143,7 +143,7 @@ public class Beacon {
 		return TAG_PREFIX + "_"
 				   + PROTOCOL_VERSION + "_"
 				   + httpConfiguration.getServerID() + "_"
-				   + configuration.getVisitorID() + "_"
+				   + configuration.getDeviceID() + "_"
 				   + sessionNumber + "_"
 				   + configuration.getApplicationID() + "_"
 				   + parentAction.getID() + "_"
@@ -278,18 +278,16 @@ public class Beacon {
     }
 
 	// identify the user
-	public void identifyUser(String userID) {
+	public void identifyUser(String userTag) {
 		StringBuilder eventBuilder = new StringBuilder();
 
-		buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userID);
+		buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
+		addEventData(eventBuilder);
 	}
 
 	// send current state of Beacon
@@ -455,8 +453,8 @@ public class Beacon {
 		}
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
 
-		// visitor ID, session number and IP address
-		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getVisitorID());
+		// device/visitor ID, session number and IP address
+		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getDeviceID());
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, sessionNumber);
 		addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 

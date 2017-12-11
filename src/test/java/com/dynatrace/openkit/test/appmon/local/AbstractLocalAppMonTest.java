@@ -22,7 +22,7 @@ public abstract class AbstractLocalAppMonTest extends AbstractAppMonTest {
 
     public AbstractLocalAppMonTest() {
         testConfiguration = new TestConfiguration();
-        testConfiguration.setVisitorID(new Random(System.currentTimeMillis()).nextLong());
+        testConfiguration.setDeviceID(new Random(System.currentTimeMillis()).nextLong());
         testConfiguration.setStatusResponse("type=m&si=120&bn=dynaTraceMonitor&id=1", 200);
         testConfiguration.setTimeSyncResponse("type=mts&t1=-1&t2=-1", 200);
     }

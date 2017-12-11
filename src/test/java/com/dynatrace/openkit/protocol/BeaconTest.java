@@ -35,6 +35,7 @@ public class BeaconTest {
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
         when(configuration.getDevice()).thenReturn(new DeviceImpl());
+        when(configuration.isCapture()).thenReturn(true);
 
         threadIDProvider = mock(ThreadIDProvider.class);
     }
@@ -52,16 +53,14 @@ public class BeaconTest {
         String userID = "myTestUser";
 
         // when
-        System.out.println("Before identify: " + TimeProvider.timeProvider.getClass());
         beacon.identifyUser(userID);
-        System.out.println("Before after: " + TimeProvider.timeProvider.getClass());
         String[] events = beacon.getEvents();
 
         // then
         assertThat(events, is(equalTo(new String[] { "et=60&na=" + userID + "&it=0&pa=0&s0=1&t0=0" })));
     }
 
-//    @Test
+    @Test
     public void canAddRootActionIfCaptureIsOn() {
         // given
         when(configuration.isCapture()).thenReturn(true);
@@ -79,7 +78,7 @@ public class BeaconTest {
         assertThat(actions, is(equalTo(new String[] { "et=1&na=" + actionName + "&it=0&ca=0&pa=0&s0=0&t0=0&s1=0&t1=0" })));
     }
 
-//    @Test
+    @Test
     public void cannotAddRootActionIfCaptureIsOff() {
         // given
         when(configuration.isCapture()).thenReturn(false);

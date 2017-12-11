@@ -7,14 +7,14 @@ package com.dynatrace.openkit.test;
 
 public class TestConfiguration {
 
-	private long visitorID = -1;
+	private long deviceID = -1;
 	private String statusResponse = null;
 	private int statusResponseCode = -1;
 	private String timeSyncResponse = null;
 	private int timeSyncResponseCode = -1;
 
-	public void setVisitorID(long visitorID) {
-		this.visitorID = visitorID;
+	public void setDeviceID(long deviceID) {
+		this.deviceID = deviceID;
 	}
 
 	public void setStatusResponse(String response, int responseCode) {
@@ -27,8 +27,8 @@ public class TestConfiguration {
 		timeSyncResponseCode = responseCode;
 	}
 
-	public long getVisitorID() {
-		return visitorID;
+	public long getDeviceID() {
+		return deviceID;
 	}
 
 	public String getStatusResponse() {

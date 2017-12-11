@@ -47,8 +47,8 @@ public class SessionImpl implements Session {
 	}
 
 	@Override
-	public void identifyUser(String userId) {
-		beacon.identifyUser(userId);
+	public void identifyUser(String userTag) {
+		beacon.identifyUser(userTag);
 	}
 
 	@Override

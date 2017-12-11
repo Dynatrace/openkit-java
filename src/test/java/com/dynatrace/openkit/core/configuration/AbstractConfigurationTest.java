@@ -111,8 +111,8 @@ public class AbstractConfigurationTest {
             this(OpenKitType.DYNATRACE, "", "" , 42, "", true);
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
-            super(openKitType, applicationName, applicationID, visitorID, endpointURL, verbose);
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose);
             setHttpClientConfiguration(mock(HTTPClientConfiguration.class));
         }
 
