@@ -32,11 +32,10 @@ public class SessionImpl implements Session {
 
 	// *** constructors ***
 
-	SessionImpl(AbstractConfiguration configuration, String clientIPAddress, BeaconSender beaconSender, ThreadIDProvider threadIDProvider) {
+	SessionImpl(BeaconSender beaconSender, Beacon beacon) {
 		this.beaconSender = beaconSender;
+		this.beacon = beacon;
 
-		// beacon has to be created immediately, as the session start time is taken at beacon construction
-		beacon = new Beacon(configuration, clientIPAddress, threadIDProvider);
 		beaconSender.startSession(this);
 	}
 

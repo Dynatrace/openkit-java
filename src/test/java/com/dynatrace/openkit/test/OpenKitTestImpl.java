@@ -30,11 +30,6 @@ public class OpenKitTestImpl extends OpenKitImpl {
 		super(config, provider, timingProvider, createThreadIdProvider());
 
 		testHttpClientProvider = provider;
-
-		// only generate pseudo-data if it's a local test -> only in this case beacon comparisons make sense
-		if (!remoteTest) {
-			TimeProvider.setTimeProvider(new TestTimeProvider());
-		}
 	}
 
 	public ArrayList<Request> getSentRequests() {
