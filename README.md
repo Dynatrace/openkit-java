@@ -18,7 +18,7 @@ This repository contains the reference implementation in pure Java. Other implem
 * Create Sessions and User Actions
 * Report values, events, errors and crashes
 * Trace web requests to server-side PurePaths
-* Sessions can be tagged with a user id
+* Sessions can be tagged with a user tag
 * Use it together with Dynatrace or AppMon
 
 ## What you cannot do with the OpenKit
@@ -127,7 +127,7 @@ Crashes are used to report (unhandled) exceptions on a `Session`.
 
 ### Identify Users
 
-OpenKit enables you to tag sessions with unique user ids. The user id is a String 
+OpenKit enables you to tag sessions with unique user tags. The user tag is a String 
 that allows to uniquely identify a single user.
 
 ## Example
