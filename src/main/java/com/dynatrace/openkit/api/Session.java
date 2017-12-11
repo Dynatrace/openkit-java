@@ -19,11 +19,11 @@ public interface Session {
 	RootAction enterAction(String actionName);
 
 	/**
-	 * Tags a session with the provided userId
+	 * Tags a session with the provided {@code userTag}.
 	 *
-	 * @param userId	id of the user
+	 * @param userTag	id of the user
 	 */
-	void identifyUser(String userId);
+	void identifyUser(String userTag);
 
 	/**
 	 * Reports a crash with a specified error name, crash reason and a stacktrace.

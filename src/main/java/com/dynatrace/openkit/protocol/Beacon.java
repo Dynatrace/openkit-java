@@ -304,18 +304,16 @@ public class Beacon {
     }
 
 	// identify the user
-	public void identifyUser(String userID) {
+	public void identifyUser(String userTag) {
 		StringBuilder eventBuilder = new StringBuilder();
 
-		buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userID);
+		buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
 
-		synchronized (eventDataList) {
-			eventDataList.add(eventBuilder.toString());
-		}
+		addEventData(eventBuilder);
 	}
 
 	// send current state of Beacon
