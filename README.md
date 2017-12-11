@@ -138,10 +138,10 @@ Detailed explanation is available in [example.md](docs/example.md).
 ```java
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL);
+OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL);
 openKit.waitForInitCompletion();
 
 String clientIP = "8.8.8.8";

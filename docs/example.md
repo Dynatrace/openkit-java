@@ -15,17 +15,17 @@ need to distinguish between different backend systems.
 ```java
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL);
+OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL);
 ```
 
 * The `applicationName` parameter is the application's name created before in Dynatrace SaaS.
 * The `applicationID` parameter is the unique identifier of the application in Dynatrace Saas. The
 application's id can be found in the settings page of the custom application in Dynatrace.
-* The `visitorID` is a unique identifier, which might be used to uniquely identify a device.
+* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
 * The `endpointURL` denotes the Dynatrace SaaS cluster endpoint OpenKit communicates with and 
   is shown when creating the application in Dynatrace SaaS.
 The endpoint URL can be found in the settings page of the custom application in Dynatrace.
@@ -37,12 +37,12 @@ To enable verbose mode, use the following example.
 ```java
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 boolean verbose = true;
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, visitorID, endpointURL, verbose);
+OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL, verbose);
 ```
 
 ### Dynatrace Managed
@@ -51,18 +51,18 @@ An OpenKit instance for Dynatrace Managed can be obtained in a similar manner, a
 ```java
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 String tenantID = "tenant-id";
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName, applicationID, visitorID, endpointURL, tenantID);
+OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName, applicationID, deviceID, endpointURL, tenantID);
 ```
 
 * The `applicationName` parameter is the application's name created before in Dynatrace Managed.
 * The `applicationID` parameter is the unique identifier of the application in Dynatrace Managed. The
 application's id can be found in the settings page of the custom application in Dynatrace.
-* The `visitorID` is a unique identifier, which might be used to uniquely identify a device.
+* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
 * The `endpointURL` denotes the Dynatrace Managed endpoint OpenKit communicates with. The endpoint URL can be found in 
 the settings page of the custom application in Dynatrace.
 * The `tenantID` is the tenant used by Dynatrace Managed.
@@ -71,13 +71,13 @@ Again an overloaded method exists to enable verbose logging, as shown below.
 ```java
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://beaconurl.com";
 String tenantID = "tenant-id";
 boolean verbose = true;
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName, applicationID, visitorID, endpointURL, tenantID, verbose);
+OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName, applicationID, deviceID, endpointURL, tenantID, verbose);
 ```
 
 ### AppMon
@@ -85,26 +85,26 @@ OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName,
 The example below demonstrates how to connect an OpenKit application to an AppMon endpoint.
 ```java
 String applicationName = "My OpenKit application";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://beaconurl.com";
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, visitorID, endpointURL);
+OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, deviceID, endpointURL);
 ```
 
 * The `applicationName` parameter is the application's name in AppMon and is also used as the application's id.
-* The `visitorID` is a unique identifier, which might be used to uniquely identify a device.
+* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
 * The `endpointURL` denotes the AppMon endpoint OpenKit communicates with.
 
 If verbose OpenKit logging output is wanted, an overloaded method can be used as demonstrated below.
 ```java
 String applicationName = "My OpenKit application";
-long visitorID = 42;
+long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 boolean verbose = true;
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, visitorID, endpointURL, verbose);
+OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, deviceID, endpointURL, verbose);
 ```
 
 ## Initializing OpenKit
