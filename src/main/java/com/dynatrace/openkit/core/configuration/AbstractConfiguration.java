@@ -27,7 +27,7 @@ public abstract class AbstractConfiguration {
     private final String applicationName;
     private final String applicationID;
     private final OpenKitType openKitType;
-    private final long visitorID;
+    private final long deviceID;
     private final String endpointURL;
     private final boolean verbose;
 
@@ -48,7 +48,7 @@ public abstract class AbstractConfiguration {
 
     // *** constructors ***
 
-    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long visitorID, String endpointURL, boolean verbose) {
+    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
         this.verbose = verbose;
 
         this.openKitType = openKitType;
@@ -56,7 +56,7 @@ public abstract class AbstractConfiguration {
         // immutable settings
         this.applicationName = applicationName;
         this.applicationID = applicationID;
-        this.visitorID = visitorID;
+        this.deviceID = deviceID;
         this.endpointURL = endpointURL;
 
         // mutable settings
@@ -153,8 +153,8 @@ public abstract class AbstractConfiguration {
         return applicationID;
     }
 
-    public long getVisitorID() {
-        return visitorID;
+    public long getDeviceID() {
+        return deviceID;
     }
 
     public boolean isVerbose() {

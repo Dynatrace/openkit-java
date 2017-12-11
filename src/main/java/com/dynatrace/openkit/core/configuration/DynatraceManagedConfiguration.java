@@ -7,9 +7,9 @@ public class DynatraceManagedConfiguration extends AbstractConfiguration {
 
 	private final String tenantId;
 
-	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long visitorID,
+	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long deviceID,
 			String endpointURL, boolean verbose) {
-		super(OpenKitType.DYNATRACE, applicationName, applicationID, visitorID, endpointURL, verbose);
+		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, verbose);
 		this.tenantId = tenantId;
 
         setHttpClientConfiguration(
