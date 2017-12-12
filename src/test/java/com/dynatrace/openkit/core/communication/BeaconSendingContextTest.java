@@ -7,7 +7,6 @@ import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -221,23 +220,11 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void timeSyncIsSupportedByDefault() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
-
-        // then
-        assertThat(target.isTimeSyncSupported(), is(true));
-    }
-
-    @Test
     public void timeSyncIsNotSupportedIfDisabled() {
 
         // given
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
-
-        // when time sync support is disabled
-        target.disableTimeSyncSupport();
+        when(timingProvider.isTimeSyncSupported()).thenReturn(false);
 
         // then
         assertThat(target.isTimeSyncSupported(), is(false));
@@ -609,5 +596,23 @@ public class BeaconSendingContextTest {
         verify(mockSessionThree, times(1)).clearCapturedData();
         verify(mockSessionFour, times(1)).clearCapturedData();
         verifyNoMoreInteractions(mockSessionOne, mockSessionTwo, mockSessionThree, mockSessionFour);
+    }
+
+    @Test
+    public void isTimeSyncedReturnsTrueIfSyncWasNeverPerformed() {
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        when(timingProvider.isTimeSyncSupported()).thenReturn(true);
+
+        assertThat(target.isTimeSynced(), is(false));
+    }
+
+    @Test
+    public void isTimeSyncedReturnsTrueIfSyncIsNotSupported() {
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        when(timingProvider.isTimeSyncSupported()).thenReturn(false);
+
+        assertThat(target.isTimeSynced(), is(true));
     }
 }

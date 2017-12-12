@@ -63,10 +63,6 @@ public class BeaconSendingContext {
      * boolean indicating whether init was successful or not
      */
     private AtomicBoolean initSucceeded = new AtomicBoolean(false);
-    /**
-     * boolean indicating whether the server supports a time sync (true) or not (false).
-     */
-    private boolean timeSyncSupported = true;
 
     /**
      * Constructor.
@@ -178,24 +174,31 @@ public class BeaconSendingContext {
     }
 
     /**
+     * Initialize time synchronization with cluster time.
+     *
+     * @param clusterTimeOffset the cluster offset
+     * @param isTimeSyncSupported {@code true} if time sync is supported, otherwise {@code false}
+     */
+    void initializeTimeSync(long clusterTimeOffset, boolean isTimeSyncSupported) {
+        timingProvider.initialize(clusterTimeOffset, isTimeSyncSupported);
+    }
+
+    /**
      * Gets a boolean flag indicating whether time sync is supported or not.
      *
      * @return {@code true} if time sync is supported, {@code false} otherwise.
      */
     boolean isTimeSyncSupported() {
-        return timeSyncSupported;
+        return timingProvider.isTimeSyncSupported();
     }
 
     /**
-     * Disable the time sync support.
+     * Gets a boolean falg indicating whether the time sync has been performed before
      *
-     * <p>
-     *     Note: There is no way to re-enable it, because as soon as a server tells OpenKit it does not support
-     *     time syncing, a time sync request is never again re-executed.
-     * </p>
+     * @return {@code true} if time sync was performed, {@code false} otherwise
      */
-    void disableTimeSyncSupport() {
-        timeSyncSupported = false;
+    boolean isTimeSynced() {
+        return !isTimeSyncSupported() || getLastTimeSyncTime() >= 0;
     }
 
     /**

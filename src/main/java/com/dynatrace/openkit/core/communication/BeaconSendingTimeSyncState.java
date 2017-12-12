@@ -1,7 +1,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -123,7 +122,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                     sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
                 } else {
                     // if no -> stop time sync, it's not supported
-                    context.disableTimeSyncSupport();
                     break;
                 }
             } else if (retry >= TIME_SYNC_RETRY_COUNT) {
@@ -161,7 +159,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
 
         // initialize time provider with cluster time offset
-        TimeProvider.initialize(computeClusterTimeOffset(timeSyncOffsets), true);
+        context.initializeTimeSync(computeClusterTimeOffset(timeSyncOffsets), true);
 
         // also update the time when last time sync was performed to now
         context.setLastTimeSyncTime(context.getCurrentTimestamp());
@@ -204,7 +202,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // if this is the initial sync try, we have to initialize the time provider
         // in every other case we keep the previous setting
         if (initialTimeSync) {
-            TimeProvider.initialize(0, false);
+            context.initializeTimeSync(0, false);
         }
 
         if (context.isTimeSyncSupported()) {

@@ -8,12 +8,9 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.providers.ThreadIDProvider;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
  * Actual implementation of the {@link Session} interface.
@@ -69,7 +66,7 @@ public class SessionImpl implements Session {
 			action.leaveAction();
 		}
 
-		endTime = TimeProvider.getTimestamp();
+		endTime = beacon.getCurrentTimestamp();
 
 		// create end session data on beacon
 		beacon.endSession(this);
