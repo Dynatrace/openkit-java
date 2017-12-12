@@ -370,7 +370,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // verify that time sync was disabled
-        verify(stateContext, times(1)).initializeTimeSync(0, false);
+        verify(stateContext, times(1)).disableTimeSyncSupport();
     }
 
     @Test
@@ -385,7 +385,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // verify that time sync was disabled
-        verify(stateContext, times(1)).initializeTimeSync(0, false);
+        verify(stateContext, times(1)).disableTimeSyncSupport();
     }
 
     @Test
@@ -400,7 +400,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // verify that time sync was disabled
-        verify(stateContext, times(1)).initializeTimeSync(0, false);
+        verify(stateContext, times(1)).disableTimeSyncSupport();
     }
 
     @Test
@@ -416,7 +416,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // then
-        verify(stateContext, times(1)).initializeTimeSync(0L, false);
+        verify(stateContext, times(1)).initializeTimeSync(0L, true);
     }
 
     @Test

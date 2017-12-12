@@ -63,6 +63,10 @@ public class BeaconSendingContext {
      * boolean indicating whether init was successful or not
      */
     private AtomicBoolean initSucceeded = new AtomicBoolean(false);
+    /**
+     * boolean indicating whether the server supports a time sync (true) or not (false).
+     */
+     private boolean timeSyncSupported = true;
 
     /**
      * Constructor.
@@ -189,11 +193,18 @@ public class BeaconSendingContext {
      * @return {@code true} if time sync is supported, {@code false} otherwise.
      */
     boolean isTimeSyncSupported() {
-        return timingProvider.isTimeSyncSupported();
+        return timeSyncSupported;
     }
 
     /**
-     * Gets a boolean falg indicating whether the time sync has been performed before
+     * Disables the time sync
+     */
+    public void disableTimeSyncSupport() {
+        timeSyncSupported = false;
+    }
+
+    /**
+     * Gets a boolean flag indicating whether the time sync has been performed before
      *
      * @return {@code true} if time sync was performed, {@code false} otherwise
      */

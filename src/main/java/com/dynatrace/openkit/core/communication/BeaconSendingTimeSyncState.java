@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
  *     <ul>
  *         <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
  *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false}) or time sync failed</li>
- *         <li>{@link BeaconSendingTerminalState} on shutdown</li>
+ *         <li>{@link BeaconSendingFlushSessionsState} on shutdown if not initial time sync</li>
+ *         <li>{@link BeaconSendingTerminalState} on shutdown if initial time sync</li>
  *     </ul>
  * </p>
  */
@@ -122,6 +123,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                     sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
                 } else {
                     // if no -> stop time sync, it's not supported
+                    context.disableTimeSyncSupport();
                     break;
                 }
             } else if (retry >= TIME_SYNC_RETRY_COUNT) {
@@ -202,12 +204,12 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // if this is the initial sync try, we have to initialize the time provider
         // in every other case we keep the previous setting
         if (initialTimeSync) {
-            context.initializeTimeSync(0, false);
+            context.initializeTimeSync(0, context.isTimeSyncSupported());
         }
 
         if (context.isTimeSyncSupported()) {
             // server supports time sync
-            context.setNextState(initialTimeSync ? new BeaconSendingInitState() : new BeaconSendingCaptureOffState());
+            context.setNextState(new BeaconSendingCaptureOffState());
         } else {
             // otherwise set the next state based on the configuration
             setNextState(context);

@@ -224,7 +224,9 @@ public class BeaconSendingContextTest {
 
         // given
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
-        when(timingProvider.isTimeSyncSupported()).thenReturn(false);
+
+        // when
+        target.disableTimeSyncSupport();
 
         // then
         assertThat(target.isTimeSyncSupported(), is(false));
@@ -611,8 +613,11 @@ public class BeaconSendingContextTest {
     public void isTimeSyncedReturnsTrueIfSyncIsNotSupported() {
         // given
         BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
-        when(timingProvider.isTimeSyncSupported()).thenReturn(false);
 
+        // when
+        target.disableTimeSyncSupport();
+
+        // then
         assertThat(target.isTimeSynced(), is(true));
     }
 
