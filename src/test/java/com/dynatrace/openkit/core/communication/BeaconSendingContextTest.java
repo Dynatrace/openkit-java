@@ -615,4 +615,16 @@ public class BeaconSendingContextTest {
 
         assertThat(target.isTimeSynced(), is(true));
     }
+
+    @Test
+    public void timingProviderIsCalledOnTimeSyncInit() {
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+
+        // when
+        target.initializeTimeSync(1234L, true);
+
+        // then
+        verify(timingProvider, times(1)).initialize(1234L, true);
+    }
 }
