@@ -1,5 +1,7 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.api.SSLTrustManager;
+
 /**
  * Configuration implementation for Dynatrace Managed
  */
@@ -7,8 +9,7 @@ public class DynatraceManagedConfiguration extends AbstractConfiguration {
 
 	private final String tenantId;
 
-	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long deviceID,
-			String endpointURL, boolean verbose) {
+	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
 		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, verbose);
 		this.tenantId = tenantId;
 
@@ -17,7 +18,8 @@ public class DynatraceManagedConfiguration extends AbstractConfiguration {
                 createBaseURL(endpointURL, OpenKitType.DYNATRACE.getDefaultMonitorName()),
                 OpenKitType.DYNATRACE.getDefaultServerID(),
                 applicationID,
-                verbose));
+                verbose,
+				sslTrustManager));
 	}
 
 	@Override

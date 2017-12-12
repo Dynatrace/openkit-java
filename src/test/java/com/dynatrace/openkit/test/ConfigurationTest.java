@@ -4,6 +4,7 @@ import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
+import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -21,7 +22,7 @@ public class ConfigurationTest {
         String tenantUrl = String.format("https://%s.%s", tenantId, host);
 
         AbstractConfiguration configuration =
-            new DynatraceConfiguration("", "", 17, tenantUrl, false);
+            new DynatraceConfiguration("", "", 17, tenantUrl, false, new SSLStrictTrustManager());
 
         String expected = String.format("%s/mbeacon", tenantUrl);
 
@@ -33,7 +34,7 @@ public class ConfigurationTest {
         String managedHost = String.format("http://%s", host);
 
         AbstractConfiguration configuration =
-            new DynatraceManagedConfiguration(tenantId, "", "",17, managedHost, false);
+            new DynatraceManagedConfiguration(tenantId, "", "",17, managedHost, false, new SSLStrictTrustManager());
 
         String expected = String.format("%s/mbeacon/%s", managedHost, tenantId);
 
@@ -44,7 +45,7 @@ public class ConfigurationTest {
     public void appMonUrlIsCorrect() {
         String appMonHost = String.format("https://%s", host);
 
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, appMonHost, false);
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, appMonHost, false,  new SSLStrictTrustManager());
 
         String expected = String.format("%s/dynaTraceMonitor", appMonHost);
 
@@ -53,7 +54,7 @@ public class ConfigurationTest {
 
     @Test
     public void applicationIdAndApplicationNameIdenticalForAppMonConfig() {
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false);
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager());
 
         assertThat(applicationName, is(configuration.getApplicationID()));
         assertThat(applicationName, is(configuration.getApplicationName()));
@@ -61,7 +62,7 @@ public class ConfigurationTest {
 
     @Test
     public void defaultApplicationVersionIsCorrect() {
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false);
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager());
 
         assertThat(applicationVersion, is(configuration.getApplicationVersion()));
     }

@@ -6,6 +6,11 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.sun.deploy.security.CertificateHostnameVerifier;
+import sun.net.www.protocol.https.DefaultHostnameVerifier;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.*;
@@ -71,13 +77,16 @@ public class HTTPClient {
     private final int serverID;
     private final boolean verbose;
 
+    private final SSLTrustManager sslTrustManager;
+
 	// *** constructors ***
 
-    public HTTPClient(String baseURL, String applicationID, int serverID, boolean verbose) {
-    	this.serverID = serverID;
-    	this.verbose = verbose;
-    	this.monitorURL = buildMonitorURL(baseURL, applicationID, serverID);
-    	this.timeSyncURL = buildTimeSyncURL(baseURL);
+    public HTTPClient(HTTPClientConfiguration configuration) {
+    	serverID = configuration.getServerID();
+    	verbose = configuration.isVerbose();
+    	monitorURL = buildMonitorURL(configuration.getBaseUrl(), configuration.getApplicationID(), serverID);
+    	timeSyncURL = buildTimeSyncURL(configuration.getBaseUrl());
+    	sslTrustManager = configuration.getSslTrustManager();
     }
 
 	// *** public methods ***
@@ -132,8 +141,9 @@ public class HTTPClient {
 
 					SSLContext context = SSLContext.getInstance("TLS");
 					// accept any certificate
-					context.init(null, new TrustManager[] { new AcceptAnyX509TrustManager() }, null);
+					context.init(null, new TrustManager[] { sslTrustManager.getX509TrustManager() }, new SecureRandom());
 					httpsConnection.setSSLSocketFactory(context.getSocketFactory());
+					httpsConnection.setHostnameVerifier(sslTrustManager.getHostnameVerifier());
 				}
 
 				if (clientIPAddress != null) {
