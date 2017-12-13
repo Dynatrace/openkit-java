@@ -3,10 +3,8 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.core.DeviceImpl;
 import com.dynatrace.openkit.core.RootActionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.providers.LocalTimeProvider;
+import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
-import com.dynatrace.openkit.providers.TimeProvider;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,10 +25,6 @@ public class BeaconTest {
 
     @Before
     public void setup() {
-        // set time provider
-        TimeProvider.setTimeProvider(new NullTimeProvider());
-        TimeProvider.initialize(0, true);
-
         configuration = mock(AbstractConfiguration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
@@ -40,16 +34,11 @@ public class BeaconTest {
         threadIDProvider = mock(ThreadIDProvider.class);
     }
 
-    @After
-    public void tearDown() {
-        // reset time provider
-        TimeProvider.setTimeProvider(new LocalTimeProvider());
-    }
 
     @Test
     public void canAddUserIdentifyEvent() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider);
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String userID = "myTestUser";
 
         // when
@@ -69,7 +58,7 @@ public class BeaconTest {
         when(rootAction.getName()).thenReturn(actionName);
 
         // when
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider);
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         beacon.addAction(rootAction);
 
         String[] actions = beacon.getActions();
@@ -87,7 +76,7 @@ public class BeaconTest {
         when(rootAction.getName()).thenReturn(actionName);
 
         // when
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider);
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         beacon.addAction(rootAction);
 
         String[] actions = beacon.getActions();
@@ -96,10 +85,9 @@ public class BeaconTest {
         assertThat(actions, is(arrayWithSize(0)));
     }
 
-    private class NullTimeProvider extends TimeProvider {
+    private class NullTimeProvider extends DefaultTimingProvider {
 
-        @Override
-        protected long provideTimestamp() {
+        public long provideTimestampInMilliseconds() {
             return 0;
         }
     }

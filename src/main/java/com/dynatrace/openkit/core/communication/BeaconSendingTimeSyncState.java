@@ -1,7 +1,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +19,8 @@ import java.util.concurrent.TimeUnit;
  *     <ul>
  *         <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
  *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false}) or time sync failed</li>
- *         <li>{@link BeaconSendingTerminalState} on shutdown</li>
+ *         <li>{@link BeaconSendingFlushSessionsState} on shutdown if not initial time sync</li>
+ *         <li>{@link BeaconSendingTerminalState} on shutdown if initial time sync</li>
  *     </ul>
  * </p>
  */
@@ -161,7 +161,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
 
         // initialize time provider with cluster time offset
-        TimeProvider.initialize(computeClusterTimeOffset(timeSyncOffsets), true);
+        context.initializeTimeSync(computeClusterTimeOffset(timeSyncOffsets), true);
 
         // also update the time when last time sync was performed to now
         context.setLastTimeSyncTime(context.getCurrentTimestamp());
@@ -204,12 +204,12 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // if this is the initial sync try, we have to initialize the time provider
         // in every other case we keep the previous setting
         if (initialTimeSync) {
-            TimeProvider.initialize(0, false);
+            context.initializeTimeSync(0, context.isTimeSyncSupported());
         }
 
         if (context.isTimeSyncSupported()) {
             // server supports time sync
-            context.setNextState(initialTimeSync ? new BeaconSendingInitState() : new BeaconSendingCaptureOffState());
+            context.setNextState(new BeaconSendingCaptureOffState());
         } else {
             // otherwise set the next state based on the configuration
             setNextState(context);

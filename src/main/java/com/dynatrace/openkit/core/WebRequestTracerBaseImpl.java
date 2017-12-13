@@ -7,7 +7,6 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
  * Abstract base class implementation of the {@link WebRequestTracer} interface.
@@ -57,12 +56,12 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
 	@Override
 	public void start() {
-		startTime = TimeProvider.getTimestamp();
+		startTime = beacon.getCurrentTimestamp();
 	}
 
 	@Override
 	public void stop() {
-		endTime = TimeProvider.getTimestamp();
+		endTime = beacon.getCurrentTimestamp();
 		endSequenceNo = beacon.createSequenceNumber();
 
 		// add web request to beacon

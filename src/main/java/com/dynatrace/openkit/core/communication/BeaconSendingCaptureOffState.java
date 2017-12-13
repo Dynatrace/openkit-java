@@ -1,7 +1,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.StatusResponse;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 import java.util.concurrent.TimeUnit;
 
@@ -64,7 +63,7 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
             context.handleStatusResponse(statusResponse);
         }
         // if initial time sync failed before
-        if (context.isTimeSyncSupported() && !TimeProvider.isTimeSynced()) {
+        if (context.isTimeSyncSupported() && !context.isTimeSynced()) {
             // then retry initial time sync
             context.setNextState(new BeaconSendingTimeSyncState(true));
         } else if (statusResponse != null && context.isCaptureOn()) {

@@ -13,7 +13,7 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
-import com.dynatrace.openkit.providers.TimeProvider;
+import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -88,6 +88,7 @@ public class Beacon {
 
 	// session number & start time
 	private final int sessionNumber;
+	private final TimingProvider timingProvider;
 	private final ThreadIDProvider threadIDProvider;
 	private final long sessionStartTime;
 
@@ -109,17 +110,21 @@ public class Beacon {
 
 	// *** constructors ***
 
-	public Beacon(AbstractConfiguration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider) {
+	public Beacon(AbstractConfiguration configuration, String clientIPAddress,
+				  ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
 		this.sessionNumber = configuration.createSessionNumber();
-		this.sessionStartTime = TimeProvider.getTimestamp();
+		this.timingProvider = timingProvider;
+
 		this.configuration = configuration;
 		this.threadIDProvider = threadIDProvider;
+		this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
 
 		if(InetAddressValidator.isValidIP(clientIPAddress)) {
 			this.clientIPAddress = clientIPAddress;
 		} else {
 			this.clientIPAddress = "";
 		}
+
 		// store the current configuration
 		this.httpConfiguration = configuration.getHttpClientConfig();
 
@@ -131,6 +136,15 @@ public class Beacon {
 	// create next ID
 	public int createID() {
 		return nextID.incrementAndGet();
+	}
+
+	/**
+	 * Get the current timestamp in milliseconds by delegating to TimingProvider
+	 *
+	 * @return
+	 */
+	public long getCurrentTimestamp() {
+		return timingProvider.provideTimestampInMilliseconds();
 	}
 
 	// create next sequence number
@@ -160,9 +174,11 @@ public class Beacon {
 		addKeyValuePair(actionBuilder, BEACON_KEY_ACTION_ID, action.getID());
 		addKeyValuePair(actionBuilder, BEACON_KEY_PARENT_ACTION_ID, action.getParentID());
 		addKeyValuePair(actionBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, action.getStartSequenceNo());
-		addKeyValuePair(actionBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime(action.getStartTime()));
+		addKeyValuePair(actionBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(action.getStartTime()));
 		addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
 		addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
+
+
 
         addActionData(actionBuilder);
     }
@@ -175,7 +191,7 @@ public class Beacon {
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime(session.getEndTime()));
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(session.getEndTime()));
 
         addEventData(eventBuilder);
     }
@@ -232,7 +248,7 @@ public class Beacon {
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
@@ -252,7 +268,7 @@ public class Beacon {
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 		addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
@@ -267,7 +283,7 @@ public class Beacon {
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTracer.getStartSequenceNo());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime(webRequestTracer.getStartTime()));
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(webRequestTracer.getStartTime()));
 		addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
 		if (webRequestTracer.getResponseCode() != -1) {
@@ -285,7 +301,7 @@ public class Beacon {
 
 		addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
 		addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
+		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
 
 		addEventData(eventBuilder);
 	}
@@ -380,7 +396,7 @@ public class Beacon {
 
 		addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
 		addKeyValuePair(builder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-		addKeyValuePair(builder, BEACON_KEY_TIME_0, TimeProvider.getTimeSinceLastInitTime());
+		addKeyValuePair(builder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
 	}
 
 	// helper method for building basic event data
@@ -477,10 +493,10 @@ public class Beacon {
 		StringBuilder timestampBuilder = new StringBuilder();
 
 		// timestamp information
-		addKeyValuePair(timestampBuilder, BEACON_KEY_SESSION_START_TIME, TimeProvider.convertToClusterTime(sessionStartTime));
-		addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, TimeProvider.getLastInitTimeInClusterTime());
-		if (!TimeProvider.isTimeSynced()) {
-			addKeyValuePair(timestampBuilder, BEACON_KEY_TRANSMISSION_TIME, TimeProvider.getTimestamp());
+		addKeyValuePair(timestampBuilder, BEACON_KEY_SESSION_START_TIME, timingProvider.convertToClusterTime(sessionStartTime));
+		addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, timingProvider.getLastInitTimeInClusterTime());
+		if (!timingProvider.isTimeSyncSupported()) {
+			addKeyValuePair(timestampBuilder, BEACON_KEY_TRANSMISSION_TIME, timingProvider.provideTimestampInMilliseconds());
 		}
 
 		return timestampBuilder.toString();
