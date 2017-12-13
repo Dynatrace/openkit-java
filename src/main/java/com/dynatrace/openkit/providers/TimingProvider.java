@@ -22,21 +22,22 @@ public interface TimingProvider {
      * for {@code isTimeSyncSupported}, the cluster offset is set to 0.
      *
      * @param clusterTimeOffset
+     * @param isTimeSyncSupported
      */
     void initialize(long clusterTimeOffset, boolean isTimeSyncSupported);
 
     /**
-     * Returns whether a time sync was performed or not
+     * Returns whether time sync is supported or not
      *
-     * @return {@code true} is time sync was performed otherwise {@code false}
+     * @return {@code true} if time sync is supported otherwise {@code false}
      */
     boolean isTimeSyncSupported();
 
     /**
-     * Converts a local timestamp to cluster time. Returns local time if not time synced or if not yet initialized
+     * Converts a local timestamp to cluster time.
      *
-     * @param timestamp
-     * @return
+     * @param timestamp Timestamp in local time
+     * @return Returns local time if not time synced or if not yet initialized
      */
     long convertToClusterTime(long timestamp);
 

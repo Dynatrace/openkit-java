@@ -19,7 +19,7 @@ public class DefaultTimingProvider implements TimingProvider {
     }
 
     @Override
-    public void initialize(long clusterTimeOffset, boolean isTimeSyncSupported) {
+    public synchronized void initialize(long clusterTimeOffset, boolean isTimeSyncSupported) {
         // set init time in milliseconds since 1970-01-01
         lastInitTime = provideTimestampInMilliseconds();
         this.isTimeSyncSupported = isTimeSyncSupported;
