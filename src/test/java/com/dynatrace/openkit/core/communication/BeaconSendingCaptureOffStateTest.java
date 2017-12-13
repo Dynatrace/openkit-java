@@ -1,15 +1,12 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.providers.TestTimeProvider;
-import com.dynatrace.openkit.providers.TimeProvider;
 import org.junit.Before;
 import org.junit.Test;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -19,13 +16,9 @@ public class BeaconSendingCaptureOffStateTest {
     private BeaconSendingContext mockContext;
     private StatusResponse mockResponse;
     private HTTPClient httpClient;
-    private TimeProvider timeProvider;
 
     @Before
     public void setUp() throws InterruptedException {
-
-        timeProvider.initialize(0, true);
-
         mockResponse = mock(StatusResponse.class);
 
         httpClient = mock(HTTPClient.class);
@@ -33,6 +26,7 @@ public class BeaconSendingCaptureOffStateTest {
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.getHTTPClient()).thenReturn(httpClient);
+        when(mockContext.isTimeSynced()).thenReturn(true);
     }
 
     @Test
@@ -62,7 +56,7 @@ public class BeaconSendingCaptureOffStateTest {
         //given
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(false);
-        timeProvider.initialize(0, false);
+        when(mockContext.isTimeSynced()).thenReturn(false);
 
         // when calling execute
         target.doExecute(mockContext);
@@ -103,7 +97,7 @@ public class BeaconSendingCaptureOffStateTest {
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(false);
-        timeProvider.initialize(0, false);
+        when(mockContext.isTimeSynced()).thenReturn(false);
 
         // when calling execute
         target.doExecute(mockContext);
