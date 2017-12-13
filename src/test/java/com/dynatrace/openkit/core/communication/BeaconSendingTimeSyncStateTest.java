@@ -2,8 +2,7 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
-import com.dynatrace.openkit.providers.TimeProvider;
-import org.junit.After;
+import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,21 +22,21 @@ public class BeaconSendingTimeSyncStateTest {
 
     private HTTPClient httpClient;
     private BeaconSendingContext stateContext;
+    private TimingProvider timingProvider;
 
     @Before
     public void setUp() {
 
         httpClient = mock(HTTPClient.class);
         stateContext = mock(BeaconSendingContext.class);
+        timingProvider = mock(TimingProvider.class);
+
+        // by default true is returned
+        when(timingProvider.isTimeSyncSupported()).thenReturn(true);
 
         when(stateContext.isTimeSyncSupported()).thenReturn(true); // by set time sync support to enabled
         when(stateContext.getLastTimeSyncTime()).thenReturn(-1L);
         when(stateContext.getHTTPClient()).thenReturn(httpClient);
-    }
-
-    @After
-    public void tearDown() {
-        TimeProvider.initialize(0, false); // reset TimeProvider to default values
     }
 
     @Test
@@ -160,7 +159,6 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // then
-        assertThat(TimeProvider.isTimeSynced(), is(false));
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
     }
 
@@ -177,7 +175,6 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // then
-        assertThat(TimeProvider.isTimeSynced(), is(false));
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
     }
 
@@ -269,8 +266,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // then verify init was done
-        assertThat(TimeProvider.isTimeSynced(), is(true));
-        assertThat(TimeProvider.convertToClusterTime(0), is(2L));
+        verify(stateContext, times(1)).initializeTimeSync(2L, true);
 
         // and verify method calls
         verify(stateContext, times(10)).sleep(anyLong()); // verify it's four, since we have 4 further checks
@@ -318,8 +314,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // verify init was done
-        assertThat(TimeProvider.isTimeSynced(), is(true));
-        assertThat(TimeProvider.convertToClusterTime(0), is(2L));
+        verify(stateContext, times(1)).initializeTimeSync(2L, true);
 
         // verify number of method calls
         verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
@@ -353,8 +348,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // verify init was done
-        assertThat(TimeProvider.isTimeSynced(), is(true));
-        assertThat(TimeProvider.convertToClusterTime(0), is(2L));
+        verify(stateContext, times(1)).initializeTimeSync(2L, true);
 
         // verify number of method calls
         verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
@@ -370,7 +364,7 @@ public class BeaconSendingTimeSyncStateTest {
         //given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-2", 200));
 
-        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
         // when being executed
         target.execute(stateContext);
@@ -385,7 +379,7 @@ public class BeaconSendingTimeSyncStateTest {
         //given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200));
 
-        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
         // when being executed
         target.execute(stateContext);
@@ -400,7 +394,7 @@ public class BeaconSendingTimeSyncStateTest {
         //given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1", 200));
 
-        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
         // when being executed
         target.execute(stateContext);
@@ -413,7 +407,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeProviderInitializeIsCalledIfItIsAnInitialTimeSyncEvenWhenResponseIsErroneous() throws InterruptedException {
 
         // given
-        TimeProvider.initialize(42, true); // explicitly initialize TimeProvider (verify that it's changed later)
+        timingProvider.initialize(42, true); // explicitly initialize TimeProvider (verify that it's changed later)
         when(httpClient.sendTimeSyncRequest()).thenReturn(null);
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
@@ -422,8 +416,7 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // then
-        assertThat(TimeProvider.isTimeSynced(), is(false));
-        assertThat(TimeProvider.convertToClusterTime(0L), is(0L)); // if not overwritten the result should be 42
+        verify(stateContext, times(1)).initializeTimeSync(0L, true);
     }
 
     @Test
