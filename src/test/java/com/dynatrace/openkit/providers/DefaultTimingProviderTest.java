@@ -39,7 +39,7 @@ public class DefaultTimingProviderTest {
     }
 
     @Test
-    public void timeSyncIsNotSupportedIfInitCalledWithFals() {
+    public void timeSyncIsNotSupportedIfInitCalledWithFalse() {
         // when
         provider.initialize(0L, false);
 

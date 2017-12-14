@@ -12,16 +12,13 @@ import static org.mockito.Mockito.*;
 
 public class BeaconSendingCaptureOffStateTest {
 
-   // private AbstractBeaconSendingState mockState;
     private BeaconSendingContext mockContext;
-    private StatusResponse mockResponse;
-    private HTTPClient httpClient;
 
     @Before
-    public void setUp() throws InterruptedException {
-        mockResponse = mock(StatusResponse.class);
+    public void setUp() {
+        StatusResponse mockResponse = mock(StatusResponse.class);
 
-        httpClient = mock(HTTPClient.class);
+        HTTPClient httpClient = mock(HTTPClient.class);
         when(httpClient.sendStatusRequest()).thenReturn(mockResponse);
 
         mockContext = mock(BeaconSendingContext.class);
@@ -49,11 +46,9 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateTransitionsToTimeSyncStateWhenCapturingNotActive() throws InterruptedException {
-
-        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
-
+    public void aBeaconSendingCaptureOffStateTransitionsToTimeSyncStateWhenNotYetTimeSynched() throws InterruptedException {
         //given
+        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(false);
         when(mockContext.isTimeSynced()).thenReturn(false);
@@ -71,10 +66,8 @@ public class BeaconSendingCaptureOffStateTest {
 
     @Test
     public void aBeaconSendingCaptureOffStateTransitionsToCaptureOnStateWhenCapturingActive() throws InterruptedException {
-
-        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
-
         //given
+        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(true);
 
@@ -105,7 +98,7 @@ public class BeaconSendingCaptureOffStateTest {
         // then verify that capturing is set to disabled
         verify(mockContext, times(1)).disableCapture();
         // also verify that lastStatusCheckTime was updated
-        verify(mockContext, times(1)).setLastStatusCheckTime(org.mockito.Matchers.anyLong());
+        verify(mockContext, times(1)).setLastStatusCheckTime(0);
         // verify that the next time sync operation will follow after a sleep of 7200000 ms
         verify(mockContext, times(1)).sleep(7200000);//wait for two hours
         // verify that after sleeping the transition to BeaconSendingTimeSyncState works

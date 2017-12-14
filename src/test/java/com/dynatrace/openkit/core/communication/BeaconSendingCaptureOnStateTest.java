@@ -14,11 +14,7 @@ import static org.mockito.Mockito.*;
 
 public class BeaconSendingCaptureOnStateTest {
 
-   // private AbstractBeaconSendingState mockState;
     private BeaconSendingContext mockContext;
-    private StatusResponse mockResponse;
-    private HTTPClient mockHTTPClient;
-    private HTTPClientProvider mockHTTPClientProvider;
     private SessionImpl mockSession1Open;
     private SessionImpl mockSession2Open;
     private SessionImpl mockSession3Finished;
@@ -31,14 +27,15 @@ public class BeaconSendingCaptureOnStateTest {
         mockSession2Open = mock(SessionImpl.class);
         mockSession3Finished = mock(SessionImpl.class);
         mockSession4Finished = mock(SessionImpl.class);
-        //doReturn(new StatusResponse("OK", 200)).when(mockSession4Finished).sendBeacon(any(HTTPClientProvider.class), anyInt());
         when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class), anyInt())).thenReturn(new StatusResponse("", 200));
         when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class), anyInt())).thenReturn(new StatusResponse("", 404));
 
-        mockResponse = mock(StatusResponse.class);
+        StatusResponse mockResponse = mock(StatusResponse.class);
 
-        mockHTTPClient = mock(HTTPClient.class);
+        HTTPClient mockHTTPClient = mock(HTTPClient.class);
         when(mockHTTPClient.sendStatusRequest()).thenReturn(mockResponse);
+
+        HTTPClientProvider mockHTTPClientProvider = mock(HTTPClientProvider.class);
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
@@ -69,7 +66,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateWhenFirstTimeSyncRequired() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateWhenLastSyncTimeIsNegative() {
 
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -147,7 +144,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateTransitionsToCaptureOffStateWhenCapturingGotDisabled() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateTransitionsToCaptureOffStateWhenCapturingGotDisabled() {
 
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 

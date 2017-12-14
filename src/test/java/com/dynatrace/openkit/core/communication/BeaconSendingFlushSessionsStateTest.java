@@ -15,22 +15,20 @@ import static org.mockito.Mockito.*;
 public class BeaconSendingFlushSessionsStateTest {
 
     private BeaconSendingContext mockContext;
-    private StatusResponse mockResponse;
-    private HTTPClient mockHttpClient;
     private SessionImpl mockSession1Open;
     private SessionImpl mockSession2Open;
     private SessionImpl mockSession3Closed;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
 
         mockSession1Open = mock(SessionImpl.class);
         mockSession2Open = mock(SessionImpl.class);
         mockSession3Closed = mock(SessionImpl.class);
 
-        mockResponse = mock(StatusResponse.class);
+        StatusResponse mockResponse = mock(StatusResponse.class);
 
-        mockHttpClient = mock(HTTPClient.class);
+        HTTPClient mockHttpClient = mock(HTTPClient.class);
         when(mockHttpClient.sendStatusRequest()).thenReturn(mockResponse);
 
         mockContext = mock(BeaconSendingContext.class);
