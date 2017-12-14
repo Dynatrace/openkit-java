@@ -95,22 +95,18 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	}
 
 	public int getStartSequenceNo() {
-
 		return startSequenceNo;
 	}
 
-	public int getEndSequenceNo()
-	{
+	public int getEndSequenceNo() {
 		return endSequenceNo;
 	}
 
-	public int getBytesSent()
-	{
+	public int getBytesSent() {
 		return bytesSent;
 	}
 
-	public int getBytesReceived()
-	{
+	public int getBytesReceived() {
 		return bytesReceived;
 	}
 
