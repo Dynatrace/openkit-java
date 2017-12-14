@@ -19,6 +19,8 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	// HTTP information: URL & response code
 	protected String url = "<unknown>";
 	private int responseCode = -1;
+	private int bytesSent = -1;
+	private int bytesReceived = -1;
 
 	// start/end time & sequence number
 	private long startTime = -1;
@@ -55,6 +57,12 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	}
 
 	@Override
+	public void setBytesSent(int bytesSent) { this.bytesSent = bytesSent; }
+
+	@Override
+	public void setBytesReceived(int bytesReceived) { this.bytesReceived = bytesReceived; }
+
+	@Override
 	public void start() {
 		startTime = beacon.getCurrentTimestamp();
 	}
@@ -87,11 +95,23 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	}
 
 	public int getStartSequenceNo() {
+
 		return startSequenceNo;
 	}
 
-	public int getEndSequenceNo() {
+	public int getEndSequenceNo()
+	{
 		return endSequenceNo;
+	}
+
+	public int getBytesSent()
+	{
+		return bytesSent;
+	}
+
+	public int getBytesReceived()
+	{
+		return bytesReceived;
 	}
 
 }

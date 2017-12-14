@@ -27,6 +27,18 @@ public interface WebRequestTracer {
 	void setResponseCode(int responseCode);
 
 	/**
+	 * Sets the amount of sent data of this web request. Has to be called before {@link WebRequestTracer#stop()}.
+	 * @param bytesSent			number of bytes
+	 */
+	void setBytesSent(int bytesSent);
+
+	/**
+	 * Sets the amount of received data of this web request. Has to be called before {@link WebRequestTracer#stop()}.
+	 * @param bytesReceived			number of bytes
+	 */
+	void setBytesReceived(int bytesReceived);
+
+	/**
 	 * Starts the web request timing. Should be called when the web request is initiated.
 	 */
 	void start();

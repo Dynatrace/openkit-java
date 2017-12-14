@@ -64,6 +64,8 @@ public class Beacon {
 	private static final String BEACON_KEY_ERROR_REASON = "rs";
 	private static final String BEACON_KEY_ERROR_STACKTRACE = "st";
 	private static final String BEACON_KEY_WEBREQUEST_RESPONSECODE = "rc";
+	private static final String BEACON_KEY_WEBREQUEST_BYTES_SENT = "bs";
+	private static final String BEACON_KEY_WEBREQUEST_BYTES_RECEIVED = "br";
 
 	// version constants
 	public static final String OPENKIT_VERSION = "7.0.0000";
@@ -286,6 +288,15 @@ public class Beacon {
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(webRequestTracer.getStartTime()));
 		addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
 		addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
+
+		if (webRequestTracer.getBytesSent() > -1 ) {
+			addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_SENT, webRequestTracer.getBytesSent());
+		}
+
+		if (webRequestTracer.getBytesReceived() > -1) {
+			addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
+		}
+
 		if (webRequestTracer.getResponseCode() != -1) {
 			addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
 		}

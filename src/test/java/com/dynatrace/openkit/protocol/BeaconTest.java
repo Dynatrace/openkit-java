@@ -1,8 +1,10 @@
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.core.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.DeviceImpl;
 import com.dynatrace.openkit.core.RootActionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import org.junit.Before;
@@ -31,6 +33,9 @@ public class BeaconTest {
         when(configuration.getDevice()).thenReturn(new DeviceImpl());
         when(configuration.isCapture()).thenReturn(true);
 
+        HTTPClientConfiguration mockHTTPClientConfiguration = mock(HTTPClientConfiguration.class);
+        when(configuration.getHttpClientConfig()).thenReturn(mockHTTPClientConfiguration);
+
         threadIDProvider = mock(ThreadIDProvider.class);
     }
 
@@ -47,6 +52,132 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[] { "et=60&na=" + userID + "&it=0&pa=0&s0=1&t0=0" })));
+    }
+
+    @Test
+    public void canAddSentBytesToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        int bytesSent = 12321;
+        webRequest.setBytesSent(bytesSent);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&bs=" + String.valueOf(bytesSent) })));
+    }
+
+    @Test
+    public void canAddSentBytesValueZeroToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        int bytesSent = 0;
+        webRequest.setBytesSent(bytesSent);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&bs=" + String.valueOf(bytesSent) })));
+    }
+
+    @Test
+    public void cannotAddSentBytesWithInvalidValueSmallerZeroToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        webRequest.setBytesSent(-5);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0" })));
+    }
+
+    @Test
+    public void canAddReceivedBytesToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        int bytesReceived = 12321;
+        webRequest.setBytesReceived(bytesReceived);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&br=" + String.valueOf(bytesReceived) })));
+    }
+
+    @Test
+    public void canAddReceivedBytesValueZeroToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        int bytesReceived = 0;
+        webRequest.setBytesReceived(bytesReceived);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&br=" + String.valueOf(bytesReceived) })));
+    }
+
+    @Test
+    public void cannotAddReceivedBytesWithInvalidValueSmallerZeroToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        webRequest.setBytesReceived(-45);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0" })));
+    }
+
+    @Test
+    public void canAddBothSentBytesAndReceivedBytesToWebRequestTracer() {
+        // given
+        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        String testURL = "localhost";
+        RootActionImpl rootAction = mock(RootActionImpl.class);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        int bytesReceived = 12321;
+        webRequest.setBytesReceived(bytesReceived);
+        int bytesSent = 123;
+        webRequest.setBytesSent(bytesSent);
+
+        // when
+        beacon.addWebRequest(rootAction, webRequest);
+        String[] events = beacon.getEvents();
+
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&bs=" + String.valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived) })));
     }
 
     @Test
