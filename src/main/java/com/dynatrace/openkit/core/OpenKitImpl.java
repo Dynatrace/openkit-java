@@ -23,6 +23,7 @@ public class OpenKitImpl implements OpenKit {
 	// AbstractConfiguration reference
 	private AbstractConfiguration configuration;
 	private final ThreadIDProvider threadIDProvider;
+	private final TimingProvider timingProvider;
 
 	// *** constructors ***
 
@@ -33,6 +34,7 @@ public class OpenKitImpl implements OpenKit {
 	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
 		configuration = config;
 		this.threadIDProvider = threadIDProvider;
+		this.timingProvider = timingProvider;
 		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
 	}
 
@@ -78,7 +80,7 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public Session createSession(String clientIPAddress) {
 		// create beacon for session
-		Beacon beacon = new Beacon(configuration, clientIPAddress, threadIDProvider);
+		Beacon beacon = new Beacon(configuration, clientIPAddress, threadIDProvider, timingProvider);
 		// create session
 		return new SessionImpl(beaconSender, beacon);
 	}

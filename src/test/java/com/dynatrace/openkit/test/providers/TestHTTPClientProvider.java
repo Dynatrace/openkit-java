@@ -3,12 +3,13 @@
  *
  * @author: Christian Schwarzbauer
  */
-package com.dynatrace.openkit.providers;
+package com.dynatrace.openkit.test.providers;
 
 import java.util.ArrayList;
 
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.test.TestHTTPClient;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 

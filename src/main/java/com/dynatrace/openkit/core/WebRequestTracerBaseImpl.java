@@ -7,7 +7,6 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
  * Abstract base class implementation of the {@link WebRequestTracer} interface.
@@ -20,6 +19,8 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	// HTTP information: URL & response code
 	protected String url = "<unknown>";
 	private int responseCode = -1;
+	private int bytesSent = -1;
+	private int bytesReceived = -1;
 
 	// start/end time & sequence number
 	private long startTime = -1;
@@ -51,18 +52,32 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	}
 
 	@Override
-	public void setResponseCode(int responseCode) {
+	public WebRequestTracer setResponseCode(int responseCode) {
 		this.responseCode = responseCode;
+		return this;
 	}
 
 	@Override
-	public void start() {
-		startTime = TimeProvider.getTimestamp();
+	public WebRequestTracer setBytesSent(int bytesSent) {
+		this.bytesSent = bytesSent;
+		return this;
+	}
+
+	@Override
+	public WebRequestTracer setBytesReceived(int bytesReceived) {
+		this.bytesReceived = bytesReceived;
+		return this;
+	}
+
+	@Override
+	public WebRequestTracer start() {
+		startTime = beacon.getCurrentTimestamp();
+		return this;
 	}
 
 	@Override
 	public void stop() {
-		endTime = TimeProvider.getTimestamp();
+		endTime = beacon.getCurrentTimestamp();
 		endSequenceNo = beacon.createSequenceNumber();
 
 		// add web request to beacon
@@ -93,6 +108,14 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
 	public int getEndSequenceNo() {
 		return endSequenceNo;
+	}
+
+	public int getBytesSent() {
+		return bytesSent;
+	}
+
+	public int getBytesReceived() {
+		return bytesReceived;
 	}
 
 }

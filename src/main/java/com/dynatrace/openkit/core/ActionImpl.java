@@ -10,7 +10,6 @@ import java.net.URLConnection;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.providers.TimeProvider;
 
 /**
  * Actual implementation of the {@link Action} interface.
@@ -43,7 +42,7 @@ public class ActionImpl implements Action {
 		this.beacon = beacon;
 		this.parentAction = parentAction;
 
-		this.startTime = TimeProvider.getTimestamp();
+		this.startTime = beacon.getCurrentTimestamp();
 		this.startSequenceNo = beacon.createSequenceNumber();
 		this.id = beacon.createID();
 		this.name = name;
@@ -106,7 +105,7 @@ public class ActionImpl implements Action {
 
 	protected Action doLeaveAction() {
 		// set end time and end sequence number
-		endTime = TimeProvider.getTimestamp();
+		endTime = beacon.getCurrentTimestamp();
 		endSequenceNo = beacon.createSequenceNumber();
 
 		// add Action to Beacon

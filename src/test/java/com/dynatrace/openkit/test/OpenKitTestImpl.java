@@ -5,28 +5,26 @@
  */
 package com.dynatrace.openkit.test;
 
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 
-import com.dynatrace.openkit.providers.*;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.providers.*;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
+import com.dynatrace.openkit.test.providers.TestHTTPClientProvider;
+import com.dynatrace.openkit.test.providers.TestTimingProvider;
 
 public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
 	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) throws InterruptedException {
-		this(config, remoteTest, new TestHTTPClientProvider(remoteTest), createMockTimingProvider());
+		this(config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
 	}
 
-	private OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest, TestHTTPClientProvider provider, TimingProvider timingProvider) {
+	private OpenKitTestImpl(AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
 		super(config, provider, timingProvider, createThreadIdProvider());
 
 		testHttpClientProvider = provider;
@@ -43,28 +41,6 @@ public class OpenKitTestImpl extends OpenKitImpl {
 	public void setTimeSyncResponse(String response, int responseCode) {
 		testHttpClientProvider.setTimeSyncResponse(response, responseCode);
 	}
-
-	private static TimingProvider createMockTimingProvider() throws InterruptedException {
-
-        TimingProvider provider = mock(TimingProvider.class);
-        when(provider.provideTimestampInMilliseconds()).thenAnswer(new Answer<Long>() {
-
-            @Override
-            public Long answer(InvocationOnMock invocation) throws Throwable {
-                return TimeProvider.getTimestamp();
-            }
-        });
-        doAnswer(new Answer() {
-
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Thread.sleep(invocation.getArgumentAt(0, Long.class)); // fake times - make sleep longer
-                return null;
-            }
-        }).when(provider).sleep(anyLong());
-
-        return provider;
-    }
 
     private static ThreadIDProvider createThreadIdProvider() {
 		ThreadIDProvider provider = mock(ThreadIDProvider.class);

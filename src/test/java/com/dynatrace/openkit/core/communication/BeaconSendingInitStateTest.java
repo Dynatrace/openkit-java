@@ -94,7 +94,6 @@ public class BeaconSendingInitStateTest {
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
         when(stateContext.isShutdownRequested()).thenReturn(true);
-        when(stateContext.isShutdownRequested()).thenReturn(true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 
