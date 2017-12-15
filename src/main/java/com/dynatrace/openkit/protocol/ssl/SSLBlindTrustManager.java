@@ -26,6 +26,13 @@ public class SSLBlindTrustManager implements SSLTrustManager {
     private final X509TrustManager blindX509TrustManager = new BlindX509TrustManager();
     private final HostnameVerifier blindHostnameVerifier = new BlindHostnameVerifier();
 
+    public SSLBlindTrustManager() {
+        System.err.println("###########################################################");
+        System.err.println("# WARNING: YOU ARE BYPASSING SSL CERTIFICATE VALIDATION!! #");
+        System.err.println("#                 USE AT YOUR OWN RISK!!                  #");
+        System.err.println("###########################################################");
+    }
+
     @Override
     public X509TrustManager getX509TrustManager() {
         return blindX509TrustManager;
