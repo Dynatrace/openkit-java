@@ -62,14 +62,13 @@ public class BeaconTest {
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
         int bytesSent = 12321;
-        webRequest.setBytesSent(bytesSent);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesSent(bytesSent).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&bs=" + String.valueOf(bytesSent) })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) })));
     }
 
     @Test
@@ -80,14 +79,13 @@ public class BeaconTest {
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
         int bytesSent = 0;
-        webRequest.setBytesSent(bytesSent);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesSent(bytesSent).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&bs=" + String.valueOf(bytesSent) })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) })));
     }
 
     @Test
@@ -97,14 +95,13 @@ public class BeaconTest {
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
-        webRequest.setBytesSent(-5);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesSent(-5).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0" })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0" })));
     }
 
     @Test
@@ -115,14 +112,13 @@ public class BeaconTest {
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
         int bytesReceived = 12321;
-        webRequest.setBytesReceived(bytesReceived);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesReceived(bytesReceived).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&br=" + String.valueOf(bytesReceived) })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived) })));
     }
 
     @Test
@@ -133,14 +129,13 @@ public class BeaconTest {
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
         int bytesReceived = 0;
-        webRequest.setBytesReceived(bytesReceived);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesReceived(bytesReceived).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&br=" + String.valueOf(bytesReceived) })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived) })));
     }
 
     @Test
@@ -150,14 +145,13 @@ public class BeaconTest {
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
-        webRequest.setBytesReceived(-45);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesReceived(-1).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0" })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0" })));
     }
 
     @Test
@@ -168,16 +162,14 @@ public class BeaconTest {
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
         int bytesReceived = 12321;
-        webRequest.setBytesReceived(bytesReceived);
         int bytesSent = 123;
-        webRequest.setBytesSent(bytesSent);
 
         // when
-        beacon.addWebRequest(rootAction, webRequest);
+        webRequest.start().setBytesSent(bytesSent).setBytesReceived(bytesReceived).stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=-1&s1=-1&t1=0&bs=" + String.valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived) })));
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived) })));
     }
 
     @Test

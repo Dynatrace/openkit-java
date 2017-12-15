@@ -52,19 +52,27 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 	}
 
 	@Override
-	public void setResponseCode(int responseCode) {
+	public WebRequestTracer setResponseCode(int responseCode) {
 		this.responseCode = responseCode;
+		return this;
 	}
 
 	@Override
-	public void setBytesSent(int bytesSent) { this.bytesSent = bytesSent; }
+	public WebRequestTracer setBytesSent(int bytesSent) {
+		this.bytesSent = bytesSent;
+		return this;
+	}
 
 	@Override
-	public void setBytesReceived(int bytesReceived) { this.bytesReceived = bytesReceived; }
+	public WebRequestTracer setBytesReceived(int bytesReceived) {
+		this.bytesReceived = bytesReceived;
+		return this;
+	}
 
 	@Override
-	public void start() {
+	public WebRequestTracer start() {
 		startTime = beacon.getCurrentTimestamp();
+		return this;
 	}
 
 	@Override
