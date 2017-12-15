@@ -8,6 +8,13 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Implementation of {@link SSLTrustManager} trusting only valid certificates.
+ *
+ * <p>
+ *     This is the default strategy in SSL certificate validation and should NOT be changed.
+ * </p>
+ */
 public class SSLStrictTrustManager implements SSLTrustManager {
 
     private X509TrustManager cachedTrustManager = null;
