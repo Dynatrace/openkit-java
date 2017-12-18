@@ -15,9 +15,9 @@ import java.util.ArrayList;
 
 public class ChangeMonitorURLTest extends AbstractLocalAppMonTest {
 
-    public void setup() throws InterruptedException {
-        ChangeMonitorURLTestShared.setup(testConfiguration);
-        super.setup();
+    public void setUp() throws InterruptedException {
+        ChangeMonitorURLTestShared.setUp(testConfiguration);
+        super.setUp();
     }
 
     @Test

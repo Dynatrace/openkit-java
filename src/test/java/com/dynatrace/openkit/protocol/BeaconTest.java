@@ -26,7 +26,7 @@ public class BeaconTest {
     private ThreadIDProvider threadIDProvider;
 
     @Before
-    public void setup() {
+    public void setUp() {
         configuration = mock(AbstractConfiguration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);

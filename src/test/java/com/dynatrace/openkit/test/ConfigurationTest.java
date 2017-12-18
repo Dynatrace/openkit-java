@@ -18,19 +18,19 @@ public class ConfigurationTest {
     private static final String applicationVersion = "0.3";
 
     @Test
-    public void saasUrlIsCorrect() {
-        String tenantUrl = String.format("https://%s.%s", tenantId, host);
+    public void saasURLIsCorrect() {
+        String tenantURL = String.format("https://%s.%s", tenantId, host);
 
         AbstractConfiguration configuration =
-            new DynatraceConfiguration("", "", 17, tenantUrl, false, new SSLStrictTrustManager());
+            new DynatraceConfiguration("", "", 17, tenantURL, false, new SSLStrictTrustManager());
 
-        String expected = String.format("%s/mbeacon", tenantUrl);
+        String expected = String.format("%s/mbeacon", tenantURL);
 
-        assertEquals(expected, configuration.getHttpClientConfig().getBaseUrl());
+        assertEquals(expected, configuration.getHttpClientConfig().getBaseURL());
     }
 
     @Test
-    public void mangedUrlIsCorrect() {
+    public void mangedURLIsCorrect() {
         String managedHost = String.format("http://%s", host);
 
         AbstractConfiguration configuration =
@@ -38,18 +38,18 @@ public class ConfigurationTest {
 
         String expected = String.format("%s/mbeacon/%s", managedHost, tenantId);
 
-        assertEquals(expected, configuration.getHttpClientConfig().getBaseUrl());
+        assertEquals(expected, configuration.getHttpClientConfig().getBaseURL());
     }
 
     @Test
-    public void appMonUrlIsCorrect() {
+    public void appMonURLIsCorrect() {
         String appMonHost = String.format("https://%s", host);
 
         AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, appMonHost, false,  new SSLStrictTrustManager());
 
         String expected = String.format("%s/dynaTraceMonitor", appMonHost);
 
-        assertEquals(expected, configuration.getHttpClientConfig().getBaseUrl());
+        assertEquals(expected, configuration.getHttpClientConfig().getBaseURL());
     }
 
     @Test

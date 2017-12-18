@@ -19,7 +19,7 @@ public abstract class AbstractTest {
 	protected void validateRequest(Request request, RequestType requestType, String method, String url, String clientIPAddress, String expectedBeacon) {
 		Assert.assertEquals(requestType, request.getRequestType());
 		Assert.assertEquals(method, request.getMethod());
-		Assert.assertEquals(url, request.getUrl());
+		Assert.assertEquals(url, request.getURL());
 		Assert.assertEquals(clientIPAddress, request.getClientIPAddress());
 		if (expectedBeacon != null) {
 			Assert.assertEquals(expectedBeacon, request.getDecodedData());

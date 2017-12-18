@@ -47,7 +47,7 @@ public class TestHTTPClient extends HTTPClient {
 			return requestType;
 		}
 
-		public String getUrl() {
+		public String getURL() {
 			return url;
 		}
 

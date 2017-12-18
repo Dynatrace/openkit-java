@@ -8,7 +8,6 @@ package com.dynatrace.openkit.core.configuration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.DeviceImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
@@ -114,7 +113,7 @@ public abstract class AbstractConfiguration {
                 newServerID,
                 applicationID,
                 verbose,
-                httpClientConfiguration.getSslTrustManager());
+                httpClientConfiguration.getSSLTrustManager());
             monitorName = newMonitorName;
         }
 

@@ -15,9 +15,9 @@ import java.util.ArrayList;
 
 public class ChangeSendIntervalTest extends AbstractLocalAppMonTest {
 
-    public void setup() throws InterruptedException {
-        ChangeSendIntervalTestShared.setup(testConfiguration);
-        super.setup();
+    public void setUp() throws InterruptedException {
+        ChangeSendIntervalTestShared.setUp(testConfiguration);
+        super.setUp();
     }
 
     @Test

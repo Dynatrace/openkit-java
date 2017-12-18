@@ -83,9 +83,9 @@ public class HTTPClient {
     public HTTPClient(HTTPClientConfiguration configuration) {
     	serverID = configuration.getServerID();
     	verbose = configuration.isVerbose();
-    	monitorURL = buildMonitorURL(configuration.getBaseUrl(), configuration.getApplicationID(), serverID);
-    	timeSyncURL = buildTimeSyncURL(configuration.getBaseUrl());
-    	sslTrustManager = configuration.getSslTrustManager();
+    	monitorURL = buildMonitorURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
+    	timeSyncURL = buildTimeSyncURL(configuration.getBaseURL());
+    	sslTrustManager = configuration.getSSLTrustManager();
     }
 
 	// *** public methods ***

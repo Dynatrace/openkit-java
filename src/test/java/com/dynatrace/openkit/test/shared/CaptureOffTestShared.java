@@ -12,7 +12,7 @@ import com.dynatrace.openkit.test.TestConfiguration;
 
 public class CaptureOffTestShared {
 
-	public static void setup(TestConfiguration testConfiguration) {
+	public static void setUp(TestConfiguration testConfiguration) {
 		testConfiguration.setStatusResponse("type=m&cp=0", 200);
 	}
 

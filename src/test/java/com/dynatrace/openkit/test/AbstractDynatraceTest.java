@@ -40,20 +40,20 @@ public abstract class AbstractDynatraceTest extends AbstractTest {
 
 		Assert.assertEquals(RequestType.STATUS, sentRequests.get(0).getRequestType());
 		Assert.assertEquals("GET", sentRequests.get(0).getMethod());
-		Assert.assertEquals(getDefaultEndpoint(), sentRequests.get(0).getUrl());
+		Assert.assertEquals(getDefaultEndpoint(), sentRequests.get(0).getURL());
 		Assert.assertEquals(null, sentRequests.get(0).getClientIPAddress());
 		Assert.assertEquals("", sentRequests.get(0).getDecodedData());
 
 		for (int i = 1; i < 6; i++) {
 			Assert.assertEquals(RequestType.TIMESYNC, sentRequests.get(i).getRequestType());
 			Assert.assertEquals("GET", sentRequests.get(i).getMethod());
-			Assert.assertEquals(getDefaultTimeSyncEndpoint(), sentRequests.get(i).getUrl());
+			Assert.assertEquals(getDefaultTimeSyncEndpoint(), sentRequests.get(i).getURL());
 		}
 
 		Assert.assertEquals(RequestType.BEACON, sentRequests.get(6).getRequestType());
 		Assert.assertEquals("POST", sentRequests.get(6).getMethod());
-		Assert.assertTrue(sentRequests.get(6).getUrl().startsWith(getDefaultEndpointStart()));
-		Assert.assertTrue(sentRequests.get(6).getUrl().endsWith(getDefaultEndpointEnd()));
+		Assert.assertTrue(sentRequests.get(6).getURL().startsWith(getDefaultEndpointStart()));
+		Assert.assertTrue(sentRequests.get(6).getURL().endsWith(getDefaultEndpointEnd()));
 		Assert.assertEquals(TEST_IP, sentRequests.get(6).getClientIPAddress());
 		if (expectedBeacon != null) {
 			Assert.assertEquals(expectedBeacon, sentRequests.get(6).getDecodedData());

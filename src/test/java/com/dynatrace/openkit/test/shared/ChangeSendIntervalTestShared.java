@@ -12,7 +12,7 @@ import com.dynatrace.openkit.test.TestConfiguration;
 
 public class ChangeSendIntervalTestShared {
 
-	public static void setup(TestConfiguration testConfiguration) {
+	public static void setUp(TestConfiguration testConfiguration) {
 		testConfiguration.setStatusResponse("type=m&si=1&bn=dynaTraceMonitor&id=1", 200);
 	}
 

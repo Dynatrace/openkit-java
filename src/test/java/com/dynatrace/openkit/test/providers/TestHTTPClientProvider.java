@@ -35,7 +35,7 @@ public class TestHTTPClientProvider implements HTTPClientProvider {
 			previouslySentRequests.addAll(testHTTPClient.getSentRequests());
 		}
 
-		testHTTPClient = new TestHTTPClient(configuration.getBaseUrl(), configuration.getApplicationID(),
+		testHTTPClient = new TestHTTPClient(configuration.getBaseURL(), configuration.getApplicationID(),
 				configuration.getServerID(), remoteTest, configuration.isVerbose());
 		if (statusResponse != null) {
 			testHTTPClient.setStatusResponse(statusResponse, statusResponseCode);
