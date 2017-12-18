@@ -13,9 +13,9 @@ import java.util.ArrayList;
 
 public class CaptureCrashesOffTest extends AbstractLocalAppMonTest {
 
-    public void setup() throws InterruptedException {
-        CaptureCrashesOffTestShared.setup(testConfiguration);
-        super.setup();
+    public void setUp() throws InterruptedException {
+        CaptureCrashesOffTestShared.setUp(testConfiguration);
+        super.setUp();
     }
 
     @Test

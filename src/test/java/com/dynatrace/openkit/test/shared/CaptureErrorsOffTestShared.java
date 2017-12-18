@@ -12,7 +12,7 @@ import com.dynatrace.openkit.test.TestConfiguration;
 
 public class CaptureErrorsOffTestShared {
 
-	public static void setup(TestConfiguration testConfiguration) {
+	public static void setUp(TestConfiguration testConfiguration) {
 		testConfiguration.setStatusResponse("type=m&er=0", 200);
 	}
 

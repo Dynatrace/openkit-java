@@ -8,14 +8,14 @@ import com.dynatrace.openkit.api.SSLTrustManager;
 public class HTTPClientConfiguration {
 
 	// all fields are immutable
-	private final String baseUrl;
+	private final String baseURL;
 	private final int serverId;
 	private final String applicationID;
 	private final boolean verbose;
 	private final SSLTrustManager sslTrustManager;
 
-	public HTTPClientConfiguration(String baseUrl, int serverID, String applicationID, boolean verbose, SSLTrustManager sslTrustManager) {
-		this.baseUrl = baseUrl;
+	public HTTPClientConfiguration(String baseURL, int serverID, String applicationID, boolean verbose, SSLTrustManager sslTrustManager) {
+		this.baseURL = baseURL;
 		this.serverId = serverID;
 		this.applicationID = applicationID;
 		this.verbose = verbose;
@@ -27,7 +27,7 @@ public class HTTPClientConfiguration {
 	 *
 	 * @return the base url
 	 */
-	public String getBaseUrl() { return baseUrl; }
+	public String getBaseURL() { return baseURL; }
 
 	/**
 	 * Returns the server id to be used for the http client
@@ -53,7 +53,7 @@ public class HTTPClientConfiguration {
 	/**
 	 * Returns an interface used for X509 certificate authentication and hostname verification.
 	 */
-	public SSLTrustManager getSslTrustManager() {
+	public SSLTrustManager getSSLTrustManager() {
 		return sslTrustManager;
 	}
 }

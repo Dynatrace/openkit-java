@@ -18,7 +18,7 @@ import com.dynatrace.openkit.test.OpenKitTestFactory;
 public class AbstractRemoteDynatraceTest extends AbstractDynatraceTest {
 
 	@Before
-	public void setup() throws InterruptedException {
+	public void setUp() throws InterruptedException {
 		openKitTestImpl = OpenKitTestFactory.createDynatraceRemoteInstance(TEST_APPLICATION_NAME, TEST_APPLICATION_ID,new Random(System.currentTimeMillis()).nextLong(), TEST_ENDPOINT);
 		openKit = openKitTestImpl;
 	}

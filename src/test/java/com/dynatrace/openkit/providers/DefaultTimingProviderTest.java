@@ -14,7 +14,7 @@ public class DefaultTimingProviderTest {
     private DefaultTimingProvider provider;
 
     @Before
-    public void setup() {
+    public void setUp() {
         // store now
         now = System.currentTimeMillis();
         provider = new TestDefaultTimingProvider(now);
