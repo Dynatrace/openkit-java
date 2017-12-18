@@ -372,7 +372,9 @@ webRequestTracer.startTiming();
 
 // perform the request here & do not forget to add the HTTP header
 
-webRequestTracer.setResponseCode(200);
+webRequestTracer.setBytesSent(12345);     // 12345 bytes sent
+webRequestTracer.setBytesReceived(67890); // 67890 bytes received
+webRequestTracer.setResponseCode(200);    // 200 was the response code
 webRequestTracer.stopTiming();
 ```
 
