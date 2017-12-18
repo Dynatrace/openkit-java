@@ -136,7 +136,7 @@ public class HTTPClient {
 
 				// specific handling for HTTPS
 				if (connection instanceof HttpsURLConnection) {
-                    overwriteSSLSecurity((HttpsURLConnection) connection);
+					applySSLTrustManager((HttpsURLConnection) connection);
 				}
 
 				if (clientIPAddress != null) {
@@ -227,7 +227,7 @@ public class HTTPClient {
         }
     }
 
-    private void overwriteSSLSecurity(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
+    private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
         HttpsURLConnection httpsConnection = connection;
 
         SSLContext context = SSLContext.getInstance("TLS");

@@ -4,7 +4,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * Interface used to verify self signed certificates.
+ * Interface to provide a user-defined trust manager to the configuration.
  *
  * <p>
  *     When OpenKit connects to a server with self-signed SSL/TLS certificates (e.g. AppMon) then
