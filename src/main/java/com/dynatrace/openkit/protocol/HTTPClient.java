@@ -6,18 +6,23 @@
 
 package com.dynatrace.openkit.protocol;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.zip.GZIPOutputStream;
-
-import javax.net.ssl.*;
 
 /**
  * HTTP client helper which abstracts the 3 basic request types:
@@ -35,7 +40,7 @@ public class HTTPClient {
 
 		private String requestName;
 
-		private RequestType(String requestName) {
+		RequestType(String requestName) {
 			this.requestName = requestName;
 		}
 
@@ -71,13 +76,16 @@ public class HTTPClient {
     private final int serverID;
     private final boolean verbose;
 
+    private final SSLTrustManager sslTrustManager;
+
 	// *** constructors ***
 
-    public HTTPClient(String baseURL, String applicationID, int serverID, boolean verbose) {
-    	this.serverID = serverID;
-    	this.verbose = verbose;
-    	this.monitorURL = buildMonitorURL(baseURL, applicationID, serverID);
-    	this.timeSyncURL = buildTimeSyncURL(baseURL);
+    public HTTPClient(HTTPClientConfiguration configuration) {
+    	serverID = configuration.getServerID();
+    	verbose = configuration.isVerbose();
+    	monitorURL = buildMonitorURL(configuration.getBaseUrl(), configuration.getApplicationID(), serverID);
+    	timeSyncURL = buildTimeSyncURL(configuration.getBaseUrl());
+    	sslTrustManager = configuration.getSslTrustManager();
     }
 
 	// *** public methods ***
@@ -128,12 +136,7 @@ public class HTTPClient {
 
 				// specific handling for HTTPS
 				if (connection instanceof HttpsURLConnection) {
-					HttpsURLConnection httpsConnection = (HttpsURLConnection)connection;
-
-					SSLContext context = SSLContext.getInstance("TLS");
-					// accept any certificate
-					context.init(null, new TrustManager[] { new AcceptAnyX509TrustManager() }, null);
-					httpsConnection.setSSLSocketFactory(context.getSocketFactory());
+					applySSLTrustManager((HttpsURLConnection) connection);
 				}
 
 				if (clientIPAddress != null) {
@@ -166,46 +169,10 @@ public class HTTPClient {
 					outputStream.close();
 				}
 
-				// get response code
-				int responseCode = connection.getResponseCode();
+                return handleResponse(connection);
 
-				// check response code
-				if (responseCode >= 400) {
-					// process error
 
-					// read error response
-					String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
-
-					if (verbose) {
-						System.out.println("HTTP Response: " + response);
-						System.out.println("HTTP Response Code: " + responseCode);
-					}
-
-					// return null if error occurred
-					return null;
-
-				} else {
-					// process status response
-
-					// reading HTTP response
-					String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
-
-					if (verbose) {
-						System.out.println("HTTP Response: " + response);
-						System.out.println("HTTP Response Code: " + responseCode);
-					}
-
-					// create typed response based on response content
-					if (response.startsWith(REQUEST_TYPE_TIMESYNC)) {
-						return new TimeSyncResponse(response, responseCode);
-					} else if (response.startsWith(REQUEST_TYPE_MOBILE)) {
-						return new StatusResponse(response, responseCode);
-					} else {
-						return null;
-					}
-				}
-
-			} catch (IOException exception) {
+            } catch (IOException exception) {
 				retry++;
 				if (retry > MAX_SEND_RETRIES) {
 					throw exception;
@@ -219,7 +186,67 @@ public class HTTPClient {
 		}
     }
 
-	// build URL used for status check and beacon send requests
+    private Response handleResponse(HttpURLConnection connection) throws IOException {
+        // get response code
+        int responseCode = connection.getResponseCode();
+
+        // check response code
+        if (responseCode >= 400) {
+            // process error
+
+            // read error response
+            String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
+
+            if (verbose) {
+                System.out.println("HTTP Response: " + response);
+                System.out.println("HTTP Response Code: " + responseCode);
+            }
+
+            // return null if error occurred
+            return null;
+
+        } else {
+            // process status response
+
+            // reading HTTP response
+            String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
+
+            if (verbose) {
+                System.out.println("HTTP Response: " + response);
+                System.out.println("HTTP Response Code: " + responseCode);
+            }
+
+            // create typed response based on response content
+            if (response.startsWith(REQUEST_TYPE_TIMESYNC)) {
+                return new TimeSyncResponse(response, responseCode);
+            } else if (response.startsWith(REQUEST_TYPE_MOBILE)) {
+                return new StatusResponse(response, responseCode);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
+        HttpsURLConnection httpsConnection = connection;
+
+        SSLContext context = SSLContext.getInstance("TLS");
+        X509TrustManager x509TrustManager;
+        if (sslTrustManager == null || sslTrustManager.getX509TrustManager() == null) {
+            // if provided trust manager is null use a strict one by default
+            x509TrustManager = new SSLStrictTrustManager().getX509TrustManager();
+        } else {
+            x509TrustManager = sslTrustManager.getX509TrustManager();
+        }
+        context.init(null, new TrustManager[] { x509TrustManager }, new SecureRandom());
+        httpsConnection.setSSLSocketFactory(context.getSocketFactory());
+
+        if (sslTrustManager != null && sslTrustManager.getHostnameVerifier() != null) {
+            httpsConnection.setHostnameVerifier(sslTrustManager.getHostnameVerifier());
+        }
+    }
+
+    // build URL used for status check and beacon send requests
     private String buildMonitorURL(String baseURL, String applicationID, int serverID) {
 		StringBuilder monitorURLBuilder = new StringBuilder();
 

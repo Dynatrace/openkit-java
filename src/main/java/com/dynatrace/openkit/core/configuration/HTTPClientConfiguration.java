@@ -1,5 +1,7 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.api.SSLTrustManager;
+
 /**
  * The HTTPClientConfiguration holds all http client related settings
  */
@@ -10,12 +12,14 @@ public class HTTPClientConfiguration {
 	private final int serverId;
 	private final String applicationID;
 	private final boolean verbose;
+	private final SSLTrustManager sslTrustManager;
 
-	public HTTPClientConfiguration(String baseUrl, int serverID, String applicationID, boolean verbose) {
+	public HTTPClientConfiguration(String baseUrl, int serverID, String applicationID, boolean verbose, SSLTrustManager sslTrustManager) {
 		this.baseUrl = baseUrl;
 		this.serverId = serverID;
 		this.applicationID = applicationID;
 		this.verbose = verbose;
+		this.sslTrustManager = sslTrustManager;
 	}
 
 	/**
@@ -45,4 +49,11 @@ public class HTTPClientConfiguration {
 	 * @return If {@code true} logging is enabled otherwise {@code false}
 	 */
 	public boolean isVerbose() { return verbose; }
+
+	/**
+	 * Returns an interface used for X509 certificate authentication and hostname verification.
+	 */
+	public SSLTrustManager getSslTrustManager() {
+		return sslTrustManager;
+	}
 }

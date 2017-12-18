@@ -1,11 +1,13 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.api.SSLTrustManager;
+
 /**
  * Configuration implementation for Dynatrace SaaS
  */
 public class DynatraceConfiguration extends AbstractConfiguration {
 
-	public DynatraceConfiguration(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
+	public DynatraceConfiguration(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
 		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, verbose);
 
 		setHttpClientConfiguration(
@@ -13,7 +15,8 @@ public class DynatraceConfiguration extends AbstractConfiguration {
 				createBaseURL(endpointURL, OpenKitType.DYNATRACE.getDefaultMonitorName()),
 				OpenKitType.DYNATRACE.getDefaultServerID(),
 				applicationID,
-				verbose));
+				verbose,
+				sslTrustManager));
 	}
 
 	@Override

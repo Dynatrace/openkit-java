@@ -6,10 +6,12 @@
 package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
+import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 /**
  * This factory creates instances of the OpenKit to work with.
@@ -47,8 +49,23 @@ public class OpenKitFactory {
 	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
+		return createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL, verbose, new SSLStrictTrustManager());
+	}
+
+	/**
+	 * Creates a Dynatrace SaaS instance of the OpenKit, optionally with verbose logging and a custom SSL Trust Manager.
+	 *
+	 * @param applicationName	the application name
+	 * @param applicationID		the application ID (must be a valid application UUID)
+	 * @param deviceID			unique device identifier
+	 * @param endpointURL		the URL of the beacon forwarder to send the data to
+	 * @param verbose			if true, turn on verbose logging on stdout
+     * @param sslTrustManager   For X509 certificate authentication and hostname verification
+	 * @return					Dynatrace SaaS instance of the OpenKit
+	 */
+	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
 		OpenKitImpl openKit = new OpenKitImpl(
-				new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, verbose));
+				new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager));
 		openKit.initialize();
 
 		return openKit;
@@ -80,12 +97,28 @@ public class OpenKitFactory {
 	 * @return					Dynatrace Managed instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long deviceID, String endpointURL, String tenantID, boolean verbose) {
+        return createDynatraceManagedInstance(applicationName, applicationID, deviceID, endpointURL, tenantID, verbose, new SSLStrictTrustManager());
+	}
+
+    /**
+     * Creates a Dynatrace Managed instance of the OpenKit, optionally with verbose logging and a custom SSL Trust Manager.
+     *
+     * @param applicationName	the application name
+     * @param applicationID		the application ID (must be a valid application UUID)
+     * @param deviceID			unique device identifier
+     * @param endpointURL		the URL of the beacon forwarder to send the data to
+     * @param tenantID			the id of the tenant
+     * @param verbose			if true, turn on verbose logging on stdout
+     * @param sslTrustManager   For X509 certificate authentication and hostname verification
+     * @return					Dynatrace Managed instance of the OpenKit
+     */
+    public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long deviceID, String endpointURL, String tenantID, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-				new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose));
+            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager));
         openKit.initialize();
 
         return openKit;
-	}
+    }
 
 	/**
 	 * Creates a Dynatrace AppMon instance of the OpenKit.
@@ -109,11 +142,24 @@ public class OpenKitFactory {
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, long deviceID, String endpointURL, boolean verbose) {
+        return createAppMonInstance(applicationName, deviceID, endpointURL, verbose, new SSLStrictTrustManager());
+	}
+
+    /**
+     * Creates a Dynatrace AppMon instance of the OpenKit, optionally with verbose logging and a custom SSL Trust Manager.
+     *
+     * @param applicationName	the application name
+     * @param deviceID			unique device identifier
+     * @param endpointURL		the URL of the Java/Webserver Agent to send the data to
+     * @param verbose			if true, turn on verbose logging on stdout
+     * @param sslTrustManager   For X509 certificate authentication and hostname verification
+     * @return					Dynatrace AppMon instance of the OpenKit
+     */
+    public static OpenKit createAppMonInstance(String applicationName, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-				new AppMonConfiguration(applicationName, deviceID, endpointURL, verbose));
+            new AppMonConfiguration(applicationName, deviceID, endpointURL, verbose, sslTrustManager));
         openKit.initialize();
 
         return openKit;
-	}
-
+    }
 }

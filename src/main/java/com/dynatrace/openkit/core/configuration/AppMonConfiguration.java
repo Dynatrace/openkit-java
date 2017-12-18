@@ -1,10 +1,12 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.api.SSLTrustManager;
+
 /**
  * Configuration implementation for AppMon
  */
 public class AppMonConfiguration extends AbstractConfiguration {
-	public AppMonConfiguration(String applicationName, long deviceID, String endpointURL, boolean verbose) {
+	public AppMonConfiguration(String applicationName, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
 		/**
 		 * For AppMon applicationId and applicationName are identical. Use application name to initialize both fields.
 		 */
@@ -14,7 +16,8 @@ public class AppMonConfiguration extends AbstractConfiguration {
 				createBaseURL(endpointURL, OpenKitType.APPMON.getDefaultMonitorName()),
 				OpenKitType.APPMON.getDefaultServerID(),
 				applicationName,
-				verbose));
+				verbose,
+				sslTrustManager));
 	}
 
 	@Override
