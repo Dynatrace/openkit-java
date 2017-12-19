@@ -5,10 +5,9 @@
  */
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.Device;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.*;
 
@@ -21,17 +20,17 @@ public class OpenKitImpl implements OpenKit {
 	private final BeaconSender beaconSender;
 
 	// AbstractConfiguration reference
-	private AbstractConfiguration configuration;
+	private final Configuration configuration;
 	private final ThreadIDProvider threadIDProvider;
 	private final TimingProvider timingProvider;
 
 	// *** constructors ***
 
-	public OpenKitImpl(AbstractConfiguration config) {
+	public OpenKitImpl(Configuration config) {
 		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
-	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+	protected OpenKitImpl(Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
 		configuration = config;
 		this.threadIDProvider = threadIDProvider;
 		this.timingProvider = timingProvider;
@@ -43,7 +42,7 @@ public class OpenKitImpl implements OpenKit {
 	 *
 	 * <p>
 	 *     This method starts the {@link BeaconSender} and is called directly after
-     *     the instance has been created in {@link com.dynatrace.openkit.OpenKitFactory}.
+     *     the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
 	 * </p>
 	 */
 	public void initialize() {
@@ -67,14 +66,12 @@ public class OpenKitImpl implements OpenKit {
 		return beaconSender.isInitialized();
 	}
 
-	@Override
 	public Device getDevice() {
 		return configuration.getDevice();
 	}
 
-	@Override
-	public void setApplicationVersion(String applicationVersion) {
-		configuration.setApplicationVersion(applicationVersion);
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 	@Override

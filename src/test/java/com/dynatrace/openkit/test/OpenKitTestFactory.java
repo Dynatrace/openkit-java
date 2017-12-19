@@ -5,8 +5,9 @@
  */
 package com.dynatrace.openkit.test;
 
-import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
-import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
+import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 public class OpenKitTestFactory {
@@ -20,7 +21,7 @@ public class OpenKitTestFactory {
 	public static OpenKitTestImpl createAppMonLocalInstance(String applicationName, String endpointURL, TestConfiguration testConfiguration)
         throws InterruptedException {
 
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new AppMonConfiguration(applicationName, testConfiguration.getDeviceID(), endpointURL, true, new SSLStrictTrustManager()), false);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(getAppMonConfig(applicationName, endpointURL, testConfiguration), false);
 		applyTestConfiguration(openKitTestImpl, testConfiguration);
 		openKitTestImpl.initialize();
 		return openKitTestImpl;
@@ -28,14 +29,14 @@ public class OpenKitTestFactory {
 
 	public static OpenKitTestImpl createAppMonRemoteInstance(String applicationName, long deviceID, String endpointURL)
         throws InterruptedException {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new AppMonConfiguration(applicationName, deviceID, endpointURL, true, new SSLStrictTrustManager()), true);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(getAppMonConfig(applicationName, endpointURL, deviceID), true);
 		openKitTestImpl.initialize();
 		return openKitTestImpl;
 	}
 
 	public static OpenKitTestImpl createDynatraceLocalInstance(String applicationName, String applicationID, String endpointURL, TestConfiguration testConfiguration)
         throws InterruptedException {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DynatraceConfiguration(applicationName, applicationID, testConfiguration.getDeviceID(), endpointURL, true, new SSLStrictTrustManager()), false);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(getDynatraceConfig(applicationName, applicationID, endpointURL, testConfiguration.getDeviceID()),false);
 		applyTestConfiguration(openKitTestImpl, testConfiguration);
 		openKitTestImpl.initialize();
 		return openKitTestImpl;
@@ -43,7 +44,7 @@ public class OpenKitTestFactory {
 
 	public static OpenKitTestImpl createDynatraceRemoteInstance(String applicationName, String applicationID, long deviceID, String endpointURL)
         throws InterruptedException {
-		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, true, new SSLStrictTrustManager()), true);
+		OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(getDynatraceConfig(applicationName, applicationID, endpointURL, deviceID), true);
 		openKitTestImpl.initialize();
 		return openKitTestImpl;
 	}
@@ -58,5 +59,44 @@ public class OpenKitTestFactory {
 		if (testConfiguration.getTimeSyncResponse() != null) {
 			openKitTestImpl.setTimeSyncResponse(testConfiguration.getTimeSyncResponse(), testConfiguration.getTimeSyncResponseCode());
 		}
+	}
+
+	private static Configuration getAppMonConfig(String applicationName, String endpointURL, TestConfiguration testConfiguration) {
+		return new Configuration(
+			OpenKitType.APPMON,
+			applicationName,
+			applicationName,
+			testConfiguration.getDeviceID(),
+			endpointURL,
+			true,
+			new SSLStrictTrustManager(),
+			testConfiguration.getDevice(),
+			testConfiguration.getApplicationVersion());
+	}
+
+	private static Configuration getAppMonConfig(String applicationName, String endpointURL, long deviceId) {
+		return new Configuration(
+			OpenKitType.APPMON,
+			applicationName,
+			applicationName,
+			deviceId,
+			endpointURL,
+			true,
+			new SSLStrictTrustManager(),
+			new Device("", "", ""),
+			"");
+	}
+
+	private static Configuration getDynatraceConfig(String applicationName, String applicationID, String endpointURL, long deviceId) {
+		return new Configuration(
+			OpenKitType.DYNATRACE,
+			applicationName,
+			applicationID,
+			deviceId,
+			endpointURL,
+			true,
+			new SSLStrictTrustManager(),
+			new Device("", "", ""),
+			"");
 	}
 }

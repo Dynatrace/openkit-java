@@ -1,7 +1,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
@@ -24,7 +24,7 @@ public class BeaconSendingContextTest {
     @Rule
     public Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
 
-    private AbstractConfiguration configuration;
+    private Configuration configuration;
     private HTTPClientProvider httpClientProvider;
     private TimingProvider timingProvider;
     private AbstractBeaconSendingState mockState;
@@ -32,7 +32,7 @@ public class BeaconSendingContextTest {
     @Before
     public void setUp() {
 
-        configuration = mock(AbstractConfiguration.class);
+        configuration = mock(Configuration.class);
         httpClientProvider = mock(HTTPClientProvider.class);
         timingProvider = mock(TimingProvider.class);
         mockState = mock(AbstractBeaconSendingState.class);
