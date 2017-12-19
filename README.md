@@ -158,7 +158,7 @@ Action childAction = rootAction.enterAction(childActionName);
 childAction.leaveAction();
 rootAction.leaveAction();
 session.end();
-openKit.shutDown();
+openKit.shutdown();
 ``` 
 
 
