@@ -1,6 +1,7 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -112,7 +113,7 @@ public class AbstractConfigurationTest {
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose);
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose, new TestSessionIDProvider());
             setHttpClientConfiguration(mock(HTTPClientConfiguration.class));
         }
 

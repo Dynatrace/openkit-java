@@ -14,18 +14,19 @@ import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.providers.*;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.providers.TestHTTPClientProvider;
+import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import com.dynatrace.openkit.test.providers.TestTimingProvider;
 
 public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
-	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) throws InterruptedException {
+	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) {
 		this(config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
 	}
 
 	private OpenKitTestImpl(AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
-		super(config, provider, timingProvider, createThreadIdProvider());
+		super(config, provider, timingProvider, createThreadIdProvider(), new TestSessionIDProvider());
 
 		testHttpClientProvider = provider;
 	}
@@ -47,5 +48,4 @@ public class OpenKitTestImpl extends OpenKitImpl {
 		when(provider.getThreadID()).thenReturn(1L);
 		return provider;
 	}
-
 }
