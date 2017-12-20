@@ -9,6 +9,6 @@ public interface SessionIDProvider {
      * Provide the next sessionID
      * @returns the id that will be used for the next session
      */
-    public int getNextSessionID();
+    int getNextSessionID();
 
 }
