@@ -1,5 +1,6 @@
 package com.dynatrace.openkit.test;
 
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
@@ -15,7 +16,6 @@ public class ConfigurationTest {
     private static final String host = "localhost:9999";
     private static final String tenantId = "asdf";
     private static final String applicationName = "testApp";
-    private static final String applicationVersion = "0.3";
 
     @Test
     public void saasURLIsCorrect() {
@@ -64,6 +64,6 @@ public class ConfigurationTest {
     public void defaultApplicationVersionIsCorrect() {
         AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager());
 
-        assertThat(applicationVersion, is(configuration.getApplicationVersion()));
+        assertThat(configuration.getApplicationVersion(), is(OpenKitConstants.DEFAULT_APPLICATION_VERSION));
     }
 }
