@@ -26,7 +26,7 @@ public class OpenKitTestImpl extends OpenKitImpl {
 	}
 
 	private OpenKitTestImpl(AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
-		super(config, provider, timingProvider, createThreadIdProvider(), new TestSessionIDProvider());
+		super(config, provider, timingProvider, createThreadIdProvider());
 
 		testHttpClientProvider = provider;
 	}

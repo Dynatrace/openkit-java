@@ -28,14 +28,13 @@ public class OpenKitImpl implements OpenKit {
 	// *** constructors ***
 
 	public OpenKitImpl(AbstractConfiguration config) {
-		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider(), new DefaultSessionIDProvider());
+		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
-	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider, SessionIDProvider sessionIDProvider) {
+	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
 		configuration = config;
 		this.threadIDProvider = threadIDProvider;
 		this.timingProvider = timingProvider;
-		this.sessionIDProvider = sessionIDProvider;
 		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
 	}
 
