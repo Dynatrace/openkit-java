@@ -68,7 +68,6 @@ public abstract class AbstractConfiguration {
         captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
         captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
-
         device = new DeviceImpl();
         applicationVersion = DEFAULT_APPLICATION_VERSION;
         httpClientConfiguration = null;
@@ -231,7 +230,4 @@ public abstract class AbstractConfiguration {
     protected void setHttpClientConfiguration(HTTPClientConfiguration configuration) {
         httpClientConfiguration = configuration;
     }
-
-
-
 }
