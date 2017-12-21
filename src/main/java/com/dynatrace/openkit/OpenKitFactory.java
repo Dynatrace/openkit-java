@@ -115,7 +115,7 @@ public class OpenKitFactory {
      */
     public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long deviceID, String endpointURL, String tenantID, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager));
+            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
         openKit.initialize();
 
         return openKit;

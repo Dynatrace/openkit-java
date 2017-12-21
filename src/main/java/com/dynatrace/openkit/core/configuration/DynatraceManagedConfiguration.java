@@ -2,6 +2,7 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
+import com.dynatrace.openkit.providers.SessionIDProvider;
 
 /**
  * Configuration implementation for Dynatrace Managed
@@ -10,8 +11,8 @@ public class DynatraceManagedConfiguration extends AbstractConfiguration {
 
 	private final String tenantId;
 
-	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
-		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, verbose, new DefaultSessionIDProvider());
+	public DynatraceManagedConfiguration(String tenantId, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager, SessionIDProvider sessionIDProvider) {
+		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, verbose, sessionIDProvider);
 		this.tenantId = tenantId;
 
         setHttpClientConfiguration(

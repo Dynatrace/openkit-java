@@ -35,7 +35,7 @@ public class ConfigurationTest {
         String managedHost = String.format("http://%s", host);
 
         AbstractConfiguration configuration =
-            new DynatraceManagedConfiguration(tenantId, "", "",17, managedHost, false, new SSLStrictTrustManager());
+            new DynatraceManagedConfiguration(tenantId, "", "",17, managedHost, false, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
 
         String expected = String.format("%s/mbeacon/%s", managedHost, tenantId);
 

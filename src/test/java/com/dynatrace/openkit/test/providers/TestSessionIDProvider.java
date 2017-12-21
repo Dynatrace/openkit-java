@@ -9,7 +9,7 @@ public class TestSessionIDProvider implements SessionIDProvider {
     private int initialIntegerOffset = 0;
 
     @Override
-    public synchronized int getNextSessionID() {
+    public int getNextSessionID() {
         if(initialIntegerOffset == Integer.MAX_VALUE) {
             initialIntegerOffset = 0;
         }
