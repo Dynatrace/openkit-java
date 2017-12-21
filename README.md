@@ -141,7 +141,13 @@ String applicationID = "application-id";
 long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com";
 
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL);
+OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
+    .withApplicationName(applicationName)
+    .withApplicationVersion("1.0.0.0")
+    .withOperatingSystem("Windows 10")
+    .withManufacturer("MyCompany")
+    .build();
+
 openKit.waitForInitCompletion();
 
 String clientIP = "8.8.8.8";
