@@ -14,7 +14,6 @@ different backend systems.
 For Dynatrace SaaS and Dynatrace Managed the `DynatraceOpenKitBuilder` is used to build new OpenKit instances. 
 
 ```java
-String applicationName = "My OpenKit application";
 String applicationID = "application-id";
 long deviceID = 42;
 String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
