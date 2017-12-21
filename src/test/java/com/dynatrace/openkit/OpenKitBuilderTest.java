@@ -6,6 +6,7 @@ import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.ssl.SSLBlindTrustManager;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import org.junit.After;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,7 +15,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 public class OpenKitBuilderTest {
-    private static final String endpoint = "https://dynatrace.com";
+    private static final String endpoint = "https://localhost:12345";
     private static final String appId = "asdf123";
     private static final String appName = "myName";
     private static final long deviceId = 1234L;
@@ -23,38 +24,32 @@ public class OpenKitBuilderTest {
     private static final String manufacturer = "custom manufacturer";
     private static final String modelId = "custom model id";
 
-
     @Test
     public void defaultsAreSetForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId).build();
-        defaultsAreSet(openKit);
+        defaultsAreSet(new AppMonOpenKitBuilder(endpoint, appId, deviceId).buildConfiguration());
     }
 
     @Test
     public void defaultsAreSetForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId).build();
-        defaultsAreSet(openKit);
+        defaultsAreSet(new DynatraceOpenKitBuilder(endpoint, appName, deviceId).buildConfiguration());
     }
 
-    public void defaultsAreSet(OpenKitImpl openKit) {
-        Configuration target = openKit.getConfiguration();
+    public void defaultsAreSet(Configuration configuration) {
 
         // default values
-        assertThat(target.getApplicationVersion(), is(equalTo(OpenKitConstants.DEFAULT_APPLICATION_VERSION)));
-        assertThat(target.getDevice().getManufacturer(), is(equalTo(OpenKitConstants.DEFAULT_MANUFACTURER)));
-        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(OpenKitConstants.DEFAULT_OPERATING_SYSTEM)));
-        assertThat(target.getDevice().getModelID(), is(equalTo(OpenKitConstants.DEFAULT_MODEL_ID)));
-        assertThat(target.isVerbose(), is(false));
+        assertThat(configuration.getApplicationVersion(), is(equalTo(OpenKitConstants.DEFAULT_APPLICATION_VERSION)));
+        assertThat(configuration.getDevice().getManufacturer(), is(equalTo(OpenKitConstants.DEFAULT_MANUFACTURER)));
+        assertThat(configuration.getDevice().getOperatingSystem(), is(equalTo(OpenKitConstants.DEFAULT_OPERATING_SYSTEM)));
+        assertThat(configuration.getDevice().getModelID(), is(equalTo(OpenKitConstants.DEFAULT_MODEL_ID)));
+        assertThat(configuration.isVerbose(), is(false));
 
         // default trust manager
-        validateTrustManager(openKit, SSLStrictTrustManager.class);
+        assertThat(configuration.getHttpClientConfig().getSSLTrustManager(), instanceOf(SSLStrictTrustManager.class));
     }
 
     @Test
     public void applicationNameIsSetCorrectlyForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId).build();
-
-        Configuration target = openKit.getConfiguration();
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId).buildConfiguration();
 
         assertThat(target.getApplicationName(), is(equalTo(appName)));
         assertThat(target.getApplicationName(), is(equalTo(target.getApplicationID())));
@@ -63,126 +58,119 @@ public class OpenKitBuilderTest {
     @Test
     public void canOverrideTrustManagerForAppMon()
     {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId)
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId)
             .withTrustManager(new SSLBlindTrustManager())
-            .build();
+            .buildConfiguration();
 
-        validateTrustManager(openKit, SSLBlindTrustManager.class);
+        assertThat(target.getHttpClientConfig().getSSLTrustManager(), instanceOf(SSLBlindTrustManager.class));
     }
 
     @Test
     public void canOverrideTrustManagerForDynatrace()
     {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .withTrustManager(new SSLBlindTrustManager())
-            .build();
+            .buildConfiguration();
 
-        validateTrustManager(openKit, SSLBlindTrustManager.class);
-    }
-
-
-    public void validateTrustManager(OpenKitImpl openKit, Class expectedClass) {
-        Configuration target = openKit.getConfiguration();
-
-        assertThat(target.getHttpClientConfig().getSSLTrustManager(), instanceOf(expectedClass));
+        assertThat(target.getHttpClientConfig().getSSLTrustManager(), instanceOf(SSLBlindTrustManager.class));
     }
 
     @Test
     public void canEnableVerboseForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId)
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId)
             .enableVerbose()
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getConfiguration().isVerbose(), is(true));
+        assertThat(target.isVerbose(), is(true));
     }
 
     @Test
     public void canEnableVerboseForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .enableVerbose()
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getConfiguration().isVerbose(), is(true));
+        assertThat(target.isVerbose(), is(true));
     }
 
     @Test
     public void canSetApplicationVersionForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId)
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId)
             .withApplicationVersion(appVersion)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getConfiguration().getApplicationVersion(), is(equalTo(appVersion)));
+        assertThat(target.getApplicationVersion(), is(equalTo(appVersion)));
     }
 
     @Test
     public void canSetApplicationVersionForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .withApplicationVersion(appVersion)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getConfiguration().getApplicationVersion(), is(equalTo(appVersion)));
+        assertThat(target.getApplicationVersion(), is(equalTo(appVersion)));
     }
 
     @Test
     public void canSetOperatingSystemForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId)
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId)
             .withOperatingSystem(os)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getDevice().getOperatingSystem(), is(equalTo(os)));
+        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(os)));
     }
 
     @Test
     public void canSetOperatingSystemForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .withOperatingSystem(os)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getDevice().getOperatingSystem(), is(equalTo(os)));
+        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(os)));
     }
 
     @Test
     public void canSetManufacturerForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId)
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId)
             .withManufacturer(manufacturer)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getDevice().getManufacturer(), is(equalTo(manufacturer)));
+        assertThat(target.getDevice().getManufacturer(), is(equalTo(manufacturer)));
     }
 
     @Test
     public void canSetManufactureForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .withManufacturer(manufacturer)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getDevice().getManufacturer(), is(equalTo(manufacturer)));
+        assertThat(target.getDevice().getManufacturer(), is(equalTo(manufacturer)));
     }
 
     @Test
     public void canSetModelIdForAppMon() {
-        OpenKitImpl openKit = (OpenKitImpl) new AppMonOpenKitBuilder(endpoint, appName, deviceId)
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceId)
             .withModelID(modelId)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getDevice().getModelID(), is(equalTo(modelId)));
+        assertThat(target.getDevice().getModelID(), is(equalTo(modelId)));
     }
 
     @Test
     public void canSetModelIdForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .withModelID(modelId)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getDevice().getModelID(), is(equalTo(modelId)));
+        assertThat(target.getDevice().getModelID(), is(equalTo(modelId)));
     }
 
     @Test
     public void canSetAppNameForDynatrace() {
-        OpenKitImpl openKit = (OpenKitImpl) new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appId, deviceId)
             .withApplicationName(appName)
-            .build();
+            .buildConfiguration();
 
-        assertThat(openKit.getConfiguration().getApplicationName(), is(equalTo(appName)));
+        assertThat(target.getApplicationName(), is(equalTo(appName)));
     }
 }

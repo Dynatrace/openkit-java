@@ -66,10 +66,6 @@ public class OpenKitImpl implements OpenKit {
 		return beaconSender.isInitialized();
 	}
 
-	public Device getDevice() {
-		return configuration.getDevice();
-	}
-
 	public Configuration getConfiguration() {
 		return configuration;
 	}
