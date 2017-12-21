@@ -1,5 +1,6 @@
 package com.dynatrace.openkit;
 
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
@@ -39,10 +40,10 @@ public class OpenKitBuilderTest {
         Configuration target = openKit.getConfiguration();
 
         // default values
-        assertThat(target.getApplicationVersion(), is(equalTo(AbstractOpenKitBuilder.DEFAULT_APPLICATION_VERSION)));
-        assertThat(target.getDevice().getManufacturer(), is(equalTo(AbstractOpenKitBuilder.DEFAULT_MANUFACTURER)));
-        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(AbstractOpenKitBuilder.DEFAULT_OPERATING_SYSTEM)));
-        assertThat(target.getDevice().getModelID(), is(equalTo(AbstractOpenKitBuilder.DEFAULT_MODEL_ID)));
+        assertThat(target.getApplicationVersion(), is(equalTo(OpenKitConstants.DEFAULT_APPLICATION_VERSION)));
+        assertThat(target.getDevice().getManufacturer(), is(equalTo(OpenKitConstants.DEFAULT_MANUFACTURER)));
+        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(OpenKitConstants.DEFAULT_OPERATING_SYSTEM)));
+        assertThat(target.getDevice().getModelID(), is(equalTo(OpenKitConstants.DEFAULT_MODEL_ID)));
         assertThat(target.isVerbose(), is(false));
 
         // default trust manager

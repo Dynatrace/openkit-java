@@ -5,7 +5,7 @@
  */
 package com.dynatrace.openkit.test;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.Device;
 
 public class TestConfiguration {
@@ -18,11 +18,11 @@ public class TestConfiguration {
 
 	// set defaults for device
 	private Device device = new Device(
-		AbstractOpenKitBuilder.DEFAULT_OPERATING_SYSTEM,
-		AbstractOpenKitBuilder.DEFAULT_MANUFACTURER,
-		AbstractOpenKitBuilder.DEFAULT_MODEL_ID);
+		OpenKitConstants.DEFAULT_OPERATING_SYSTEM,
+		OpenKitConstants.DEFAULT_MANUFACTURER,
+		OpenKitConstants.DEFAULT_MODEL_ID);
 	// set default for version
-	private String applicationVersion = AbstractOpenKitBuilder.DEFAULT_APPLICATION_VERSION;
+	private String applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
 
 	public void setDeviceID(long deviceID) {
 		this.deviceID = deviceID;

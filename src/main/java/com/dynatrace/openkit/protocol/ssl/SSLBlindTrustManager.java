@@ -14,7 +14,7 @@ import java.security.cert.X509Certificate;
  * <p>
  *     This class is intended to be used only during development phase. Since local
  *     development environments use self-signed certificates only.
- *     This implementation disables any X509 certificate validation & hostname validation.
+ *     This implementation disables any X509 certificate validation and hostname validation.
  * </p>
  *
  * <p>

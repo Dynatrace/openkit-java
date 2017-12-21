@@ -1,6 +1,7 @@
 package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
@@ -11,11 +12,6 @@ import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
  */
 public abstract class AbstractOpenKitBuilder {
 
-    public static final String DEFAULT_APPLICATION_VERSION = "0.3";
-    public static final String DEFAULT_OPERATING_SYSTEM = "OpenKit 0.3";
-    public static final String DEFAULT_MANUFACTURER = "Dynatrace";
-    public static final String DEFAULT_MODEL_ID = "OpenKitDevice";
-
     // immutable fields
     private final String endpointURL;
     private final long deviceID;
@@ -23,10 +19,10 @@ public abstract class AbstractOpenKitBuilder {
     // mutable fields
     private SSLTrustManager trustManager = new SSLStrictTrustManager();
     private boolean verbose;
-    private String operatingSystem = DEFAULT_OPERATING_SYSTEM;
-    private String manufacturer = DEFAULT_MANUFACTURER;
-    private String modelID = DEFAULT_MODEL_ID;
-    private String applicationVersion = DEFAULT_APPLICATION_VERSION;
+    private String operatingSystem = OpenKitConstants.DEFAULT_OPERATING_SYSTEM;
+    private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
+    private String modelID = OpenKitConstants.DEFAULT_MODEL_ID;
+    private String applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder

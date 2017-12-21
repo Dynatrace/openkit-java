@@ -37,10 +37,8 @@ public class SSLStrictTrustManager implements SSLTrustManager {
 
     private static X509TrustManager getX509TrustManager(String algorithm) {
 
-        TrustManagerFactory factory;
-
         try {
-            factory = TrustManagerFactory.getInstance(algorithm);
+            TrustManagerFactory factory = TrustManagerFactory.getInstance(algorithm);
             factory.init((KeyStore)null); // default keystore
 
             // get the first X509TrustManager instance
