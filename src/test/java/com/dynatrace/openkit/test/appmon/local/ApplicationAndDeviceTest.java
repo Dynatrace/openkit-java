@@ -9,20 +9,23 @@ import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.test.OpenKitTestFactory;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.ApplicationAndDeviceTestShared;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
 public class ApplicationAndDeviceTest extends AbstractLocalAppMonTest {
 
-    @Test
-    public void test() throws InterruptedException {
+    @Before
+    public void setUp() throws InterruptedException {
         // set values
         testConfiguration.setApplicationVersion("2017.42.3141");
         testConfiguration.setDevice(new Device("Windows 10", "Dynatrace", "OpenKitTester"));
+        super.setUp();
+    }
 
-        openKitTestImpl = OpenKitTestFactory.createAppMonLocalInstance(TEST_APPLICATION_NAME, TEST_ENDPOINT, testConfiguration);
-
+    @Test
+    public void test() throws InterruptedException {
         ApplicationAndDeviceTestShared.test(openKitTestImpl, TEST_IP);
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();

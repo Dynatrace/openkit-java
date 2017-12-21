@@ -1,18 +1,13 @@
 package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.api.OpenKitConstants;
-import com.dynatrace.openkit.core.Device;
-import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.ssl.SSLBlindTrustManager;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
-import org.junit.After;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public class OpenKitBuilderTest {
     private static final String endpoint = "https://localhost:12345";

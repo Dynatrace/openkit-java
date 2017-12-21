@@ -8,11 +8,7 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -20,9 +16,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 public class BeaconSendingContextTest {
-
-    @Rule
-    public Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
 
     private Configuration configuration;
     private HTTPClientProvider httpClientProvider;

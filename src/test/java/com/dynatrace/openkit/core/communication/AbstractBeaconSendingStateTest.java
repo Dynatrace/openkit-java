@@ -35,12 +35,16 @@ public class AbstractBeaconSendingStateTest {
         verifyNoMoreInteractions(mockContext);
     }
 
+
     @Test
     public void aTestBeaconSendingStateExecutesButIsInterrupted() throws InterruptedException {
 
         // when calling execute leads to an InterruptedException
         doThrow(new InterruptedException()).when(mockState).doExecute(mockContext);
         mockState.execute(mockContext);
+
+        // check and reset interrupted flag
+        assertThat(Thread.interrupted(), is(true));
 
         // then verify doExecute was called
         verify(mockState, times(1)).doExecute(mockContext);
