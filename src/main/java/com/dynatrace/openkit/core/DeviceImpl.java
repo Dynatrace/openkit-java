@@ -6,20 +6,17 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Device;
+import com.dynatrace.openkit.api.OpenKitConstants;
 
 /**
  * Actual implementation of the {@link Device} interface.
  */
 public class DeviceImpl implements Device {
 
-	public static final String DEFAULT_OPERATING_SYSTEM = "OpenKit 0.3";		// 'OpenKit 0.3'
-	public static final String DEFAULT_MANUFACTURER = "Dynatrace";				// default: 'Dynatrace'
-	public static final String DEFAULT_DEVICE_ID = "OpenKitDevice";			// default: 'OpenKitDevice'
-
 	// platform information
-	private String operatingSystem = DEFAULT_OPERATING_SYSTEM;
-	private String manufacturer = DEFAULT_MANUFACTURER;
-	private String modelID = DEFAULT_DEVICE_ID;
+	private String operatingSystem = OpenKitConstants.DEFAULT_OPERATING_SYSTEM;
+	private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
+	private String modelID = OpenKitConstants.DEFAULT_DEVICE_ID;
 
 	// *** Device interface methods ***
 

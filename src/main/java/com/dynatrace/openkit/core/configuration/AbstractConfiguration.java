@@ -8,6 +8,7 @@ package com.dynatrace.openkit.core.configuration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.DeviceImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.SessionIDProvider;
@@ -22,7 +23,6 @@ public abstract class AbstractConfiguration {
     private static final int DEFAULT_MAX_BEACON_SIZE = 30 * 1024;                   // default: max 30KB (in B) to send in one beacon
     private static final boolean DEFAULT_CAPTURE_ERRORS = true;                     // default: capture errors on
     private static final boolean DEFAULT_CAPTURE_CRASHES = true;                    // default: capture crashes on
-    private static final String DEFAULT_APPLICATION_VERSION = "0.3";                // default: '0.3'
 
     // immutable settings
     private final String applicationName;
@@ -69,7 +69,7 @@ public abstract class AbstractConfiguration {
         captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
         device = new DeviceImpl();
-        applicationVersion = DEFAULT_APPLICATION_VERSION;
+        applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
         httpClientConfiguration = null;
 
         this.sessionIDProvider = sessionIDProvider;
