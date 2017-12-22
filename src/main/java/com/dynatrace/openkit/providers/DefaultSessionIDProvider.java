@@ -7,9 +7,13 @@ public class DefaultSessionIDProvider implements SessionIDProvider {
 
     private int initialIntegerOffset;
 
+    DefaultSessionIDProvider(int initialOffset)
+    {
+        this.initialIntegerOffset = initialOffset;
+    }
+
     public DefaultSessionIDProvider(){
-        Random generator = new Random(System.currentTimeMillis());
-        this.initialIntegerOffset = generator.nextInt(Integer.MAX_VALUE );
+        this(new Random(System.currentTimeMillis()).nextInt(Integer.MAX_VALUE));
     }
 
     @Override
