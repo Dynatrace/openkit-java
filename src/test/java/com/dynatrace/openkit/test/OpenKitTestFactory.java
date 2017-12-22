@@ -8,6 +8,7 @@ package com.dynatrace.openkit.test;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
+import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 public class OpenKitTestFactory {
@@ -69,6 +70,7 @@ public class OpenKitTestFactory {
 			testConfiguration.getDeviceID(),
 			endpointURL,
 			true,
+			new TestSessionIDProvider(),
 			new SSLStrictTrustManager(),
 			testConfiguration.getDevice(),
 			testConfiguration.getApplicationVersion());
@@ -82,6 +84,7 @@ public class OpenKitTestFactory {
 			deviceID,
 			endpointURL,
 			true,
+			new TestSessionIDProvider(),
 			new SSLStrictTrustManager(),
 			new Device("", "", ""),
 			"");
@@ -95,6 +98,7 @@ public class OpenKitTestFactory {
 			deviceID,
 			endpointURL,
 			true,
+			new TestSessionIDProvider(),
 			new SSLStrictTrustManager(),
 			new Device("", "", ""),
 			"");

@@ -3,6 +3,7 @@ package com.dynatrace.openkit;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
+import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
 
 /**
  * Concrete builder that creates an {@code OpenKit} instance for AppMon
@@ -34,6 +35,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
             getDeviceID(),
             getEndpointURL(),
             isVerbose(),
+            new DefaultSessionIDProvider(),
             getTrustManager(),
             device,
             getApplicationVersion());

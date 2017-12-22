@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.providers.SessionIDProvider;
 
 /**
  * The Configuration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
@@ -43,12 +44,12 @@ public class Configuration {
     private final String applicationVersion;
     private final Device device;
 
-    private AtomicInteger nextSessionNumber = new AtomicInteger(0);
+    private SessionIDProvider sessionIDProvider;
 
     // *** constructors ***
 
-    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID,
-                         String endpointURL, boolean verbose, SSLTrustManager trustManager, Device device, String applicationVersion) {
+    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL,
+                         boolean verbose, SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion) {
         this.verbose = verbose;
 
         this.openKitType = openKitType;
@@ -77,13 +78,15 @@ public class Configuration {
                 trustManager);
 
         this.applicationVersion = applicationVersion;
+
+        this.sessionIDProvider = sessionIDProvider;
     }
 
     // *** public methods ***
 
     // return next session number
     public int createSessionNumber() {
-        return nextSessionNumber.incrementAndGet();
+        return sessionIDProvider.getNextSessionID();
     }
 
     // updates settings based on a status response

@@ -4,6 +4,7 @@ import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -25,6 +26,6 @@ public class ConfigurationTest {
 
     private Configuration getDynatraceConfig(String tenantURL) {
         return new Configuration(OpenKitType.DYNATRACE, "", "", 17, tenantURL,
-            false, new SSLStrictTrustManager(), new Device("", "", ""), "");
+            false, new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "");
     }
 }
