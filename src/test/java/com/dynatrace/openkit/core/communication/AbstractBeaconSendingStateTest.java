@@ -43,7 +43,10 @@ public class AbstractBeaconSendingStateTest {
         doThrow(new InterruptedException()).when(mockState).doExecute(mockContext);
         mockState.execute(mockContext);
 
-        // check and reset interrupted flag
+        /*
+            check and reset interrupted flag
+            if the flag is not reset, subsequent tests might fail
+        */
         assertThat(Thread.interrupted(), is(true));
 
         // then verify doExecute was called

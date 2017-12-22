@@ -28,7 +28,7 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
      * Sets the application name
      *
      * @param applicationName name of the application
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder withApplicationName(String applicationName) {
         this.applicationName = applicationName;

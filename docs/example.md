@@ -49,7 +49,7 @@ OpenKit openKit = new AppMonOpenKitBuilder(endpointURL, applicationName, deviceI
 
 ### Optional Configuration
 
-In addition to the mandatory parameters described above, the builder provides methods additional method to further 
+In addition to the mandatory parameters described above, the builder provides additional methods to further 
 customize OpenKit. This includes device specific information like operating system, manufacturer, or model id. 
 
 | Method Name | Description | Default Value |

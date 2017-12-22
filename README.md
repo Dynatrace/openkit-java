@@ -146,6 +146,7 @@ OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, device
     .withApplicationVersion("1.0.0.0")
     .withOperatingSystem("Windows 10")
     .withManufacturer("MyCompany")
+    .withModelID("MyModelID")
     .build();
 
 openKit.waitForInitCompletion();

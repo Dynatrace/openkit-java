@@ -23,21 +23,6 @@ public class ConfigurationTest {
         assertEquals(tenantURL, configuration.getHttpClientConfig().getBaseURL());
     }
 
-//    @Test
-//    public void applicationIdAndApplicationNameIdenticalForAppMonConfig() {
-//        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager());
-//
-//        assertThat(applicationName, is(configuration.getApplicationID()));
-//        assertThat(applicationName, is(configuration.getApplicationName()));
-//    }
-//
-//    @Test
-//    public void defaultApplicationVersionIsCorrect() {
-//        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager());
-//
-//        assertThat(applicationVersion, is(configuration.getApplicationVersion()));
-//    }
-
     private Configuration getDynatraceConfig(String tenantURL) {
         return new Configuration(OpenKitType.DYNATRACE, "", "", 17, tenantURL,
             false, new SSLStrictTrustManager(), new Device("", "", ""), "");

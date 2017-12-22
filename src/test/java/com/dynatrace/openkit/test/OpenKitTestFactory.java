@@ -74,12 +74,12 @@ public class OpenKitTestFactory {
 			testConfiguration.getApplicationVersion());
 	}
 
-	private static Configuration getAppMonConfig(String applicationName, String endpointURL, long deviceId) {
+	private static Configuration getAppMonConfig(String applicationName, String endpointURL, long deviceID) {
 		return new Configuration(
 			OpenKitType.APPMON,
 			applicationName,
 			applicationName,
-			deviceId,
+			deviceID,
 			endpointURL,
 			true,
 			new SSLStrictTrustManager(),
@@ -87,12 +87,12 @@ public class OpenKitTestFactory {
 			"");
 	}
 
-	private static Configuration getDynatraceConfig(String applicationName, String applicationID, String endpointURL, long deviceId) {
+	private static Configuration getDynatraceConfig(String applicationName, String applicationID, String endpointURL, long deviceID) {
 		return new Configuration(
 			OpenKitType.DYNATRACE,
 			applicationName,
 			applicationID,
-			deviceId,
+			deviceID,
 			endpointURL,
 			true,
 			new SSLStrictTrustManager(),

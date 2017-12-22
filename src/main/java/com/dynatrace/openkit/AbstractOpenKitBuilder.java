@@ -27,11 +27,11 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
      *
-     * @param endpointUrl   endpoint OpenKit connects to
+     * @param endpointURL   endpoint OpenKit connects to
      * @param deviceID      unique device id
      */
-    AbstractOpenKitBuilder(String endpointUrl, long deviceID) {
-        this.endpointURL = endpointUrl;
+    AbstractOpenKitBuilder(String endpointURL, long deviceID) {
+        this.endpointURL = endpointURL;
         this.deviceID = deviceID;
     }
 
@@ -40,18 +40,18 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Enables verbose mode.
      *
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder enableVerbose() {
-        this.verbose = true;
+        verbose = true;
         return this;
     }
 
     /**
-     * Defines the version of the application
+     * Defines the version of the application. The value is only set if it is not null and or empty.
      *
      * @param applicationVersion
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder withApplicationVersion(String applicationVersion) {
         if (applicationVersion != null && !applicationVersion.isEmpty()) {
@@ -64,7 +64,7 @@ public abstract class AbstractOpenKitBuilder {
      * Sets the trust manager. Overrides the default trust manager which is {@code SSLStrictTrustmanager} by default-
      *
      * @param trustManager Trust manager implementation
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder withTrustManager(SSLTrustManager trustManager) {
         this.trustManager = trustManager;
@@ -72,10 +72,10 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the operating system information
+     * Sets the operating system information. The value is only set if it is not null and or empty.
      *
      * @param operatingSystem the operating system
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder withOperatingSystem(String operatingSystem) {
         if(operatingSystem != null && !operatingSystem.isEmpty()) {
@@ -85,10 +85,10 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the manufacturer information
+     * Sets the manufacturer information. The value is only set if it is not null and or empty.
      *
      * @param manufacturer the manufacturer
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder withManufacturer(String manufacturer) {
         if(manufacturer != null && !manufacturer.isEmpty()) {
@@ -98,10 +98,10 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the model id
+     * Sets the model id. The value is only set if it is not null and or empty.
      *
      * @param modelID the model id
-     * @return returns the builder instance
+     * @return {@code this}
      */
     public AbstractOpenKitBuilder withModelID(String modelID) {
         if(modelID != null && !modelID.isEmpty()) {

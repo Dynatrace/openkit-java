@@ -9,7 +9,6 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.*;
 
 /**

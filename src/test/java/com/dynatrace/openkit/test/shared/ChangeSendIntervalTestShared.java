@@ -24,7 +24,7 @@ public class ChangeSendIntervalTestShared {
 		try {
 			Thread.sleep(2700);
 		} catch (InterruptedException e) {
-			System.out.println(e.getMessage());
+			// ignored
 		}
 
 		Action action2 = session.enterAction("Action-2");
