@@ -7,6 +7,7 @@ package com.dynatrace.openkit.core;
 
 import java.util.concurrent.TimeUnit;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -39,9 +40,9 @@ public class BeaconSender {
      * @param clientProvider Used for retrieving an {@link com.dynatrace.openkit.protocol.HTTPClient} instance.
      * @param timingProvider Used for some timing related things.
      */
-	public BeaconSender(AbstractConfiguration configuration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
+	public BeaconSender(Logger logger, AbstractConfiguration configuration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
 
-	    context = new BeaconSendingContext(configuration, clientProvider, timingProvider);
+	    context = new BeaconSendingContext(logger, configuration, clientProvider, timingProvider);
 	}
 
     /**

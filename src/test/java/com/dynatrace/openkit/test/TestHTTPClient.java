@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.Response;
@@ -73,8 +74,8 @@ public class TestHTTPClient extends HTTPClient {
 	private String rawTimeSyncResponse = null;
 	private TimeSyncResponse timeSyncResponse = null;
 
-	public TestHTTPClient(String baseURL, String applicationID, int serverID, boolean remoteTest, boolean verbose) {
-		super(new HTTPClientConfiguration(baseURL, serverID, applicationID, verbose, new SSLStrictTrustManager()));
+	public TestHTTPClient(String baseURL, String applicationID, int serverID, boolean remoteTest) {
+		super(new DefaultLogger(true), new HTTPClientConfiguration(baseURL, serverID, applicationID, new SSLStrictTrustManager()));
 		this.remoteTest = remoteTest;
 	}
 

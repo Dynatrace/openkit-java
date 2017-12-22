@@ -23,7 +23,7 @@ public class ConfigurationTest {
         String tenantURL = String.format("https://%s.%s", tenantId, host);
 
         AbstractConfiguration configuration =
-            new DynatraceConfiguration("", "", 17, tenantURL, false, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
+            new DynatraceConfiguration("", "", 17, tenantURL, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
 
         String expected = String.format("%s/mbeacon", tenantURL);
 
@@ -35,7 +35,7 @@ public class ConfigurationTest {
         String managedHost = String.format("http://%s", host);
 
         AbstractConfiguration configuration =
-            new DynatraceManagedConfiguration(tenantId, "", "",17, managedHost, false, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
+            new DynatraceManagedConfiguration(tenantId, "", "",17, managedHost, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
 
         String expected = String.format("%s/mbeacon/%s", managedHost, tenantId);
 
@@ -46,7 +46,7 @@ public class ConfigurationTest {
     public void appMonURLIsCorrect() {
         String appMonHost = String.format("https://%s", host);
 
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, appMonHost, false,  new SSLStrictTrustManager(), new DefaultSessionIDProvider());
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, appMonHost,  new SSLStrictTrustManager(), new DefaultSessionIDProvider());
 
         String expected = String.format("%s/dynaTraceMonitor", appMonHost);
 
@@ -55,7 +55,7 @@ public class ConfigurationTest {
 
     @Test
     public void applicationIdAndApplicationNameIdenticalForAppMonConfig() {
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", new SSLStrictTrustManager(), new DefaultSessionIDProvider());
 
         assertThat(applicationName, is(configuration.getApplicationID()));
         assertThat(applicationName, is(configuration.getApplicationName()));
@@ -63,7 +63,7 @@ public class ConfigurationTest {
 
     @Test
     public void defaultApplicationVersionIsCorrect() {
-        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", false, new SSLStrictTrustManager(), new DefaultSessionIDProvider());
+        AbstractConfiguration configuration = new AppMonConfiguration(applicationName, 17, "", new SSLStrictTrustManager(), new DefaultSessionIDProvider());
 
         assertThat(configuration.getApplicationVersion(), is(OpenKitConstants.DEFAULT_APPLICATION_VERSION));
     }

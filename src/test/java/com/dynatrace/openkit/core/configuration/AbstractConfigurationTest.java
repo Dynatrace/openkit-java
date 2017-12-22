@@ -109,11 +109,11 @@ public class AbstractConfigurationTest {
     private final class TestConfiguration extends AbstractConfiguration {
 
         private TestConfiguration() {
-            this(OpenKitType.DYNATRACE, "", "" , 42, "", true);
+            this(OpenKitType.DYNATRACE, "", "" , 42, "");
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose, new TestSessionIDProvider());
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider());
             setHttpClientConfiguration(mock(HTTPClientConfiguration.class));
         }
 

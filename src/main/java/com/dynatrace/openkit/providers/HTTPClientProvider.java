@@ -5,6 +5,7 @@
  */
 package com.dynatrace.openkit.providers;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 
@@ -16,5 +17,5 @@ public interface HTTPClientProvider {
 	/**
 	 * Returns an HTTPClient based on the provided configuration.
 	 */
-	HTTPClient createClient(HTTPClientConfiguration configuration);
+	HTTPClient createClient(Logger logger, HTTPClientConfiguration configuration);
 }

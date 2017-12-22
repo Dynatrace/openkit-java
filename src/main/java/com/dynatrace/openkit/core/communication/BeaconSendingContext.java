@@ -1,5 +1,6 @@
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -67,6 +68,10 @@ public class BeaconSendingContext {
      * boolean indicating whether the server supports a time sync (true) or not (false).
      */
      private boolean timeSyncSupported = true;
+    /**
+     * Logger instance
+     */
+    private Logger logger;
 
     /**
      * Constructor.
@@ -75,7 +80,8 @@ public class BeaconSendingContext {
      *     The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
-    public BeaconSendingContext(AbstractConfiguration configuration,
+    public BeaconSendingContext(Logger logger,
+                                AbstractConfiguration configuration,
                                 HTTPClientProvider httpClientProvider,
                                 TimingProvider timingProvider) {
 
@@ -84,6 +90,8 @@ public class BeaconSendingContext {
         this.timingProvider = timingProvider;
 
         currentState = new BeaconSendingInitState();
+
+        this.logger = logger;
     }
 
     /**
@@ -256,7 +264,7 @@ public class BeaconSendingContext {
      * @return HTTP client received from {@link HTTPClientProvider}.
      */
     HTTPClient getHTTPClient() {
-        return httpClientProvider.createClient(configuration.getHttpClientConfig());
+        return httpClientProvider.createClient(logger, configuration.getHttpClientConfig());
     }
 
     /**

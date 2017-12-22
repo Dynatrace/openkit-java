@@ -5,11 +5,13 @@
  */
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -110,11 +112,14 @@ public class Beacon {
 	private final LinkedList<String> eventDataList = new LinkedList<String>();
 	private final LinkedList<String> actionDataList = new LinkedList<String>();
 
+	private Logger logger;
+
 	// *** constructors ***
 
-	public Beacon(AbstractConfiguration configuration, String clientIPAddress,
+	public Beacon(Logger logger, AbstractConfiguration configuration, String clientIPAddress,
 				  ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
-		this.sessionNumber = configuration.createSessionNumber();
+		this.logger = logger;
+	    this.sessionNumber = configuration.createSessionNumber();
 		this.timingProvider = timingProvider;
 
 		this.configuration = configuration;
@@ -319,7 +324,7 @@ public class Beacon {
 
 	// send current state of Beacon
 	public StatusResponse send(HTTPClientProvider provider, int numRetries) throws InterruptedException {
-		HTTPClient httpClient = provider.createClient(httpConfiguration);
+		HTTPClient httpClient = provider.createClient(logger, httpConfiguration);
 		ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
 		StatusResponse response = null;
 		for (byte[] beaconData : beaconDataChunks) {
@@ -520,9 +525,7 @@ public class Beacon {
 			encodedValue = URLEncoder.encode(stringValue, CHARSET);
 		} catch (UnsupportedEncodingException e) {
 			// if encoding fails, skip this key/value pair
-			if (configuration.isVerbose()) {
-				System.out.println("Skipped encoding of Key/Value: " + key + "/" + stringValue);
-			}
+    		logger.error("Skipped encoding of Key/Value: " + key + "/" + stringValue);
 			return;
 		}
 

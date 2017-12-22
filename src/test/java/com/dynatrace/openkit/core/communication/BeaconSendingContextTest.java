@@ -1,8 +1,10 @@
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -29,6 +31,8 @@ public class BeaconSendingContextTest {
     private TimingProvider timingProvider;
     private AbstractBeaconSendingState mockState;
 
+    private Logger mockLogger;
+
     @Before
     public void setUp() {
 
@@ -36,12 +40,14 @@ public class BeaconSendingContextTest {
         httpClientProvider = mock(HTTPClientProvider.class);
         timingProvider = mock(TimingProvider.class);
         mockState = mock(AbstractBeaconSendingState.class);
+
+        mockLogger = mock(DefaultLogger.class);
     }
 
     @Test
     public void currentStateIsInitializedAccordingly() {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         assertThat(target.getCurrentState(), notNullValue());
         assertThat(target.getCurrentState(), instanceOf(BeaconSendingInitState.class));
@@ -50,7 +56,7 @@ public class BeaconSendingContextTest {
     @Test
     public void setCurrentStateChangesState() {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         target.setNextState(mockState);
 
@@ -61,7 +67,7 @@ public class BeaconSendingContextTest {
     public void executeCurrentStateCallsExecuteOnCurrentState() {
 
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         target.setNextState(mockState);
 
         verifyZeroInteractions(mockState);
@@ -74,7 +80,7 @@ public class BeaconSendingContextTest {
     @Test
     public void initCompleteSuccessAndWait() {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         target.initCompleted(true);
         boolean obtained = target.waitForInit();
@@ -85,7 +91,7 @@ public class BeaconSendingContextTest {
     @Test
     public void requestShutdown() {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         assertThat(target.isShutdownRequested(), is(false));
 
@@ -97,7 +103,7 @@ public class BeaconSendingContextTest {
     @Test
     public void initCompleteFailureAndWait() {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         target.initCompleted(false);
         boolean obtained = target.waitForInit();
@@ -109,7 +115,7 @@ public class BeaconSendingContextTest {
     public void waitForInitCompleteTimeout() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when init complete was never set and timeout will be reached
         boolean obtained = target.waitForInit(1);
@@ -122,7 +128,7 @@ public class BeaconSendingContextTest {
     public void waitForInitCompleteWhenInitCompletedSuccessfully() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         target.initCompleted(true);
 
         // when init complete was never set and timeout will be reached
@@ -136,7 +142,7 @@ public class BeaconSendingContextTest {
     public void waitForInitCompleteWhenInitCompletedNotSuccessfully() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         target.initCompleted(false);
 
         // when init complete was never set and timeout will be reached
@@ -150,7 +156,7 @@ public class BeaconSendingContextTest {
     public void aDefaultConstructedContextIsNotInitialized() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // then
         assertThat(target.isInitialized(), is(false));
@@ -160,7 +166,7 @@ public class BeaconSendingContextTest {
     public void successfullyInitializedContextIsInitialized() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when initialized
         target.initCompleted(true);
@@ -173,7 +179,7 @@ public class BeaconSendingContextTest {
     public void isInTerminalStateChecksCurrentState() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         AbstractBeaconSendingState nonTerminalState = mock(AbstractBeaconSendingState.class);
         when(nonTerminalState.isTerminalState()).thenReturn(false);
         AbstractBeaconSendingState terminalState = mock(AbstractBeaconSendingState.class);
@@ -201,7 +207,7 @@ public class BeaconSendingContextTest {
     public void isCaptureOnReturnsValueFromConfiguration() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when capturing is enabled
         when(configuration.isCapture()).thenReturn(true);
@@ -223,7 +229,7 @@ public class BeaconSendingContextTest {
     public void timeSyncIsNotSupportedIfDisabled() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when
         target.disableTimeSyncSupport();
@@ -235,7 +241,7 @@ public class BeaconSendingContextTest {
     @Test
     public void setAndGetLastOpenSessionBeaconSendTime() {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         target.setLastOpenSessionBeaconSendTime(1234L);
         assertThat(target.getLastOpenSessionBeaconSendTime(), is(1234L));
@@ -248,7 +254,7 @@ public class BeaconSendingContextTest {
     public void setAndGetLastStatusCheckTime() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when
         target.setLastStatusCheckTime(1234L);
@@ -267,7 +273,7 @@ public class BeaconSendingContextTest {
     public void getSendIntervalRetrievesItFromConfiguration() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         when(configuration.getSendInterval()).thenReturn(1234);
 
         // when
@@ -283,7 +289,7 @@ public class BeaconSendingContextTest {
     public void getHTTPClientProvider() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when
         HTTPClientProvider obtained = target.getHTTPClientProvider();
@@ -299,9 +305,9 @@ public class BeaconSendingContextTest {
         HTTPClientConfiguration mockConfiguration = mock(HTTPClientConfiguration.class);
 
         when(configuration.getHttpClientConfig()).thenReturn(mockConfiguration);
-        when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(mockClient);
+        when(httpClientProvider.createClient(any(Logger.class), any(HTTPClientConfiguration.class))).thenReturn(mockClient);
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         verifyZeroInteractions(configuration, httpClientProvider);
 
@@ -311,7 +317,7 @@ public class BeaconSendingContextTest {
         assertThat(obtained, is(sameInstance(mockClient)));
 
         verify(configuration, times(1)).getHttpClientConfig();
-        verify(httpClientProvider, times(1)).createClient(mockConfiguration);
+        verify(httpClientProvider, times(1)).createClient(mockLogger, mockConfiguration);
         verifyNoMoreInteractions(configuration, httpClientProvider);
         verifyZeroInteractions(mockClient, mockConfiguration);
     }
@@ -321,7 +327,7 @@ public class BeaconSendingContextTest {
 
         when(timingProvider.provideTimestampInMilliseconds()).thenReturn(1234567890L);
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         verifyZeroInteractions(timingProvider);
 
@@ -335,7 +341,7 @@ public class BeaconSendingContextTest {
     @Test
     public void sleepDefaultTime() throws InterruptedException {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         verifyZeroInteractions(timingProvider);
 
@@ -348,7 +354,7 @@ public class BeaconSendingContextTest {
     @Test
     public void sleepWithGivenTime() throws InterruptedException {
 
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         verifyZeroInteractions(timingProvider);
 
@@ -362,7 +368,7 @@ public class BeaconSendingContextTest {
     public void defaultLastTimeSyncTimeIsMinusOne() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // then
         assertThat(target.getLastTimeSyncTime(), is(-1L));
@@ -372,7 +378,7 @@ public class BeaconSendingContextTest {
     public void getAndSetLastTimeSyncTime() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when setting first value
         target.setLastTimeSyncTime(1234L);
@@ -391,7 +397,7 @@ public class BeaconSendingContextTest {
     public void aDefaultConstructedContextDoesNotStoreAnySessions() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // then
         assertThat(target.getAllOpenSessions(), is(emptyArray()));
@@ -402,7 +408,7 @@ public class BeaconSendingContextTest {
     public void startingASessionAddsTheSessionToOpenSessions() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
 
@@ -425,7 +431,7 @@ public class BeaconSendingContextTest {
     public void finishingASessionMovesSessionToFinishedSessions() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
 
@@ -451,7 +457,7 @@ public class BeaconSendingContextTest {
     public void finishingASessionThatHasNotBeenStartedBeforeIsNotAddedToFinishedSessions() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSession = mock(SessionImpl.class);
 
         // when the session is not started, but immediately finished
@@ -466,7 +472,7 @@ public class BeaconSendingContextTest {
     public void getNextFinishedSessionGetsAndRemovesSession() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
 
@@ -494,7 +500,7 @@ public class BeaconSendingContextTest {
     public void getNextFinishedSessionReturnsNullIfThereAreNoFinishedSessions() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when, then
         assertThat(target.getNextFinishedSession(), is(nullValue()));
@@ -504,7 +510,7 @@ public class BeaconSendingContextTest {
     public void disableCapture() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
         SessionImpl mockSessionThree = mock(SessionImpl.class);
@@ -536,7 +542,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseWhenCapturingIsEnabled() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
 
@@ -565,7 +571,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseWhenCapturingIsDisabled() {
 
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
         SessionImpl mockSessionThree = mock(SessionImpl.class);
@@ -603,7 +609,7 @@ public class BeaconSendingContextTest {
     @Test
     public void isTimeSyncedReturnsTrueIfSyncWasNeverPerformed() {
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
         when(timingProvider.isTimeSyncSupported()).thenReturn(true);
 
         assertThat(target.isTimeSynced(), is(false));
@@ -612,7 +618,7 @@ public class BeaconSendingContextTest {
     @Test
     public void isTimeSyncedReturnsTrueIfSyncIsNotSupported() {
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when
         target.disableTimeSyncSupport();
@@ -624,7 +630,7 @@ public class BeaconSendingContextTest {
     @Test
     public void timingProviderIsCalledOnTimeSyncInit() {
         // given
-        BeaconSendingContext target = new BeaconSendingContext(configuration, httpClientProvider, timingProvider);
+        BeaconSendingContext target = new BeaconSendingContext(mockLogger, configuration, httpClientProvider, timingProvider);
 
         // when
         target.initializeTimeSync(1234L, true);

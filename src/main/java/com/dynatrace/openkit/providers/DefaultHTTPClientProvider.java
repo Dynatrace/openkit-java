@@ -5,6 +5,7 @@
  */
 package com.dynatrace.openkit.providers;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 
@@ -14,8 +15,8 @@ import com.dynatrace.openkit.protocol.HTTPClient;
 public class DefaultHTTPClientProvider implements HTTPClientProvider {
 
 	@Override
-	public HTTPClient createClient(HTTPClientConfiguration configuration) {
-		return new HTTPClient(configuration);
+	public HTTPClient createClient(Logger logger, HTTPClientConfiguration configuration) {
+		return new HTTPClient(logger, configuration);
 	}
 
 }

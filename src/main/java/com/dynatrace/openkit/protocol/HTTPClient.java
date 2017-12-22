@@ -6,8 +6,10 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -74,15 +76,16 @@ public class HTTPClient {
     private final String timeSyncURL;
 
     private final int serverID;
-    private final boolean verbose;
 
     private final SSLTrustManager sslTrustManager;
 
+    private Logger logger;
+
 	// *** constructors ***
 
-    public HTTPClient(HTTPClientConfiguration configuration) {
+    public HTTPClient(Logger logger, HTTPClientConfiguration configuration) {
+        this.logger = logger;
     	serverID = configuration.getServerID();
-    	verbose = configuration.isVerbose();
     	monitorURL = buildMonitorURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
     	timeSyncURL = buildTimeSyncURL(configuration.getBaseURL());
     	sslTrustManager = configuration.getSSLTrustManager();
@@ -111,15 +114,13 @@ public class HTTPClient {
     // protected because it's overridden by the TestHTTPClient
     protected Response sendRequest(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
     	try {
-    		if (verbose) {
-    			System.out.println("HTTP " + requestType.getRequestName() + " Request: " + url);
-    		}
+    	    if(logger.isDebugEnabled()) {
+                logger.debug("HTTP " + requestType.getRequestName() + " Request: " + url);
+            }
     		return sendRequestInternal(requestType, url, clientIPAddress, data, method);
 		} catch (Exception e) {
-			if (verbose) {
-				System.err.println("ERROR: " + requestType.getRequestName() + " Request failed!");
-				e.printStackTrace();
-			}
+            logger.error("ERROR: " + requestType.getRequestName() + " Request failed!");
+            e.printStackTrace();
 		}
     	return null;
     }
@@ -150,16 +151,16 @@ public class HTTPClient {
 				if ((data != null) && (data.length > 0)) {
 					byte[] gzippedData = gzip(data);
 
-					if (verbose) {
-						String decodedData = "";
-						try {
-							decodedData = new String(data, Beacon.CHARSET);
-						} catch (UnsupportedEncodingException e) {
-							// must not happen, as UTF-8 should *really* be supported
-						}
+                    String decodedData = "";
+                    try {
+                        decodedData = new String(data, Beacon.CHARSET);
+                    } catch (UnsupportedEncodingException e) {
+                        // must not happen, as UTF-8 should *really* be supported
+                    }
 
-						System.out.println("Beacon Payload: " + decodedData);
-					}
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("Beacon Payload: " + decodedData);
+                    }
 
 					connection.setRequestProperty("Content-Encoding", "gzip");
 					connection.setRequestProperty("Content-Length", String.valueOf(data.length));
@@ -197,9 +198,9 @@ public class HTTPClient {
             // read error response
             String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
 
-            if (verbose) {
-                System.out.println("HTTP Response: " + response);
-                System.out.println("HTTP Response Code: " + responseCode);
+            if(logger.isDebugEnabled()) {
+                logger.debug("HTTP Response: " + response);
+                logger.debug("HTTP Response Code: " + responseCode);
             }
 
             // return null if error occurred
@@ -211,9 +212,10 @@ public class HTTPClient {
             // reading HTTP response
             String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
 
-            if (verbose) {
-                System.out.println("HTTP Response: " + response);
-                System.out.println("HTTP Response Code: " + responseCode);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("HTTP Response: " + response);
+                logger.debug("HTTP Response Code: " + responseCode);
             }
 
             // create typed response based on response content

@@ -9,8 +9,10 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.providers.*;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.providers.TestHTTPClientProvider;
@@ -21,12 +23,12 @@ public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
-	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) {
-		this(config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
+	public OpenKitTestImpl(Logger logger, AbstractConfiguration config, boolean remoteTest) {
+		this(logger, config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
 	}
 
-	private OpenKitTestImpl(AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
-		super(config, provider, timingProvider, createThreadIdProvider());
+	private OpenKitTestImpl(Logger logger, AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
+		super(logger, config, provider, timingProvider, createThreadIdProvider());
 
 		testHttpClientProvider = provider;
 	}

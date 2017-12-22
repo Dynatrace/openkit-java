@@ -1,5 +1,6 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 
@@ -8,15 +9,14 @@ import com.dynatrace.openkit.providers.SessionIDProvider;
  */
 public class DynatraceConfiguration extends AbstractConfiguration {
 
-	public DynatraceConfiguration(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager, SessionIDProvider sessionIDProvider) {
-		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, verbose, sessionIDProvider);
+	public DynatraceConfiguration(String applicationName, String applicationID, long deviceID, String endpointURL, SSLTrustManager sslTrustManager, SessionIDProvider sessionIDProvider) {
+		super(OpenKitType.DYNATRACE, applicationName, applicationID, deviceID, endpointURL, sessionIDProvider);
 
 		setHttpClientConfiguration(
 			new HTTPClientConfiguration(
 				createBaseURL(endpointURL, OpenKitType.DYNATRACE.getDefaultMonitorName()),
 				OpenKitType.DYNATRACE.getDefaultServerID(),
 				applicationID,
-				verbose,
 				sslTrustManager));
 	}
 

@@ -6,9 +6,11 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Device;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.*;
 
@@ -25,17 +27,21 @@ public class OpenKitImpl implements OpenKit {
 	private final ThreadIDProvider threadIDProvider;
 	private final TimingProvider timingProvider;
 
+	//Logging context
+    private final Logger logger;
+
 	// *** constructors ***
 
-	public OpenKitImpl(AbstractConfiguration config) {
-		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
+	public OpenKitImpl(Logger logger, AbstractConfiguration config) {
+		this(logger, config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
-	protected OpenKitImpl(AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
-		configuration = config;
+	protected OpenKitImpl(Logger logger, AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+		this.logger = logger;
+	    configuration = config;
 		this.threadIDProvider = threadIDProvider;
 		this.timingProvider = timingProvider;
-		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
+		beaconSender = new BeaconSender(logger, configuration, httpClientProvider, timingProvider);
 	}
 
 	/**
@@ -80,7 +86,7 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public Session createSession(String clientIPAddress) {
 		// create beacon for session
-		Beacon beacon = new Beacon(configuration, clientIPAddress, threadIDProvider, timingProvider);
+		Beacon beacon = new Beacon(logger, configuration, clientIPAddress, threadIDProvider, timingProvider);
 		// create session
 		return new SessionImpl(beaconSender, beacon);
 	}

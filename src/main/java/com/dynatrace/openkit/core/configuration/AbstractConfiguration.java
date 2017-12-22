@@ -30,7 +30,6 @@ public abstract class AbstractConfiguration {
     private final OpenKitType openKitType;
     private final long deviceID;
     private final String endpointURL;
-    private final boolean verbose;
 
     // mutable settings
     private AtomicBoolean capture;                               // capture on/off; can be written/read by different threads -> atomic
@@ -49,9 +48,7 @@ public abstract class AbstractConfiguration {
 
     // *** constructors ***
 
-    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SessionIDProvider sessionIDProvider) {
-        this.verbose = verbose;
-
+    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, SessionIDProvider sessionIDProvider) {
         this.openKitType = openKitType;
 
         // immutable settings
@@ -115,7 +112,6 @@ public abstract class AbstractConfiguration {
                 createBaseURL(endpointURL, newMonitorName),
                 newServerID,
                 applicationID,
-                verbose,
                 httpClientConfiguration.getSSLTrustManager());
             monitorName = newMonitorName;
         }
@@ -159,10 +155,6 @@ public abstract class AbstractConfiguration {
 
     public long getDeviceID() {
         return deviceID;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
     }
 
     /**

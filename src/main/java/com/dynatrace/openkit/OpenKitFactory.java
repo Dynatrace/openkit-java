@@ -5,12 +5,14 @@
  */
 package com.dynatrace.openkit;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
 
@@ -46,7 +48,7 @@ public class OpenKitFactory {
 	 * @param applicationID		the application ID (must be a valid application UUID)
 	 * @param deviceID			unique device identifier
 	 * @param endpointURL		the URL of the beacon forwarder to send the data to
-	 * @param verbose			if true, turn on verbose logging on stdout
+     * @param verbose           if true, turn on verbose logging on Logger
 	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
@@ -60,13 +62,14 @@ public class OpenKitFactory {
 	 * @param applicationID		the application ID (must be a valid application UUID)
 	 * @param deviceID			unique device identifier
 	 * @param endpointURL		the URL of the beacon forwarder to send the data to
-	 * @param verbose			if true, turn on verbose logging on stdout
+     * @param verbose           if true, turn on verbose logging on Logger
      * @param sslTrustManager   For X509 certificate authentication and hostname verification
 	 * @return					Dynatrace SaaS instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
 		OpenKitImpl openKit = new OpenKitImpl(
-				new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
+		        new DefaultLogger(verbose),
+				new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, sslTrustManager, new DefaultSessionIDProvider()));
 		openKit.initialize();
 
 		return openKit;
@@ -94,7 +97,7 @@ public class OpenKitFactory {
 	 * @param deviceID			unique device identifier
 	 * @param endpointURL		the URL of the beacon forwarder to send the data to
 	 * @param tenantID			the id of the tenant
-	 * @param verbose			if true, turn on verbose logging on stdout
+     * @param verbose           if true, turn on verbose logging on Logger
 	 * @return					Dynatrace Managed instance of the OpenKit
 	 */
 	public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long deviceID, String endpointURL, String tenantID, boolean verbose) {
@@ -109,13 +112,14 @@ public class OpenKitFactory {
      * @param deviceID			unique device identifier
      * @param endpointURL		the URL of the beacon forwarder to send the data to
      * @param tenantID			the id of the tenant
-     * @param verbose			if true, turn on verbose logging on stdout
+     * @param verbose           if true, turn on verbose logging on Logger
      * @param sslTrustManager   For X509 certificate authentication and hostname verification
      * @return					Dynatrace Managed instance of the OpenKit
      */
     public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long deviceID, String endpointURL, String tenantID, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
+            new DefaultLogger(verbose),
+            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, sslTrustManager, new DefaultSessionIDProvider()));
         openKit.initialize();
 
         return openKit;
@@ -130,7 +134,7 @@ public class OpenKitFactory {
 	 * @return					Dynatrace AppMon instance of the OpenKit
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, long deviceID, String endpointURL) {
-		return createAppMonInstance(applicationName, deviceID, endpointURL, false);
+		return createAppMonInstance(applicationName, deviceID, endpointURL);
 	}
 
 	/**
@@ -139,8 +143,9 @@ public class OpenKitFactory {
 	 * @param applicationName	the application name
 	 * @param deviceID			unique device identifier
 	 * @param endpointURL		the URL of the Java/Webserver Agent to send the data to
-	 * @param verbose			if true, turn on verbose logging on stdout
+     * @param verbose           if true, turn on verbose logging on Logger
 	 * @return					Dynatrace AppMon instance of the OpenKit
+     *
 	 */
 	public static OpenKit createAppMonInstance(String applicationName, long deviceID, String endpointURL, boolean verbose) {
         return createAppMonInstance(applicationName, deviceID, endpointURL, verbose, new SSLStrictTrustManager());
@@ -152,13 +157,14 @@ public class OpenKitFactory {
      * @param applicationName	the application name
      * @param deviceID			unique device identifier
      * @param endpointURL		the URL of the Java/Webserver Agent to send the data to
-     * @param verbose			if true, turn on verbose logging on stdout
+     * @param verbose           if true, turn on verbose logging on Logger
      * @param sslTrustManager   For X509 certificate authentication and hostname verification
      * @return					Dynatrace AppMon instance of the OpenKit
      */
     public static OpenKit createAppMonInstance(String applicationName, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-            new AppMonConfiguration(applicationName, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
+            new DefaultLogger(verbose),
+            new AppMonConfiguration(applicationName, deviceID, endpointURL, sslTrustManager, new DefaultSessionIDProvider()));
         openKit.initialize();
 
         return openKit;
