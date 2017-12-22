@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.DeviceImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.providers.SessionIDProvider;
 
 /**
  * The AbstractConfiguration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
@@ -44,11 +45,11 @@ public abstract class AbstractConfiguration {
     private String applicationVersion;
     private final DeviceImpl device;
 
-    private AtomicInteger nextSessionNumber = new AtomicInteger(0);
+    private SessionIDProvider sessionIDProvider;
 
     // *** constructors ***
 
-    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
+    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SessionIDProvider sessionIDProvider) {
         this.verbose = verbose;
 
         this.openKitType = openKitType;
@@ -70,13 +71,15 @@ public abstract class AbstractConfiguration {
         device = new DeviceImpl();
         applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
         httpClientConfiguration = null;
+
+        this.sessionIDProvider = sessionIDProvider;
     }
 
     // *** public methods ***
 
     // return next session number
     public int createSessionNumber() {
-        return nextSessionNumber.incrementAndGet();
+        return sessionIDProvider.getNextSessionID();
     }
 
     // updates settings based on a status response

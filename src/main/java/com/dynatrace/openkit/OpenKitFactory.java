@@ -12,6 +12,7 @@ import com.dynatrace.openkit.core.configuration.AppMonConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceConfiguration;
 import com.dynatrace.openkit.core.configuration.DynatraceManagedConfiguration;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
 
 /**
  * This factory creates instances of the OpenKit to work with.
@@ -65,7 +66,7 @@ public class OpenKitFactory {
 	 */
 	public static OpenKit createDynatraceInstance(String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
 		OpenKitImpl openKit = new OpenKitImpl(
-				new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager));
+				new DynatraceConfiguration(applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
 		openKit.initialize();
 
 		return openKit;
@@ -114,7 +115,7 @@ public class OpenKitFactory {
      */
     public static OpenKit createDynatraceManagedInstance(String applicationName, String applicationID, long deviceID, String endpointURL, String tenantID, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager));
+            new DynatraceManagedConfiguration(tenantID, applicationName, applicationID, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
         openKit.initialize();
 
         return openKit;
@@ -157,7 +158,7 @@ public class OpenKitFactory {
      */
     public static OpenKit createAppMonInstance(String applicationName, long deviceID, String endpointURL, boolean verbose, SSLTrustManager sslTrustManager) {
         OpenKitImpl openKit = new OpenKitImpl(
-            new AppMonConfiguration(applicationName, deviceID, endpointURL, verbose, sslTrustManager));
+            new AppMonConfiguration(applicationName, deviceID, endpointURL, verbose, sslTrustManager, new DefaultSessionIDProvider()));
         openKit.initialize();
 
         return openKit;
