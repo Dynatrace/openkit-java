@@ -15,12 +15,12 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
     /**
      * Creates a new instance of type DynatraceOpenKitBuilder
      *
-     * @param endpointUrl       endpoint OpenKit connects to
+     * @param endpointURL       endpoint OpenKit connects to
      * @param applicationID     unique application id
      * @param deviceID          unique device id
      */
-    public DynatraceOpenKitBuilder(String endpointUrl, String applicationID, long deviceID) {
-        super(endpointUrl, deviceID);
+    public DynatraceOpenKitBuilder(String endpointURL, String applicationID, long deviceID) {
+        super(endpointURL, deviceID);
         this.applicationID = applicationID;
     }
 
