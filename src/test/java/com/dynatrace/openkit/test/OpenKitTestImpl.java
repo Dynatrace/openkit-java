@@ -10,22 +10,21 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 
 import com.dynatrace.openkit.core.OpenKitImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.providers.*;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.providers.TestHTTPClientProvider;
-import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import com.dynatrace.openkit.test.providers.TestTimingProvider;
 
 public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
-	public OpenKitTestImpl(AbstractConfiguration config, boolean remoteTest) {
+	public OpenKitTestImpl(Configuration config, boolean remoteTest) throws InterruptedException {
 		this(config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
 	}
 
-	private OpenKitTestImpl(AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
+	private OpenKitTestImpl(Configuration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
 		super(config, provider, timingProvider, createThreadIdProvider());
 
 		testHttpClientProvider = provider;
@@ -48,4 +47,5 @@ public class OpenKitTestImpl extends OpenKitImpl {
 		when(provider.getThreadID()).thenReturn(1L);
 		return provider;
 	}
+
 }

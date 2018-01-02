@@ -1,18 +1,14 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -21,10 +17,7 @@ import static org.mockito.Mockito.*;
 
 public class BeaconSendingContextTest {
 
-    @Rule
-    public Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
-
-    private AbstractConfiguration configuration;
+    private Configuration configuration;
     private HTTPClientProvider httpClientProvider;
     private TimingProvider timingProvider;
     private AbstractBeaconSendingState mockState;
@@ -32,7 +25,7 @@ public class BeaconSendingContextTest {
     @Before
     public void setUp() {
 
-        configuration = mock(AbstractConfiguration.class);
+        configuration = mock(Configuration.class);
         httpClientProvider = mock(HTTPClientProvider.class);
         timingProvider = mock(TimingProvider.class);
         mockState = mock(AbstractBeaconSendingState.class);

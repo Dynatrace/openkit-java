@@ -5,114 +5,67 @@ developer's point of view. It explains the usage of all the API methods.
 
 ## Obtaining an OpenKit Instance
 
-OpenKit instances are obtained from the `OpenKitFactory` class.  
-Depending on the used backend system (Dynatrace SaaS/Dynatrace Managed/AppMon), the factory provides 
-different methods to create a new  OpenKit instance. Despite from this, the developer does not 
-need to distinguish between different backend systems.
+Depending on the backend a new OpenKit instance can be obtained by using either `DynatraceOpenKitBuilder` 
+or `AppMonOpenKitBuilder`. Despite from this, the developer does not need to distinguish between 
+different backend systems.
 
-### Dynatrace SaaS
- 
+### Dynatrace
+
+For Dynatrace SaaS and Dynatrace Managed the `DynatraceOpenKitBuilder` is used to build new OpenKit instances. 
+
 ```java
-String applicationName = "My OpenKit application";
 String applicationID = "application-id";
 long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
+String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
 
-// by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL);
+OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID).build();
 ```
 
-* The `applicationName` parameter is the application's name created before in Dynatrace SaaS.
 * The `applicationID` parameter is the unique identifier of the application in Dynatrace Saas. The
 application's id can be found in the settings page of the custom application in Dynatrace.
 * The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
-* The `endpointURL` denotes the Dynatrace SaaS cluster endpoint OpenKit communicates with and 
-  is shown when creating the application in Dynatrace SaaS.
+* The `endpointURL` denotes the Dynatrace endpoint OpenKit communicates with and 
+  is shown when creating the application in Dynatrace.
 The endpoint URL can be found in the settings page of the custom application in Dynatrace.
 
-OpenKit provides extended log output by activating the verbose mode. This feature might come in quite handy during development,
-therefore an overloaded method exists, where verbose mode can be enabled or disabled.  
-To enable verbose mode, use the following example.
-
-```java
-String applicationName = "My OpenKit application";
-String applicationID = "application-id";
-long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
-boolean verbose = true;
-
-// by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceInstance(applicationName, applicationID, deviceID, endpointURL, verbose);
-```
-
-### Dynatrace Managed
-
-An OpenKit instance for Dynatrace Managed can be obtained in a similar manner, as shown in the example below.
-```java
-String applicationName = "My OpenKit application";
-String applicationID = "application-id";
-long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
-String tenantID = "tenant-id";
-
-// by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName, applicationID, deviceID, endpointURL, tenantID);
-```
-
-* The `applicationName` parameter is the application's name created before in Dynatrace Managed.
-* The `applicationID` parameter is the unique identifier of the application in Dynatrace Managed. The
-application's id can be found in the settings page of the custom application in Dynatrace.
-* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
-* The `endpointURL` denotes the Dynatrace Managed endpoint OpenKit communicates with. The endpoint URL can be found in 
-the settings page of the custom application in Dynatrace.
-* The `tenantID` is the tenant used by Dynatrace Managed.
-
-Again an overloaded method exists to enable verbose logging, as shown below.
-```java
-String applicationName = "My OpenKit application";
-String applicationID = "application-id";
-long deviceID = 42;
-String endpointURL = "https://beaconurl.com";
-String tenantID = "tenant-id";
-boolean verbose = true;
-
-// by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createDynatraceManagedInstance(applicationName, applicationID, deviceID, endpointURL, tenantID, verbose);
-```
+:grey_exclamation: For Dynatrace Managed the endpoint URL looks a bit different.
 
 ### AppMon
 
-The example below demonstrates how to connect an OpenKit application to an AppMon endpoint.
+An OpenKit instance for Dynatrace Managed can be obtained by using `AppMonOpenKitBuilder`.
+
 ```java
 String applicationName = "My OpenKit application";
 long deviceID = 42;
-String endpointURL = "https://beaconurl.com";
+String endpointURL = "https://beaconurl.com/dynaTraceMonitor";
 
 // by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, deviceID, endpointURL);
+OpenKit openKit = new AppMonOpenKitBuilder(endpointURL, applicationName, deviceID).build();
 ```
 
 * The `applicationName` parameter is the application's name in AppMon and is also used as the application's id.
 * The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
 * The `endpointURL` denotes the AppMon endpoint OpenKit communicates with.
 
-If verbose OpenKit logging output is wanted, an overloaded method can be used as demonstrated below.
-```java
-String applicationName = "My OpenKit application";
-long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
-boolean verbose = true;
+### Optional Configuration
 
-// by default verbose logging is disabled
-OpenKit openKit = OpenKitFactory.createAppMonInstance(applicationName, deviceID, endpointURL, verbose);
-```
+In addition to the mandatory parameters described above, the builder provides additional methods to further 
+customize OpenKit. This includes device specific information like operating system, manufacturer, or model id. 
+
+| Method Name | Description | Default Value |
+| ------------- | ------------- | ---------- |
+| `withApplicationVersion`  | sets the application version  | `"0.4"` |
+| `withOperatingSystem`  | sets the operating system name | `"OpenKit 0.4"` |
+| `withManufacturer`  | sets the manufacturer | `"Dynatrace"` |
+| `withModelID`  | sets the model id  | `"OpenKitDevice"` |
+| `enableVerbose`  | enables extended log output for OpenKit  | `false` |
 
 ## SSL/TLS Security in OpenKit
 
 All OpenKit communication to the backend happens via HTTPS (TLS/SSL based on Java Framework support).
 By default OpenKit expects valid server certificates.
 However it is possible, if really needed, to bypass TLS/SSL certificate validation. This can be achieved by
-passing an implementation of `SSLTrustManager` to the previously mentioned OpenKit factory methods.
+passing an implementation of `SSLTrustManager` by calling the `withTrustManager` on the builder.
 
 :warning: We do **NOT** recommend bypassing TLS/SSL server certificate validation, since this allows
 man-in-the-middle attacks.
@@ -160,24 +113,6 @@ This can be achieved by calling
 ```java
 String applicationVersion = "1.2.3.4";
 openKit.setApplicationVersion(applicationVersion);
-```
-
-## Providing Device specific Information
-
-Sometimes it might also be quite useful to provide information about the device the application
-is running on. The example below shows how to achieve this.
-```java
-// set operating system
-String operatingSystem = "Custom OS";
-openKit.getDevice().setOperatingSystem(operatingSystem);
-
-// set device manufacturer
-String deviceManufacturer = "ACME Inc.";
-openKit.getDevice().setManufacturer(deviceManufacturer);
-
-// set device/model identifier
-String deviceID = "12-34-56-78-90";
-openKit.getDevice().setModelID(deviceID);
 ```
 
 ## Creating a Session
