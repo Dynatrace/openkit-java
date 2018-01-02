@@ -12,6 +12,11 @@ public interface Logger {
      */
     void error(String message);
 
+    /**
+     * Log with level 'error'
+     * @param message the message to write to the log
+     * @param t an instance of a throwable to be attached to the output
+     */
     void error(String message, Throwable t);
 
     /**
