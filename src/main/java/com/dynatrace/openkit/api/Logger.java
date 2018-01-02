@@ -33,20 +33,20 @@ public interface Logger {
     void debug(String message);
 
     /**
-     * Return a flag if 'trace' level messages are currently printed
-     * @return true if 'trace' level messages are printed, 'false' if not
+     * Return a flag if 'error' level messages are currently printed
+     * @return true if 'error' level messages are printed, 'false' if not
      */
     boolean isErrorEnabled();
 
     /**
-     * Return a flag if 'trace' level messages are currently printed
-     * @return true if 'trace' level messages are printed, 'false' if not
+     * Return a flag if 'warn' level messages are currently printed
+     * @return true if 'warn' level messages are printed, 'false' if not
      */
     boolean isWarnEnabled();
 
     /**
-     * Return a flag if 'trace' level messages are currently printed
-     * @return true if 'trace' level messages are printed, 'false' if not
+     * Return a flag if 'info' level messages are currently printed
+     * @return true if 'info' level messages are printed, 'false' if not
      */
     boolean isInfoEnabled();
 

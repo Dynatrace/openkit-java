@@ -9,7 +9,6 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
-import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 import javax.net.ssl.HttpsURLConnection;

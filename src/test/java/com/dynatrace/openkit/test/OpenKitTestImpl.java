@@ -12,11 +12,9 @@ import java.util.ArrayList;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.providers.*;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.providers.TestHTTPClientProvider;
-import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import com.dynatrace.openkit.test.providers.TestTimingProvider;
 
 public class OpenKitTestImpl extends OpenKitImpl {
