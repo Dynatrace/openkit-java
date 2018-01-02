@@ -111,7 +111,7 @@ public class Beacon {
 	private final LinkedList<String> eventDataList = new LinkedList<String>();
 	private final LinkedList<String> actionDataList = new LinkedList<String>();
 
-	private Logger logger;
+	private final Logger logger;
 
 	// *** constructors ***
 

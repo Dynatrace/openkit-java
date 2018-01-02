@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class DefaultLoggerTest {
 
     @Test
-    public void DefaultLoggerWithVerboseOutputWritesErrorLevelMessages() {
+    public void defaultLoggerWithVerboseOutputWritesErrorLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(true);
 
@@ -17,7 +17,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithVerboseOutputWritesWarnLevelMessages() {
+    public void defaultLoggerWithVerboseOutputWritesWarnLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(true);
 
@@ -26,7 +26,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithVerboseOutputWritesInfoLevelMessages() {
+    public void defaultLoggerWithVerboseOutputWritesInfoLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(true);
 
@@ -35,7 +35,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithVerboseOutputWritesDebugLevelMessages() {
+    public void defaultLoggerWithVerboseOutputWritesDebugLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(true);
 
@@ -44,7 +44,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithoutVerboseOutputWritesErrorLevelMessages() {
+    public void defaultLoggerWithoutVerboseOutputWritesErrorLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(false);
 
@@ -53,7 +53,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithoutVerboseOutputWritesWarnLevelMessages() {
+    public void defaultLoggerWithoutVerboseOutputWritesWarnLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(false);
 
@@ -62,7 +62,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithoutVerboseOutputWritesInfoLevelMessages() {
+    public void defaultLoggerWithoutVerboseOutputWritesInfoLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(false);
 
@@ -71,7 +71,7 @@ public class DefaultLoggerTest {
     }
 
     @Test
-    public void DefaultLoggerWithoutVerboseOutputWritesDebugLevelMessages() {
+    public void defaultLoggerWithoutVerboseOutputWritesDebugLevelMessages() {
         //given
         DefaultLogger log = new DefaultLogger(false);
 

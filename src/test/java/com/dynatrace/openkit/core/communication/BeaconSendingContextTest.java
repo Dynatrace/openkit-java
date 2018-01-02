@@ -1,7 +1,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
@@ -40,8 +39,7 @@ public class BeaconSendingContextTest {
         httpClientProvider = mock(HTTPClientProvider.class);
         timingProvider = mock(TimingProvider.class);
         mockState = mock(AbstractBeaconSendingState.class);
-
-        mockLogger = mock(DefaultLogger.class);
+        mockLogger = mock(Logger.class);
     }
 
     @Test

@@ -78,7 +78,7 @@ public class HTTPClient {
 
     private final SSLTrustManager sslTrustManager;
 
-    private Logger logger;
+    private final Logger logger;
 
 	// *** constructors ***
 
@@ -154,7 +154,7 @@ public class HTTPClient {
                     try {
                         decodedData = new String(data, Beacon.CHARSET);
                     } catch (UnsupportedEncodingException e) {
-                        // must not happen, as UTF-8 should *really* be supported
+                        logger.error("JRE does not support UTF-8", e);
                     }
 
                     if(logger.isDebugEnabled()) {

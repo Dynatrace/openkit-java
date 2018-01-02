@@ -71,7 +71,7 @@ public class BeaconSendingContext {
     /**
      * Logger instance
      */
-    private Logger logger;
+    private final Logger logger;
 
     /**
      * Constructor.
