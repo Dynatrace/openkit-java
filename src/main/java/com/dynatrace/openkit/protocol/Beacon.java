@@ -8,7 +8,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -101,7 +101,7 @@ public class Beacon {
 	private String basicBeaconData;
 
 	// AbstractConfiguration reference
-	private final AbstractConfiguration configuration;
+	private final Configuration configuration;
 
 	// HTTPClientConfiguration reference
 	private final HTTPClientConfiguration httpConfiguration;
@@ -112,7 +112,7 @@ public class Beacon {
 
 	// *** constructors ***
 
-	public Beacon(AbstractConfiguration configuration, String clientIPAddress,
+	public Beacon(Configuration configuration, String clientIPAddress,
 				  ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
 		this.sessionNumber = configuration.createSessionNumber();
 		this.timingProvider = timingProvider;

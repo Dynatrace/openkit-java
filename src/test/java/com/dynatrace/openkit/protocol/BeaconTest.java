@@ -1,9 +1,9 @@
 package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.core.WebRequestTracerStringURL;
-import com.dynatrace.openkit.core.DeviceImpl;
+import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.RootActionImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -22,15 +22,15 @@ public class BeaconTest {
     private static final String APP_ID = "appID";
     private static final String APP_NAME = "appName";
 
-    private AbstractConfiguration configuration;
+    private Configuration configuration;
     private ThreadIDProvider threadIDProvider;
 
     @Before
     public void setUp() {
-        configuration = mock(AbstractConfiguration.class);
+        configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
-        when(configuration.getDevice()).thenReturn(new DeviceImpl());
+        when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
 
         HTTPClientConfiguration mockHTTPClientConfiguration = mock(HTTPClientConfiguration.class);

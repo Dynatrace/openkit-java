@@ -5,17 +5,28 @@
  */
 package com.dynatrace.openkit.test.appmon.local;
 
+import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.test.OpenKitTestFactory;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.ApplicationAndDeviceTestShared;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
 public class ApplicationAndDeviceTest extends AbstractLocalAppMonTest {
 
+    @Before
+    public void setUp() throws InterruptedException {
+        // set values
+        testConfiguration.setApplicationVersion("2017.42.3141");
+        testConfiguration.setDevice(new Device("Windows 10", "Dynatrace", "OpenKitTester"));
+        super.setUp();
+    }
+
     @Test
-    public void test() {
-        ApplicationAndDeviceTestShared.test(openKit, TEST_IP);
+    public void test() throws InterruptedException {
+        ApplicationAndDeviceTestShared.test(openKitTestImpl, TEST_IP);
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
         String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_NAME + "&an=" + TEST_APPLICATION_NAME + "&vn=2017.42.3141&pt=1&vi=" + testConfiguration

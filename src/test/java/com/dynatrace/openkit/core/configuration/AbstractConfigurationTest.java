@@ -1,6 +1,9 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -105,20 +108,13 @@ public class AbstractConfigurationTest {
         assertThat(target.isCapture(), is(false));
     }
 
-    private final class TestConfiguration extends AbstractConfiguration {
+    private final class TestConfiguration extends Configuration {
 
         private TestConfiguration() {
             this(OpenKitType.DYNATRACE, "", "" , 42, "", true);
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose);
-            setHttpClientConfiguration(mock(HTTPClientConfiguration.class));
-        }
-
-        @Override
-        protected String createBaseURL(String endpointURL, String monitorName) {
-            return "https://www.dynatrace.com/";
-        }
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("","",""), "");        }
     }
 }

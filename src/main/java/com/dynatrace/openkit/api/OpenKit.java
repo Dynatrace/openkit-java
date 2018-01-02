@@ -22,7 +22,7 @@ public interface OpenKit {
      *     The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      *     {@link #shutdown()} method.
      *
-     *     Be aware, if {@link com.dynatrace.openkit.OpenKitFactory} is wrongly configured, for example when creating an
+     *     Be aware, if {@link com.dynatrace.openkit.AbstractOpenKitBuilder} is wrongly configured, for example when creating an
      *     instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called.
      * </p>
      *
@@ -37,7 +37,7 @@ public interface OpenKit {
      *     The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      *     {@link #shutdown()} method or the timeout expired..
      *
-     *     Be aware, if {@link com.dynatrace.openkit.OpenKitFactory} is wrongly configured, for example when creating an
+     *     Be aware, if {@link com.dynatrace.openkit.AbstractOpenKitBuilder} is wrongly configured, for example when creating an
      *     instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
      * </p>
      *
@@ -53,21 +53,6 @@ public interface OpenKit {
      * @return {@code true} if OpenKit is fully initialized, {@code false} if OpenKit still performs initialization.
      */
     boolean isInitialized();
-
-    /**
-     * Defines the version of the application.
-     *
-     * @param applicationVersion application version
-     */
-    void setApplicationVersion(String applicationVersion);
-
-    /**
-     * Returns the Device used by this OpenKit instance. This can be used to provide basic information, like operating system,
-     * manufacturer and model information.
-     *
-     * @return Device used by this OpenKit instance
-     */
-    Device getDevice();
 
     /**
      * Creates a Session instance which can then be used to create Actions.

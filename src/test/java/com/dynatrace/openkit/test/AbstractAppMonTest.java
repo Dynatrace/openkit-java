@@ -7,6 +7,7 @@ package com.dynatrace.openkit.test;
 
 import java.util.ArrayList;
 
+import com.dynatrace.openkit.api.OpenKitConstants;
 import org.junit.Assert;
 
 import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
@@ -16,19 +17,19 @@ public abstract class AbstractAppMonTest extends AbstractTest {
 
 	public static final String TEST_APPLICATION_NAME = "TestApplicationName";
 	public static final String TEST_APPLICATION_ID = "TestApplicationID";
-	public static final String TEST_ENDPOINT = "http://localhost/";
+	public static final String TEST_ENDPOINT = "http://localhost/dynatraceMonitor";
 	public static final String TEST_IP = "123.45.67.89";
-	public static final String TEST_OPENKIT_DEFAULT_VERSION = "0.3";
+	public static final String TEST_OPENKIT_DEFAULT_VERSION = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
 	public static final String TEST_DEVICE_TYPE = "OpenKitDevice";
 	public static final String TEST_MANUFACTURER = "Dynatrace";
-	public static final String TEST_OS = "OpenKit+0.3";
+	public static final String TEST_OS = "OpenKit+" + OpenKitConstants.DEFAULT_APPLICATION_VERSION;
 
 	protected String getDefaultEndpoint() {
-		return TEST_ENDPOINT + "dynaTraceMonitor?type=m&srvid=1&app=" + TEST_APPLICATION_NAME + "&va=7.0.0000&pt=1";
+		return TEST_ENDPOINT + "?type=m&srvid=1&app=" + TEST_APPLICATION_NAME + "&va=7.0.0000&pt=1";
 	}
 
 	protected String getDefaultTimeSyncEndpoint() {
-		return TEST_ENDPOINT + "dynaTraceMonitor?type=mts";
+		return TEST_ENDPOINT + "?type=mts";
 	}
 
 	protected void validateDefaultRequests(ArrayList<Request> sentRequests, String expectedBeacon) {

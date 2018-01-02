@@ -5,6 +5,9 @@
  */
 package com.dynatrace.openkit.test;
 
+import com.dynatrace.openkit.api.OpenKitConstants;
+import com.dynatrace.openkit.core.Device;
+
 public class TestConfiguration {
 
 	private long deviceID = -1;
@@ -12,6 +15,14 @@ public class TestConfiguration {
 	private int statusResponseCode = -1;
 	private String timeSyncResponse = null;
 	private int timeSyncResponseCode = -1;
+
+	// set defaults for device
+	private Device device = new Device(
+		OpenKitConstants.DEFAULT_OPERATING_SYSTEM,
+		OpenKitConstants.DEFAULT_MANUFACTURER,
+		OpenKitConstants.DEFAULT_MODEL_ID);
+	// set default for version
+	private String applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
 
 	public void setDeviceID(long deviceID) {
 		this.deviceID = deviceID;
@@ -25,6 +36,14 @@ public class TestConfiguration {
 	public void setTimeSyncResponse(String response, int responseCode) {
 		timeSyncResponse = response;
 		timeSyncResponseCode = responseCode;
+	}
+
+	public void setDevice(Device device) {
+		this.device = device;
+	}
+
+	public void setApplicationVersion(String applicationVersion) {
+		this.applicationVersion = applicationVersion;
 	}
 
 	public long getDeviceID() {
@@ -47,4 +66,11 @@ public class TestConfiguration {
 		return timeSyncResponseCode;
 	}
 
+	public Device getDevice() {
+		return device;
+	}
+
+	public String getApplicationVersion() {
+		return applicationVersion;
+	}
 }

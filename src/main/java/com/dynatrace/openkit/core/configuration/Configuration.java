@@ -8,20 +8,21 @@ package com.dynatrace.openkit.core.configuration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.dynatrace.openkit.core.DeviceImpl;
+import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.providers.SessionIDProvider;
 
 /**
- * The AbstractConfiguration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
+ * The Configuration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.
  */
-public abstract class AbstractConfiguration {
+public class Configuration {
 
     private static final boolean DEFAULT_CAPTURE = false;                           // default: capture off
     private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;                 // default: wait 2m (in ms) to send beacon
     private static final int DEFAULT_MAX_BEACON_SIZE = 30 * 1024;                   // default: max 30KB (in B) to send in one beacon
     private static final boolean DEFAULT_CAPTURE_ERRORS = true;                     // default: capture errors on
     private static final boolean DEFAULT_CAPTURE_CRASHES = true;                    // default: capture crashes on
-    private static final String DEFAULT_APPLICATION_VERSION = "0.3";                // default: '0.3'
 
     // immutable settings
     private final String applicationName;
@@ -34,21 +35,21 @@ public abstract class AbstractConfiguration {
     // mutable settings
     private AtomicBoolean capture;                               // capture on/off; can be written/read by different threads -> atomic
     private int sendInterval;                                    // beacon send interval; is only written/read by beacon sender thread -> non-atomic
-    private String monitorName;                                  // monitor name part of URL; is only written/read by beacon sender thread -> non-atomic
     private int maxBeaconSize;                                   // max beacon size; is only written/read by beacon sender thread -> non-atomic
     private AtomicBoolean captureErrors;                         // capture errors on/off; can be written/read by different threads -> atomic
     private AtomicBoolean captureCrashes;                        // capture crashes on/off; can be written/read by different threads -> atomic
     private HTTPClientConfiguration httpClientConfiguration;     // the current http client configuration
 
     // application and device settings
-    private String applicationVersion;
-    private final DeviceImpl device;
+    private final String applicationVersion;
+    private final Device device;
 
-    private AtomicInteger nextSessionNumber = new AtomicInteger(0);
+    private SessionIDProvider sessionIDProvider;
 
     // *** constructors ***
 
-    protected AbstractConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
+    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL,
+                         boolean verbose, SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion) {
         this.verbose = verbose;
 
         this.openKitType = openKitType;
@@ -62,21 +63,30 @@ public abstract class AbstractConfiguration {
         // mutable settings
         capture = new AtomicBoolean(DEFAULT_CAPTURE);
         sendInterval = DEFAULT_SEND_INTERVAL;
-        monitorName = openKitType.getDefaultMonitorName();
         maxBeaconSize = DEFAULT_MAX_BEACON_SIZE;
         captureErrors = new AtomicBoolean(DEFAULT_CAPTURE_ERRORS);
         captureCrashes = new AtomicBoolean(DEFAULT_CAPTURE_CRASHES);
 
-        device = new DeviceImpl();
-        applicationVersion = DEFAULT_APPLICATION_VERSION;
-        httpClientConfiguration = null;
+        this.device = device;
+
+        httpClientConfiguration =
+            new HTTPClientConfiguration(
+                endpointURL,
+                openKitType.getDefaultServerID(),
+                applicationID,
+                verbose,
+                trustManager);
+
+        this.applicationVersion = applicationVersion;
+
+        this.sessionIDProvider = sessionIDProvider;
     }
 
     // *** public methods ***
 
     // return next session number
     public int createSessionNumber() {
-        return nextSessionNumber.incrementAndGet();
+        return sessionIDProvider.getNextSessionID();
     }
 
     // updates settings based on a status response
@@ -93,12 +103,6 @@ public abstract class AbstractConfiguration {
             return;
         }
 
-        // use monitor name from beacon response or default
-        String newMonitorName = statusResponse.getMonitorName();
-        if (newMonitorName == null) {
-            newMonitorName = openKitType.getDefaultMonitorName();
-        }
-
         // use server id from beacon response or default
         int newServerID = statusResponse.getServerID();
         if (newServerID == -1) {
@@ -106,15 +110,13 @@ public abstract class AbstractConfiguration {
         }
 
         // check if http config changed
-        if (!monitorName.equals(newMonitorName)
-            || httpClientConfiguration.getServerID() != newServerID) {
+        if (httpClientConfiguration.getServerID() != newServerID) {
             httpClientConfiguration = new HTTPClientConfiguration(
-                createBaseURL(endpointURL, newMonitorName),
+                endpointURL,
                 newServerID,
                 applicationID,
                 verbose,
                 httpClientConfiguration.getSSLTrustManager());
-            monitorName = newMonitorName;
         }
 
         // use send interval from beacon response or default
@@ -140,9 +142,6 @@ public abstract class AbstractConfiguration {
         captureErrors.set(statusResponse.isCaptureErrors());
         captureCrashes.set(statusResponse.isCaptureCrashes());
     }
-
-    // create base URL for HTTP client from endpoint & monitorname
-    protected abstract String createBaseURL(String endpointURL, String monitorName);
 
     // *** getter methods ***
 
@@ -205,13 +204,7 @@ public abstract class AbstractConfiguration {
         return applicationVersion;
     }
 
-    public void setApplicationVersion(String applicationVersion) {
-        if(applicationVersion != null && !applicationVersion.isEmpty()) {
-            this.applicationVersion = applicationVersion;
-        }
-    }
-
-    public DeviceImpl getDevice() {
+    public Device getDevice() {
         return device;
     }
 
@@ -222,9 +215,5 @@ public abstract class AbstractConfiguration {
      */
     public HTTPClientConfiguration getHttpClientConfig() {
         return httpClientConfiguration;
-    }
-
-    protected void setHttpClientConfiguration(HTTPClientConfiguration configuration) {
-        httpClientConfiguration = configuration;
     }
 }
