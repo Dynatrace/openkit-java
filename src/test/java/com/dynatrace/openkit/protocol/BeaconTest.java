@@ -6,7 +6,6 @@ import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.RootActionImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
-import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import org.junit.Before;
@@ -42,7 +41,7 @@ public class BeaconTest {
 
         threadIDProvider = mock(ThreadIDProvider.class);
 
-        logger = new DefaultLogger(true);
+        logger = mock(Logger.class);
     }
 
 

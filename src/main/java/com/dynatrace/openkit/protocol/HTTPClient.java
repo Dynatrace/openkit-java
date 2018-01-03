@@ -118,8 +118,7 @@ public class HTTPClient {
             }
     		return sendRequestInternal(requestType, url, clientIPAddress, data, method);
 		} catch (Exception e) {
-            logger.error("ERROR: " + requestType.getRequestName() + " Request failed!");
-            e.printStackTrace();
+            logger.error("ERROR: " + requestType.getRequestName() + " Request failed!", e);
 		}
     	return null;
     }

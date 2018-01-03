@@ -139,10 +139,6 @@ public abstract class AbstractOpenKitBuilder {
         return applicationVersion;
     }
 
-    boolean isVerbose() {
-        return verbose;
-    }
-
     String getOperatingSystem() {
         return operatingSystem;
     }

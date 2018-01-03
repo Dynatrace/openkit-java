@@ -1,6 +1,5 @@
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 
 /**

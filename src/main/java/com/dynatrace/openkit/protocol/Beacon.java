@@ -524,7 +524,7 @@ public class Beacon {
 			encodedValue = URLEncoder.encode(stringValue, CHARSET);
 		} catch (UnsupportedEncodingException e) {
 			// if encoding fails, skip this key/value pair
-    		logger.error("Skipped encoding of Key/Value: " + key + "/" + stringValue);
+    		logger.error("Skipped encoding of Key/Value: " + key + "/" + stringValue, e);
 			return;
 		}
 
