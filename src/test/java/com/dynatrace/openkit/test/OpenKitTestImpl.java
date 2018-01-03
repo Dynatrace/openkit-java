@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.OpenKitImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.providers.*;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.providers.TestHTTPClientProvider;
@@ -21,13 +21,12 @@ public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
-	public OpenKitTestImpl(Logger logger, AbstractConfiguration config, boolean remoteTest) {
+	public OpenKitTestImpl(Logger logger, Configuration config, boolean remoteTest) {
 		this(logger, config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
 	}
 
-	private OpenKitTestImpl(Logger logger, AbstractConfiguration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
+	private OpenKitTestImpl(Logger logger, Configuration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
 		super(logger, config, provider, timingProvider, createThreadIdProvider());
-
 		testHttpClientProvider = provider;
 	}
 
@@ -48,4 +47,5 @@ public class OpenKitTestImpl extends OpenKitImpl {
 		when(provider.getThreadID()).thenReturn(1L);
 		return provider;
 	}
+
 }

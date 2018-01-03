@@ -5,12 +5,10 @@
  */
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.Device;
-import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
-import com.dynatrace.openkit.core.util.DefaultLogger;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.*;
 
@@ -23,7 +21,7 @@ public class OpenKitImpl implements OpenKit {
 	private final BeaconSender beaconSender;
 
 	// AbstractConfiguration reference
-	private AbstractConfiguration configuration;
+	private final Configuration configuration;
 	private final ThreadIDProvider threadIDProvider;
 	private final TimingProvider timingProvider;
 
@@ -32,13 +30,13 @@ public class OpenKitImpl implements OpenKit {
 
 	// *** constructors ***
 
-	public OpenKitImpl(Logger logger, AbstractConfiguration config) {
+	public OpenKitImpl(Logger logger, Configuration config) {
 		this(logger, config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
-	protected OpenKitImpl(Logger logger, AbstractConfiguration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+	protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+		configuration = config;
 		this.logger = logger;
-	    configuration = config;
 		this.threadIDProvider = threadIDProvider;
 		this.timingProvider = timingProvider;
 		beaconSender = new BeaconSender(logger, configuration, httpClientProvider, timingProvider);
@@ -49,7 +47,7 @@ public class OpenKitImpl implements OpenKit {
 	 *
 	 * <p>
 	 *     This method starts the {@link BeaconSender} and is called directly after
-     *     the instance has been created in {@link com.dynatrace.openkit.OpenKitFactory}.
+     *     the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
 	 * </p>
 	 */
 	public void initialize() {
@@ -73,14 +71,8 @@ public class OpenKitImpl implements OpenKit {
 		return beaconSender.isInitialized();
 	}
 
-	@Override
-	public Device getDevice() {
-		return configuration.getDevice();
-	}
-
-	@Override
-	public void setApplicationVersion(String applicationVersion) {
-		configuration.setApplicationVersion(applicationVersion);
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.core.configuration.AbstractConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -23,7 +23,7 @@ public class BeaconSendingContext {
      */
     static final long DEFAULT_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
-    private final AbstractConfiguration configuration;
+    private final Configuration configuration;
     private final HTTPClientProvider httpClientProvider;
     private final TimingProvider timingProvider;
 
@@ -81,7 +81,7 @@ public class BeaconSendingContext {
      * </p>
      */
     public BeaconSendingContext(Logger logger,
-                                AbstractConfiguration configuration,
+                                Configuration configuration,
                                 HTTPClientProvider httpClientProvider,
                                 TimingProvider timingProvider) {
 

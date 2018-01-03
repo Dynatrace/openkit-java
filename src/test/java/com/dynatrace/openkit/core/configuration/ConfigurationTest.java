@@ -1,6 +1,8 @@
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import org.junit.Test;
 
@@ -9,7 +11,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AbstractConfigurationTest {
+public class ConfigurationTest {
 
     @Test
     public void aDefaultConstructedConfigurationDisablesCapturing() {
@@ -106,20 +108,14 @@ public class AbstractConfigurationTest {
         assertThat(target.isCapture(), is(false));
     }
 
-    private final class TestConfiguration extends AbstractConfiguration {
+    private final class TestConfiguration extends Configuration {
 
         private TestConfiguration() {
             this(OpenKitType.DYNATRACE, "", "" , 42, "");
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider());
-            setHttpClientConfiguration(mock(HTTPClientConfiguration.class));
-        }
-
-        @Override
-        protected String createBaseURL(String endpointURL, String monitorName) {
-            return "https://www.dynatrace.com/";
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("","",""), "");
         }
     }
 }

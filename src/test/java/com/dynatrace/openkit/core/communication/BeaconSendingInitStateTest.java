@@ -3,23 +3,16 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
 import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class BeaconSendingInitStateTest {
-
-    @Rule
-    public Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
 
     private HTTPClient httpClient;
     private BeaconSendingContext stateContext;
