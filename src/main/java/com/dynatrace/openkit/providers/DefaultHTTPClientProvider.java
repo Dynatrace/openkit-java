@@ -14,8 +14,14 @@ import com.dynatrace.openkit.protocol.HTTPClient;
  */
 public class DefaultHTTPClientProvider implements HTTPClientProvider {
 
+	private final Logger logger;
+
+	public DefaultHTTPClientProvider(Logger logger) {
+		this.logger = logger;
+	}
+
 	@Override
-	public HTTPClient createClient(Logger logger, HTTPClientConfiguration configuration) {
+	public HTTPClient createClient(HTTPClientConfiguration configuration) {
 		return new HTTPClient(logger, configuration);
 	}
 

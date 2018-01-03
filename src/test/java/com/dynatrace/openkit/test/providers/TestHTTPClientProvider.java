@@ -5,14 +5,13 @@
  */
 package com.dynatrace.openkit.test.providers;
 
-import java.util.ArrayList;
-
-import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.test.TestHTTPClient;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
+
+import java.util.ArrayList;
 
 public class TestHTTPClientProvider implements HTTPClientProvider {
 
@@ -31,7 +30,7 @@ public class TestHTTPClientProvider implements HTTPClientProvider {
 	}
 
 	@Override
-	public HTTPClient createClient(Logger logger, HTTPClientConfiguration configuration) {
+	public HTTPClient createClient(HTTPClientConfiguration configuration) {
 		if (testHTTPClient != null) {
 			previouslySentRequests.addAll(testHTTPClient.getSentRequests());
 		}

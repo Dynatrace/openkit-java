@@ -31,7 +31,7 @@ public class OpenKitImpl implements OpenKit {
 	// *** constructors ***
 
 	public OpenKitImpl(Logger logger, Configuration config) {
-		this(logger, config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
+		this(logger, config, new DefaultHTTPClientProvider(logger), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
 	protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
@@ -39,7 +39,7 @@ public class OpenKitImpl implements OpenKit {
 		this.logger = logger;
 		this.threadIDProvider = threadIDProvider;
 		this.timingProvider = timingProvider;
-		beaconSender = new BeaconSender(logger, configuration, httpClientProvider, timingProvider);
+		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
 	}
 
 	/**

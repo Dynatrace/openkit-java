@@ -323,7 +323,7 @@ public class Beacon {
 
 	// send current state of Beacon
 	public StatusResponse send(HTTPClientProvider provider, int numRetries) throws InterruptedException {
-		HTTPClient httpClient = provider.createClient(logger, httpConfiguration);
+		HTTPClient httpClient = provider.createClient(httpConfiguration);
 		ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
 		StatusResponse response = null;
 		for (byte[] beaconData : beaconDataChunks) {
