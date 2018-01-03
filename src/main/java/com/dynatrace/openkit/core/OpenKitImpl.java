@@ -6,6 +6,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
@@ -24,14 +25,18 @@ public class OpenKitImpl implements OpenKit {
 	private final ThreadIDProvider threadIDProvider;
 	private final TimingProvider timingProvider;
 
+	//Logging context
+    private final Logger logger;
+
 	// *** constructors ***
 
-	public OpenKitImpl(Configuration config) {
-		this(config, new DefaultHTTPClientProvider(), new DefaultTimingProvider(), new DefaultThreadIDProvider());
+	public OpenKitImpl(Logger logger, Configuration config) {
+		this(logger, config, new DefaultHTTPClientProvider(logger), new DefaultTimingProvider(), new DefaultThreadIDProvider());
 	}
 
-	protected OpenKitImpl(Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+	protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
 		configuration = config;
+		this.logger = logger;
 		this.threadIDProvider = threadIDProvider;
 		this.timingProvider = timingProvider;
 		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
@@ -73,7 +78,7 @@ public class OpenKitImpl implements OpenKit {
 	@Override
 	public Session createSession(String clientIPAddress) {
 		// create beacon for session
-		Beacon beacon = new Beacon(configuration, clientIPAddress, threadIDProvider, timingProvider);
+		Beacon beacon = new Beacon(logger, configuration, clientIPAddress, threadIDProvider, timingProvider);
 		// create session
 		return new SessionImpl(beaconSender, beacon);
 	}

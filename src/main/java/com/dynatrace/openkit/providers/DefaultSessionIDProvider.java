@@ -13,7 +13,7 @@ public class DefaultSessionIDProvider implements SessionIDProvider {
     }
 
     public DefaultSessionIDProvider(){
-        this(new Random(System.currentTimeMillis()).nextInt(Integer.MAX_VALUE));
+        this(new Random().nextInt(Integer.MAX_VALUE));
     }
 
     @Override

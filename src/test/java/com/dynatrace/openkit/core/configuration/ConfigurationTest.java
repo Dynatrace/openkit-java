@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AbstractConfigurationTest {
+public class ConfigurationTest {
 
     @Test
     public void aDefaultConstructedConfigurationDisablesCapturing() {
@@ -111,10 +111,11 @@ public class AbstractConfigurationTest {
     private final class TestConfiguration extends Configuration {
 
         private TestConfiguration() {
-            this(OpenKitType.DYNATRACE, "", "" , 42, "", true);
+            this(OpenKitType.DYNATRACE, "", "" , 42, "");
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, boolean verbose) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, verbose, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("","",""), "");        }
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("","",""), "");
+        }
     }
 }

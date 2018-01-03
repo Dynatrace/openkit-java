@@ -9,6 +9,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.providers.*;
@@ -20,13 +21,12 @@ public class OpenKitTestImpl extends OpenKitImpl {
 
 	TestHTTPClientProvider testHttpClientProvider;
 
-	public OpenKitTestImpl(Configuration config, boolean remoteTest) throws InterruptedException {
-		this(config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
+	public OpenKitTestImpl(Logger logger, Configuration config, boolean remoteTest) {
+		this(logger, config, new TestHTTPClientProvider(remoteTest), remoteTest ? new DefaultTimingProvider() : new TestTimingProvider());
 	}
 
-	private OpenKitTestImpl(Configuration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
-		super(config, provider, timingProvider, createThreadIdProvider());
-
+	private OpenKitTestImpl(Logger logger, Configuration config, TestHTTPClientProvider provider, TimingProvider timingProvider) {
+		super(logger, config, provider, timingProvider, createThreadIdProvider());
 		testHttpClientProvider = provider;
 	}
 

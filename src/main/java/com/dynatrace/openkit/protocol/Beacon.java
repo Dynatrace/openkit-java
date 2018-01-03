@@ -5,6 +5,7 @@
  */
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
@@ -110,11 +111,14 @@ public class Beacon {
 	private final LinkedList<String> eventDataList = new LinkedList<String>();
 	private final LinkedList<String> actionDataList = new LinkedList<String>();
 
+	private final Logger logger;
+
 	// *** constructors ***
 
-	public Beacon(Configuration configuration, String clientIPAddress,
+	public Beacon(Logger logger, Configuration configuration, String clientIPAddress,
 				  ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
-		this.sessionNumber = configuration.createSessionNumber();
+		this.logger = logger;
+	    this.sessionNumber = configuration.createSessionNumber();
 		this.timingProvider = timingProvider;
 
 		this.configuration = configuration;
@@ -518,9 +522,7 @@ public class Beacon {
 			encodedValue = URLEncoder.encode(stringValue, CHARSET);
 		} catch (UnsupportedEncodingException e) {
 			// if encoding fails, skip this key/value pair
-			if (configuration.isVerbose()) {
-				System.out.println("Skipped encoding of Key/Value: " + key + "/" + stringValue);
-			}
+    		logger.error("Skipped encoding of Key/Value: " + key + "/" + stringValue, e);
 			return;
 		}
 

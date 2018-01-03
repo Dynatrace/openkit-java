@@ -34,7 +34,6 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
             applicationName,
             getDeviceID(),
             getEndpointURL(),
-            isVerbose(),
             new DefaultSessionIDProvider(),
             getTrustManager(),
             device,

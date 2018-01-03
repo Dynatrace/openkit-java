@@ -1,10 +1,12 @@
 package com.dynatrace.openkit;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 /**
@@ -124,7 +126,8 @@ public abstract class AbstractOpenKitBuilder {
      */
     public OpenKit build() {
         // create and initialize OpenKit instance
-        OpenKitImpl openKit = new OpenKitImpl(buildConfiguration());
+        Logger logger = new DefaultLogger(verbose);
+        OpenKitImpl openKit = new OpenKitImpl(logger, buildConfiguration());
         openKit.initialize();
 
         return openKit;
@@ -134,10 +137,6 @@ public abstract class AbstractOpenKitBuilder {
 
     String getApplicationVersion() {
         return applicationVersion;
-    }
-
-    boolean isVerbose() {
-        return verbose;
     }
 
     String getOperatingSystem() {

@@ -1,5 +1,6 @@
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.RootActionImpl;
@@ -25,6 +26,8 @@ public class BeaconTest {
     private Configuration configuration;
     private ThreadIDProvider threadIDProvider;
 
+    private Logger logger;
+
     @Before
     public void setUp() {
         configuration = mock(Configuration.class);
@@ -37,13 +40,15 @@ public class BeaconTest {
         when(configuration.getHttpClientConfig()).thenReturn(mockHTTPClientConfiguration);
 
         threadIDProvider = mock(ThreadIDProvider.class);
+
+        logger = mock(Logger.class);
     }
 
 
     @Test
     public void canAddUserIdentifyEvent() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String userID = "myTestUser";
 
         // when
@@ -57,7 +62,7 @@ public class BeaconTest {
     @Test
     public void canAddSentBytesToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -74,7 +79,7 @@ public class BeaconTest {
     @Test
     public void canAddSentBytesValueZeroToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -91,7 +96,7 @@ public class BeaconTest {
     @Test
     public void cannotAddSentBytesWithInvalidValueSmallerZeroToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -107,7 +112,7 @@ public class BeaconTest {
     @Test
     public void canAddReceivedBytesToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -124,7 +129,7 @@ public class BeaconTest {
     @Test
     public void canAddReceivedBytesValueZeroToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -141,7 +146,7 @@ public class BeaconTest {
     @Test
     public void cannotAddReceivedBytesWithInvalidValueSmallerZeroToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -157,7 +162,7 @@ public class BeaconTest {
     @Test
     public void canAddBothSentBytesAndReceivedBytesToWebRequestTracer() {
         // given
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
@@ -181,7 +186,7 @@ public class BeaconTest {
         when(rootAction.getName()).thenReturn(actionName);
 
         // when
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         beacon.addAction(rootAction);
 
         String[] actions = beacon.getActions();
@@ -199,7 +204,7 @@ public class BeaconTest {
         when(rootAction.getName()).thenReturn(actionName);
 
         // when
-        Beacon beacon = new Beacon(configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
+        Beacon beacon = new Beacon(logger, configuration, "127.0.0.1", threadIDProvider, new NullTimeProvider());
         beacon.addAction(rootAction);
 
         String[] actions = beacon.getActions();
