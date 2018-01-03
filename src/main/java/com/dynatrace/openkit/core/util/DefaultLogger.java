@@ -2,6 +2,8 @@ package com.dynatrace.openkit.core.util;
 
 import com.dynatrace.openkit.api.Logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -10,7 +12,7 @@ public class DefaultLogger implements Logger {
 
     private boolean verbose;
 
-    static final String DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    static final String DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
 
     static {
@@ -32,8 +34,12 @@ public class DefaultLogger implements Logger {
 
     @Override
     public void error(String message, Throwable t) {
-        System.out.println(getUTCTime() + " [ERROR] " + message);
-        t.printStackTrace(System.out);
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        t.printStackTrace(printWriter);
+        final String stacktrace = stringWriter.getBuffer().toString();
+
+        System.out.println(getUTCTime() + " [ERROR] " + message + System.getProperty("line.separator") + stacktrace);
     }
 
     @Override
