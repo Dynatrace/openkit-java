@@ -180,8 +180,6 @@ public class Beacon {
 		addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
 		addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
-
-
         addActionData(actionBuilder);
     }
 

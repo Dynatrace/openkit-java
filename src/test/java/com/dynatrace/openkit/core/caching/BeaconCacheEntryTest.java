@@ -80,7 +80,7 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
-    public void getDataToSendMovesData() {
+    public void copyDataForChunkingMovesData() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -94,11 +94,8 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        // when getting data to send
-        String obtained = target.getDataToSend("a", 0, '&');
-
-        // then, obtained is just the prefix
-        assertThat(obtained, is("a"));
+        // when copying data for later chunking
+        target.copyDataForChunking();
 
         // then the data was moved
         assertThat(target.getEventDataBeingSent(), is(equalTo(Arrays.asList(dataOne, dataFour))));
@@ -108,7 +105,7 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
-    public void getDataToSendGetsChunksFromEventDataBeforeActionData() {
+    public void needsDataCopyBeforeChunkingGivesTrueBeforeDataIsCopied() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -122,43 +119,133 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
+        // when, then
+        assertThat(target.needsDataCopyBeforeChunking(), is(true));
+    }
+
+    @Test
+    public void needsDataCopyBeforeChunkingGivesFalseAfterDataHasBeenCopied() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
+        // when, then
+        assertThat(target.needsDataCopyBeforeChunking(), is(false));
+    }
+
+    @Test
+    public void needsDataCopyBeforeChunkingGivesFalseEvenIfListsAreEmpty() {
+
+        // given
+        BeaconCacheEntry target = new BeaconCacheEntry();
+
+        target.copyDataForChunking();
+
+        // when, then
+        assertThat(target.needsDataCopyBeforeChunking(), is(false));
+
+        // and all the lists are empty
+        assertThat(target.getEventData(), is(empty()));
+        assertThat(target.getActionData(), is(empty()));
+        assertThat(target.getEventDataBeingSent(), is(empty()));
+        assertThat(target.getActionDataBeingSent(), is(empty()));
+    }
+
+    @Test
+    public void getChunkMarksRetrievedData() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
+        // when retrieving data
+        String obtained = target.getChunk("prefix", 1024, '&');
+
+        // then
+        assertThat(obtained, is("prefix&" + dataOne.getData() + "&" + dataFour.getData() + "&" + dataTwo.getData() + "&" + dataThree.getData()));
+
+        // and all of them are marked
+        assertThat(dataOne.isMarkedForSending(), is(true));
+        assertThat(dataTwo.isMarkedForSending(), is(true));
+        assertThat(dataThree.isMarkedForSending(), is(true));
+        assertThat(dataFour.isMarkedForSending(), is(true));
+    }
+
+    @Test
+    public void getChunkGetsChunksFromEventDataBeforeActionData() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
         // when getting data to send
-        String obtained = target.getDataToSend("a", 2, '&');
+        String obtained = target.getChunk("a", 2, '&');
 
         // then it's the first event data
         assertThat(obtained, is("a&" + dataOne.getData()));
 
         // and when removing already sent data and getting next chunk
         target.removeDataMarkedForSending();
-        obtained = target.getDataToSend("a", 2, '&');
+        obtained = target.getChunk("a", 2, '&');
 
         // then it's second event data
         assertThat(obtained, is("a&" + dataFour.getData()));
 
         // and when removing already sent data and getting next chunk
         target.removeDataMarkedForSending();
-        obtained = target.getDataToSend("a", 2, '&');
+        obtained = target.getChunk("a", 2, '&');
 
         // then it's the first action data
         assertThat(obtained, is("a&" + dataTwo.getData()));
 
         // and when removing already sent data and getting next chunk
         target.removeDataMarkedForSending();
-        obtained = target.getDataToSend("a", 2, '&');
+        obtained = target.getChunk("a", 2, '&');
 
         // then it's the second action data
         assertThat(obtained, is("a&" + dataThree.getData()));
 
         // and when removing already sent data and getting next chunk
         target.removeDataMarkedForSending();
-        obtained = target.getDataToSend("a", 2, '&');
+        obtained = target.getChunk("a", 2, '&');
 
         // then we get an empty string, since all chunks were sent & deleted
         assertThat(obtained, isEmptyString());
     }
 
     @Test
-    public void getDataToSendGetsDataMarkedForSendingToo() {
+    public void getChunkGetsAlreadyMarkedData() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -172,8 +259,10 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
+        target.copyDataForChunking();
+
         // when getting data to send
-        String obtained = target.getDataToSend("a", 100, '&');
+        String obtained = target.getChunk("a", 100, '&');
 
         // then
         assertThat(obtained, is("a&One&Four&Two&Three"));
@@ -183,7 +272,7 @@ public class BeaconCacheEntryTest {
         assertThat(dataFour.isMarkedForSending(), is(true));
 
         // when getting data to send once more
-        obtained = target.getDataToSend("a", 100, '&');
+        obtained = target.getChunk("a", 100, '&');
 
         // then
         assertThat(obtained, is("a&One&Four&Two&Three"));
@@ -194,7 +283,7 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
-    public void resetDataMarkedForSending() {
+    public void resetDataMarkedForSendingMovesPreviouslyCopiedDataBack() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -208,43 +297,52 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        // when getting data to send
-        String obtained = target.getDataToSend("a", 2, '&');
+        target.copyDataForChunking();
 
-        // then
-        assertThat(obtained, is("a&One"));
-        assertThat(dataOne.isMarkedForSending(), is(true));
-        assertThat(dataTwo.isMarkedForSending(), is(false));
-        assertThat(dataThree.isMarkedForSending(), is(false));
-        assertThat(dataFour.isMarkedForSending(), is(false));
-
-        // and when resetting the data
+        // when data is reset
         target.resetDataMarkedForSending();
 
         // then
-        assertThat(dataOne.isMarkedForSending(), is(false));
-        assertThat(dataTwo.isMarkedForSending(), is(false));
-        assertThat(dataThree.isMarkedForSending(), is(false));
-        assertThat(dataFour.isMarkedForSending(), is(false));
+        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataOne, dataFour))));
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+        assertThat(target.getEventDataBeingSent(), is(nullValue()));
+        assertThat(target.getActionDataBeingSent(), is(nullValue()));
+    }
 
-        // when getting data to send once more
-        obtained = target.getDataToSend("a", 100, '&');
+    @Test
+    public void resetDataMarkedForSendingResetsMarkedForSendingFlag() {
 
-        // then
-        assertThat(obtained, is("a&One&Four&Two&Three"));
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
+        // when data is retrieved
+        target.getChunk("", 1024, '&');
+
+        // then all records are marked for sending
         assertThat(dataOne.isMarkedForSending(), is(true));
         assertThat(dataTwo.isMarkedForSending(), is(true));
         assertThat(dataThree.isMarkedForSending(), is(true));
         assertThat(dataFour.isMarkedForSending(), is(true));
 
-        // and when resetting the data
+        // and when
         target.resetDataMarkedForSending();
 
         // then
-        assertThat(dataOne.isMarkedForSending(), is(false));
-        assertThat(dataTwo.isMarkedForSending(), is(false));
-        assertThat(dataThree.isMarkedForSending(), is(false));
-        assertThat(dataFour.isMarkedForSending(), is(false));
+        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataOne, dataFour))));
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+        assertThat(target.getEventDataBeingSent(), is(nullValue()));
+        assertThat(target.getActionDataBeingSent(), is(nullValue()));
     }
 
     @Test

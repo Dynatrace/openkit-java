@@ -38,11 +38,18 @@ public class BeaconCache {
      */
     public void addEventData(Integer beaconID, long timestamp, String data) {
 
+        // get a reference to the cache entry
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
 
-        // add event data for that beacon
         BeaconCacheRecord record = new BeaconCacheRecord(timestamp, data);
-        entry.addEventData(record);
+
+        try {
+            // lock and add the data
+            entry.lock();
+            entry.addEventData(record);
+        } finally {
+            entry.unlock();
+        }
 
         // update cache stats
         cacheStats.numBytesAdded(record.getDataSizeInBytes());
@@ -61,7 +68,14 @@ public class BeaconCache {
 
         // add event data for that beacon
         BeaconCacheRecord record = new BeaconCacheRecord(timestamp, data);
-        entry.addActionData(record);
+
+        try {
+            // lock and add the data
+            entry.lock();
+            entry.addActionData(record);
+        } finally {
+            entry.unlock();
+        }
 
         // update cache stats
         cacheStats.numBytesAdded(record.getDataSizeInBytes());
@@ -88,6 +102,112 @@ public class BeaconCache {
         }
     }
 
+    /**
+     * Get the next chunk for sending to the backend.
+     *
+     * <p>
+     *     Note: This method must only be invoked from the beacon sending thread.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to get the next chunk.
+     * @param chunkPrefix Prefix to append to the beginning of the chunk.
+     * @param maxSize Maximum chunk size. As soon as chunk's size >= maxSize result is returned.
+     * @param delimiter Delimiter between consecutive chunks.
+     *
+     * @return {@code null} if given {@code beaconID} does not exist, an empty string, if there is no more data to send
+     * or the next chunk to send.
+     */
+    public String getNextBeaconChunk(Integer beaconID, String chunkPrefix, int maxSize, char delimiter) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        if (entry == null) {
+            // a cache entry for the given beaconID does not exist
+            return null;
+        }
+
+        if (entry.needsDataCopyBeforeChunking()) {
+            // both entries are null, prepare data for sending
+            int numBytes;
+            try {
+                entry.lock();
+                numBytes = entry.getTotalNumberOfBytes();
+                entry.copyDataForChunking();
+
+            } finally {
+                entry.unlock();
+            }
+            // assumption: sending will work fine, and everything we copied will be removed quite soon
+            cacheStats.numBytesRemoved(numBytes);
+        }
+
+        // data for chunking is available
+        return entry.getChunk(chunkPrefix, maxSize, delimiter);
+    }
+
+    /**
+     * Remove all data that was previously included in chunks.
+     *
+     * <p>
+     *     This method must be called, when data retrieved via {@link #getNextBeaconChunk(Integer, String, int, char)}
+     *     was successfully sent to the backend, otherwise subsequent calls to {@link #getNextBeaconChunk(Integer, String, int, char)}
+     *     will retrieve the same data again and again.
+     * </p>
+     *
+     * <p>
+     *     Note: This method must only be invoked from the beacon sending thread.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to remove already chunked data.
+     */
+    public void removeChunkedData(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        if (entry == null) {
+            // a cache entry for the given beaconID does not exist
+            return;
+        }
+
+        entry.removeDataMarkedForSending();
+    }
+
+    /**
+     * Reset all data that was previously included in chunks.
+     *
+     * <p>
+     *     Note: This method must only be invoked from the beacon sending thread.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to remove already chunked data.
+     */
+    public void resetChunkedData(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        if (entry == null) {
+            // a cache entry for the given beaconID does not exist
+            return;
+        }
+
+        int numBytes;
+        try {
+            entry.lock();
+            int oldSize = entry.getTotalNumberOfBytes();
+            entry.resetDataMarkedForSending();
+            int newSize = entry.getTotalNumberOfBytes();
+            numBytes = newSize - oldSize;
+        } finally {
+            entry.unlock();
+        }
+
+        cacheStats.numBytesAdded(numBytes);
+    }
+
+    /**
+     * Get cached {@link BeaconCacheEntry} or insert new one if nothing exists for given {@code beaconID}.
+     *
+     * @param beaconID The beacon id to search for.
+     *
+     * @return The already cached entry or newly created one.
+     */
     private BeaconCacheEntry getCachedEntryOrInsert(Integer beaconID) {
 
         // get the appropriate cache entry
@@ -119,7 +239,7 @@ public class BeaconCache {
      *
      * @return The cached entry or {@code null}.
      */
-    BeaconCacheEntry getCachedEntry(Integer beaconID) {
+    private BeaconCacheEntry getCachedEntry(Integer beaconID) {
 
         BeaconCacheEntry entry;
 
@@ -141,17 +261,16 @@ public class BeaconCache {
 
         private int totalNumBytes = 0;
 
-        public synchronized void numBytesAdded(int numBytes) {
+        synchronized void numBytesAdded(int numBytes) {
             totalNumBytes += numBytes;
         }
 
-        public synchronized void numBytesRemoved(int numBytes) {
+        synchronized void numBytesRemoved(int numBytes) {
             totalNumBytes -= numBytes;
         }
 
-        public synchronized int getNumBytesInCache() {
+        synchronized int getNumBytesInCache() {
             return totalNumBytes;
         }
     }
-
 }
