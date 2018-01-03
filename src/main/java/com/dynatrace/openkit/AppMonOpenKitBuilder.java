@@ -19,7 +19,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
      * @param applicationName unique application id
      * @param deviceID        unique device id
      */
-    AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID) {
+    public AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID) {
         super(endpointURL, deviceID);
         this.applicationName = applicationName;
     }
