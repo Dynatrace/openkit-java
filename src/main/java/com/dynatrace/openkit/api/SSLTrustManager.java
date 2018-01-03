@@ -5,13 +5,13 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Interface to provide a user-defined trust manager to the configuration.
- *
  * <p>
- *     When OpenKit connects to a server with self-signed SSL/TLS certificates (e.g. AppMon) then
- *     an implementation of this interface is required to verify the certificate.
+ * <p>
+ * When OpenKit connects to a server with self-signed SSL/TLS certificates (e.g. AppMon) then
+ * an implementation of this interface is required to verify the certificate.
  * </p>
  */
-public interface SSLTrustManager  {
+public interface SSLTrustManager {
 
     /**
      * Get the X509TrustManager for SSL/TLS certificate authentication.

@@ -5,8 +5,8 @@
  */
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
@@ -17,74 +17,74 @@ import com.dynatrace.openkit.providers.*;
  */
 public class OpenKitImpl implements OpenKit {
 
-	// BeaconSender reference
-	private final BeaconSender beaconSender;
+    // BeaconSender reference
+    private final BeaconSender beaconSender;
 
-	// AbstractConfiguration reference
-	private final Configuration configuration;
-	private final ThreadIDProvider threadIDProvider;
-	private final TimingProvider timingProvider;
+    // AbstractConfiguration reference
+    private final Configuration configuration;
+    private final ThreadIDProvider threadIDProvider;
+    private final TimingProvider timingProvider;
 
-	//Logging context
+    //Logging context
     private final Logger logger;
 
-	// *** constructors ***
+    // *** constructors ***
 
-	public OpenKitImpl(Logger logger, Configuration config) {
-		this(logger, config, new DefaultHTTPClientProvider(logger), new DefaultTimingProvider(), new DefaultThreadIDProvider());
-	}
+    public OpenKitImpl(Logger logger, Configuration config) {
+        this(logger, config, new DefaultHTTPClientProvider(logger), new DefaultTimingProvider(), new DefaultThreadIDProvider());
+    }
 
-	protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
-		configuration = config;
-		this.logger = logger;
-		this.threadIDProvider = threadIDProvider;
-		this.timingProvider = timingProvider;
-		beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
-	}
+    protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+        configuration = config;
+        this.logger = logger;
+        this.threadIDProvider = threadIDProvider;
+        this.timingProvider = timingProvider;
+        beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
+    }
 
-	/**
-	 * Initialize this OpenKit instance.
-	 *
-	 * <p>
-	 *     This method starts the {@link BeaconSender} and is called directly after
-     *     the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
-	 * </p>
-	 */
-	public void initialize() {
-		beaconSender.initialize();
-	}
+    /**
+     * Initialize this OpenKit instance.
+     * <p>
+     * <p>
+     * This method starts the {@link BeaconSender} and is called directly after
+     * the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
+     * </p>
+     */
+    public void initialize() {
+        beaconSender.initialize();
+    }
 
-	// *** OpenKit interface methods ***
+    // *** OpenKit interface methods ***
 
-	@Override
-	public boolean waitForInitCompletion() {
-		return beaconSender.waitForInit();
-	}
+    @Override
+    public boolean waitForInitCompletion() {
+        return beaconSender.waitForInit();
+    }
 
-	@Override
-	public boolean waitForInitCompletion(long timeoutMillis) {
-		return beaconSender.waitForInit(timeoutMillis);
-	}
+    @Override
+    public boolean waitForInitCompletion(long timeoutMillis) {
+        return beaconSender.waitForInit(timeoutMillis);
+    }
 
-	@Override
-	public boolean isInitialized() {
-		return beaconSender.isInitialized();
-	}
+    @Override
+    public boolean isInitialized() {
+        return beaconSender.isInitialized();
+    }
 
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 
-	@Override
-	public Session createSession(String clientIPAddress) {
-		// create beacon for session
-		Beacon beacon = new Beacon(logger, configuration, clientIPAddress, threadIDProvider, timingProvider);
-		// create session
-		return new SessionImpl(beaconSender, beacon);
-	}
+    @Override
+    public Session createSession(String clientIPAddress) {
+        // create beacon for session
+        Beacon beacon = new Beacon(logger, configuration, clientIPAddress, threadIDProvider, timingProvider);
+        // create session
+        return new SessionImpl(beaconSender, beacon);
+    }
 
-	@Override
-	public void shutdown() {
-		beaconSender.shutdown();
-	}
+    @Override
+    public void shutdown() {
+        beaconSender.shutdown();
+    }
 }

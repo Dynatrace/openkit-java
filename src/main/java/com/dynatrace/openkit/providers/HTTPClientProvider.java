@@ -13,8 +13,8 @@ import com.dynatrace.openkit.protocol.HTTPClient;
  */
 public interface HTTPClientProvider {
 
-	/**
-	 * Returns an HTTPClient based on the provided configuration.
-	 */
-	HTTPClient createClient(HTTPClientConfiguration configuration);
+    /**
+     * Returns an HTTPClient based on the provided configuration.
+     */
+    HTTPClient createClient(HTTPClientConfiguration configuration);
 }

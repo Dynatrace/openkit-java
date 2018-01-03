@@ -41,7 +41,7 @@ public class BeaconSendingFlushSessionsStateTest {
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsStateIsNotATerminalState(){
+    public void aBeaconSendingFlushSessionsStateIsNotATerminalState() {
 
         //given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
@@ -51,7 +51,7 @@ public class BeaconSendingFlushSessionsStateTest {
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsStateHasTerminalStateBeaconSendingFlushSessions(){
+    public void aBeaconSendingFlushSessionsStateHasTerminalStateBeaconSendingFlushSessions() {
 
         //given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
@@ -96,9 +96,12 @@ public class BeaconSendingFlushSessionsStateTest {
         target.doExecute(mockContext);
 
         //verify that open sessions are closed
-        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(0));
-        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(0));
-        verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(0));
+        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(0));
+        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(0));
+        verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(0));
     }
 
 }

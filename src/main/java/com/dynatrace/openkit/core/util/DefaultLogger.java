@@ -49,14 +49,14 @@ public class DefaultLogger implements Logger {
 
     @Override
     public void info(String message) {
-        if(isInfoEnabled()) {
+        if (isInfoEnabled()) {
             System.out.println(getUTCTime() + " [INFO ] " + message);
         }
     }
 
     @Override
     public void debug(String message) {
-        if(isDebugEnabled()) {
+        if (isDebugEnabled()) {
             System.out.println(getUTCTime() + " [DEBUG] " + message);
         }
     }
@@ -74,7 +74,7 @@ public class DefaultLogger implements Logger {
     }
 
     public boolean isDebugEnabled() {
-       return verbose;
+        return verbose;
     }
 
 

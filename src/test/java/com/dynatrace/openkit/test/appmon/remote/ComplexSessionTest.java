@@ -5,23 +5,22 @@
  */
 package com.dynatrace.openkit.test.appmon.remote;
 
-import java.util.ArrayList;
-
+import com.dynatrace.openkit.test.TestHTTPClient.Request;
+import com.dynatrace.openkit.test.shared.ComplexSessionTestShared;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.dynatrace.openkit.test.TestHTTPClient.Request;
-import com.dynatrace.openkit.test.shared.ComplexSessionTestShared;
+import java.util.ArrayList;
 
 @Ignore("Integration tests are ignored")
 public class ComplexSessionTest extends AbstractRemoteAppMonTest {
 
-	@Test
-	public void test() {
-		ComplexSessionTestShared.test(openKit, TEST_IP);
+    @Test
+    public void test() {
+        ComplexSessionTestShared.test(openKit, TEST_IP);
 
-		ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-		validateDefaultRequests(sentRequests, null);
-	}
+        ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
+        validateDefaultRequests(sentRequests, null);
+    }
 
 }

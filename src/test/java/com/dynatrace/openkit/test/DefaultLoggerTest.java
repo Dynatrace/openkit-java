@@ -2,6 +2,7 @@ package com.dynatrace.openkit.test;
 
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 

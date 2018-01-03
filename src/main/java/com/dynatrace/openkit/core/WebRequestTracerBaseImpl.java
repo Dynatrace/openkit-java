@@ -13,109 +13,109 @@ import com.dynatrace.openkit.protocol.Beacon;
  */
 public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
-	// Dynatrace tag that has to be used for tracing the web request
-	private String tag = null;
+    // Dynatrace tag that has to be used for tracing the web request
+    private String tag = null;
 
-	// HTTP information: URL & response code
-	protected String url = "<unknown>";
-	private int responseCode = -1;
-	private int bytesSent = -1;
-	private int bytesReceived = -1;
+    // HTTP information: URL & response code
+    protected String url = "<unknown>";
+    private int responseCode = -1;
+    private int bytesSent = -1;
+    private int bytesReceived = -1;
 
-	// start/end time & sequence number
-	private long startTime = -1;
-	private long endTime = -1;
-	private int startSequenceNo = -1;
-	private int endSequenceNo = -1;
+    // start/end time & sequence number
+    private long startTime = -1;
+    private long endTime = -1;
+    private int startSequenceNo = -1;
+    private int endSequenceNo = -1;
 
-	// Beacon and Action references
-	private Beacon beacon;
-	private ActionImpl action;
+    // Beacon and Action references
+    private Beacon beacon;
+    private ActionImpl action;
 
-	// *** constructors ***
+    // *** constructors ***
 
-	public WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
-		this.beacon = beacon;
-		this.action = action;
+    public WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
+        this.beacon = beacon;
+        this.action = action;
 
-		// creating start sequence number has to be done here, because it's needed for the creation of the tag
-		startSequenceNo = beacon.createSequenceNumber();
+        // creating start sequence number has to be done here, because it's needed for the creation of the tag
+        startSequenceNo = beacon.createSequenceNumber();
 
-		tag = beacon.createTag(action, startSequenceNo);
-	}
+        tag = beacon.createTag(action, startSequenceNo);
+    }
 
-	// *** WebRequestTracer interface methods ***
+    // *** WebRequestTracer interface methods ***
 
-	@Override
-	public String getTag() {
-		return tag;
-	}
+    @Override
+    public String getTag() {
+        return tag;
+    }
 
-	@Override
-	public WebRequestTracer setResponseCode(int responseCode) {
-		this.responseCode = responseCode;
-		return this;
-	}
+    @Override
+    public WebRequestTracer setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+        return this;
+    }
 
-	@Override
-	public WebRequestTracer setBytesSent(int bytesSent) {
-		this.bytesSent = bytesSent;
-		return this;
-	}
+    @Override
+    public WebRequestTracer setBytesSent(int bytesSent) {
+        this.bytesSent = bytesSent;
+        return this;
+    }
 
-	@Override
-	public WebRequestTracer setBytesReceived(int bytesReceived) {
-		this.bytesReceived = bytesReceived;
-		return this;
-	}
+    @Override
+    public WebRequestTracer setBytesReceived(int bytesReceived) {
+        this.bytesReceived = bytesReceived;
+        return this;
+    }
 
-	@Override
-	public WebRequestTracer start() {
-		startTime = beacon.getCurrentTimestamp();
-		return this;
-	}
+    @Override
+    public WebRequestTracer start() {
+        startTime = beacon.getCurrentTimestamp();
+        return this;
+    }
 
-	@Override
-	public void stop() {
-		endTime = beacon.getCurrentTimestamp();
-		endSequenceNo = beacon.createSequenceNumber();
+    @Override
+    public void stop() {
+        endTime = beacon.getCurrentTimestamp();
+        endSequenceNo = beacon.createSequenceNumber();
 
-		// add web request to beacon
-		beacon.addWebRequest(action, this);
-	}
+        // add web request to beacon
+        beacon.addWebRequest(action, this);
+    }
 
-	// *** getter methods ***
+    // *** getter methods ***
 
-	public String getURL() {
-		return url;
-	}
+    public String getURL() {
+        return url;
+    }
 
-	public int getResponseCode() {
-		return responseCode;
-	}
+    public int getResponseCode() {
+        return responseCode;
+    }
 
-	public long getStartTime() {
-		return startTime;
-	}
+    public long getStartTime() {
+        return startTime;
+    }
 
-	public long getEndTime() {
-		return endTime;
-	}
+    public long getEndTime() {
+        return endTime;
+    }
 
-	public int getStartSequenceNo() {
-		return startSequenceNo;
-	}
+    public int getStartSequenceNo() {
+        return startSequenceNo;
+    }
 
-	public int getEndSequenceNo() {
-		return endSequenceNo;
-	}
+    public int getEndSequenceNo() {
+        return endSequenceNo;
+    }
 
-	public int getBytesSent() {
-		return bytesSent;
-	}
+    public int getBytesSent() {
+        return bytesSent;
+    }
 
-	public int getBytesReceived() {
-		return bytesReceived;
-	}
+    public int getBytesReceived() {
+        return bytesReceived;
+    }
 
 }

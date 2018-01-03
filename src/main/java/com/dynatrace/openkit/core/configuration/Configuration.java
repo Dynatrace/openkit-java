@@ -5,13 +5,12 @@
  */
 package com.dynatrace.openkit.core.configuration;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.SessionIDProvider;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The Configuration class holds all configuration settings, both provided by the user and the Dynatrace/AppMon server.

@@ -5,23 +5,22 @@
  */
 package com.dynatrace.openkit.test.dynatrace.remote;
 
-import java.util.ArrayList;
-
+import com.dynatrace.openkit.test.TestHTTPClient.Request;
+import com.dynatrace.openkit.test.shared.SimpleActionTestShared;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.dynatrace.openkit.test.TestHTTPClient.Request;
-import com.dynatrace.openkit.test.shared.SimpleActionTestShared;
+import java.util.ArrayList;
 
 @Ignore("Integration tests are ignored")
 public class SimpleActionTest extends AbstractRemoteDynatraceTest {
 
-	@Test
-	public void test() {
-		SimpleActionTestShared.test(openKit, TEST_IP);
+    @Test
+    public void test() {
+        SimpleActionTestShared.test(openKit, TEST_IP);
 
-		ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-		validateDefaultRequests(sentRequests, null);
-	}
+        ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
+        validateDefaultRequests(sentRequests, null);
+    }
 
 }

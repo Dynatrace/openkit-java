@@ -15,54 +15,54 @@ import java.util.ArrayList;
 
 public class TestHTTPClientProvider implements HTTPClientProvider {
 
-	private boolean remoteTest;
-	private TestHTTPClient testHTTPClient;
+    private boolean remoteTest;
+    private TestHTTPClient testHTTPClient;
 
-	private String statusResponse = null;
-	private int statusResponseCode = -1;
-	private String timeSyncResponse = null;
-	private int timeSyncResponseCode = -1;
+    private String statusResponse = null;
+    private int statusResponseCode = -1;
+    private String timeSyncResponse = null;
+    private int timeSyncResponseCode = -1;
 
-	ArrayList<Request> previouslySentRequests = new ArrayList<Request>();
+    ArrayList<Request> previouslySentRequests = new ArrayList<Request>();
 
-	public TestHTTPClientProvider(boolean remoteTest) {
-		this.remoteTest = remoteTest;
-	}
+    public TestHTTPClientProvider(boolean remoteTest) {
+        this.remoteTest = remoteTest;
+    }
 
-	@Override
-	public HTTPClient createClient(HTTPClientConfiguration configuration) {
-		if (testHTTPClient != null) {
-			previouslySentRequests.addAll(testHTTPClient.getSentRequests());
-		}
+    @Override
+    public HTTPClient createClient(HTTPClientConfiguration configuration) {
+        if (testHTTPClient != null) {
+            previouslySentRequests.addAll(testHTTPClient.getSentRequests());
+        }
 
-		testHTTPClient = new TestHTTPClient(configuration.getBaseURL(), configuration.getApplicationID(),
-				configuration.getServerID(), remoteTest);
-		if (statusResponse != null) {
-			testHTTPClient.setStatusResponse(statusResponse, statusResponseCode);
-		}
-		if (timeSyncResponse != null) {
-			testHTTPClient.setTimeSyncResponse(timeSyncResponse, timeSyncResponseCode);
-		}
-		return testHTTPClient;
-	}
+        testHTTPClient = new TestHTTPClient(configuration.getBaseURL(), configuration.getApplicationID(),
+            configuration.getServerID(), remoteTest);
+        if (statusResponse != null) {
+            testHTTPClient.setStatusResponse(statusResponse, statusResponseCode);
+        }
+        if (timeSyncResponse != null) {
+            testHTTPClient.setTimeSyncResponse(timeSyncResponse, timeSyncResponseCode);
+        }
+        return testHTTPClient;
+    }
 
-	public ArrayList<Request> getSentRequests() {
-		ArrayList<Request> sentRequests = new ArrayList<Request>();
-		sentRequests.addAll(previouslySentRequests);
-		if (testHTTPClient != null) {
-			sentRequests.addAll(testHTTPClient.getSentRequests());
-		}
-		return sentRequests;
-	}
+    public ArrayList<Request> getSentRequests() {
+        ArrayList<Request> sentRequests = new ArrayList<Request>();
+        sentRequests.addAll(previouslySentRequests);
+        if (testHTTPClient != null) {
+            sentRequests.addAll(testHTTPClient.getSentRequests());
+        }
+        return sentRequests;
+    }
 
-	public void setStatusResponse(String response, int responseCode) {
-		statusResponse = response;
-		statusResponseCode = responseCode;
-	}
+    public void setStatusResponse(String response, int responseCode) {
+        statusResponse = response;
+        statusResponseCode = responseCode;
+    }
 
-	public void setTimeSyncResponse(String response, int responseCode) {
-		timeSyncResponse = response;
-		timeSyncResponseCode = responseCode;
-	}
+    public void setTimeSyncResponse(String response, int responseCode) {
+        timeSyncResponse = response;
+        timeSyncResponseCode = responseCode;
+    }
 
 }

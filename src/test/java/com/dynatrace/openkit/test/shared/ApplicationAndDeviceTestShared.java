@@ -11,13 +11,13 @@ import com.dynatrace.openkit.api.Session;
 
 public class ApplicationAndDeviceTestShared {
 
-	public static void test(OpenKit openKit, String ipAddress) {
-		Session session = openKit.createSession(ipAddress);
-		Action action = session.enterAction("ApplicationAndDeviceTestAction");
-		action.leaveAction();
-		session.end();
+    public static void test(OpenKit openKit, String ipAddress) {
+        Session session = openKit.createSession(ipAddress);
+        Action action = session.enterAction("ApplicationAndDeviceTestAction");
+        action.leaveAction();
+        session.end();
 
-		openKit.shutdown();
-	}
+        openKit.shutdown();
+    }
 
 }
