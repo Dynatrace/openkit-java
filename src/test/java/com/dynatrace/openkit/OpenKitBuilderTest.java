@@ -39,7 +39,6 @@ public class OpenKitBuilderTest {
         assertThat(configuration.getDevice().getManufacturer(), is(equalTo(OpenKitConstants.DEFAULT_MANUFACTURER)));
         assertThat(configuration.getDevice().getOperatingSystem(), is(equalTo(OpenKitConstants.DEFAULT_OPERATING_SYSTEM)));
         assertThat(configuration.getDevice().getModelID(), is(equalTo(OpenKitConstants.DEFAULT_MODEL_ID)));
-        assertThat(configuration.isVerbose(), is(false));
 
         // default trust manager
         assertThat(configuration.getHttpClientConfig().getSSLTrustManager(), instanceOf(SSLStrictTrustManager.class));
@@ -75,24 +74,6 @@ public class OpenKitBuilderTest {
             .buildConfiguration();
 
         assertThat(target.getHttpClientConfig().getSSLTrustManager(), is(sameInstance(trustManager)));
-    }
-
-    @Test
-    public void canEnableVerboseForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
-            .enableVerbose()
-            .buildConfiguration();
-
-        assertThat(target.isVerbose(), is(true));
-    }
-
-    @Test
-    public void canEnableVerboseForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .enableVerbose()
-            .buildConfiguration();
-
-        assertThat(target.isVerbose(), is(true));
     }
 
     @Test

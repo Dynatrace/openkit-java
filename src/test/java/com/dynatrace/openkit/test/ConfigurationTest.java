@@ -26,6 +26,6 @@ public class ConfigurationTest {
 
     private Configuration getDynatraceConfig(String tenantURL) {
         return new Configuration(OpenKitType.DYNATRACE, "", "", 17, tenantURL,
-            false, new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "");
+            new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "");
     }
 }

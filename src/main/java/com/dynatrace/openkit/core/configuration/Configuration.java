@@ -30,7 +30,6 @@ public class Configuration {
     private final OpenKitType openKitType;
     private final long deviceID;
     private final String endpointURL;
-    private final boolean verbose;
 
     // mutable settings
     private AtomicBoolean capture;                               // capture on/off; can be written/read by different threads -> atomic
@@ -49,8 +48,7 @@ public class Configuration {
     // *** constructors ***
 
     public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL,
-                         boolean verbose, SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion) {
-        this.verbose = verbose;
+                         SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion) {
 
         this.openKitType = openKitType;
 
@@ -74,7 +72,6 @@ public class Configuration {
                 endpointURL,
                 openKitType.getDefaultServerID(),
                 applicationID,
-                verbose,
                 trustManager);
 
         this.applicationVersion = applicationVersion;
@@ -115,7 +112,6 @@ public class Configuration {
                 endpointURL,
                 newServerID,
                 applicationID,
-                verbose,
                 httpClientConfiguration.getSSLTrustManager());
         }
 
@@ -155,10 +151,6 @@ public class Configuration {
 
     public long getDeviceID() {
         return deviceID;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
     }
 
     /**

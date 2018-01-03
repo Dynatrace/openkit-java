@@ -5,12 +5,12 @@
  */
 package com.dynatrace.openkit.core;
 
-import java.util.concurrent.TimeUnit;
-
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * The BeaconSender is responsible for asynchronously sending the Beacons to the provided endpoint.
@@ -40,7 +40,6 @@ public class BeaconSender {
      * @param timingProvider Used for some timing related things.
      */
 	public BeaconSender(Configuration configuration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
-
 	    context = new BeaconSendingContext(configuration, clientProvider, timingProvider);
 	}
 

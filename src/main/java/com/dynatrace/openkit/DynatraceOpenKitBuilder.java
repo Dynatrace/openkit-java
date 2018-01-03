@@ -46,7 +46,6 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
             applicationID,
             getDeviceID(),
             getEndpointURL(),
-            isVerbose(),
             new DefaultSessionIDProvider(),
             getTrustManager(),
             device,

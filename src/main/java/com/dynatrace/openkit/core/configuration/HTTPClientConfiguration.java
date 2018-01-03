@@ -11,14 +11,12 @@ public class HTTPClientConfiguration {
 	private final String baseURL;
 	private final int serverId;
 	private final String applicationID;
-	private final boolean verbose;
 	private final SSLTrustManager sslTrustManager;
 
-	public HTTPClientConfiguration(String baseURL, int serverID, String applicationID, boolean verbose, SSLTrustManager sslTrustManager) {
+	public HTTPClientConfiguration(String baseURL, int serverID, String applicationID, SSLTrustManager sslTrustManager) {
 		this.baseURL = baseURL;
 		this.serverId = serverID;
 		this.applicationID = applicationID;
-		this.verbose = verbose;
 		this.sslTrustManager = sslTrustManager;
 	}
 
@@ -42,13 +40,6 @@ public class HTTPClientConfiguration {
 	 * @return the application id
 	 */
 	public String getApplicationID() { return applicationID; }
-
-	/**
-	 * If {@code true} logging is enabled
-	 *
-	 * @return If {@code true} logging is enabled otherwise {@code false}
-	 */
-	public boolean isVerbose() { return verbose; }
 
 	/**
 	 * Returns an interface used for X509 certificate authentication and hostname verification.
