@@ -290,7 +290,7 @@ webRequestTracer.stopTiming();
 If a third party lib is used for HTTP requests, the developer has the possibility to use an overloaded
 `traceWebRequest` method, taking only the URL string as argument. However when using this overloaded
 method the developer is responsible for adding the appropriate header field to the request.  
-The field name can be obtained from `OpenKit.WEBREQUEST_TAG_HEADER` and the field's value is obtained
+The field name can be obtained from `OpenKitConstants.WEBREQUEST_TAG_HEADER` and the field's value is obtained
 from `getTag` method (see class `WebRequestTracer`).
 
 ```java
@@ -300,7 +300,7 @@ String url = "http://www.my-backend.com/api/v3/users";
 WebRequestTracer webRequestTracer = action.traceWebRequest(url);
 
 // this is the HTTP header name & value which needs to be added to the HTTP request.
-String headerName = OpenKit.WEBREQUEST_TAG_HEADER;
+String headerName = OpenKitConstants.WEBREQUEST_TAG_HEADER;
 String headerValue = webRequestTracer.getTag();
 
 webRequestTracer.startTiming();
