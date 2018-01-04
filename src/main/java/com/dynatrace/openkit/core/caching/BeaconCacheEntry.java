@@ -11,7 +11,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Represents an entry in the {@link BeaconCache}.
  *
  * <p>
- *     When locking is required, the caller is responsible to lock this entry.
+ *     The caller is responsible to lock this element, before the first method is invoked using
+ *     {@link #lock()} and after the last operation is invoked {@link #unlock()} must be called.
  * </p>
  */
 class BeaconCacheEntry {
@@ -39,7 +40,10 @@ class BeaconCacheEntry {
      * List storing all action data being sent.
      */
     private LinkedList<BeaconCacheRecord> actionDataBeingSent;
-
+    /**
+     * Total number of bytes consumed by this entry.
+     */
+    long totalNumBytes = 0;
     /**
      * Lock this {@link BeaconCacheEntry} for reading & writing.
      *
@@ -69,6 +73,7 @@ class BeaconCacheEntry {
      */
     void addEventData(BeaconCacheRecord record) {
         eventData.add(record);
+        totalNumBytes += record.getDataSizeInBytes();
     }
 
     /**
@@ -78,6 +83,7 @@ class BeaconCacheEntry {
      */
     void addActionData(BeaconCacheRecord record) {
         actionData.add(record);
+        totalNumBytes += record.getDataSizeInBytes();
     }
 
     /**
@@ -97,6 +103,7 @@ class BeaconCacheEntry {
         eventDataBeingSent = eventData;
         actionData = new LinkedList<BeaconCacheRecord>();
         eventData = new LinkedList<BeaconCacheRecord>();
+        totalNumBytes = 0; // data which is being sent is not counted
     }
 
     /**
@@ -201,28 +208,16 @@ class BeaconCacheEntry {
      */
     void resetDataMarkedForSending() {
 
-        // reset the "sending marks"
-        Iterator<BeaconCacheRecord> iterator = eventDataBeingSent.iterator();
-        while (iterator.hasNext()) {
-            BeaconCacheRecord record = iterator.next();
-            if (record.isMarkedForSending()) {
-                record.unsetSending();
-            } else {
-                break;
-            }
+        // reset the "sending marks" and in the same traversal count the bytes which are added back
+        long numBytes = 0;
+        for (BeaconCacheRecord record : eventDataBeingSent) {
+            record.unsetSending();
+            numBytes += record.getDataSizeInBytes();
         }
 
-        if (!iterator.hasNext()) {
-            // only check action data, if all event data has been traversed, otherwise it's just waste of cpu time
-            iterator = actionDataBeingSent.iterator();
-            while (iterator.hasNext()) {
-                BeaconCacheRecord record = iterator.next();
-                if (record.isMarkedForSending()) {
-                    record.unsetSending();
-                } else {
-                    break;
-                }
-            }
+        for (BeaconCacheRecord record : actionDataBeingSent) {
+            record.unsetSending();
+            numBytes += record.getDataSizeInBytes();
         }
 
         // merge data
@@ -232,6 +227,8 @@ class BeaconCacheEntry {
         actionData = actionDataBeingSent;
         eventDataBeingSent = null;
         actionDataBeingSent = null;
+
+        totalNumBytes += numBytes;
     }
 
 
@@ -246,16 +243,7 @@ class BeaconCacheEntry {
      *
      * @return Sum of data size in bytes for each {@link BeaconCacheRecord}.
      */
-    int getTotalNumberOfBytes() {
-
-        int totalNumBytes = 0;
-
-        for (BeaconCacheRecord record : eventData) {
-            totalNumBytes += record.getDataSizeInBytes();
-        }
-        for (BeaconCacheRecord record : actionData) {
-            totalNumBytes += record.getDataSizeInBytes();
-        }
+    long getTotalNumberOfBytes() {
 
         return totalNumBytes;
     }

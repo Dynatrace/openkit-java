@@ -337,8 +337,8 @@ public class Beacon {
             // prefix for this chunk - must be built up newly, due to changing timestamps
             String prefix = basicBeaconData + BEACON_DATA_DELIMITER + createTimestampData();
             String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getMaxBeaconSize() - 1024, BEACON_DATA_DELIMITER);
-            if (chunk.isEmpty()) {
-                // no more data to send
+            if (chunk == null || chunk.isEmpty()) {
+                // no data added so far or no data to send
                 return response;
             }
 
@@ -397,12 +397,16 @@ public class Beacon {
 
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
 
-        beaconCache.addActionData(sessionNumber, timestamp, actionBuilder.toString());
+        if (configuration.isCapture()) {
+            beaconCache.addActionData(sessionNumber, timestamp, actionBuilder.toString());
+        }
     }
 
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
 
-        beaconCache.addEventData(sessionNumber, timestamp, eventBuilder.toString());
+        if (configuration.isCapture()) {
+            beaconCache.addEventData(sessionNumber, timestamp, eventBuilder.toString());
+        }
     }
 
     public void clearData() {

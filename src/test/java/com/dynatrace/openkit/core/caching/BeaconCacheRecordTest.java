@@ -38,15 +38,15 @@ public class BeaconCacheRecordTest {
     public void getDataSizeInBytes() {
 
         // when data is null, then
-        assertThat(new BeaconCacheRecord(0L, null).getDataSizeInBytes(), is(0));
+        assertThat(new BeaconCacheRecord(0L, null).getDataSizeInBytes(), is(0L));
 
         // and when data is an empty string, then
-        assertThat(new BeaconCacheRecord(0L, "").getDataSizeInBytes(), is(0));
+        assertThat(new BeaconCacheRecord(0L, "").getDataSizeInBytes(), is(0L));
 
         // and when data is valid, then
-        assertThat(new BeaconCacheRecord(0L, "a").getDataSizeInBytes(), is(2));
-        assertThat(new BeaconCacheRecord(0L, "ab").getDataSizeInBytes(), is(4));
-        assertThat(new BeaconCacheRecord(0L, "abc").getDataSizeInBytes(), is(6));
+        assertThat(new BeaconCacheRecord(0L, "a").getDataSizeInBytes(), is(2L));
+        assertThat(new BeaconCacheRecord(0L, "ab").getDataSizeInBytes(), is(4L));
+        assertThat(new BeaconCacheRecord(0L, "abc").getDataSizeInBytes(), is(6L));
     }
 
     @Test

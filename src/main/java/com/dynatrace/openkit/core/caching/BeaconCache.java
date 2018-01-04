@@ -129,7 +129,7 @@ public class BeaconCache {
 
         if (entry.needsDataCopyBeforeChunking()) {
             // both entries are null, prepare data for sending
-            int numBytes;
+            long numBytes;
             try {
                 entry.lock();
                 numBytes = entry.getTotalNumberOfBytes();
@@ -189,12 +189,12 @@ public class BeaconCache {
             return;
         }
 
-        int numBytes;
+        long numBytes;
         try {
             entry.lock();
-            int oldSize = entry.getTotalNumberOfBytes();
+            long oldSize = entry.getTotalNumberOfBytes();
             entry.resetDataMarkedForSending();
-            int newSize = entry.getTotalNumberOfBytes();
+            long newSize = entry.getTotalNumberOfBytes();
             numBytes = newSize - oldSize;
         } finally {
             entry.unlock();
@@ -250,18 +250,12 @@ public class BeaconCache {
         BeaconCacheEntry entry = getCachedEntry(beaconID);
         if (entry == null) {
             // entry not found
-            return null;
+            return new String[0];
         }
 
         try {
             entry.lock();
-            List<BeaconCacheRecord> eventData = entry.getEventData();
-            List<String> result = new ArrayList<String>(eventData.size());
-            for (BeaconCacheRecord record : eventData) {
-                result.add(record.getData());
-            }
-
-            return result.toArray(new String[0]);
+            return extractData(entry.getEventData());
         } finally {
             entry.unlock();
         }
@@ -283,21 +277,24 @@ public class BeaconCache {
         BeaconCacheEntry entry = getCachedEntry(beaconID);
         if (entry == null) {
             // entry not found
-            return null;
+            return new String[0];
         }
 
         try {
             entry.lock();
-            List<BeaconCacheRecord> eventData = entry.getActionData();
-            List<String> result = new ArrayList<String>(eventData.size());
-            for (BeaconCacheRecord record : eventData) {
-                result.add(record.getData());
-            }
-
-            return result.toArray(new String[0]);
+            return extractData(entry.getActionData());
         } finally {
             entry.unlock();
         }
+    }
+
+    private static String[] extractData(List<BeaconCacheRecord> eventData) {
+        List<String> result = new ArrayList<String>(eventData.size());
+        for (BeaconCacheRecord record : eventData) {
+            result.add(record.getData());
+        }
+
+        return result.toArray(new String[0]);
     }
 
     /**
@@ -327,17 +324,17 @@ public class BeaconCache {
      */
     private static final class BeaconCacheStats {
 
-        private int totalNumBytes = 0;
+        private long totalNumBytes = 0;
 
-        synchronized void numBytesAdded(int numBytes) {
+        synchronized void numBytesAdded(long numBytes) {
             totalNumBytes += numBytes;
         }
 
-        synchronized void numBytesRemoved(int numBytes) {
+        synchronized void numBytesRemoved(long numBytes) {
             totalNumBytes -= numBytes;
         }
 
-        synchronized int getNumBytesInCache() {
+        synchronized long getNumBytesInCache() {
             return totalNumBytes;
         }
     }
