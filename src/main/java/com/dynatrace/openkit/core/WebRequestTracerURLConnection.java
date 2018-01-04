@@ -5,7 +5,7 @@
  */
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
 import java.net.URL;
@@ -39,15 +39,14 @@ public class WebRequestTracerURLConnection extends WebRequestTracerBaseImpl {
     // set the Dynatrace tag on the provided URLConnection
     private void setTagOnConnection(URLConnection connection) {
         // check if header is already set
-        String existingTag = connection.getRequestProperty(OpenKit.WEBREQUEST_TAG_HEADER);
+        String existingTag = connection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
         if (existingTag == null) {
             // if not yet set -> set it now
             try {
-                connection.setRequestProperty(OpenKit.WEBREQUEST_TAG_HEADER, getTag());
+                connection.setRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER, getTag());
             } catch (Exception e) {
                 // if it does not work -> simply ignore
             }
         }
     }
-
 }
