@@ -2,7 +2,9 @@ package com.dynatrace.openkit.core.caching;
 
 import com.dynatrace.openkit.protocol.Beacon;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -230,6 +232,72 @@ public class BeaconCache {
         }
 
         return entry;
+    }
+
+    /**
+     * Get a shallow copy of events collected so far.
+     *
+     * <p>
+     *     Although this method is intended for debugging purposes only, it still does appropriate locking.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to retrieve the events.
+     *
+     * @return List of event data.
+     */
+    public String[] getEvents(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        if (entry == null) {
+            // entry not found
+            return null;
+        }
+
+        try {
+            entry.lock();
+            List<BeaconCacheRecord> eventData = entry.getEventData();
+            List<String> result = new ArrayList<String>(eventData.size());
+            for (BeaconCacheRecord record : eventData) {
+                result.add(record.getData());
+            }
+
+            return result.toArray(new String[0]);
+        } finally {
+            entry.unlock();
+        }
+    }
+
+    /**
+     * Get a shallow copy of actions collected so far.
+     *
+     * <p>
+     *     Although this method is intended for debugging purposes only, it still does appropriate locking.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to retrieve the events.
+     *
+     * @return List of event data.
+     */
+    public String[] getActions(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        if (entry == null) {
+            // entry not found
+            return null;
+        }
+
+        try {
+            entry.lock();
+            List<BeaconCacheRecord> eventData = entry.getActionData();
+            List<String> result = new ArrayList<String>(eventData.size());
+            for (BeaconCacheRecord record : eventData) {
+                result.add(record.getData());
+            }
+
+            return result.toArray(new String[0]);
+        } finally {
+            entry.unlock();
+        }
     }
 
     /**

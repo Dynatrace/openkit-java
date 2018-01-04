@@ -46,8 +46,8 @@ public class DefaultTimingProvider implements TimingProvider {
     }
 
     @Override
-    public synchronized long getTimeSinceLastInitTime() {
-        return provideTimestampInMilliseconds() - lastInitTime;
+    public long getTimeSinceLastInitTime() {
+        return getTimeSinceLastInitTime(provideTimestampInMilliseconds());
     }
 
     @Override

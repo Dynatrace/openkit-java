@@ -9,6 +9,7 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
+import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
@@ -18,8 +19,6 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -83,9 +82,9 @@ public class Beacon {
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
 
-    /**
-     * Initial time to sleep after the first failed beacon send attempt.
-     */
+    private static final char BEACON_DATA_DELIMITER = '&';
+
+    /** Initial time to sleep after the first failed beacon send attempt. */
     private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     // next ID and sequence number
@@ -110,17 +109,15 @@ public class Beacon {
     // HTTPClientConfiguration reference
     private final HTTPClientConfiguration httpConfiguration;
 
-    // lists of events and actions currently on the Beacon
-    private final LinkedList<String> eventDataList = new LinkedList<String>();
-    private final LinkedList<String> actionDataList = new LinkedList<String>();
-
     private final Logger logger;
+
+    private final BeaconCache beaconCache;
 
     // *** constructors ***
 
-    public Beacon(Logger logger, Configuration configuration, String clientIPAddress,
-                  ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
+    public Beacon(Logger logger, BeaconCache beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
         this.logger = logger;
+        this.beaconCache = beaconCache;
         this.sessionNumber = configuration.createSessionNumber();
         this.timingProvider = timingProvider;
 
@@ -163,15 +160,8 @@ public class Beacon {
 
     // create web request tag
     public String createTag(ActionImpl parentAction, int sequenceNo) {
-        return TAG_PREFIX + "_"
-            + PROTOCOL_VERSION + "_"
-            + httpConfiguration.getServerID() + "_"
-            + configuration.getDeviceID() + "_"
-            + sessionNumber + "_"
-            + configuration.getApplicationID() + "_"
-            + parentAction.getID() + "_"
-            + threadIDProvider.getThreadID() + "_"
-            + sequenceNo;
+        return TAG_PREFIX + "_" + PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + configuration.getDeviceID() + "_" + sessionNumber + "_" + configuration
+            .getApplicationID() + "_" + parentAction.getID() + "_" + threadIDProvider.getThreadID() + "_" + sequenceNo;
     }
 
     // add an Action to this Beacon
@@ -187,8 +177,7 @@ public class Beacon {
         addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
         addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
-
-        addActionData(actionBuilder);
+        addActionData(action.getStartTime(), actionBuilder);
     }
 
     // end Session on this Beacon
@@ -201,46 +190,46 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(session.getEndTime()));
 
-        addEventData(eventBuilder);
+        addEventData(session.getEndTime(), eventBuilder);
     }
 
     // report int value on the provided Action
     public void reportValue(ActionImpl parentAction, String valueName, int value) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
     // report double value on the provided Action
     public void reportValue(ActionImpl parentAction, String valueName, double value) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
     // report string value on the provided Action
     public void reportValue(ActionImpl parentAction, String valueName, String value) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, truncate(value));
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
     // report named event on the provided Action
     public void reportEvent(ActionImpl parentAction, String eventName) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
     // report error on the provided Action
@@ -254,13 +243,14 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
 
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
-        addEventData(eventBuilder);
+        addEventData(timestamp, eventBuilder);
     }
 
     // report a crash
@@ -274,13 +264,14 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
 
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
-        addEventData(eventBuilder);
+        addEventData(timestamp, eventBuilder);
     }
 
     // add web request to the provided Action
@@ -307,7 +298,7 @@ public class Beacon {
             addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
         }
 
-        addEventData(eventBuilder);
+        addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
 
     // identify the user
@@ -316,108 +307,110 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
 
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(timestamp));
 
-        addEventData(eventBuilder);
+        addEventData(timestamp, eventBuilder);
     }
 
     // send current state of Beacon
-    public StatusResponse send(HTTPClientProvider provider, int numRetries) throws InterruptedException {
+    public StatusResponse send(HTTPClientProvider provider) {
+
         HTTPClient httpClient = provider.createClient(httpConfiguration);
-        ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
         StatusResponse response = null;
-        for (byte[] beaconData : beaconDataChunks) {
-            response = sendBeaconRequest(httpClient, beaconData, numRetries);
+
+        while (true) {
+
+            // prefix for this chunk - must be built up newly, due to changing timestamps
+            String prefix = basicBeaconData + BEACON_DATA_DELIMITER + createTimestampData();
+            String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getMaxBeaconSize() - 1024, BEACON_DATA_DELIMITER);
+            if (chunk.isEmpty()) {
+                // no more data to send
+                return response;
+            }
+
+            byte[] encodedBeacon;
+            try {
+                encodedBeacon = chunk.getBytes(CHARSET);
+            } catch (UnsupportedEncodingException e) {
+                // must not happen, as UTF-8 should *really* be supported
+                logger.error("Required charset \"" + CHARSET + "\" is not supported.", e);
+                beaconCache.resetChunkedData(sessionNumber);
+                return response;
+            }
+
+            // send the request
+            response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon);
+            if (response == null) {
+                // error happened - but don't know what exactly
+                // reset the previously retrieved chunk (restore it in internal cache) & retry another time
+                beaconCache.resetChunkedData(sessionNumber);
+                break;
+            } else {
+                // worked -> remove previously retrieved chunk from cache
+                beaconCache.removeChunkedData(sessionNumber);
+            }
         }
 
-        // only return last status response for updating the settings
         return response;
     }
 
-
     /**
      * Gets all events.
-     * <p>
+     *
      * <p>
      * This returns a shallow copy of events entries and is intended only
      * for testing purposes.
      * </p>
      */
     String[] getEvents() {
-        return eventDataList.toArray(new String[0]);
+        return beaconCache.getEvents(sessionNumber);
     }
 
     /**
      * Gets all actions.
-     * <p>
+     *
      * <p>
      * This returns a shallow copy of all actions and is intended only
      * for testing purposes.
      * </p>
      */
     String[] getActions() {
-        return actionDataList.toArray(new String[0]);
+        return beaconCache.getActions(sessionNumber);
     }
 
 
     // *** private methods ***
 
-    private void addActionData(StringBuilder actionBuilder) {
-        synchronized (actionDataList) {
-            if (configuration.isCapture()) {
-                actionDataList.add(actionBuilder.toString());
-            }
-        }
+    private void addActionData(long timestamp, StringBuilder actionBuilder) {
+
+        beaconCache.addActionData(sessionNumber, timestamp, actionBuilder.toString());
     }
 
-    private void addEventData(StringBuilder eventBuilder) {
-        synchronized (eventDataList) {
-            if (configuration.isCapture()) {
-                eventDataList.add(eventBuilder.toString());
-            }
-        }
+    private void addEventData(long timestamp, StringBuilder eventBuilder) {
+
+        beaconCache.addEventData(sessionNumber, timestamp, eventBuilder.toString());
     }
 
     public void clearData() {
 
-        synchronized (eventDataList) {
-            synchronized (actionDataList) {
-                eventDataList.clear();
-                actionDataList.clear();
-            }
-        }
-    }
-
-    private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
-
-        StatusResponse response;
-        int retry = 0;
-        long retrySleepMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
-
-        while (true) {
-
-            response = httpClient.sendBeaconRequest(clientIPAddress, beaconData);
-            if (response != null || (retry >= numRetries)) {
-                break; // success or max retry count reached
-            }
-
-            Thread.sleep(retrySleepMillis);
-            retrySleepMillis *= 2;
-            retry++;
-        }
-
-        return response;
+        // remove all cached data for this Beacon from the cache
+        beaconCache.deleteCacheEntry(sessionNumber);
     }
 
     // helper method for building events
-    private void buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
+    private long buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
         buildBasicEventData(builder, eventType, name);
+
+        long eventTimestamp = timingProvider.provideTimestampInMilliseconds();
 
         addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(builder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(builder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(builder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(eventTimestamp));
+
+        return eventTimestamp;
     }
 
     // helper method for building basic event data
@@ -427,53 +420,6 @@ public class Beacon {
             addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
         }
         addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
-    }
-
-    // creates (possibly) multiple beacon chunks based on max beacon size
-    public ArrayList<byte[]> createBeaconDataChunks() {
-        ArrayList<byte[]> beaconDataChunks = new ArrayList<byte[]>();
-
-        synchronized (eventDataList) {
-            synchronized (actionDataList) {
-                while (!eventDataList.isEmpty() || !actionDataList.isEmpty()) {
-                    StringBuilder beaconBuilder = new StringBuilder();
-
-                    beaconBuilder.append(basicBeaconData);
-                    beaconBuilder.append('&');
-                    beaconBuilder.append(createTimestampData());
-
-                    while (!eventDataList.isEmpty()) {
-                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
-                            break;
-                        }
-
-                        String eventData = eventDataList.removeFirst();
-                        beaconBuilder.append('&');
-                        beaconBuilder.append(eventData);
-                    }
-
-                    while (!actionDataList.isEmpty()) {
-                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
-                            break;
-                        }
-
-                        String actionData = actionDataList.removeFirst();
-                        beaconBuilder.append('&');
-                        beaconBuilder.append(actionData);
-                    }
-
-                    byte[] encodedBeacon = null;
-                    try {
-                        encodedBeacon = beaconBuilder.toString().getBytes(CHARSET);
-                    } catch (UnsupportedEncodingException e) {
-                        // must not happen, as UTF-8 should *really* be supported
-                    }
-                    beaconDataChunks.add(encodedBeacon);
-                }
-            }
-        }
-
-        return beaconDataChunks;
     }
 
     // helper method for creating basic beacon protocol data

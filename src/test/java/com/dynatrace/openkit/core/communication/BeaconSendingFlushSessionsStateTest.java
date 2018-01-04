@@ -62,7 +62,7 @@ public class BeaconSendingFlushSessionsStateTest {
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsTransitionsToTimeSyncStateWhenCapturingNotActive() throws InterruptedException {
+    public void aBeaconSendingFlushSessionsTransitionsToTimeSyncStateWhenCapturingNotActive() {
 
         //given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
@@ -75,7 +75,7 @@ public class BeaconSendingFlushSessionsStateTest {
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsClosesOpenSessions() throws InterruptedException {
+    public void aBeaconSendingFlushSessionsClosesOpenSessions() {
         //given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
@@ -88,7 +88,7 @@ public class BeaconSendingFlushSessionsStateTest {
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsEndsAllSessions() throws InterruptedException {
+    public void aBeaconSendingFlushSessionsEndsAllSessions() {
         //given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
@@ -96,12 +96,9 @@ public class BeaconSendingFlushSessionsStateTest {
         target.doExecute(mockContext);
 
         //verify that open sessions are closed
-        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
-            .eq(0));
-        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
-            .eq(0));
-        verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
-            .eq(0));
+        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
     }
 
 }

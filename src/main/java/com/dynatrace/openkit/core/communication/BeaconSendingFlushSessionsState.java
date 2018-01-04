@@ -14,17 +14,12 @@ import com.dynatrace.openkit.core.SessionImpl;
  */
 class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
 
-    /**
-     * Do not retry beacon sending on error.
-     */
-    static final int BEACON_SEND_RETRY_ATTEMPTS = 0;
-
     BeaconSendingFlushSessionsState() {
         super(false);
     }
 
     @Override
-    void doExecute(BeaconSendingContext context) throws InterruptedException {
+    void doExecute(BeaconSendingContext context) {
 
         // end open sessions -> will be flushed afterwards
         SessionImpl[] openSessions = context.getAllOpenSessions();
@@ -35,7 +30,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         // flush already finished (and previously ended) sessions
         SessionImpl finishedSession = context.getNextFinishedSession();
         while (finishedSession != null) {
-            finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
+            finishedSession.sendBeacon(context.getHTTPClientProvider());
             finishedSession = context.getNextFinishedSession();
         }
 
