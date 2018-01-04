@@ -41,13 +41,15 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.getLastTimeSyncTime()).thenReturn(0L);
         when(mockContext.getCurrentTimestamp()).thenReturn(42L);
-        when(mockContext.getAllOpenSessions()).thenReturn(new SessionImpl[]{mockSession1Open,mockSession2Open});
-        when(mockContext.getNextFinishedSession()).thenReturn(mockSession3Finished).thenReturn(mockSession4Finished).thenReturn(null);
+        when(mockContext.getAllOpenSessions()).thenReturn(new SessionImpl[]{mockSession1Open, mockSession2Open});
+        when(mockContext.getNextFinishedSession()).thenReturn(mockSession3Finished)
+                                                  .thenReturn(mockSession4Finished)
+                                                  .thenReturn(null);
         when(mockContext.getHTTPClientProvider()).thenReturn(mockHTTPClientProvider);
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateIsNotATerminalState(){
+    public void aBeaconSendingCaptureOnStateIsNotATerminalState() {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -56,7 +58,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateHasTerminalStateBeaconSendingFlushSessions(){
+    public void aBeaconSendingCaptureOnStateHasTerminalStateBeaconSendingFlushSessions() {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -101,7 +103,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateSendsFinishedSessions() throws InterruptedException{
+    public void aBeaconSendingCaptureOnStateSendsFinishedSessions() throws InterruptedException {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -109,8 +111,10 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.doExecute(mockContext);
 
-        verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(2));
-        verify(mockSession4Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(2));
+        verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(2));
+        verify(mockSession4Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(2));
     }
 
     @Test
@@ -121,13 +125,15 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.doExecute(mockContext);
 
-        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(2));
-        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers.eq(2));
+        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(2));
+        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class), org.mockito.Matchers
+            .eq(2));
         verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateIfSessionExpired() throws InterruptedException{
+    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateIfSessionExpired() throws InterruptedException {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();

@@ -66,13 +66,13 @@ public class BeaconSendingContext {
     /**
      * boolean indicating whether the server supports a time sync (true) or not (false).
      */
-     private boolean timeSyncSupported = true;
+    private boolean timeSyncSupported = true;
 
     /**
      * Constructor.
-     *
      * <p>
-     *     The state is initialized to {@link BeaconSendingInitState},
+     * <p>
+     * The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
     public BeaconSendingContext(Configuration configuration,
@@ -109,9 +109,9 @@ public class BeaconSendingContext {
 
     /**
      * Wait until OpenKit has been fully initialized.
-     *
      * <p>
-     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     * <p>
+     * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
      * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted.
@@ -128,13 +128,12 @@ public class BeaconSendingContext {
 
     /**
      * Wait until OpenKit has been fully initialized or timeout expired.
-     *
      * <p>
-     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     * <p>
+     * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
      * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
-     *
      * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted or time to wait expired.
      */
     public boolean waitForInit(long timeoutMillis) {
@@ -180,7 +179,7 @@ public class BeaconSendingContext {
     /**
      * Initialize time synchronization with cluster time.
      *
-     * @param clusterTimeOffset the cluster offset
+     * @param clusterTimeOffset   the cluster offset
      * @param isTimeSyncSupported {@code true} if time sync is supported, otherwise {@code false}
      */
     void initializeTimeSync(long clusterTimeOffset, boolean isTimeSyncSupported) {
@@ -214,6 +213,7 @@ public class BeaconSendingContext {
 
     /**
      * Gets the current state.
+     *
      * @return current state.
      */
     AbstractBeaconSendingState getCurrentState() {
@@ -231,9 +231,9 @@ public class BeaconSendingContext {
 
     /**
      * Complete OpenKit initialization.
-     *
      * <p>
-     *     This will wake up every caller waiting in the {@link #waitForInit()} method.
+     * <p>
+     * This will wake up every caller waiting in the {@link #waitForInit()} method.
      * </p>
      *
      * @param success {@code true} if OpenKit was successfully initialized, {@code false} if it was interrupted.
@@ -245,6 +245,7 @@ public class BeaconSendingContext {
 
     /**
      * Gets the HTTP client provider.
+     *
      * @return A class responsible for retrieving an instance of {@link HTTPClient}.
      */
     HTTPClientProvider getHTTPClientProvider() {
@@ -253,6 +254,7 @@ public class BeaconSendingContext {
 
     /**
      * Convenience method to retrieve an HTTP client.
+     *
      * @return HTTP client received from {@link HTTPClientProvider}.
      */
     HTTPClient getHTTPClient() {
@@ -261,6 +263,7 @@ public class BeaconSendingContext {
 
     /**
      * Gets the current timestamp.
+     *
      * @return current timestamp as milliseconds elapsed since epoch (1970-01-01T00:00:00.000)
      */
     long getCurrentTimestamp() {
@@ -269,6 +272,7 @@ public class BeaconSendingContext {
 
     /**
      * Sleep some time ({@link #DEFAULT_SLEEP_TIME_MILLISECONDS}.
+     *
      * @throws InterruptedException When sleeping thread got interrupted.
      */
     void sleep() throws InterruptedException {
@@ -279,7 +283,6 @@ public class BeaconSendingContext {
      * Sleep given amount of milliseconds.
      *
      * @param millis The number of milliseconds to sleep.
-     *
      * @throws InterruptedException When sleeping thread got interrupted.
      */
     void sleep(long millis) throws InterruptedException {
@@ -360,10 +363,10 @@ public class BeaconSendingContext {
 
     /**
      * Gets the next finished session from the list of all finished sessions.
-     *
      * <p>
-     *     This call also removes the session from the underlying data structure.
-     *     If there are no finished sessions any more, this method returns null.
+     * <p>
+     * This call also removes the session from the underlying data structure.
+     * If there are no finished sessions any more, this method returns null.
      * </p>
      *
      * @return A finished session or {@code null} if there is no finished session.
@@ -374,9 +377,9 @@ public class BeaconSendingContext {
 
     /**
      * Gets all open sessions.
-     *
      * <p>
-     *     This returns a shallow copy of all open sessions.
+     * <p>
+     * This returns a shallow copy of all open sessions.
      * </p>
      */
     SessionImpl[] getAllOpenSessions() {
@@ -385,10 +388,10 @@ public class BeaconSendingContext {
 
     /**
      * Gets all finished sessions.
-     *
      * <p>
-     *     This returns a shallow copy of all finished sessions and is intended only
-     *     for testing purposes.
+     * <p>
+     * This returns a shallow copy of all finished sessions and is intended only
+     * for testing purposes.
      * </p>
      */
     SessionImpl[] getAllFinishedSessions() {
@@ -411,9 +414,9 @@ public class BeaconSendingContext {
 
     /**
      * Start a new session.
-     *
      * <p>
-     *     This add the {@code session} to the internal container of open sessions.
+     * <p>
+     * This add the {@code session} to the internal container of open sessions.
      * </p>
      *
      * @param session The new session to start.
@@ -424,10 +427,10 @@ public class BeaconSendingContext {
 
     /**
      * Finish a session which has been started previously using {@link #startSession(SessionImpl)}.
-     *
      * <p>
-     *     If the session cannot be found in the container storing all open sessions, the parameter is ignored,
-     *     otherwise it's removed from the container storing open sessions and added to the finished session container.
+     * <p>
+     * If the session cannot be found in the container storing all open sessions, the parameter is ignored,
+     * otherwise it's removed from the container storing open sessions and added to the finished session container.
      * </p>
      *
      * @param session The session to finish.

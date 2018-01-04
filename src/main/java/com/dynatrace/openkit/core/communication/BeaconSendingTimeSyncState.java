@@ -9,19 +9,19 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The state responsible for the time sync
- *
  * <p>
- *     In this state a time sync is performed.
+ * <p>
+ * In this state a time sync is performed.
  * </p>
- *
  * <p>
- *     Transition to:
- *     <ul>
- *         <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
- *         <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false}) or time sync failed</li>
- *         <li>{@link BeaconSendingFlushSessionsState} on shutdown if not initial time sync</li>
- *         <li>{@link BeaconSendingTerminalState} on shutdown if initial time sync</li>
- *     </ul>
+ * <p>
+ * Transition to:
+ * <ul>
+ * <li>{@link BeaconSendingCaptureOnState} if capturing is enabled ({@link BeaconSendingContext#isCaptureOn()} == {@code true})</li>
+ * <li>{@link BeaconSendingCaptureOffState} if capturing is disabled ({@link BeaconSendingContext#isCaptureOn()} == {@code false}) or time sync failed</li>
+ * <li>{@link BeaconSendingFlushSessionsState} on shutdown if not initial time sync</li>
+ * <li>{@link BeaconSendingTerminalState} on shutdown if initial time sync</li>
+ * </ul>
  * </p>
  */
 class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {

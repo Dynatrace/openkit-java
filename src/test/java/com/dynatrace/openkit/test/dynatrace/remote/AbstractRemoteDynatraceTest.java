@@ -5,32 +5,32 @@
  */
 package com.dynatrace.openkit.test.dynatrace.remote;
 
-import java.util.Random;
-
+import com.dynatrace.openkit.test.AbstractDynatraceTest;
+import com.dynatrace.openkit.test.OpenKitTestFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 
-import com.dynatrace.openkit.test.AbstractDynatraceTest;
-import com.dynatrace.openkit.test.OpenKitTestFactory;
+import java.util.Random;
 
 @Ignore("Integration tests are ignored")
 public class AbstractRemoteDynatraceTest extends AbstractDynatraceTest {
 
-	@Before
-	public void setUp() throws InterruptedException {
-		openKitTestImpl = OpenKitTestFactory.createDynatraceRemoteInstance(TEST_APPLICATION_NAME, TEST_APPLICATION_ID,new Random(System.currentTimeMillis()).nextLong(), TEST_ENDPOINT);
-		openKit = openKitTestImpl;
-	}
+    @Before
+    public void setUp() throws InterruptedException {
+        openKitTestImpl = OpenKitTestFactory.createDynatraceRemoteInstance(TEST_APPLICATION_NAME, TEST_APPLICATION_ID, new Random(System
+            .currentTimeMillis()).nextLong(), TEST_ENDPOINT);
+        openKit = openKitTestImpl;
+    }
 
-	@Before
-	public void printStart() {
-		System.out.println("Remote Dynatrace Test: " + this.getClass().getSimpleName() + " - Start");
-	}
+    @Before
+    public void printStart() {
+        System.out.println("Remote Dynatrace Test: " + this.getClass().getSimpleName() + " - Start");
+    }
 
-	@After
-	public void printEnd() {
-		System.out.println("Remote Dynatrace Test: " + this.getClass().getSimpleName() + " - End");
-		openKit.shutdown();
-	}
+    @After
+    public void printEnd() {
+        System.out.println("Remote Dynatrace Test: " + this.getClass().getSimpleName() + " - End");
+        openKit.shutdown();
+    }
 }

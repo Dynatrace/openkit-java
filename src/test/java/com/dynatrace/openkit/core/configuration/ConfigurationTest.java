@@ -111,11 +111,11 @@ public class ConfigurationTest {
     private final class TestConfiguration extends Configuration {
 
         private TestConfiguration() {
-            this(OpenKitType.DYNATRACE, "", "" , 42, "");
+            this(OpenKitType.DYNATRACE, "", "", 42, "");
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("","",""), "");
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "");
         }
     }
 }

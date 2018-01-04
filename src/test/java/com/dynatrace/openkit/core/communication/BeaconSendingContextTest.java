@@ -403,14 +403,14 @@ public class BeaconSendingContextTest {
         target.startSession(mockSessionOne);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionOne })));
+        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionOne})));
         assertThat(target.getAllFinishedSessions(), is(emptyArray()));
 
         // when starting second sessions
         target.startSession(mockSessionTwo);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionOne, mockSessionTwo })));
+        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionOne, mockSessionTwo})));
         assertThat(target.getAllFinishedSessions(), is(emptyArray()));
     }
 
@@ -429,15 +429,15 @@ public class BeaconSendingContextTest {
         target.finishSession(mockSessionOne);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo })));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[] { mockSessionOne })));
+        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo})));
+        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionOne})));
 
         // and when finishing the second session
         target.finishSession(mockSessionTwo);
 
         // then
         assertThat(target.getAllOpenSessions(), is(emptyArray()));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[] { mockSessionOne, mockSessionTwo })));
+        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionOne, mockSessionTwo})));
     }
 
     @Test
@@ -473,7 +473,7 @@ public class BeaconSendingContextTest {
 
         // then
         assertThat(obtained, is(sameInstance(mockSessionOne)));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo })));
+        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo})));
 
         // and when retrieving the next finished Session
         obtained = target.getNextFinishedSession();
@@ -514,7 +514,7 @@ public class BeaconSendingContextTest {
         target.disableCapture();
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo, mockSessionThree })));
+        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo, mockSessionThree})));
         assertThat(target.getAllFinishedSessions(), is(emptyArray()));
 
         verify(configuration, times(1)).disableCapture();
@@ -545,8 +545,8 @@ public class BeaconSendingContextTest {
         target.handleStatusResponse(mockStatusResponse);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo })));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[] { mockSessionOne })));
+        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo})));
+        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionOne})));
 
         verify(configuration, times(1)).updateSettings(mockStatusResponse);
         verify(configuration, times(1)).isCapture();
@@ -579,7 +579,7 @@ public class BeaconSendingContextTest {
         target.handleStatusResponse(mockStatusResponse);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[] { mockSessionTwo, mockSessionThree })));
+        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo, mockSessionThree})));
         assertThat(target.getAllFinishedSessions(), is(emptyArray()));
 
         verify(configuration, times(1)).updateSettings(mockStatusResponse);

@@ -1,9 +1,9 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
-import com.dynatrace.openkit.protocol.StatusResponse;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,7 +27,7 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateIsNotATerminalState(){
+    public void aBeaconSendingCaptureOffStateIsNotATerminalState() {
         //given
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
 
@@ -36,7 +36,7 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateHasTerminalStateBeaconSendingFlushSessions(){
+    public void aBeaconSendingCaptureOffStateHasTerminalStateBeaconSendingFlushSessions() {
         //given
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
 
@@ -84,7 +84,7 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateWaitsForSpecifiedTimeWhenTimeSyncFails() throws InterruptedException{
+    public void aBeaconSendingCaptureOffStateWaitsForSpecifiedTimeWhenTimeSyncFails() throws InterruptedException {
 
         //given
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();

@@ -5,14 +5,14 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
  * The sending state, when init is completed and capturing is turned on.
- *
  * <p>
- *     Transitions to:
- *     <ul>
- *         <li>{@link BeaconSendingTimeSyncState} if {@link BeaconSendingTimeSyncState#isTimeSyncRequired(BeaconSendingContext)} is {@code true}</li>
- *         <li>{@link BeaconSendingCaptureOffState} if capturing is turned off</li>
- *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
- *     </ul>
+ * <p>
+ * Transitions to:
+ * <ul>
+ * <li>{@link BeaconSendingTimeSyncState} if {@link BeaconSendingTimeSyncState#isTimeSyncRequired(BeaconSendingContext)} is {@code true}</li>
+ * <li>{@link BeaconSendingCaptureOffState} if capturing is turned off</li>
+ * <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
+ * </ul>
  * </p>
  */
 class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
@@ -59,6 +59,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
     /**
      * Send all sessions which have been finished previously.
+     *
      * @param context Context.
      */
     private void sendFinishedSessions(BeaconSendingContext context) throws InterruptedException {
@@ -73,6 +74,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
     /**
      * Check if the send interval (configured by server) has expired and start to send open sessions if it has expired.
+     *
      * @param context
      * @throws InterruptedException
      */

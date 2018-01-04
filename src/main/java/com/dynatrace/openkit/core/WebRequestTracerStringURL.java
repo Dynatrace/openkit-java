@@ -14,16 +14,16 @@ import com.dynatrace.openkit.protocol.Beacon;
  */
 public class WebRequestTracerStringURL extends WebRequestTracerBaseImpl {
 
-	// *** constructors ***
+    // *** constructors ***
 
-	// creates web request tracer with a simple string URL
-	public WebRequestTracerStringURL(Beacon beacon, ActionImpl action, String url) {
-		super(beacon, action);
+    // creates web request tracer with a simple string URL
+    public WebRequestTracerStringURL(Beacon beacon, ActionImpl action, String url) {
+        super(beacon, action);
 
-		// separate query string from URL
-		if (url != null) {
-			this.url = url.split("\\?")[0];
-		}
-	}
+        // separate query string from URL
+        if (url != null) {
+            this.url = url.split("\\?")[0];
+        }
+    }
 
 }

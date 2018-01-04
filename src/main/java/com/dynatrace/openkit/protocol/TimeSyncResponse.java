@@ -12,46 +12,46 @@ import java.util.StringTokenizer;
  */
 public class TimeSyncResponse extends Response {
 
-	// time sync response constants
-	public static final String RESPONSE_KEY_REQUEST_RECEIVE_TIME = "t1";
-	public static final String RESPONSE_KEY_RESPONSE_SEND_TIME = "t2";
+    // time sync response constants
+    public static final String RESPONSE_KEY_REQUEST_RECEIVE_TIME = "t1";
+    public static final String RESPONSE_KEY_RESPONSE_SEND_TIME = "t2";
 
-	// timestamps contained in time sync response
-	private long requestReceiveTime = -1;
-	private long responseSendTime = -1;
+    // timestamps contained in time sync response
+    private long requestReceiveTime = -1;
+    private long responseSendTime = -1;
 
-	// *** constructors ***
+    // *** constructors ***
 
-	public TimeSyncResponse(String response, int responseCode) {
-		super(responseCode);
-		parseResponse(response);
-	}
+    public TimeSyncResponse(String response, int responseCode) {
+        super(responseCode);
+        parseResponse(response);
+    }
 
-	// *** private methods ***
+    // *** private methods ***
 
-	// parses time sync response
-	private void parseResponse(String response) {
-		StringTokenizer tokenizer = new StringTokenizer(response, "&=");
-		while(tokenizer.hasMoreTokens()) {
-			String key = tokenizer.nextToken();
-			String value = tokenizer.nextToken();
+    // parses time sync response
+    private void parseResponse(String response) {
+        StringTokenizer tokenizer = new StringTokenizer(response, "&=");
+        while (tokenizer.hasMoreTokens()) {
+            String key = tokenizer.nextToken();
+            String value = tokenizer.nextToken();
 
-			if (RESPONSE_KEY_REQUEST_RECEIVE_TIME.equals(key)) {
-				requestReceiveTime = Long.parseLong(value);
-			} else if (RESPONSE_KEY_RESPONSE_SEND_TIME.equals(key)) {
-				responseSendTime = Long.parseLong(value);
-			}
-		}
-	}
+            if (RESPONSE_KEY_REQUEST_RECEIVE_TIME.equals(key)) {
+                requestReceiveTime = Long.parseLong(value);
+            } else if (RESPONSE_KEY_RESPONSE_SEND_TIME.equals(key)) {
+                responseSendTime = Long.parseLong(value);
+            }
+        }
+    }
 
-	// *** getter methods ***
+    // *** getter methods ***
 
-	public long getRequestReceiveTime() {
-		return requestReceiveTime;
-	}
+    public long getRequestReceiveTime() {
+        return requestReceiveTime;
+    }
 
-	public long getResponseSendTime() {
-		return responseSendTime;
-	}
+    public long getResponseSendTime() {
+        return responseSendTime;
+    }
 
 }

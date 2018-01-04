@@ -11,18 +11,18 @@ import com.dynatrace.openkit.api.Session;
 
 public class ActionValuesTestShared {
 
-	public static void test(OpenKit openKit, String ipAddress) {
-		Session session = openKit.createSession(ipAddress);
-		Action action = session.enterAction("ActionValues");
+    public static void test(OpenKit openKit, String ipAddress) {
+        Session session = openKit.createSession(ipAddress);
+        Action action = session.enterAction("ActionValues");
 
-		action.reportValue("DoubleValue", 3.141592654);
-		action.reportValue("IntValue", 42);
-		action.reportValue("StringValue", "nice value!");
+        action.reportValue("DoubleValue", 3.141592654);
+        action.reportValue("IntValue", 42);
+        action.reportValue("StringValue", "nice value!");
 
-		action.leaveAction();
-		session.end();
+        action.leaveAction();
+        session.end();
 
-		openKit.shutdown();
-	}
+        openKit.shutdown();
+    }
 
 }

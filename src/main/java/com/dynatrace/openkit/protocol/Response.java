@@ -10,17 +10,17 @@ package com.dynatrace.openkit.protocol;
  */
 public abstract class Response {
 
-	private final int responseCode;
+    private final int responseCode;
 
-	// *** constructors ***
+    // *** constructors ***
 
-	Response(int responseCode) {
-		this.responseCode = responseCode;
-	}
+    Response(int responseCode) {
+        this.responseCode = responseCode;
+    }
 
-	// *** getter methods ***
+    // *** getter methods ***
 
-	public int getResponseCode() {
-		return responseCode;
-	}
+    public int getResponseCode() {
+        return responseCode;
+    }
 }

@@ -1,8 +1,6 @@
 package com.dynatrace.openkit.core.communication;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;

@@ -12,23 +12,23 @@ import com.dynatrace.openkit.api.Session;
 
 public class ParallelActionTestShared {
 
-	public static void test(OpenKit openKit, String ipAddress) {
-		Session session = openKit.createSession(ipAddress);
-		RootAction rootAction = session.enterAction("RootAction");
+    public static void test(OpenKit openKit, String ipAddress) {
+        Session session = openKit.createSession(ipAddress);
+        RootAction rootAction = session.enterAction("RootAction");
 
-		Action parallelAction1 = rootAction.enterAction("ParallelAction-1");
-		Action parallelAction2 = rootAction.enterAction("ParallelAction-2");
-		Action parallelAction3 = rootAction.enterAction("ParallelAction-3");
+        Action parallelAction1 = rootAction.enterAction("ParallelAction-1");
+        Action parallelAction2 = rootAction.enterAction("ParallelAction-2");
+        Action parallelAction3 = rootAction.enterAction("ParallelAction-3");
 
-		parallelAction1.leaveAction();
-		parallelAction2.leaveAction();
-		parallelAction3.leaveAction();
+        parallelAction1.leaveAction();
+        parallelAction2.leaveAction();
+        parallelAction3.leaveAction();
 
-		rootAction.leaveAction();
+        rootAction.leaveAction();
 
-		session.end();
+        session.end();
 
-		openKit.shutdown();
-	}
+        openKit.shutdown();
+    }
 
 }

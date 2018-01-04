@@ -8,55 +8,64 @@ public interface Logger {
 
     /**
      * Log with level 'error'
+     *
      * @param message the message to write to the log
      */
     void error(String message);
 
     /**
      * Log with level 'error'
+     *
      * @param message the message to write to the log
-     * @param t an instance of a throwable to be attached to the output
+     * @param t       an instance of a throwable to be attached to the output
      */
     void error(String message, Throwable t);
 
     /**
      * Log with level 'warning'
+     *
      * @param message the message to write to the log
      */
     void warning(String message);
 
     /**
      * Log with level 'info'
+     *
      * @param message the message to write to the log
      */
     void info(String message);
 
     /**
      * Log with level 'debug'
+     *
      * @param message the message to write to the log
      */
     void debug(String message);
 
     /**
      * Return a flag if 'error' level messages are currently printed
+     *
      * @return true if 'error' level messages are printed, 'false' if not
      */
     boolean isErrorEnabled();
 
     /**
      * Return a flag if 'warn' level messages are currently printed
+     *
      * @return true if 'warn' level messages are printed, 'false' if not
      */
     boolean isWarnEnabled();
 
     /**
      * Return a flag if 'info' level messages are currently printed
+     *
      * @return true if 'info' level messages are printed, 'false' if not
      */
     boolean isInfoEnabled();
 
     /**
      * Return a flag if 'debug' level messages are currently printed
+     *
      * @return true if 'debug' level messages are printed, 'false' if not
      */
     boolean isDebugEnabled();

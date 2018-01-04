@@ -5,146 +5,146 @@
  */
 package com.dynatrace.openkit.core;
 
-import java.net.URLConnection;
-
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
+
+import java.net.URLConnection;
 
 /**
  * Actual implementation of the {@link Action} interface.
  */
 public class ActionImpl implements Action {
 
-	// Action ID, name and parent ID (default: null)
-	private final int id;
-	private final String name;
-	private ActionImpl parentAction = null;
+    // Action ID, name and parent ID (default: null)
+    private final int id;
+    private final String name;
+    private ActionImpl parentAction = null;
 
-	// start/end time & sequence number
-	private final long startTime;
-	private long endTime = -1;
-	private final int startSequenceNo;
-	private int endSequenceNo = -1;
+    // start/end time & sequence number
+    private final long startTime;
+    private long endTime = -1;
+    private final int startSequenceNo;
+    private int endSequenceNo = -1;
 
-	// Beacon reference
-	private Beacon beacon;
+    // Beacon reference
+    private Beacon beacon;
 
-	private SynchronizedQueue<Action> thisLevelActions = null;
+    private SynchronizedQueue<Action> thisLevelActions = null;
 
-	// *** constructors ***
+    // *** constructors ***
 
-	ActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
-		this(beacon, name, null, parentActions);
-	}
+    ActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
+        this(beacon, name, null, parentActions);
+    }
 
-	ActionImpl(Beacon beacon, String name, ActionImpl parentAction, SynchronizedQueue<Action> thisLevelActions) {
-		this.beacon = beacon;
-		this.parentAction = parentAction;
+    ActionImpl(Beacon beacon, String name, ActionImpl parentAction, SynchronizedQueue<Action> thisLevelActions) {
+        this.beacon = beacon;
+        this.parentAction = parentAction;
 
-		this.startTime = beacon.getCurrentTimestamp();
-		this.startSequenceNo = beacon.createSequenceNumber();
-		this.id = beacon.createID();
-		this.name = name;
+        this.startTime = beacon.getCurrentTimestamp();
+        this.startSequenceNo = beacon.createSequenceNumber();
+        this.id = beacon.createID();
+        this.name = name;
 
-		this.thisLevelActions = thisLevelActions;
-		this.thisLevelActions.put(this);
-	}
+        this.thisLevelActions = thisLevelActions;
+        this.thisLevelActions.put(this);
+    }
 
-	// *** Action interface methods ***
+    // *** Action interface methods ***
 
-	@Override
-	public Action reportEvent(String eventName) {
-		beacon.reportEvent(this, eventName);
-		return this;
-	}
+    @Override
+    public Action reportEvent(String eventName) {
+        beacon.reportEvent(this, eventName);
+        return this;
+    }
 
-	@Override
-	public Action reportValue(String valueName, int value) {
-		beacon.reportValue(this, valueName, value);
-		return this;
-	}
+    @Override
+    public Action reportValue(String valueName, int value) {
+        beacon.reportValue(this, valueName, value);
+        return this;
+    }
 
-	@Override
-	public Action reportValue(String valueName, double value) {
-		beacon.reportValue(this, valueName, value);
-		return this;
-	}
+    @Override
+    public Action reportValue(String valueName, double value) {
+        beacon.reportValue(this, valueName, value);
+        return this;
+    }
 
-	@Override
-	public Action reportValue(String valueName, String value) {
-		beacon.reportValue(this, valueName, value);
-		return this;
-	}
+    @Override
+    public Action reportValue(String valueName, String value) {
+        beacon.reportValue(this, valueName, value);
+        return this;
+    }
 
-	@Override
-	public Action reportError(String errorName, int errorCode, String reason) {
-		beacon.reportError(this, errorName, errorCode, reason);
-		return this;
-	}
+    @Override
+    public Action reportError(String errorName, int errorCode, String reason) {
+        beacon.reportError(this, errorName, errorCode, reason);
+        return this;
+    }
 
-	@Override
-	public WebRequestTracer traceWebRequest(URLConnection connection) {
-		return new WebRequestTracerURLConnection(beacon, this, connection);
-	}
+    @Override
+    public WebRequestTracer traceWebRequest(URLConnection connection) {
+        return new WebRequestTracerURLConnection(beacon, this, connection);
+    }
 
-	@Override
-	public WebRequestTracer traceWebRequest(String url) {
-		return new WebRequestTracerStringURL(beacon, this, url);
-	}
+    @Override
+    public WebRequestTracer traceWebRequest(String url) {
+        return new WebRequestTracerStringURL(beacon, this, url);
+    }
 
-	@Override
-	public Action leaveAction() {
-		// check if leaveAction() was already called before by looking at endTime
-		if (endTime != -1) {
-			return parentAction;
-		}
+    @Override
+    public Action leaveAction() {
+        // check if leaveAction() was already called before by looking at endTime
+        if (endTime != -1) {
+            return parentAction;
+        }
 
-		return doLeaveAction();
-	}
+        return doLeaveAction();
+    }
 
-	protected Action doLeaveAction() {
-		// set end time and end sequence number
-		endTime = beacon.getCurrentTimestamp();
-		endSequenceNo = beacon.createSequenceNumber();
+    protected Action doLeaveAction() {
+        // set end time and end sequence number
+        endTime = beacon.getCurrentTimestamp();
+        endSequenceNo = beacon.createSequenceNumber();
 
-		// add Action to Beacon
-		beacon.addAction(this);
+        // add Action to Beacon
+        beacon.addAction(this);
 
-		// remove Action from the Actions on this level
-		thisLevelActions.remove(this);
+        // remove Action from the Actions on this level
+        thisLevelActions.remove(this);
 
-		return parentAction;			// can be null if there's no parent Action!
-	}
+        return parentAction;            // can be null if there's no parent Action!
+    }
 
-	// *** getter methods ***
+    // *** getter methods ***
 
-	public int getID() {
-		return id;
-	}
+    public int getID() {
+        return id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public int getParentID() {
-		return parentAction == null ? 0 : parentAction.getID();
-	}
+    public int getParentID() {
+        return parentAction == null ? 0 : parentAction.getID();
+    }
 
-	public long getStartTime() {
-		return startTime;
-	}
+    public long getStartTime() {
+        return startTime;
+    }
 
-	public long getEndTime() {
-		return endTime;
-	}
+    public long getEndTime() {
+        return endTime;
+    }
 
-	public int getStartSequenceNo() {
-		return startSequenceNo;
-	}
+    public int getStartSequenceNo() {
+        return startSequenceNo;
+    }
 
-	public int getEndSequenceNo() {
-		return endSequenceNo;
-	}
+    public int getEndSequenceNo() {
+        return endSequenceNo;
+    }
 
 }
