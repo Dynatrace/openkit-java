@@ -23,18 +23,18 @@ public class DefaultSessionIDProviderTest {
     @Test
     public void defaultSessionIDProviderProvidesConsecutiveNumbers() {
         //given
-        DefaultSessionIDProvider provider = new DefaultSessionIDProvider(Integer.MAX_VALUE/2);
+        DefaultSessionIDProvider provider = new DefaultSessionIDProvider(Integer.MAX_VALUE / 2);
 
         // when
         int firstSessionID = provider.getNextSessionID();
         int secondSessionID = provider.getNextSessionID();
 
         // then
-        assertThat(secondSessionID, is(firstSessionID + 1 ));
+        assertThat(secondSessionID, is(firstSessionID + 1));
     }
 
     @Test
-    public void aProviderInitializedWithMaxIntValueProvidesMinSessionIdValueAtNextCall(){
+    public void aProviderInitializedWithMaxIntValueProvidesMinSessionIdValueAtNextCall() {
         //given
         DefaultSessionIDProvider provider = new DefaultSessionIDProvider(Integer.MAX_VALUE);
 
@@ -46,7 +46,7 @@ public class DefaultSessionIDProviderTest {
     }
 
     @Test
-    public void aProviderInitializedWithZeroProvidesMinSessionIdValueAtNextCall(){
+    public void aProviderInitializedWithZeroProvidesMinSessionIdValueAtNextCall() {
         //given
         DefaultSessionIDProvider provider = new DefaultSessionIDProvider(0);
 

@@ -10,9 +10,9 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * Implementation of {@link SSLTrustManager} trusting only valid certificates.
- *
  * <p>
- *     This is the default strategy in SSL certificate validation and should NOT be changed.
+ * <p>
+ * This is the default strategy in SSL certificate validation and should NOT be changed.
  * </p>
  */
 public class SSLStrictTrustManager implements SSLTrustManager {
@@ -39,12 +39,12 @@ public class SSLStrictTrustManager implements SSLTrustManager {
 
         try {
             TrustManagerFactory factory = TrustManagerFactory.getInstance(algorithm);
-            factory.init((KeyStore)null); // default keystore
+            factory.init((KeyStore) null); // default keystore
 
             // get the first X509TrustManager instance
             for (TrustManager trustManager : factory.getTrustManagers()) {
                 if (trustManager instanceof X509TrustManager) {
-                    return (X509TrustManager)trustManager;
+                    return (X509TrustManager) trustManager;
                 }
             }
         } catch (NoSuchAlgorithmException e) {

@@ -7,14 +7,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * State where no data is captured. Periodically issues a status request to check if capturing shall be re-enabled.
  * The check interval is defined in {@link BeaconSendingCaptureOffState#INITIAL_RETRY_SLEEP_TIME_MILLISECONDS}.
- *
  * <p>
- *     Transition to:
- *     <ul>
- *         <li>{@link BeaconSendingCaptureOnState} if capturing is re-enabled</li>
- *         <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
- *         <li>{@link BeaconSendingTimeSyncState} if initial time sync failed</li>
- *     </ul>
+ * <p>
+ * Transition to:
+ * <ul>
+ * <li>{@link BeaconSendingCaptureOnState} if capturing is re-enabled</li>
+ * <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
+ * <li>{@link BeaconSendingTimeSyncState} if initial time sync failed</li>
+ * </ul>
  * </p>
  */
 class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {

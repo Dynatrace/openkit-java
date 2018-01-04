@@ -6,7 +6,6 @@
 package com.dynatrace.openkit.test.appmon.local;
 
 import com.dynatrace.openkit.core.Device;
-import com.dynatrace.openkit.test.OpenKitTestFactory;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.ApplicationAndDeviceTestShared;
 import org.junit.Before;

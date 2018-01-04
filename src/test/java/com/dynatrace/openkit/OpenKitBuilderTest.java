@@ -3,13 +3,11 @@ package com.dynatrace.openkit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.protocol.ssl.SSLBlindTrustManager;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 
 public class OpenKitBuilderTest {
@@ -37,7 +35,8 @@ public class OpenKitBuilderTest {
         // default values
         assertThat(configuration.getApplicationVersion(), is(equalTo(OpenKitConstants.DEFAULT_APPLICATION_VERSION)));
         assertThat(configuration.getDevice().getManufacturer(), is(equalTo(OpenKitConstants.DEFAULT_MANUFACTURER)));
-        assertThat(configuration.getDevice().getOperatingSystem(), is(equalTo(OpenKitConstants.DEFAULT_OPERATING_SYSTEM)));
+        assertThat(configuration.getDevice()
+                                .getOperatingSystem(), is(equalTo(OpenKitConstants.DEFAULT_OPERATING_SYSTEM)));
         assertThat(configuration.getDevice().getModelID(), is(equalTo(OpenKitConstants.DEFAULT_MODEL_ID)));
 
         // default trust manager
@@ -53,8 +52,7 @@ public class OpenKitBuilderTest {
     }
 
     @Test
-    public void canOverrideTrustManagerForAppMon()
-    {
+    public void canOverrideTrustManagerForAppMon() {
         SSLTrustManager trustManager = mock(SSLTrustManager.class);
 
         Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
@@ -65,8 +63,7 @@ public class OpenKitBuilderTest {
     }
 
     @Test
-    public void canOverrideTrustManagerForDynatrace()
-    {
+    public void canOverrideTrustManagerForDynatrace() {
         SSLTrustManager trustManager = mock(SSLTrustManager.class);
 
         Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)

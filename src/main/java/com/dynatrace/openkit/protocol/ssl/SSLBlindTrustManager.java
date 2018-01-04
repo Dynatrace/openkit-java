@@ -10,15 +10,15 @@ import java.security.cert.X509Certificate;
 
 /**
  * Implementation of {@link SSLTrustManager} blindly trusting every certificate and every host.
- *
  * <p>
- *     This class is intended to be used only during development phase. Since local
- *     development environments use self-signed certificates only.
- *     This implementation disables any X509 certificate validation and hostname validation.
+ * <p>
+ * This class is intended to be used only during development phase. Since local
+ * development environments use self-signed certificates only.
+ * This implementation disables any X509 certificate validation and hostname validation.
  * </p>
- *
  * <p>
- *     NOTE: DO NOT USE THIS IN PRODUCTION!!
+ * <p>
+ * NOTE: DO NOT USE THIS IN PRODUCTION!!
  * </p>
  */
 public class SSLBlindTrustManager implements SSLTrustManager {

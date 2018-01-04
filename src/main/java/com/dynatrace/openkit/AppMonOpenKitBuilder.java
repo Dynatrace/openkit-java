@@ -15,11 +15,11 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
     /**
      * Creates a new instance of type AppMonOpenKitBuilder
      *
-     * @param endpointURL       endpoint OpenKit connects to
-     * @param applicationName   unique application id
-     * @param deviceID          unique device id
+     * @param endpointURL     endpoint OpenKit connects to
+     * @param applicationName unique application id
+     * @param deviceID        unique device id
      */
-    AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID) {
+    public AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID) {
         super(endpointURL, deviceID);
         this.applicationName = applicationName;
     }

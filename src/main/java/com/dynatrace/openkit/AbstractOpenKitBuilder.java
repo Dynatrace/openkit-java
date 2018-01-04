@@ -29,8 +29,8 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
      *
-     * @param endpointURL   endpoint OpenKit connects to
-     * @param deviceID      unique device id
+     * @param endpointURL endpoint OpenKit connects to
+     * @param deviceID    unique device id
      */
     AbstractOpenKitBuilder(String endpointURL, long deviceID) {
         this.endpointURL = endpointURL;
@@ -80,7 +80,7 @@ public abstract class AbstractOpenKitBuilder {
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withOperatingSystem(String operatingSystem) {
-        if(operatingSystem != null && !operatingSystem.isEmpty()) {
+        if (operatingSystem != null && !operatingSystem.isEmpty()) {
             this.operatingSystem = operatingSystem;
         }
         return this;
@@ -93,7 +93,7 @@ public abstract class AbstractOpenKitBuilder {
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withManufacturer(String manufacturer) {
-        if(manufacturer != null && !manufacturer.isEmpty()) {
+        if (manufacturer != null && !manufacturer.isEmpty()) {
             this.manufacturer = manufacturer;
         }
         return this;
@@ -106,7 +106,7 @@ public abstract class AbstractOpenKitBuilder {
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withModelID(String modelID) {
-        if(modelID != null && !modelID.isEmpty()) {
+        if (modelID != null && !modelID.isEmpty()) {
             this.modelID = modelID;
         }
         return this;

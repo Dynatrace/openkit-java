@@ -1,9 +1,9 @@
 package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.RootActionImpl;
+import com.dynatrace.openkit.core.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.DefaultTimingProvider;
@@ -56,7 +56,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=60&na=" + userID + "&it=0&pa=0&s0=1&t0=0" })));
+        assertThat(events, is(equalTo(new String[]{"et=60&na=" + userID + "&it=0&pa=0&s0=1&t0=0"})));
     }
 
     @Test
@@ -73,7 +73,9 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) })));
+        assertThat(events, is(equalTo(new String[]{
+            "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent)
+        })));
     }
 
     @Test
@@ -90,7 +92,9 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) })));
+        assertThat(events, is(equalTo(new String[]{
+            "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent)
+        })));
     }
 
     @Test
@@ -106,7 +110,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0" })));
+        assertThat(events, is(equalTo(new String[]{"et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0"})));
     }
 
     @Test
@@ -123,7 +127,9 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived) })));
+        assertThat(events, is(equalTo(new String[]{
+            "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived)
+        })));
     }
 
     @Test
@@ -140,7 +146,9 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived) })));
+        assertThat(events, is(equalTo(new String[]{
+            "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived)
+        })));
     }
 
     @Test
@@ -156,7 +164,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0" })));
+        assertThat(events, is(equalTo(new String[]{"et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0"})));
     }
 
     @Test
@@ -170,11 +178,16 @@ public class BeaconTest {
         int bytesSent = 123;
 
         // when
-        webRequest.start().setBytesSent(bytesSent).setBytesReceived(bytesReceived).stop(); //stop will add the web request to the beacon
+        webRequest.start()
+                  .setBytesSent(bytesSent)
+                  .setBytesReceived(bytesReceived)
+                  .stop(); //stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived) })));
+        assertThat(events, is(equalTo(new String[]{
+            "et=30&na=" + testURL + "&it=0&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived)
+        })));
     }
 
     @Test
@@ -192,7 +205,7 @@ public class BeaconTest {
         String[] actions = beacon.getActions();
 
         // then
-        assertThat(actions, is(equalTo(new String[] { "et=1&na=" + actionName + "&it=0&ca=0&pa=0&s0=0&t0=0&s1=0&t1=0" })));
+        assertThat(actions, is(equalTo(new String[]{"et=1&na=" + actionName + "&it=0&ca=0&pa=0&s0=0&t0=0&s1=0&t1=0"})));
     }
 
     @Test
