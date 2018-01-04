@@ -1,3 +1,19 @@
+/**
+ * Copyright 2018 Dynatrace LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -82,7 +98,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void executeSetsLastOpenSessionBeaconSendTime() throws InterruptedException {
+    public void executeSetsLastOpenSessionBeaconSendTime() {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -98,7 +114,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void executeSetsLastStatusCheckTime() throws InterruptedException {
+    public void executeSetsLastStatusCheckTime() {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -115,7 +131,7 @@ public class BeaconSendingInitStateTest {
 
 
     @Test
-    public void initIsTerminatedIfShutdownRequestedWithValidResponse() throws InterruptedException {
+    public void initIsTerminatedIfShutdownRequestedWithValidResponse() {
 
         // given
         when(httpClient.sendStatusRequest()).thenReturn(mock(StatusResponse.class));
@@ -142,7 +158,7 @@ public class BeaconSendingInitStateTest {
             private int count = 0;
 
             @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+            public Boolean answer(InvocationOnMock invocation) {
                 return count++ > 40;
             }
         });
@@ -262,7 +278,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void aSuccessfulStatusResponsePerformsStateTransitionToTimeSyncState() throws InterruptedException {
+    public void aSuccessfulStatusResponsePerformsStateTransitionToTimeSyncState() {
 
         // given
         StatusResponse statusResponse = mock(StatusResponse.class);
