@@ -1,7 +1,17 @@
-/***************************************************
- * (c) 2016-2017 Dynatrace LLC
+/**
+ * Copyright 2018 Dynatrace LLC
  *
- * @author: Christian Schwarzbauer
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.dynatrace.openkit.protocol;
@@ -180,6 +190,7 @@ public class HTTPClient {
                 try {
                     Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException e) {
+                    // TODO thomas.grassauer@dynatrace.com - check exception handling
                 }
             }
         }
@@ -228,8 +239,6 @@ public class HTTPClient {
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
-        HttpsURLConnection httpsConnection = connection;
-
         SSLContext context = SSLContext.getInstance("TLS");
         X509TrustManager x509TrustManager;
         if (sslTrustManager == null || sslTrustManager.getX509TrustManager() == null) {
@@ -239,10 +248,10 @@ public class HTTPClient {
             x509TrustManager = sslTrustManager.getX509TrustManager();
         }
         context.init(null, new TrustManager[]{x509TrustManager}, new SecureRandom());
-        httpsConnection.setSSLSocketFactory(context.getSocketFactory());
+        connection.setSSLSocketFactory(context.getSocketFactory());
 
         if (sslTrustManager != null && sslTrustManager.getHostnameVerifier() != null) {
-            httpsConnection.setHostnameVerifier(sslTrustManager.getHostnameVerifier());
+            connection.setHostnameVerifier(sslTrustManager.getHostnameVerifier());
         }
     }
 
@@ -310,7 +319,7 @@ public class HTTPClient {
         // reading HTTP response
         try {
             byte[] buffer = new byte[1024];
-            int length = 0;
+            int length;
             while ((length = inputStream.read(buffer)) > 0) {
                 responseBuilder.append(new String(buffer, 0, length, Beacon.CHARSET));
             }
