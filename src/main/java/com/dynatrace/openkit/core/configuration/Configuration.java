@@ -101,12 +101,13 @@ public class Configuration {
         // if invalid status response OR response code != 200 -> capture off
         if ((statusResponse == null) || (statusResponse.getResponseCode() != 200)) {
             disableCapture();
-        } else {
-            capture.set(statusResponse.isCapture());
+            return;
         }
 
+        capture.set(statusResponse.isCapture());
+
         // if capture is off -> leave other settings on their current values
-        if (!isCapture()) {
+        if (!statusResponse.isCapture()) {
             return;
         }
 

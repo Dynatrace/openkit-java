@@ -190,6 +190,7 @@ public class HTTPClient {
                 try {
                     Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException e) {
+                    // TODO thomas.grassauer@dynatrace.com - check exception handling
                 }
             }
         }
@@ -238,8 +239,6 @@ public class HTTPClient {
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
-        HttpsURLConnection httpsConnection = connection;
-
         SSLContext context = SSLContext.getInstance("TLS");
         X509TrustManager x509TrustManager;
         if (sslTrustManager == null || sslTrustManager.getX509TrustManager() == null) {
@@ -249,10 +248,10 @@ public class HTTPClient {
             x509TrustManager = sslTrustManager.getX509TrustManager();
         }
         context.init(null, new TrustManager[]{x509TrustManager}, new SecureRandom());
-        httpsConnection.setSSLSocketFactory(context.getSocketFactory());
+        connection.setSSLSocketFactory(context.getSocketFactory());
 
         if (sslTrustManager != null && sslTrustManager.getHostnameVerifier() != null) {
-            httpsConnection.setHostnameVerifier(sslTrustManager.getHostnameVerifier());
+            connection.setHostnameVerifier(sslTrustManager.getHostnameVerifier());
         }
     }
 
@@ -320,7 +319,7 @@ public class HTTPClient {
         // reading HTTP response
         try {
             byte[] buffer = new byte[1024];
-            int length = 0;
+            int length;
             while ((length = inputStream.read(buffer)) > 0) {
                 responseBuilder.append(new String(buffer, 0, length, Beacon.CHARSET));
             }

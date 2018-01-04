@@ -35,7 +35,7 @@ public class ApplicationAndDeviceTest extends AbstractLocalAppMonTest {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    public void test() {
         ApplicationAndDeviceTestShared.test(openKitTestImpl, TEST_IP);
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();

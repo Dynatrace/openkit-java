@@ -26,7 +26,7 @@ import java.util.Random;
 
 public abstract class AbstractLocalAppMonTest extends AbstractAppMonTest {
 
-    protected TestConfiguration testConfiguration = null;
+    protected TestConfiguration testConfiguration;
 
     public AbstractLocalAppMonTest() {
         testConfiguration = new TestConfiguration();

@@ -23,7 +23,7 @@ public interface WebRequestTracer {
 
     /**
      * Returns the Dynatrace tag which has to be set manually as Dynatrace HTTP header
-     * ({@link OpenKit#WEBREQUEST_TAG_HEADER}). <br>
+     * ({@link OpenKitConstants#WEBREQUEST_TAG_HEADER}). <br>
      * This is only necessary for tracing web requests via 3rd party HTTP clients.
      *
      * @return the Dynatrace tag to be set as HTTP header value or an empty String if capture is off

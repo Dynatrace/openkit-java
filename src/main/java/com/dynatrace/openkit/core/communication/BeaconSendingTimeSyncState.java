@@ -212,7 +212,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             }
         }
 
-        return (long) Math.round(sum / (double) count);
+        return Math.round(sum / (double) count);
     }
 
     private void handleErroneousTimeSyncRequest(BeaconSendingContext context) {

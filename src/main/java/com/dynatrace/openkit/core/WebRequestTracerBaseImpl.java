@@ -25,7 +25,7 @@ import com.dynatrace.openkit.protocol.Beacon;
 public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     // Dynatrace tag that has to be used for tracing the web request
-    private String tag = null;
+    private String tag;
 
     // HTTP information: URL & response code
     protected String url = "<unknown>";

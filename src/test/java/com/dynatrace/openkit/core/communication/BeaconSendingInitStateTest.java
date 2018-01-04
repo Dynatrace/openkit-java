@@ -98,7 +98,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void executeSetsLastOpenSessionBeaconSendTime() throws InterruptedException {
+    public void executeSetsLastOpenSessionBeaconSendTime() {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -114,7 +114,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void executeSetsLastStatusCheckTime() throws InterruptedException {
+    public void executeSetsLastStatusCheckTime() {
 
         // given
         when(stateContext.getCurrentTimestamp()).thenReturn(123456789L);
@@ -131,7 +131,7 @@ public class BeaconSendingInitStateTest {
 
 
     @Test
-    public void initIsTerminatedIfShutdownRequestedWithValidResponse() throws InterruptedException {
+    public void initIsTerminatedIfShutdownRequestedWithValidResponse() {
 
         // given
         when(httpClient.sendStatusRequest()).thenReturn(mock(StatusResponse.class));
@@ -158,7 +158,7 @@ public class BeaconSendingInitStateTest {
             private int count = 0;
 
             @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+            public Boolean answer(InvocationOnMock invocation) {
                 return count++ > 40;
             }
         });
@@ -278,7 +278,7 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void aSuccessfulStatusResponsePerformsStateTransitionToTimeSyncState() throws InterruptedException {
+    public void aSuccessfulStatusResponsePerformsStateTransitionToTimeSyncState() {
 
         // given
         StatusResponse statusResponse = mock(StatusResponse.class);

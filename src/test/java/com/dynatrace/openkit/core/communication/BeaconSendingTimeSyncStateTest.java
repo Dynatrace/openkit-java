@@ -156,7 +156,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeSyncNotRequiredAndCaptureOnTruePerformsStateTransitionToCaptureOnState() throws InterruptedException {
+    public void timeSyncNotRequiredAndCaptureOnTruePerformsStateTransitionToCaptureOnState() {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(false);
@@ -172,7 +172,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeSyncNotRequiredAndCaptureOnFalsePerformsStateTransitionToCaptureOffState() throws InterruptedException {
+    public void timeSyncNotRequiredAndCaptureOnFalsePerformsStateTransitionToCaptureOffState() {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(false);
@@ -188,7 +188,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeSyncRequestsAreInterruptedAfterUnsuccessfulRetries() throws InterruptedException {
+    public void timeSyncRequestsAreInterruptedAfterUnsuccessfulRetries() {
 
         // given
         when(httpClient.sendTimeSyncRequest()).thenReturn(null); // unsuccessful
@@ -300,7 +300,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void successfulTimeSyncInitializesTimeProvider() throws InterruptedException {
+    public void successfulTimeSyncInitializesTimeProvider() {
 
         // given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
@@ -334,7 +334,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void successfulTimeSyncSetSuccessfulInitCompletionInContextWhenItIsInitialTimeSync() throws InterruptedException {
+    public void successfulTimeSyncSetSuccessfulInitCompletionInContextWhenItIsInitialTimeSync() {
 
         // given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
@@ -368,7 +368,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeSyncSupportIsDisabledIfBothTimeStampsInTimeSyncResponseAreNegative() throws InterruptedException {
+    public void timeSyncSupportIsDisabledIfBothTimeStampsInTimeSyncResponseAreNegative() {
 
         //given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-2", 200));
@@ -383,7 +383,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeSyncSupportIsDisabledIfFirstTimeStampInTimeSyncResponseIsNegative() throws InterruptedException {
+    public void timeSyncSupportIsDisabledIfFirstTimeStampInTimeSyncResponseIsNegative() {
 
         //given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200));
@@ -398,7 +398,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeSyncSupportIsDisabledIfSecondTimeStampInTimeSyncResponseIsNegative() throws InterruptedException {
+    public void timeSyncSupportIsDisabledIfSecondTimeStampInTimeSyncResponseIsNegative() {
 
         //given
         when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1", 200));
@@ -413,7 +413,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void timeProviderInitializeIsCalledIfItIsAnInitialTimeSyncEvenWhenResponseIsErroneous() throws InterruptedException {
+    public void timeProviderInitializeIsCalledIfItIsAnInitialTimeSyncEvenWhenResponseIsErroneous() {
 
         // given
         timingProvider.initialize(42, true); // explicitly initialize TimeProvider (verify that it's changed later)
@@ -429,7 +429,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void stateTransitionToCaptureOffIsPerformedIfTimeSyncIsSupportedButFailed() throws InterruptedException {
+    public void stateTransitionToCaptureOffIsPerformedIfTimeSyncIsSupportedButFailed() {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
@@ -445,7 +445,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncIsSupportedAndCapturingIsEnabled() throws InterruptedException {
+    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncIsSupportedAndCapturingIsEnabled() {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
@@ -474,7 +474,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncIsSupportedAndCapturingIsDisabled() throws InterruptedException {
+    public void stateTransitionIsPerformedToAppropriateStateIfTimeSyncIsSupportedAndCapturingIsDisabled() {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
@@ -503,7 +503,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void stateTransitionToInitIsMadeIfInitialTimeSyncFails() throws InterruptedException {
+    public void stateTransitionToInitIsMadeIfInitialTimeSyncFails() {
 
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);

@@ -169,7 +169,7 @@ public class InetAddressValidator {
     /**
      * Check if <code>input</code> is a valid IPv4 or IPv6 address.
      *
-     * @param ipAddress ip-adress to check
+     * @param ipAddress ip-address to check
      * @return <code>true</code> if <code>ipAddress</code> is a valid ip-address
      */
     public static boolean isValidIP(String ipAddress) {

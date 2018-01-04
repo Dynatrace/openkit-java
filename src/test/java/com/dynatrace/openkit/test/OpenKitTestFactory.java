@@ -31,8 +31,7 @@ public class OpenKitTestFactory {
     private OpenKitTestFactory() {
     }
 
-    public static OpenKitTestImpl createAppMonLocalInstance(String applicationName, String endpointURL, TestConfiguration testConfiguration)
-        throws InterruptedException {
+    public static OpenKitTestImpl createAppMonLocalInstance(String applicationName, String endpointURL, TestConfiguration testConfiguration) {
 
         OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DefaultLogger(true), getAppMonConfig(applicationName, endpointURL, testConfiguration), false);
         applyTestConfiguration(openKitTestImpl, testConfiguration);
@@ -40,15 +39,13 @@ public class OpenKitTestFactory {
         return openKitTestImpl;
     }
 
-    public static OpenKitTestImpl createAppMonRemoteInstance(String applicationName, long deviceID, String endpointURL)
-        throws InterruptedException {
+    public static OpenKitTestImpl createAppMonRemoteInstance(String applicationName, long deviceID, String endpointURL) {
         OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DefaultLogger(true), getAppMonConfig(applicationName, endpointURL, deviceID), true);
         openKitTestImpl.initialize();
         return openKitTestImpl;
     }
 
-    public static OpenKitTestImpl createDynatraceLocalInstance(String applicationName, String applicationID, String endpointURL, TestConfiguration testConfiguration)
-        throws InterruptedException {
+    public static OpenKitTestImpl createDynatraceLocalInstance(String applicationName, String applicationID, String endpointURL, TestConfiguration testConfiguration) {
         OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DefaultLogger(true), getDynatraceConfig(applicationName, applicationID, endpointURL, testConfiguration
             .getDeviceID()), false);
         applyTestConfiguration(openKitTestImpl, testConfiguration);
@@ -56,8 +53,7 @@ public class OpenKitTestFactory {
         return openKitTestImpl;
     }
 
-    public static OpenKitTestImpl createDynatraceRemoteInstance(String applicationName, String applicationID, long deviceID, String endpointURL)
-        throws InterruptedException {
+    public static OpenKitTestImpl createDynatraceRemoteInstance(String applicationName, String applicationID, long deviceID, String endpointURL) {
         OpenKitTestImpl openKitTestImpl = new OpenKitTestImpl(new DefaultLogger(true), getDynatraceConfig(applicationName, applicationID, endpointURL, deviceID), true);
         openKitTestImpl.initialize();
         return openKitTestImpl;
