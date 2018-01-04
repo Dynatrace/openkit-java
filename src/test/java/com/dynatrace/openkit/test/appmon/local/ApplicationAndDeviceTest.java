@@ -39,7 +39,7 @@ public class ApplicationAndDeviceTest extends AbstractLocalAppMonTest {
         ApplicationAndDeviceTestShared.test(openKitTestImpl, TEST_IP);
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-        String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_NAME + "&an=" + TEST_APPLICATION_NAME + "&vn=2017.42.3141&pt=1&vi=" + testConfiguration
+        String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_NAME + "&an=" + TEST_APPLICATION_NAME + "&vn=2017.42.3141&pt=1&tt=okjava&vi=" + testConfiguration
             .getDeviceID() + "&sn=1&ip=" + TEST_IP + "&os=Windows+10&mf=Dynatrace&md=OpenKitTester&tv=1005000&ts=1004000&tx=1009000&et=19&it=1&pa=0&s0=3&t0=4000&et=1&na=ApplicationAndDeviceTestAction&it=1&ca=1&pa=0&s0=1&t0=2000&s1=2&t1=1000";
 
         validateDefaultRequests(sentRequests, expectedBeacon);

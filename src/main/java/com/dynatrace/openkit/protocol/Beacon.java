@@ -46,6 +46,7 @@ public class Beacon {
     private static final String BEACON_KEY_APPLICATION_NAME = "an";
     private static final String BEACON_KEY_APPLICATION_VERSION = "vn";
     private static final String BEACON_KEY_PLATFORM_TYPE = "pt";
+    private static final String BEACON_KEY_AGENT_TECHNOLOGY_TYPE = "tt";
     private static final String BEACON_KEY_VISITOR_ID = "vi";
     private static final String BEACON_KEY_SESSION_NUMBER = "sn";
     private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
@@ -84,6 +85,7 @@ public class Beacon {
     public static final String OPENKIT_VERSION = "7.0.0000";
     private static final int PROTOCOL_VERSION = 3;
     private static final int PLATFORM_TYPE_OPENKIT = 1;
+    private static final String AGENT_TECHNOLOGY_TYPE = "okjava";
 
     // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
     public static final String CHARSET = "UTF-8";
@@ -500,6 +502,7 @@ public class Beacon {
             addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
         }
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getDeviceID());
