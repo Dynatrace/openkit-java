@@ -21,12 +21,12 @@ String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
 OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID).build();
 ```
 
-* The `applicationID` parameter is the unique identifier of the application in Dynatrace Saas. The
-application's id can be found in the settings page of the custom application in Dynatrace.
-* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
 * The `endpointURL` denotes the Dynatrace endpoint OpenKit communicates with and 
-  is shown when creating the application in Dynatrace.
-The endpoint URL can be found in the settings page of the custom application in Dynatrace.
+  is shown when creating the application in Dynatrace. The endpoint URL can be found 
+  in the settings page of the custom application in Dynatrace.
+* The `applicationID` parameter is the unique identifier of the application in Dynatrace Saas. The
+  application's id can be found in the settings page of the custom application in Dynatrace.
+* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
 
 :grey_exclamation: For Dynatrace Managed the endpoint URL looks a bit different.
 
@@ -43,9 +43,9 @@ String endpointURL = "https://beaconurl.com/dynaTraceMonitor";
 OpenKit openKit = new AppMonOpenKitBuilder(endpointURL, applicationName, deviceID).build();
 ```
 
+* The `endpointURL` denotes the AppMon endpoint OpenKit communicates with.
 * The `applicationName` parameter is the application's name in AppMon and is also used as the application's id.
 * The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
-* The `endpointURL` denotes the AppMon endpoint OpenKit communicates with.
 
 ### Optional Configuration
 
@@ -58,7 +58,7 @@ customize OpenKit. This includes device specific information like operating syst
 | `withOperatingSystem`  | sets the operating system name | `"OpenKit 0.4"` |
 | `withManufacturer`  | sets the manufacturer | `"Dynatrace"` |
 | `withModelID`  | sets the model id  | `"OpenKitDevice"` |
-| `enableVerbose`  | enables extended log output for OpenKit  | `false` |
+| `enableVerbose`  | enables extended log output for OpenKit if the default logger is used  | `false` |
 
 ## SSL/TLS Security in OpenKit
 
@@ -70,9 +70,19 @@ passing an implementation of `SSLTrustManager` by calling the `withTrustManager`
 :warning: We do **NOT** recommend bypassing TLS/SSL server certificate validation, since this allows
 man-in-the-middle attacks.
 
+## Logging
+
+By default, OpenKit uses a logger implementation that logs to stdout. If the default logger is used, verbose 
+logging can be enabled by calling `enableVerbose` in the builder. By enabling verbose mode, info and debug
+messages are logged.
+
+A custom logger can be set by calling `withLogger` in the builder. When a custom logger is used, a call to 
+`enableVerbose` has no effect. In that case, debug and info logs are logged depending on the values returned 
+in `isDebugEnabled` and `isInfoEnabled`.
+
 ## Initializing OpenKit
 
-When obtaining an OpenKit instance from `OpenKitFactory` the instance starts an automatic 
+When obtaining an OpenKit instance from the OpenKit builder the instance starts an automatic 
 initialization phase. Since initialization happens asynchronously the application developers 
 might want to wait until initialization completes, as shown in the example below.
 

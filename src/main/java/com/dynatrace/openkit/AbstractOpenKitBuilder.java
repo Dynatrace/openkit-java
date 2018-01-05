@@ -66,7 +66,7 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Defines the version of the application. The value is only set if it is not null and or empty.
+     * Defines the version of the application. The value is only set if it is neither null nor empty.
      *
      * @param applicationVersion
      * @return {@code this}
@@ -90,7 +90,7 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the operating system information. The value is only set if it is not null and or empty.
+     * Sets the operating system information. The value is only set if it is neither null nor empty.
      *
      * @param operatingSystem the operating system
      * @return {@code this}
@@ -103,7 +103,7 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the manufacturer information. The value is only set if it is not null and or empty.
+     * Sets the manufacturer information. The value is only set if it is neither null nor empty.
      *
      * @param manufacturer the manufacturer
      * @return {@code this}
@@ -116,7 +116,7 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the model id. The value is only set if it is not null and or empty.
+     * Sets the model id. The value is only set if it is neither null nor empty.
      *
      * @param modelID the model id
      * @return {@code this}

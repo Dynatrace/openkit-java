@@ -27,7 +27,7 @@ import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
 public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
 
     private final String applicationID;
-    private String applicationName;
+    private String applicationName = "";
 
     /**
      * Creates a new instance of type DynatraceOpenKitBuilder
@@ -42,13 +42,15 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the application name
+     * Sets the application name. The value is only set if it is not null.
      *
      * @param applicationName name of the application
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withApplicationName(String applicationName) {
-        this.applicationName = applicationName;
+        if (applicationName != null) {
+            this.applicationName = applicationName;
+        }
         return this;
     }
 
