@@ -35,6 +35,7 @@ public abstract class AbstractOpenKitBuilder {
     private final long deviceID;
 
     // mutable fields
+    private Logger logger;
     private SSLTrustManager trustManager = new SSLStrictTrustManager();
     private boolean verbose;
     private String operatingSystem = OpenKitConstants.DEFAULT_OPERATING_SYSTEM;
@@ -56,7 +57,9 @@ public abstract class AbstractOpenKitBuilder {
     // ** public methods **
 
     /**
-     * Enables verbose mode.
+     * Enables verbose mode. Verbose mode is only enabled if the the default logger is used.
+     * If a custom logger is provided by calling  {@code withLogger} debug and info log output
+     * depends on the values returned by {@code isDebugEnabled} and {@code isInfoEnabled}.
      *
      * @return {@code this}
      */
@@ -66,9 +69,21 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
+     * Sets the logger. If no logger is set the default console logger is used. For the default
+     * logger verbose mode is enabled by calling {@code enableVerbose}.
+     *
+     * @param logger the logger
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withLogger(Logger logger) {
+        this.logger = logger;
+        return this;
+    }
+
+    /**
      * Defines the version of the application. The value is only set if it is neither null nor empty.
      *
-     * @param applicationVersion
+     * @param applicationVersion the application version
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withApplicationVersion(String applicationVersion) {
@@ -81,7 +96,7 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Sets the trust manager. Overrides the default trust manager which is {@code SSLStrictTrustmanager} by default-
      *
-     * @param trustManager Trust manager implementation
+     * @param trustManager trust manager implementation
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withTrustManager(SSLTrustManager trustManager) {
@@ -142,14 +157,13 @@ public abstract class AbstractOpenKitBuilder {
      */
     public OpenKit build() {
         // create and initialize OpenKit instance
-        Logger logger = new DefaultLogger(verbose);
-        OpenKitImpl openKit = new OpenKitImpl(logger, buildConfiguration());
+        OpenKitImpl openKit = new OpenKitImpl(getLogger(), buildConfiguration());
         openKit.initialize();
 
         return openKit;
     }
 
-    // ** protected getter **
+    // ** internal getter **
 
     String getApplicationVersion() {
         return applicationVersion;
@@ -177,5 +191,13 @@ public abstract class AbstractOpenKitBuilder {
 
     SSLTrustManager getTrustManager() {
         return trustManager;
+    }
+
+    Logger getLogger() {
+        if (logger != null) {
+            return logger;
+        }
+
+        return new DefaultLogger(verbose);
     }
 }
