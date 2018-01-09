@@ -56,27 +56,4 @@ public interface TimingProvider {
      * @return Returns local time if not time synced or if not yet initialized
      */
     long convertToClusterTime(long timestamp);
-
-    /**
-     * Gets the last init time in cluster time, or 0 if not yet initialized
-     *
-     * @return
-     */
-    long getLastInitTimeInClusterTime();
-
-    /**
-     * Gets the time since last init in milliseconds, or since 1970-01-01 if not yet initialized
-     *
-     * @return
-     */
-    long getTimeSinceLastInitTime();
-
-    /**
-     * Gets the time between provided timestamp and last init in milliseconds, or between provided
-     * timestamp and 1970-01-01 if not yet initialized
-     *
-     * @param timestamp
-     * @return
-     */
-    long getTimeSinceLastInitTime(long timestamp);
 }

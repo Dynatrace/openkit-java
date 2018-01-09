@@ -196,7 +196,7 @@ public class Beacon {
         addKeyValuePair(actionBuilder, BEACON_KEY_ACTION_ID, action.getID());
         addKeyValuePair(actionBuilder, BEACON_KEY_PARENT_ACTION_ID, action.getParentID());
         addKeyValuePair(actionBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, action.getStartSequenceNo());
-        addKeyValuePair(actionBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(action.getStartTime()));
+        addKeyValuePair(actionBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(action.getStartTime()));
         addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
         addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
@@ -212,7 +212,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(session.getEndTime()));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
 
         addEventData(eventBuilder);
     }
@@ -269,7 +269,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
@@ -289,7 +289,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
@@ -304,7 +304,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTracer.getStartSequenceNo());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(webRequestTracer.getStartTime()));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(webRequestTracer.getStartTime()));
         addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
 
@@ -331,7 +331,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
 
         addEventData(eventBuilder);
     }
@@ -430,7 +430,7 @@ public class Beacon {
 
         addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(builder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(builder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime());
+        addKeyValuePair(builder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
     }
 
     // helper method for building basic event data
@@ -530,7 +530,7 @@ public class Beacon {
 
         // timestamp information
         addKeyValuePair(timestampBuilder, BEACON_KEY_SESSION_START_TIME, timingProvider.convertToClusterTime(sessionStartTime));
-        addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, timingProvider.getLastInitTimeInClusterTime());
+        addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, timingProvider.convertToClusterTime(sessionStartTime));
         if (!timingProvider.isTimeSyncSupported()) {
             addKeyValuePair(timestampBuilder, BEACON_KEY_TRANSMISSION_TIME, timingProvider.provideTimestampInMilliseconds());
         }
@@ -587,6 +587,14 @@ public class Beacon {
             name = name.substring(0, MAX_NAME_LEN);
         }
         return name;
+    }
+
+    private long getTimeSinceSessionStartTime(long timestamp) {
+        return timestamp - sessionStartTime;
+    }
+
+    private long getTimeSinceSessionStartTime() {
+        return getTimeSinceSessionStartTime(timingProvider.provideTimestampInMilliseconds());
     }
 
 }
