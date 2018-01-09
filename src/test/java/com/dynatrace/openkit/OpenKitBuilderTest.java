@@ -16,9 +16,11 @@
 
 package com.dynatrace.openkit;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.junit.Test;
 
@@ -168,5 +170,39 @@ public class OpenKitBuilderTest {
             .buildConfiguration();
 
         assertThat(target.getApplicationName(), is(equalTo(appName)));
+    }
+
+    @Test
+    public void canSetLogger() {
+        // given
+        Logger logger = mock(Logger.class);
+
+        // when
+        Logger target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID).withLogger(logger).getLogger();
+
+        // then
+        assertThat(target, is(sameInstance(logger)));
+    }
+
+    @Test
+    public void defaultLoggerIsUsedByDefault() {
+        // when
+        Logger target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID).getLogger();
+
+        // then
+        assertThat(target, is(instanceOf(DefaultLogger.class)));
+        assertThat(target.isDebugEnabled(), is(false));
+        assertThat(target.isInfoEnabled(), is(false));
+    }
+
+    @Test
+    public void verboseIsUsedInDefaultLogger() {
+        // when
+        Logger target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID).enableVerbose().getLogger();
+
+        // then
+        assertThat(target, is(instanceOf(DefaultLogger.class)));
+        assertThat(target.isDebugEnabled(), is(true));
+        assertThat(target.isInfoEnabled(), is(true));
     }
 }

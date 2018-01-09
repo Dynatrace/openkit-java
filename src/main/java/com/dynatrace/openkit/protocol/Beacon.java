@@ -30,6 +30,8 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,6 +47,7 @@ public class Beacon {
     private static final String BEACON_KEY_APPLICATION_NAME = "an";
     private static final String BEACON_KEY_APPLICATION_VERSION = "vn";
     private static final String BEACON_KEY_PLATFORM_TYPE = "pt";
+    private static final String BEACON_KEY_AGENT_TECHNOLOGY_TYPE = "tt";
     private static final String BEACON_KEY_VISITOR_ID = "vi";
     private static final String BEACON_KEY_SESSION_NUMBER = "sn";
     private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
@@ -83,6 +86,7 @@ public class Beacon {
     public static final String OPENKIT_VERSION = "7.0.0000";
     private static final int PROTOCOL_VERSION = 3;
     private static final int PLATFORM_TYPE_OPENKIT = 1;
+    private static final String AGENT_TECHNOLOGY_TYPE = "okjava";
 
     // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
     public static final String CHARSET = "UTF-8";
@@ -95,7 +99,9 @@ public class Beacon {
 
     private static final char BEACON_DATA_DELIMITER = '&';
 
-    /** Initial time to sleep after the first failed beacon send attempt. */
+    /**
+     * Initial time to sleep after the first failed beacon send attempt.
+     */
     private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     // next ID and sequence number
@@ -119,6 +125,10 @@ public class Beacon {
 
     // HTTPClientConfiguration reference
     private final HTTPClientConfiguration httpConfiguration;
+
+    // lists of events and actions currently on the Beacon
+    private final LinkedList<String> eventDataList = new LinkedList<String>();
+    private final LinkedList<String> actionDataList = new LinkedList<String>();
 
     private final Logger logger;
 
@@ -171,8 +181,15 @@ public class Beacon {
 
     // create web request tag
     public String createTag(ActionImpl parentAction, int sequenceNo) {
-        return TAG_PREFIX + "_" + PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + configuration.getDeviceID() + "_" + sessionNumber + "_" + configuration
-            .getApplicationID() + "_" + parentAction.getID() + "_" + threadIDProvider.getThreadID() + "_" + sequenceNo;
+        return TAG_PREFIX + "_"
+            + PROTOCOL_VERSION + "_"
+            + httpConfiguration.getServerID() + "_"
+            + configuration.getDeviceID() + "_"
+            + sessionNumber + "_"
+            + configuration.getApplicationID() + "_"
+            + parentAction.getID() + "_"
+            + threadIDProvider.getThreadID() + "_"
+            + sequenceNo;
     }
 
     // add an Action to this Beacon
@@ -184,7 +201,7 @@ public class Beacon {
         addKeyValuePair(actionBuilder, BEACON_KEY_ACTION_ID, action.getID());
         addKeyValuePair(actionBuilder, BEACON_KEY_PARENT_ACTION_ID, action.getParentID());
         addKeyValuePair(actionBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, action.getStartSequenceNo());
-        addKeyValuePair(actionBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(action.getStartTime()));
+        addKeyValuePair(actionBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(action.getStartTime()));
         addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
         addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
@@ -199,7 +216,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(session.getEndTime()));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
 
         addEventData(session.getEndTime(), eventBuilder);
     }
@@ -257,7 +274,7 @@ public class Beacon {
         long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(timestamp));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
@@ -278,7 +295,7 @@ public class Beacon {
         long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(timestamp));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
@@ -293,7 +310,7 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTracer.getStartSequenceNo());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(webRequestTracer.getStartTime()));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(webRequestTracer.getStartTime()));
         addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
 
@@ -321,7 +338,7 @@ public class Beacon {
         long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(timestamp));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
 
         addEventData(timestamp, eventBuilder);
     }
@@ -330,6 +347,7 @@ public class Beacon {
     public StatusResponse send(HTTPClientProvider provider) {
 
         HTTPClient httpClient = provider.createClient(httpConfiguration);
+        ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
         StatusResponse response = null;
 
         while (true) {
@@ -365,8 +383,10 @@ public class Beacon {
             }
         }
 
+        // only return last status response for updating the settings
         return response;
     }
+
 
     /**
      * Gets all events.
@@ -423,7 +443,7 @@ public class Beacon {
 
         addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(builder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(builder, BEACON_KEY_TIME_0, timingProvider.getTimeSinceLastInitTime(eventTimestamp));
+        addKeyValuePair(builder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(eventTimestamp));
 
         return eventTimestamp;
     }
@@ -435,6 +455,53 @@ public class Beacon {
             addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
         }
         addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
+    }
+
+    // creates (possibly) multiple beacon chunks based on max beacon size
+    public ArrayList<byte[]> createBeaconDataChunks() {
+        ArrayList<byte[]> beaconDataChunks = new ArrayList<byte[]>();
+
+        synchronized (eventDataList) {
+            synchronized (actionDataList) {
+                while (!eventDataList.isEmpty() || !actionDataList.isEmpty()) {
+                    StringBuilder beaconBuilder = new StringBuilder();
+
+                    beaconBuilder.append(basicBeaconData);
+                    beaconBuilder.append('&');
+                    beaconBuilder.append(createTimestampData());
+
+                    while (!eventDataList.isEmpty()) {
+                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
+                            break;
+                        }
+
+                        String eventData = eventDataList.removeFirst();
+                        beaconBuilder.append('&');
+                        beaconBuilder.append(eventData);
+                    }
+
+                    while (!actionDataList.isEmpty()) {
+                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
+                            break;
+                        }
+
+                        String actionData = actionDataList.removeFirst();
+                        beaconBuilder.append('&');
+                        beaconBuilder.append(actionData);
+                    }
+
+                    byte[] encodedBeacon = null;
+                    try {
+                        encodedBeacon = beaconBuilder.toString().getBytes(CHARSET);
+                    } catch (UnsupportedEncodingException e) {
+                        // must not happen, as UTF-8 should *really* be supported
+                    }
+                    beaconDataChunks.add(encodedBeacon);
+                }
+            }
+        }
+
+        return beaconDataChunks;
     }
 
     // helper method for creating basic beacon protocol data
@@ -450,6 +517,7 @@ public class Beacon {
             addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
         }
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getDeviceID());
@@ -477,7 +545,7 @@ public class Beacon {
 
         // timestamp information
         addKeyValuePair(timestampBuilder, BEACON_KEY_SESSION_START_TIME, timingProvider.convertToClusterTime(sessionStartTime));
-        addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, timingProvider.getLastInitTimeInClusterTime());
+        addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, timingProvider.convertToClusterTime(sessionStartTime));
         if (!timingProvider.isTimeSyncSupported()) {
             addKeyValuePair(timestampBuilder, BEACON_KEY_TRANSMISSION_TIME, timingProvider.provideTimestampInMilliseconds());
         }
@@ -534,6 +602,14 @@ public class Beacon {
             name = name.substring(0, MAX_NAME_LEN);
         }
         return name;
+    }
+
+    private long getTimeSinceSessionStartTime(long timestamp) {
+        return timestamp - sessionStartTime;
+    }
+
+    private long getTimeSinceSessionStartTime() {
+        return getTimeSinceSessionStartTime(timingProvider.provideTimestampInMilliseconds());
     }
 
 }

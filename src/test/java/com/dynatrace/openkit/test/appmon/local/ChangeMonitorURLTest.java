@@ -36,14 +36,14 @@ public class ChangeMonitorURLTest extends AbstractLocalAppMonTest {
         ChangeMonitorURLTestShared.test(openKit, TEST_IP);
 
         ArrayList<Request> sentRequests = openKitTestImpl.getSentRequests();
-        String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_NAME + "&an=" + TEST_APPLICATION_NAME + "&vn=" + TEST_OPENKIT_DEFAULT_VERSION + "&pt=1&vi=" + testConfiguration
-            .getDeviceID() + "&sn=1&ip=" + TEST_IP + "&os=" + TEST_OS + "&mf=" + TEST_MANUFACTURER + "&md=" + TEST_DEVICE_TYPE + "&tv=1005000&ts=1004000&tx=1009000&et=19&it=1&pa=0&s0=3&t0=4000&et=1&na=ChangeMonitorURLAction&it=1&ca=1&pa=0&s0=1&t0=2000&s1=2&t1=1000";
+        String expectedBeacon = "vv=3&va=7.0.0000&ap=" + TEST_APPLICATION_NAME + "&an=" + TEST_APPLICATION_NAME + "&vn=" + TEST_OPENKIT_DEFAULT_VERSION + "&pt=1&tt=okjava&vi=" + testConfiguration
+            .getDeviceID() + "&sn=1&ip=" + TEST_IP + "&os=" + TEST_OS + "&mf=" + TEST_MANUFACTURER + "&md=" + TEST_DEVICE_TYPE + "&tv=1004000&ts=1004000&tx=1008000&et=19&it=1&pa=0&s0=3&t0=3000&et=1&na=ChangeMonitorURLAction&it=1&ca=1&pa=0&s0=1&t0=1000&s1=2&t1=1000";
         Assert.assertEquals(3, sentRequests.size());
         validateRequest(sentRequests.get(0), RequestType.STATUS, "GET", getDefaultEndpoint(), null, "");
 
         // assert that monitor is not changed as this is not supported anymore in OpenKit
         validateRequest(sentRequests.get(1), RequestType.TIMESYNC, "GET", TEST_ENDPOINT + "?type=mts", null, "");
-        validateRequest(sentRequests.get(2), RequestType.BEACON, "POST", TEST_ENDPOINT + "?type=m&srvid=1&app=" + TEST_APPLICATION_NAME + "&va=7.0.0000&pt=1", TEST_IP, expectedBeacon);
+        validateRequest(sentRequests.get(2), RequestType.BEACON, "POST", TEST_ENDPOINT + "?type=m&srvid=1&app=" + TEST_APPLICATION_NAME + "&va=7.0.0000&pt=1&tt=okjava", TEST_IP, expectedBeacon);
     }
 
 }

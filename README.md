@@ -172,13 +172,8 @@ openKit.shutdown();
 ## Known Current Limitations
 * problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
   * fixed in Java 6u171, which is only available via Oracle support (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8182231)
-* it's only possible to have one OpenKit instance running as providers are static
 
 ## TODOs
-* move providers from static to instance (multiple OpenKits -> multiple providers)
 * prevent re-entrances e.g. of startup/shutdown
-* HTTPS certificate verification
 * HTTP optimizations (reuse connection, pool http client?)
-* provide simple samples to get started as markdown
-* add more verbose logging
 * introduce traffic control

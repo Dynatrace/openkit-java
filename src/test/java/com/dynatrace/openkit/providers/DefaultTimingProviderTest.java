@@ -75,42 +75,6 @@ public class DefaultTimingProviderTest {
         assertThat(target, is(equalTo(clusterOffset + now)));
     }
 
-    @Test
-    public void lastInitTimeIsSetCorrectly() {
-        // given
-        provider.initialize(clusterOffset, true);
-
-        // when
-        long target = provider.getLastInitTimeInClusterTime();
-
-        // then
-        assertThat(target, is(equalTo(clusterOffset + now)));
-    }
-
-    @Test
-    public void canGetTimeSinceLastInit() {
-        // given
-        provider.initialize(clusterOffset, true);
-
-        // when
-        long target = provider.getTimeSinceLastInitTime();
-
-        // then
-        assertThat(target, is(equalTo(0L)));
-    }
-
-    @Test
-    public void canGetTimeSinceLastInitTimeWithTimestamp() {
-        // given
-        provider.initialize(clusterOffset, true);
-
-        // when
-        long target = provider.getTimeSinceLastInitTime(now + 1);
-
-        // then
-        assertThat(target, is(equalTo(1L)));
-    }
-
     /**
      * DefaultTimingProvider that always returns the same value for provideTimestampInMilliseconds
      */
