@@ -1,3 +1,19 @@
+/**
+ * Copyright 2018 Dynatrace LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.dynatrace.openkit.core.caching;
 
 import java.util.Collections;
@@ -44,6 +60,7 @@ class BeaconCacheEntry {
      * Total number of bytes consumed by this entry.
      */
     private int totalNumBytes = 0;
+
     /**
      * Lock this {@link BeaconCacheEntry} for reading & writing.
      *
@@ -137,8 +154,8 @@ class BeaconCacheEntry {
      */
     private boolean hasDataToSend() {
 
-        return (eventDataBeingSent != null && !eventDataBeingSent.isEmpty())
-            || (actionDataBeingSent != null && !actionDataBeingSent.isEmpty());
+        return (eventDataBeingSent != null && !eventDataBeingSent.isEmpty()) || (actionDataBeingSent != null && !actionDataBeingSent
+            .isEmpty());
     }
 
     /**
@@ -166,10 +183,7 @@ class BeaconCacheEntry {
         return beaconBuilder.toString();
     }
 
-    private static void chunkifyDataList(StringBuilder chunkBuilder,
-                                         LinkedList<BeaconCacheRecord> dataBeingSent,
-                                         int maxSize,
-                                         char delimiter) {
+    private static void chunkifyDataList(StringBuilder chunkBuilder, LinkedList<BeaconCacheRecord> dataBeingSent, int maxSize, char delimiter) {
 
         Iterator<BeaconCacheRecord> iterator = dataBeingSent.iterator();
         while (iterator.hasNext() && chunkBuilder.length() <= maxSize) {
@@ -179,8 +193,7 @@ class BeaconCacheEntry {
             record.markForSending();
 
             // append delimiter & data
-            chunkBuilder.append(delimiter)
-                        .append(record.getData());
+            chunkBuilder.append(delimiter).append(record.getData());
         }
     }
 
