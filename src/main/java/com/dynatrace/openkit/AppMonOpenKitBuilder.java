@@ -17,6 +17,7 @@
 package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
@@ -44,6 +45,10 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
     Configuration buildConfiguration() {
         Device device = new Device(getOperatingSystem(), getManufacturer(), getModelID());
 
+        // TODO stefan.eberl - offer a real BeaconCacheConfiguration via the builder
+        // for now this configuration instance just disables any eviction
+        BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(-1, -1, -1);
+
         return new Configuration(
             OpenKitType.APPMON,
             applicationName,
@@ -53,6 +58,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
             new DefaultSessionIDProvider(),
             getTrustManager(),
             device,
-            getApplicationVersion());
+            getApplicationVersion(),
+            beaconCacheConfiguration);
     }
 }

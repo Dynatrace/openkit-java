@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.test;
 
 import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
@@ -42,6 +43,7 @@ public class ConfigurationTest {
 
     private Configuration getDynatraceConfig(String tenantURL) {
         return new Configuration(OpenKitType.DYNATRACE, "", "", 17, tenantURL,
-            new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "");
+            new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "",
+            new BeaconCacheConfiguration(-1, -1, -1));
     }
 }
