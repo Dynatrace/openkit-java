@@ -1,6 +1,8 @@
 package com.dynatrace.openkit.core.caching;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.junit.experimental.theories.suppliers.TestedOn;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -357,7 +359,7 @@ public class BeaconCacheEntryTest {
         BeaconCacheEntry target = new BeaconCacheEntry();
 
         // when getting total number of bytes on an empty entry, then
-        assertThat(target.getTotalNumberOfBytes(), is(0L));
+        assertThat(target.getTotalNumberOfBytes(), is(0));
 
         // and when adding first entry
         target.addActionData(dataOne);
@@ -384,5 +386,256 @@ public class BeaconCacheEntryTest {
         // then
         assertThat(target.getTotalNumberOfBytes(), is(equalTo(dataOne.getDataSizeInBytes() + dataTwo.getDataSizeInBytes() + dataThree
             .getDataSizeInBytes() + dataFour.getDataSizeInBytes())));
+    }
+
+    @Test
+    public void removeRecordsOlderThanRemovesNothingIfNoActionOrEventDataExists() {
+
+        // given
+        BeaconCacheEntry target = new BeaconCacheEntry();
+
+        // when
+        int obtained = target.removeRecordsOlderThan(0);
+
+        // then
+        assertThat(obtained, is(0));
+    }
+
+    @Test
+    public void removeRecordsOlderThanRemovesRecordsFromActionData() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(4000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(3000L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1000L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addActionData(dataOne);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+        target.addActionData(dataFour);
+
+        // when removing everything older than 3000
+        int obtained = target.removeRecordsOlderThan(dataTwo.getTimestamp());
+
+        // then
+        assertThat(obtained, is(2)); // two were removed
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataOne, dataTwo))));
+    }
+
+    @Test
+    public void removeRecordsOlderThanRemovesRecordsFromEventData() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(4000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(3000L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1000L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataTwo);
+        target.addEventData(dataThree);
+        target.addEventData(dataFour);
+
+        // when removing everything older than 3000
+        int obtained = target.removeRecordsOlderThan(dataTwo.getTimestamp());
+
+        // then
+        assertThat(obtained, is(2)); // two were removed
+        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataOne, dataTwo))));
+    }
+
+    @Test
+    public void removeOldestRecordsRemovesNothingIfEntryIsEmpty() {
+
+        // given
+        BeaconCacheEntry target = new BeaconCacheEntry();
+
+        // when
+        int obtained = target.removeOldestRecords(1);
+
+        // then
+        assertThat(obtained, is(equalTo(0)));
+    }
+
+    @Test
+    public void removeOldestRecordsRemovesActionDataIfEventDataIsEmpty() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(4000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(3000L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1000L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addActionData(dataOne);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+        target.addActionData(dataFour);
+
+        // when
+        int obtained = target.removeOldestRecords(2);
+
+        // then
+        assertThat(obtained, is(2)); // two were removed
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataThree, dataFour))));
+    }
+
+    @Test
+    public void removeOldestRecordsRemovesEventDataIfActionDataIsEmpty() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(4000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(3000L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1000L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataTwo);
+        target.addEventData(dataThree);
+        target.addEventData(dataFour);
+
+        // when
+        int obtained = target.removeOldestRecords(2);
+
+        // then
+        assertThat(obtained, is(2)); // two were removed
+        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataThree, dataFour))));
+    }
+
+    @Test
+    public void removeOldestRecordsComparesTopActionAndEventDataAndRemovesOldest() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(1000, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(1100L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(950L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1200L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+        target.addEventData(dataFour);
+
+        // when
+        int obtained = target.removeOldestRecords(1);
+
+        // then
+        assertThat(obtained, is(1));
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+        assertThat(target.getEventData(), is(equalTo(Collections.singletonList(dataFour))));
+
+        // when removing the next two
+        obtained = target.removeOldestRecords(2);
+
+        // then
+        assertThat(obtained, is(2));
+        assertThat(target.getActionData(), is(empty()));
+        assertThat(target.getEventData(), is(equalTo(Collections.singletonList(dataFour))));
+    }
+
+    @Test
+    public void removeOldestRecordsRemovesEventDataIfTopEventDataAndActionDataHaveSameTimestamp() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(1000, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(1100L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(dataOne.getTimestamp(), "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(dataTwo.getTimestamp(), "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataTwo);
+        target.addActionData(dataThree);
+        target.addActionData(dataFour);
+
+        // when
+        int obtained = target.removeOldestRecords(1);
+
+        // then
+        assertThat(obtained, is(1));
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataThree, dataFour))));
+        assertThat(target.getEventData(), is(equalTo(Collections.singletonList(dataTwo))));
+    }
+
+    @Test
+    public void removeOldestRecordsStopsIfListsAreEmpty() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(4000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(3000L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1000L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataTwo);
+        target.addEventData(dataThree);
+        target.addEventData(dataFour);
+
+        // when
+        int obtained = target.removeOldestRecords(100);
+
+        // then
+        assertThat(obtained, is(4));
+        assertThat(target.getEventData(), is(empty()));
+        assertThat(target.getActionData(), is(empty()));
+    }
+
+    @Test
+    public void removeRecordsOlderThanDoesNotRemoveAnythingFromEventAndActionsBeingSent() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(1000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(1500L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(2500L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
+        // when
+        int obtained = target.removeRecordsOlderThan(10000);
+
+        // then
+        assertThat(obtained, is(0));
+        assertThat(target.getEventDataBeingSent(), is(equalTo(Arrays.asList(dataOne, dataFour))));
+        assertThat(target.getActionDataBeingSent(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+    }
+
+
+    @Test
+    public void removeOldestRecordsDoesNotRemoveAnythingFromEventAndActionsBeingSent() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(1000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(1500L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(2000L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(2500L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
+        // when
+        int obtained = target.removeOldestRecords(10000);
+
+        // then
+        assertThat(obtained, is(0));
+        assertThat(target.getEventDataBeingSent(), is(equalTo(Arrays.asList(dataOne, dataFour))));
+        assertThat(target.getActionDataBeingSent(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
     }
 }

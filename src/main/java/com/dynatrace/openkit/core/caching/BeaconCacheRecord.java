@@ -56,7 +56,7 @@ class BeaconCacheRecord {
      *
      * @return Data size in bytes.
      */
-    long getDataSizeInBytes() {
+    int getDataSizeInBytes() {
         if (getData() == null) {
             return 0;
         }

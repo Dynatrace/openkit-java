@@ -43,7 +43,7 @@ class BeaconCacheEntry {
     /**
      * Total number of bytes consumed by this entry.
      */
-    long totalNumBytes = 0;
+    private int totalNumBytes = 0;
     /**
      * Lock this {@link BeaconCacheEntry} for reading & writing.
      *
@@ -243,11 +243,95 @@ class BeaconCacheEntry {
      *
      * @return Sum of data size in bytes for each {@link BeaconCacheRecord}.
      */
-    long getTotalNumberOfBytes() {
+    int getTotalNumberOfBytes() {
 
         return totalNumBytes;
     }
 
+    /**
+     * Remove all {@link BeaconCacheRecord beacon cache records} from event and action data
+     * which are older than given age
+     *
+     * <p>
+     * Records which are currently being sent are not evicted.
+     * </p>
+     *
+     * @param age The maximum age allowed (including age).
+     */
+    int removeRecordsOlderThan(long age) {
+
+
+        int numRecordsRemoved = removeRecordsOlderThan(eventData, age);
+        numRecordsRemoved += removeRecordsOlderThan(actionData, age);
+
+        return numRecordsRemoved;
+    }
+
+    private static int removeRecordsOlderThan(List<BeaconCacheRecord> records, long age) {
+
+        int numRecordsRemoved = 0;
+
+        Iterator<BeaconCacheRecord> iterator = records.iterator();
+        while (iterator.hasNext()) {
+            BeaconCacheRecord record = iterator.next();
+            if (record.getTimestamp() < age) {
+                iterator.remove();
+                numRecordsRemoved++;
+            }
+        }
+
+        return numRecordsRemoved;
+    }
+
+    /**
+     * Remove up to {@code numRecords} records from event & action data, compared by their age.
+     *
+     * <p>
+     * Note not all event/action data entries are traversed, only the first action data & first event
+     * data is removed and compared against each other, which one to remove first.
+     * </p>
+     *
+     * @param numRecords The number of records.
+     * @return Number of actually removed records.
+     */
+    public int removeOldestRecords(int numRecords) {
+
+        int numRecordsRemoved = 0;
+
+        Iterator<BeaconCacheRecord> eventsIterator = eventData.iterator();
+        Iterator<BeaconCacheRecord> actionsIterator = actionData.iterator();
+        BeaconCacheRecord currentEvent = eventsIterator.hasNext() ? eventsIterator.next() : null;
+        BeaconCacheRecord currentAction = actionsIterator.hasNext() ? actionsIterator.next() : null;
+
+        while (numRecordsRemoved < numRecords && (currentEvent != null || currentAction != null)) {
+
+            if (currentEvent == null) {
+                // actions is not null -> remove action
+                currentAction = removeAndAdvanceIterator(actionsIterator);
+            } else if (currentAction == null) {
+                // events is not null -> remove event
+                currentEvent = removeAndAdvanceIterator(eventsIterator);
+            } else {
+                // both are not null -> compare by timestamp and take the older one
+                if (currentAction.getTimestamp() < currentEvent.getTimestamp()) {
+                    // first action is older than first event
+                    currentAction = removeAndAdvanceIterator(actionsIterator);
+                } else {
+                    // first event is older than first action
+                    currentEvent = removeAndAdvanceIterator(eventsIterator);
+                }
+            }
+
+            numRecordsRemoved++;
+        }
+
+        return numRecordsRemoved;
+    }
+
+    private static <E> E removeAndAdvanceIterator(Iterator<E> iterator) {
+        iterator.remove();
+        return iterator.hasNext() ? iterator.next() : null;
+    }
 
     /**
      * Get a shallow copy of event data.
