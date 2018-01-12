@@ -17,7 +17,7 @@
 package com.dynatrace.openkit.core.caching;
 
 /**
- * A single record in the {@link BeaconCache}
+ * A single record in the {@link BeaconCacheImpl}
  *
  * <p>
  *     A record is described by
@@ -29,7 +29,7 @@ package com.dynatrace.openkit.core.caching;
  */
 class BeaconCacheRecord {
 
-    private static final int CHAR_SIZE_BYTES = 2;
+    private static final long CHAR_SIZE_BYTES = 2L;
 
     private final long timestamp;
     private final String data;
@@ -72,7 +72,7 @@ class BeaconCacheRecord {
      *
      * @return Data size in bytes.
      */
-    int getDataSizeInBytes() {
+    long getDataSizeInBytes() {
         if (getData() == null) {
             return 0;
         }

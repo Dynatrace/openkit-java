@@ -24,7 +24,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Represents an entry in the {@link BeaconCache}.
+ * Represents an entry in the {@link BeaconCacheImpl}.
  *
  * <p>
  *     The caller is responsible to lock this element, before the first method is invoked using
@@ -59,7 +59,7 @@ class BeaconCacheEntry {
     /**
      * Total number of bytes consumed by this entry.
      */
-    private int totalNumBytes = 0;
+    private long totalNumBytes = 0;
 
     /**
      * Lock this {@link BeaconCacheEntry} for reading & writing.
@@ -256,7 +256,7 @@ class BeaconCacheEntry {
      *
      * @return Sum of data size in bytes for each {@link BeaconCacheRecord}.
      */
-    int getTotalNumberOfBytes() {
+    long getTotalNumberOfBytes() {
 
         return totalNumBytes;
     }

@@ -20,7 +20,7 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
-import com.dynatrace.openkit.core.caching.BeaconCache;
+import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
@@ -30,9 +30,6 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -99,11 +96,6 @@ public class Beacon {
 
     private static final char BEACON_DATA_DELIMITER = '&';
 
-    /**
-     * Initial time to sleep after the first failed beacon send attempt.
-     */
-    private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
-
     // next ID and sequence number
     private AtomicInteger nextID = new AtomicInteger(0);
     private AtomicInteger nextSequenceNumber = new AtomicInteger(0);
@@ -126,17 +118,13 @@ public class Beacon {
     // HTTPClientConfiguration reference
     private final HTTPClientConfiguration httpConfiguration;
 
-    // lists of events and actions currently on the Beacon
-    private final LinkedList<String> eventDataList = new LinkedList<String>();
-    private final LinkedList<String> actionDataList = new LinkedList<String>();
-
     private final Logger logger;
 
-    private final BeaconCache beaconCache;
+    private final BeaconCacheImpl beaconCache;
 
     // *** constructors ***
 
-    public Beacon(Logger logger, BeaconCache beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
+    public Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
         this.logger = logger;
         this.beaconCache = beaconCache;
         this.sessionNumber = configuration.createSessionNumber();
@@ -347,7 +335,6 @@ public class Beacon {
     public StatusResponse send(HTTPClientProvider provider) {
 
         HTTPClient httpClient = provider.createClient(httpConfiguration);
-        ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
         StatusResponse response = null;
 
         while (true) {
@@ -383,7 +370,6 @@ public class Beacon {
             }
         }
 
-        // only return last status response for updating the settings
         return response;
     }
 
@@ -455,53 +441,6 @@ public class Beacon {
             addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
         }
         addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
-    }
-
-    // creates (possibly) multiple beacon chunks based on max beacon size
-    public ArrayList<byte[]> createBeaconDataChunks() {
-        ArrayList<byte[]> beaconDataChunks = new ArrayList<byte[]>();
-
-        synchronized (eventDataList) {
-            synchronized (actionDataList) {
-                while (!eventDataList.isEmpty() || !actionDataList.isEmpty()) {
-                    StringBuilder beaconBuilder = new StringBuilder();
-
-                    beaconBuilder.append(basicBeaconData);
-                    beaconBuilder.append('&');
-                    beaconBuilder.append(createTimestampData());
-
-                    while (!eventDataList.isEmpty()) {
-                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
-                            break;
-                        }
-
-                        String eventData = eventDataList.removeFirst();
-                        beaconBuilder.append('&');
-                        beaconBuilder.append(eventData);
-                    }
-
-                    while (!actionDataList.isEmpty()) {
-                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
-                            break;
-                        }
-
-                        String actionData = actionDataList.removeFirst();
-                        beaconBuilder.append('&');
-                        beaconBuilder.append(actionData);
-                    }
-
-                    byte[] encodedBeacon = null;
-                    try {
-                        encodedBeacon = beaconBuilder.toString().getBytes(CHARSET);
-                    } catch (UnsupportedEncodingException e) {
-                        // must not happen, as UTF-8 should *really* be supported
-                    }
-                    beaconDataChunks.add(encodedBeacon);
-                }
-            }
-        }
-
-        return beaconDataChunks;
     }
 
     // helper method for creating basic beacon protocol data
@@ -607,9 +546,4 @@ public class Beacon {
     private long getTimeSinceSessionStartTime(long timestamp) {
         return timestamp - sessionStartTime;
     }
-
-    private long getTimeSinceSessionStartTime() {
-        return getTimeSinceSessionStartTime(timingProvider.provideTimestampInMilliseconds());
-    }
-
 }
