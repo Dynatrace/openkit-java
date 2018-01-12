@@ -22,8 +22,8 @@ package com.dynatrace.openkit.core.configuration;
 public class BeaconCacheConfiguration {
 
     private long maxRecordAge;
-    private int cacheSizeLowerBound;
-    private int cacheSizeUpperBound;
+    private long cacheSizeLowerBound;
+    private long cacheSizeUpperBound;
 
     /**
      * Constructor
@@ -32,7 +32,7 @@ public class BeaconCacheConfiguration {
      * @param cacheSizeLowerBound lower memory limit for cache
      * @param cacheSizeUpperBound upper memory limit for cache
      */
-    public BeaconCacheConfiguration(long maxRecordAge, int cacheSizeLowerBound, int cacheSizeUpperBound) {
+    public BeaconCacheConfiguration(long maxRecordAge, long cacheSizeLowerBound, long cacheSizeUpperBound) {
 
         this.maxRecordAge = maxRecordAge;
         this.cacheSizeLowerBound = cacheSizeLowerBound;
@@ -49,14 +49,14 @@ public class BeaconCacheConfiguration {
     /**
      * Get lower memory limit for cache.
      */
-    public int getCacheSizeLowerBound() {
+    public long getCacheSizeLowerBound() {
         return cacheSizeLowerBound;
     }
 
     /**
      * Get upper memory limit for cache.
      */
-    public int getCacheSizeUpperBound() {
+    public long getCacheSizeUpperBound() {
         return cacheSizeUpperBound;
     }
 }

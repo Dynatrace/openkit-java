@@ -112,21 +112,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
     }
 
-    /**
-     * Get the next chunk for sending to the backend.
-     *
-     * <p>
-     *     Note: This method must only be invoked from the beacon sending thread.
-     * </p>
-     *
-     * @param beaconID The beacon id for which to get the next chunk.
-     * @param chunkPrefix Prefix to append to the beginning of the chunk.
-     * @param maxSize Maximum chunk size. As soon as chunk's size >= maxSize result is returned.
-     * @param delimiter Delimiter between consecutive chunks.
-     *
-     * @return {@code null} if given {@code beaconID} does not exist, an empty string, if there is no more data to send
-     * or the next chunk to send.
-     */
+
     @Override
     public String getNextBeaconChunk(Integer beaconID, String chunkPrefix, int maxSize, char delimiter) {
 
@@ -213,6 +199,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         cacheStats.numBytesAdded(numBytes);
+
+        // notify observers
+        onDataAdded();
     }
 
     /**
@@ -274,6 +263,23 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     /**
+     * Get a shallow copy of events that are about to be sent.
+     *
+     * <P>
+     * This method is only intended for internal unit tests.
+     * </P>
+     *
+     * @param beaconID The beacon id for which to retrieve the events.
+     *
+     * @return List of event data.
+     */
+    List<BeaconCacheRecord> getEventsBeingSent(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        return Collections.unmodifiableList(entry.getEventDataBeingSent());
+    }
+
+    /**
      * Get a shallow copy of actions collected so far.
      *
      * <p>
@@ -298,6 +304,23 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         } finally {
             entry.unlock();
         }
+    }
+
+    /**
+     * Get a shallow copy of events that are about to be sent.
+     *
+     * <P>
+     * This method is only intended for internal unit tests.
+     * </P>
+     *
+     * @param beaconID The beacon id for which to retrieve the events.
+     *
+     * @return List of event data.
+     */
+    List<BeaconCacheRecord> getActionsBeingSent(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        return Collections.unmodifiableList(entry.getActionDataBeingSent());
     }
 
     private static String[] extractData(List<BeaconCacheRecord> eventData) {

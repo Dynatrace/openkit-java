@@ -1,3 +1,19 @@
+/**
+ * Copyright 2018 Dynatrace LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.dynatrace.openkit.core.caching;
 
 import com.dynatrace.openkit.api.Logger;
@@ -40,11 +56,6 @@ class BeaconCacheTimeEviction implements BeaconCacheEvictionStrategy {
             return;
         }
 
-        if (isFirstTimeExecution()) {
-            // if we are executing first time, just update the runtime
-            lastRunTimestamp = timingProvider.provideTimestampInMilliseconds();
-        }
-
         if (shouldRun()) {
             doExecute();
         }
@@ -54,14 +65,18 @@ class BeaconCacheTimeEviction implements BeaconCacheEvictionStrategy {
         return configuration.getMaxRecordAge() <= 0;
     }
 
-    boolean isFirstTimeExecution() {
-        return lastRunTimestamp < 0;
-    }
-
     boolean shouldRun() {
         // if delta since we last ran is >= the maximum age, we should run, otherwise this run can be skipped
         long currentTimestamp = timingProvider.provideTimestampInMilliseconds();
         return (currentTimestamp - lastRunTimestamp) >= configuration.getMaxRecordAge();
+    }
+
+    long getLastRunTimestamp() {
+        return lastRunTimestamp;
+    }
+
+    void setLastRunTimestamp(long lastRunTimestamp) {
+        this.lastRunTimestamp = lastRunTimestamp;
     }
 
     private void doExecute() {
@@ -87,6 +102,6 @@ class BeaconCacheTimeEviction implements BeaconCacheEvictionStrategy {
         }
 
         // last but not least update the last runtime
-        lastRunTimestamp = currentTimestamp;
+        setLastRunTimestamp(currentTimestamp);
     }
 }

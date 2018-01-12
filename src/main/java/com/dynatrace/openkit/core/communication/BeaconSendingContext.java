@@ -86,7 +86,7 @@ public class BeaconSendingContext {
 
     /**
      * Constructor.
-     * <p>
+     *
      * <p>
      * The state is initialized to {@link BeaconSendingInitState},
      * </p>
@@ -125,7 +125,7 @@ public class BeaconSendingContext {
 
     /**
      * Wait until OpenKit has been fully initialized.
-     * <p>
+     *
      * <p>
      * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
@@ -144,7 +144,7 @@ public class BeaconSendingContext {
 
     /**
      * Wait until OpenKit has been fully initialized or timeout expired.
-     * <p>
+     *
      * <p>
      * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
@@ -247,7 +247,7 @@ public class BeaconSendingContext {
 
     /**
      * Complete OpenKit initialization.
-     * <p>
+
      * <p>
      * This will wake up every caller waiting in the {@link #waitForInit()} method.
      * </p>

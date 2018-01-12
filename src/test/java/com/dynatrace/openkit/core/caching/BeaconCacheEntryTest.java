@@ -374,7 +374,7 @@ public class BeaconCacheEntryTest {
         BeaconCacheEntry target = new BeaconCacheEntry();
 
         // when getting total number of bytes on an empty entry, then
-        assertThat(target.getTotalNumberOfBytes(), is(0));
+        assertThat(target.getTotalNumberOfBytes(), is(0L));
 
         // and when adding first entry
         target.addActionData(dataOne);

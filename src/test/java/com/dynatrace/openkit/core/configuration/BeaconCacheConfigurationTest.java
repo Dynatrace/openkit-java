@@ -40,11 +40,11 @@ public class BeaconCacheConfigurationTest {
 
         // then
         assertThat(new BeaconCacheConfiguration(0L, -1, 2).getCacheSizeLowerBound(),
-            is(-1));
+            is(-1L));
         assertThat(new BeaconCacheConfiguration(-1L, 0, 2).getCacheSizeLowerBound(),
-            is(0));
+            is(0L));
         assertThat(new BeaconCacheConfiguration(0L, 1, 2).getCacheSizeLowerBound(),
-            is(1));
+            is(1L));
     }
 
     @Test
@@ -52,10 +52,10 @@ public class BeaconCacheConfigurationTest {
 
         // then
         assertThat(new BeaconCacheConfiguration(0L, -1, -2).getCacheSizeUpperBound(),
-            is(-2));
+            is(-2L));
         assertThat(new BeaconCacheConfiguration(-1L, 1, 0).getCacheSizeUpperBound(),
-            is(0));
+            is(0L));
         assertThat(new BeaconCacheConfiguration(0L, 1, 2).getCacheSizeUpperBound(),
-            is(2));
+            is(2L));
     }
 }

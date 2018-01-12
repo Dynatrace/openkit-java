@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.core.caching;
 
+import java.util.Arrays;
+
 /**
  * A single record in the {@link BeaconCacheImpl}
  *
@@ -100,5 +102,26 @@ class BeaconCacheRecord {
      */
     void unsetSending() {
         markedForSending = false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BeaconCacheRecord record = (BeaconCacheRecord) o;
+        return getTimestamp() == record.getTimestamp()
+            && isMarkedForSending() == record.isMarkedForSending()
+            && getData().equals(record.getData());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Arrays.hashCode(new Object[]{getTimestamp(), getData(), isMarkedForSending()});
     }
 }

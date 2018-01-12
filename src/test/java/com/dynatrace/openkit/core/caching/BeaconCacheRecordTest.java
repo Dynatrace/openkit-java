@@ -21,6 +21,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 
 public class BeaconCacheRecordTest {
 
@@ -54,15 +55,15 @@ public class BeaconCacheRecordTest {
     public void getDataSizeInBytes() {
 
         // when data is null, then
-        assertThat(new BeaconCacheRecord(0L, null).getDataSizeInBytes(), is(0));
+        assertThat(new BeaconCacheRecord(0L, null).getDataSizeInBytes(), is(0L));
 
         // and when data is an empty string, then
-        assertThat(new BeaconCacheRecord(0L, "").getDataSizeInBytes(), is(0));
+        assertThat(new BeaconCacheRecord(0L, "").getDataSizeInBytes(), is(0L));
 
         // and when data is valid, then
-        assertThat(new BeaconCacheRecord(0L, "a").getDataSizeInBytes(), is(2));
-        assertThat(new BeaconCacheRecord(0L, "ab").getDataSizeInBytes(), is(4));
-        assertThat(new BeaconCacheRecord(0L, "abc").getDataSizeInBytes(), is(6));
+        assertThat(new BeaconCacheRecord(0L, "a").getDataSizeInBytes(), is(2L));
+        assertThat(new BeaconCacheRecord(0L, "ab").getDataSizeInBytes(), is(4L));
+        assertThat(new BeaconCacheRecord(0L, "abc").getDataSizeInBytes(), is(6L));
     }
 
     @Test
@@ -85,5 +86,133 @@ public class BeaconCacheRecordTest {
 
         // then
         assertThat(target.isMarkedForSending(), is(false));
+    }
+
+    @Test
+    public void sameInstancesAreEqual() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(0L, "abc");
+
+        // then
+        assertThat(target.equals(target), is(true));
+    }
+
+    @Test
+    public void nullIsNotEqual() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(0L, "abc");
+
+        // then
+        assertThat(target.equals(null), is(false));
+    }
+
+    @Test
+    public void aDifferentTypeIsNotConsideredEqual() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(0L, "abc");
+
+        // then
+        assertThat(target.equals("abc"), is(false));
+    }
+
+    @Test
+    public void twoInstancesAreEqualIfFieldsAreEqual() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord other = new BeaconCacheRecord(1234L, "abc");
+
+        // then
+        assertThat(target.equals(other), is(true));
+
+        // and when setting send flag
+        target.markForSending();
+        other.markForSending();
+
+        // then
+        // then
+        assertThat(target.equals(other), is(true));
+    }
+
+    @Test
+    public void twoInstancesAreNotEqualIfTimestampDiffers() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord other = new BeaconCacheRecord(4321L, "abc");
+
+        // then
+        assertThat(target.equals(other), is(false));
+    }
+
+    @Test
+    public void twoInstancesAreNotEqualIfDataDiffers() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord other = new BeaconCacheRecord(1234L, "abcd");
+
+        // then
+        assertThat(target.equals(other), is(false));
+    }
+
+    @Test
+    public void twoInstancesAreNotEqualIfMarkedForSendingDiffers() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord other = new BeaconCacheRecord(1234L, "abc");
+        other.markForSending();
+
+        // then
+        assertThat(target.equals(other), is(false));
+    }
+
+    @Test
+    public void sameInstancesHaveSameHashCode() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord other = target;
+
+        // then
+        assertThat(target.hashCode(), is(other.hashCode()));
+    }
+
+    @Test
+    public void twoEqualInstancesHaveSameHashCode() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord other = new BeaconCacheRecord(1234L, "abc");
+
+        // then
+        assertThat(target.hashCode(), is(other.hashCode()));
+
+        // and when marking both for sending
+        target.markForSending();
+        other.markForSending();
+
+        // then
+        assertThat(target.hashCode(), is(other.hashCode()));
+    }
+
+    @Test
+    public void notEqualInstancesHaveDifferentHashCode() {
+
+        // given
+        BeaconCacheRecord target = new BeaconCacheRecord(1234L, "abc");
+        BeaconCacheRecord otherOne = new BeaconCacheRecord(4321L, "abc");
+        BeaconCacheRecord otherTwo = new BeaconCacheRecord(1234L, "abcd");
+        BeaconCacheRecord otherThree = new BeaconCacheRecord(1234L, "abcd");
+        otherThree.markForSending();
+
+        // then
+        assertThat(target.hashCode(), not(is(otherOne.hashCode())));
+        assertThat(target.hashCode(), not(is(otherTwo.hashCode())));
+        assertThat(target.hashCode(), not(is(otherThree.hashCode())));
     }
 }
