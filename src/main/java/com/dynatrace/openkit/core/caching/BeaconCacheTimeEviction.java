@@ -56,6 +56,11 @@ class BeaconCacheTimeEviction implements BeaconCacheEvictionStrategy {
             return;
         }
 
+        if (lastRunTimestamp < 0) {
+            // first time execution
+            lastRunTimestamp = timingProvider.provideTimestampInMilliseconds();
+        }
+
         if (shouldRun()) {
             doExecute();
         }
@@ -84,6 +89,8 @@ class BeaconCacheTimeEviction implements BeaconCacheEvictionStrategy {
         // first get a snapshot of all inserted beacons
         Set<Integer> beaconIDs = beaconCache.getBeaconIDs();
         if (beaconIDs.isEmpty()) {
+            // no beacons - set last run timestamp and return immediately
+            setLastRunTimestamp(timingProvider.provideTimestampInMilliseconds());
             return;
         }
 

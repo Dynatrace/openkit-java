@@ -21,12 +21,17 @@ import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BeaconCacheTimeEvictionTest {
 
@@ -135,5 +140,183 @@ public class BeaconCacheTimeEvictionTest {
 
         // then
         assertThat(target.shouldRun(), is(true));
+    }
+
+    @Test
+    public void executeEvictionLogsAMessageOnceAndReturnsIfStrategyIsDisabled() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(0L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockLogger.isInfoEnabled()).thenReturn(true);
+
+        // when executing the first time
+        target.executeEviction();
+
+        // then
+        verify(mockLogger, times(1)).isInfoEnabled();
+        verify(mockLogger, times(1)).info(anyString());
+        verifyNoMoreInteractions(mockLogger);
+        verifyZeroInteractions(mockBeaconCache, mockTimingProvider);
+
+        // and when executing a second time
+        target.executeEviction();
+
+        // then
+        verify(mockLogger, times(1)).isInfoEnabled();
+        verify(mockLogger, times(1)).info(anyString());
+        verifyNoMoreInteractions(mockLogger);
+        verifyZeroInteractions(mockBeaconCache, mockTimingProvider);
+    }
+
+    @Test
+    public void executeEvictionDoesNotLogIfStrategyIsDisabledAndInfoIsDisabledInLogger() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(0L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockLogger.isInfoEnabled()).thenReturn(false);
+
+        // when executing the first time
+        target.executeEviction();
+
+        // then
+        verify(mockLogger, times(1)).isInfoEnabled();
+        verifyNoMoreInteractions(mockLogger);
+        verifyZeroInteractions(mockBeaconCache, mockTimingProvider);
+
+        // and when executing a second time
+        target.executeEviction();
+
+        // then
+        verify(mockLogger, times(2)).isInfoEnabled();
+        verifyNoMoreInteractions(mockLogger);
+        verifyZeroInteractions(mockBeaconCache, mockTimingProvider);
+    }
+
+    @Test
+    public void lastRuntimeStampIsAdjustedDuringFirstExecution() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 1001L);
+
+        // when executing the first time
+        target.executeEviction();
+
+        // then
+        assertThat(target.getLastRunTimestamp(), is(1000L));
+        verify(mockTimingProvider, times(2)).provideTimestampInMilliseconds();
+
+        // when executing the second time
+        target.executeEviction();
+
+        // then
+        assertThat(target.getLastRunTimestamp(), is(1000L));
+        verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
+    }
+
+    @Test
+    public void executeEvictionStopsIfNoBeaconIdsAreAvailableInCache() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2000L);
+        when(mockBeaconCache.getBeaconIDs()).thenReturn(Collections.<Integer>emptySet());
+
+        // when
+        target.executeEviction();
+
+        // then verify interactions
+        verify(mockBeaconCache, times(1)).getBeaconIDs();
+        verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
+        verifyNoMoreInteractions(mockBeaconCache, mockTimingProvider);
+
+        // also ensure that the last run timestamp was updated
+        assertThat(target.getLastRunTimestamp(), is(2000L));
+    }
+
+    @Test
+    public void executeEvictionCallsEvictionForEachBeaconSeparately() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
+        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
+
+        // when
+        target.executeEviction();
+
+        // then verify interactions
+        verify(mockBeaconCache, times(1)).getBeaconIDs();
+        verify(mockBeaconCache, times(1)).evictRecordsByAge(1, 2099L - configuration.getMaxRecordAge());
+        verify(mockBeaconCache, times(1)).evictRecordsByAge(42, 2099L - configuration.getMaxRecordAge());
+        verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
+        verifyNoMoreInteractions(mockBeaconCache, mockTimingProvider);
+
+        // also ensure that the last run timestamp was updated
+        assertThat(target.getLastRunTimestamp(), is(2099L));
+    }
+
+    @Test
+    public void executeEvictionLogsTheNumberOfRecordsRemoved() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
+        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
+        when(mockBeaconCache.evictRecordsByAge(eq(1), anyLong())).thenReturn(2);
+        when(mockBeaconCache.evictRecordsByAge(eq(42), anyLong())).thenReturn(5);
+
+        when(mockLogger.isDebugEnabled()).thenReturn(true);
+
+        // when
+        target.executeEviction();
+
+        // then verify that the logger was invoked
+        verify(mockLogger, times(2)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug("Removed 2 records from Beacon with ID 1");
+        verify(mockLogger, times(1)).debug("Removed 5 records from Beacon with ID 42");
+        verifyNoMoreInteractions(mockLogger);
+    }
+
+    @Test
+    public void executeEvictionIsStoppedIfThreadGetsInterrupted() {
+
+        // given
+        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
+        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
+        when(mockBeaconCache.evictRecordsByAge(anyInt(), anyLong())).thenAnswer(new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocation) throws Throwable {
+                Thread.currentThread().interrupt();
+                return 2;
+            }
+        });
+
+        // when
+        target.executeEviction();
+
+        // then verify interactions
+        verify(mockBeaconCache, times(1)).getBeaconIDs();
+        verify(mockBeaconCache, times(1)).evictRecordsByAge(anyInt(), eq(2099L - configuration.getMaxRecordAge()));
+        verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
+        verifyNoMoreInteractions(mockBeaconCache, mockTimingProvider);
+
+        // verify that the interrupted flag is still set & clear it, since the thread is actually not really interrupted
+        assertThat(Thread.interrupted(), is(true));
     }
 }
