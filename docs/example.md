@@ -313,14 +313,14 @@ WebRequestTracer webRequestTracer = action.traceWebRequest(url);
 String headerName = OpenKitConstants.WEBREQUEST_TAG_HEADER;
 String headerValue = webRequestTracer.getTag();
 
-webRequestTracer.startTiming();
+webRequestTracer.start();
 
 // perform the request here & do not forget to add the HTTP header
 
 webRequestTracer.setBytesSent(12345);     // 12345 bytes sent
 webRequestTracer.setBytesReceived(67890); // 67890 bytes received
 webRequestTracer.setResponseCode(200);    // 200 was the response code
-webRequestTracer.stopTiming();
+webRequestTracer.stop();
 ```
 
 
