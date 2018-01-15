@@ -28,7 +28,7 @@ import java.net.URLConnection;
  * The SimpleSample includes a basic example that provides an overview of the features supported by OpenKit.
  * For more detailed information, please refer to the documentation that is available on GitHub.
  *
- * Warning: For simplicity no exception handling is performed in this example!!
+ * Warning: For simplicity no exception handling is performed in this example!
  */
 public class SimpleSample {
 
@@ -56,29 +56,29 @@ public class SimpleSample {
         session.identifyUser("openKitExampleUser");
 
         // create a root action
-        RootAction rootAction = session.enterAction("rootAction");
+        RootAction rootAction = session.enterAction("talk to postman");
 
-        // execute and trace GET request
+        // execute a GET request to the postman echo API and trace request time and size
         executeAndTraceWebRequest(rootAction, "https://postman-echo.com/get?query=users", null);
 
         // wait a bit
         Thread.sleep(1000);
 
-        // execute and trace POST request
+        // execute a POST request to the postman echo API and trace request time and size
         executeAndTraceWebRequest(rootAction, "https://postman-echo.com/post",
             "This is content that we want to be processed by the server");
 
-        // create a child action
-        Action childAction = rootAction.enterAction("childAction");
+        // report a value representing the desired sleep time
+        rootAction.reportValue("sleepTime", 2000);
 
-        // report a value on the child action
-        childAction.reportValue("sleepTime", 2000);
+        // create a child action
+        Action childAction = rootAction.enterAction("sleeping");
 
         // wait again
         Thread.sleep(2000);
 
-        // report event on the child action
-        childAction.reportEvent("finished sleeping");
+        // report an event indicating that we finished sleeping
+        rootAction.reportEvent("finished sleeping");
 
         // leave both actions
         childAction.leaveAction();
@@ -92,7 +92,7 @@ public class SimpleSample {
     }
 
     /**
-     * Performs a web request and traced the execution time using a {@code WebRequestTracer}. The result is reported
+     * Performs a web request and traces the execution time using a {@code WebRequestTracer}. The result is reported
      * as a child of the provided {@code Action}.
      *
      * If the payload is null or empty a GET request is performed. Otherwise, a POST request is performed
@@ -108,7 +108,7 @@ public class SimpleSample {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
         // write output if available
-        if (payload != null && payload != "") {
+        if (payload != null && !payload.isEmpty()) {
             urlConnection.setDoOutput(true);
             OutputStreamWriter wr = new OutputStreamWriter(urlConnection.getOutputStream());
             wr.write(payload);
