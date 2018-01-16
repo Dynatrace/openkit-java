@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -71,12 +71,8 @@ class BeaconCacheSpaceEviction implements BeaconCacheEvictionStrategy {
 
     private void doExecute() {
 
-
-        while (!Thread.currentThread().isInterrupted() && beaconCache.getNumBytesInCache() > configuration.getCacheSizeLowerBound()) {
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheSpaceEviction: Current cache");
-            }
+        while (!Thread.currentThread().isInterrupted()
+            && beaconCache.getNumBytesInCache() > configuration.getCacheSizeLowerBound()) {
 
             Set<Integer> beaconIDs = beaconCache.getBeaconIDs();
 
@@ -85,7 +81,10 @@ class BeaconCacheSpaceEviction implements BeaconCacheEvictionStrategy {
 
                 Integer beaconID = iterator.next();
 
-                beaconCache.evictRecordsByNumber(beaconID, 1);
+                int numRecordsRemoved = beaconCache.evictRecordsByNumber(beaconID, 1);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Removed " + numRecordsRemoved + " records from Beacon with ID " + beaconID);
+                }
             }
         }
     }
