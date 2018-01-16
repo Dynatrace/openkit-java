@@ -21,9 +21,9 @@ package com.dynatrace.openkit.core.configuration;
  */
 public class BeaconCacheConfiguration {
 
-    private long maxRecordAge;
-    private long cacheSizeLowerBound;
-    private long cacheSizeUpperBound;
+    private final long maxRecordAge;
+    private final long cacheSizeLowerBound;
+    private final long cacheSizeUpperBound;
 
     /**
      * Constructor
