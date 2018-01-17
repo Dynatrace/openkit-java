@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BeaconCacheEvictor {
 
-    static final String THREAD_NAME = BeaconCacheEvictor.class.getSimpleName();
+    private static final String THREAD_NAME = BeaconCacheEvictor.class.getSimpleName();
     private static final long EVICTION_THREAD_JOIN_TIMEOUT = TimeUnit.SECONDS.toMillis(2);
 
     private final Logger logger;
@@ -37,34 +37,26 @@ public class BeaconCacheEvictor {
 
     /**
      * Public constructor, initializing the eviction thread with the default
-     * {@link BeaconCacheTimeEviction} and {@link BeaconCacheSpaceEviction} strategies.
+     * {@link TimeEvictionStrategy} and {@link SpaceEvictionStrategy} strategies.
      *
-     * @param logger Logger to write some debug output
-     * @param beaconCache The Beacon cache to check if entries need to be evicted
-     * @param configuration Beacon cache configuration
+     * @param logger         Logger to write some debug output
+     * @param beaconCache    The Beacon cache to check if entries need to be evicted
+     * @param configuration  Beacon cache configuration
      * @param timingProvider Timing provider required for time retrieval
      */
-    public BeaconCacheEvictor(Logger logger,
-                              BeaconCache beaconCache,
-                              BeaconCacheConfiguration configuration,
-                              TimingProvider timingProvider) {
+    public BeaconCacheEvictor(Logger logger, BeaconCache beaconCache, BeaconCacheConfiguration configuration, TimingProvider timingProvider) {
 
-        this(logger,
-            beaconCache,
-            new BeaconCacheTimeEviction(logger, beaconCache, configuration, timingProvider),
-            new BeaconCacheSpaceEviction(logger, beaconCache, configuration));
+        this(logger, beaconCache, new TimeEvictionStrategy(logger, beaconCache, configuration, timingProvider), new SpaceEvictionStrategy(logger, beaconCache, configuration));
     }
 
     /**
      * Internal testing constructor.
      *
-     * @param logger Logger to write some debug output
+     * @param logger      Logger to write some debug output
      * @param beaconCache The Beacon cache to check if entries need to be evicted
-     * @param strategies Strategies passed to the actual Runnable.
+     * @param strategies  Strategies passed to the actual Runnable.
      */
-    BeaconCacheEvictor(Logger logger,
-                       BeaconCache beaconCache,
-                       BeaconCacheEvictionStrategy... strategies) {
+    BeaconCacheEvictor(Logger logger, BeaconCache beaconCache, BeaconCacheEvictionStrategy... strategies) {
 
         this.logger = logger;
         evictionThread = new Thread(new CacheEvictionRunnable(logger, beaconCache, strategies), THREAD_NAME);
@@ -108,8 +100,9 @@ public class BeaconCacheEvictor {
      * Stops the eviction thread via {@link Thread#interrupt()}, if it's alive and joins the eviction thread with given {@code timeout}.
      *
      * @param timeout The number of milliseconds to join the thread.
+     *
      * @return {@code true} if stopping was successful, {@code false} if eviction thread is not running
-     *          or could not be stopped in time.
+     * or could not be stopped in time.
      */
     public synchronized boolean stop(long timeout) {
         boolean result = false;
@@ -166,7 +159,7 @@ public class BeaconCacheEvictor {
             while (!Thread.currentThread().isInterrupted()) {
                 synchronized (lockObject) {
                     try {
-                        while(!recordAdded) {
+                        while (!recordAdded) {
                             lockObject.wait();
                         }
                     } catch (InterruptedException e) {
@@ -184,7 +177,7 @@ public class BeaconCacheEvictor {
                 // a new record has been added to the cache
                 // run all eviction strategies, to perform cache cleanup
                 for (BeaconCacheEvictionStrategy strategy : strategies) {
-                    strategy.executeEviction();
+                    strategy.execute();
                 }
             }
         }

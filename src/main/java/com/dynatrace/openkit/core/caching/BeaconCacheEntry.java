@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,8 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Represents an entry in the {@link BeaconCacheImpl}.
  *
  * <p>
- *     The caller is responsible to lock this element, before the first method is invoked using
- *     {@link #lock()} and after the last operation is invoked {@link #unlock()} must be called.
+ * The caller is responsible to lock this element, before the first method is invoked using
+ * {@link #lock()} and after the last operation is invoked {@link #unlock()} must be called.
  * </p>
  */
 class BeaconCacheEntry {
@@ -65,7 +65,7 @@ class BeaconCacheEntry {
      * Lock this {@link BeaconCacheEntry} for reading & writing.
      *
      * <p>
-     *     When locking is no longer required, {@link #unlock()} must be called.
+     * When locking is no longer required, {@link #unlock()} must be called.
      * </p>
      */
     void lock() {
@@ -76,7 +76,7 @@ class BeaconCacheEntry {
      * Release this {@link BeaconCacheEntry} lock, so that other threads can access this object.
      *
      * <p>
-     *     When calling this method ensure {@link #lock()} was called before.
+     * When calling this method ensure {@link #lock()} was called before.
      * </p>
      */
     void unlock() {
@@ -127,12 +127,12 @@ class BeaconCacheEntry {
      * Get next data chunk to send to the Dynatrace backend system.
      *
      * <p>
-     *     This method is called from beacon sending thread.
+     * This method is called from beacon sending thread.
      * </p>
      *
      * @param chunkPrefix The prefix to add to each chunk.
-     * @param maxSize The maximum size in characters for one chunk.
-     * @param delimiter The delimiter between data chunks.
+     * @param maxSize     The maximum size in characters for one chunk.
+     * @param delimiter   The delimiter between data chunks.
      *
      * @return The string to send or an empty string if there is no more data to send.
      */
@@ -162,8 +162,8 @@ class BeaconCacheEntry {
      * Get the next chunk.
      *
      * @param chunkPrefix The prefix to add to each chunk.
-     * @param maxSize The maximum size in characters for one chunk.
-     * @param delimiter The delimiter between data chunks.
+     * @param maxSize     The maximum size in characters for one chunk.
+     * @param delimiter   The delimiter between data chunks.
      *
      * @return The string to send or an empty string if there is no more data to send.
      */
@@ -249,9 +249,9 @@ class BeaconCacheEntry {
      * Get total number of bytes used.
      *
      * <p>
-     *     Note: As decided this is only taken from the lists where active records are added.
-     *     Data that is currently being sent is not taken into account, since we assume sending is
-     *     successful and therefore this data is just temporarily stored.
+     * Note: The number of bytes is calculated from the lists where active records are added.
+     * Data that is currently being sent is not taken into account, since we assume sending is
+     * successful and therefore this data is just temporarily stored.
      * </p>
      *
      * @return Sum of data size in bytes for each {@link BeaconCacheRecord}.
@@ -263,31 +263,40 @@ class BeaconCacheEntry {
 
     /**
      * Remove all {@link BeaconCacheRecord beacon cache records} from event and action data
-     * which are older than given age
+     * which are older than given minTimestamp
      *
      * <p>
      * Records which are currently being sent are not evicted.
      * </p>
      *
-     * @param age The maximum age allowed (including age).
+     * @param minTimestamp The minimum timestamp allowed.
+     *
+     * @return The total number of removed records.
      */
-    int removeRecordsOlderThan(long age) {
+    int removeRecordsOlderThan(long minTimestamp) {
 
 
-        int numRecordsRemoved = removeRecordsOlderThan(eventData, age);
-        numRecordsRemoved += removeRecordsOlderThan(actionData, age);
+        int numRecordsRemoved = removeRecordsOlderThan(eventData, minTimestamp);
+        numRecordsRemoved += removeRecordsOlderThan(actionData, minTimestamp);
 
         return numRecordsRemoved;
     }
 
-    private static int removeRecordsOlderThan(List<BeaconCacheRecord> records, long age) {
+    /**
+     * Remove all {@link BeaconCacheRecord beacon cache records} from {@code records}.
+     *
+     * @param minTimestamp The minimum timestamp allowed.
+     *
+     * @return The number of records removed from {@code records}.
+     */
+    private static int removeRecordsOlderThan(List<BeaconCacheRecord> records, long minTimestamp) {
 
         int numRecordsRemoved = 0;
 
         Iterator<BeaconCacheRecord> iterator = records.iterator();
         while (iterator.hasNext()) {
             BeaconCacheRecord record = iterator.next();
-            if (record.getTimestamp() < age) {
+            if (record.getTimestamp() < minTimestamp) {
                 iterator.remove();
                 numRecordsRemoved++;
             }
@@ -301,10 +310,12 @@ class BeaconCacheEntry {
      *
      * <p>
      * Note not all event/action data entries are traversed, only the first action data & first event
-     * data is removed and compared against each other, which one to remove first.
+     * data is removed and compared against each other, which one to remove first. If the first action's timestamp and
+     * first event's timestamp are equal, the first event is removed.
      * </p>
      *
      * @param numRecords The number of records.
+     *
      * @return Number of actually removed records.
      */
     public int removeOldestRecords(int numRecords) {
@@ -350,7 +361,7 @@ class BeaconCacheEntry {
      * Get a shallow copy of event data.
      *
      * <p>
-     *     This method shall only be used for testing purposes.
+     * This method shall only be used for testing purposes.
      * </p>
      */
     List<BeaconCacheRecord> getEventData() {
@@ -361,7 +372,7 @@ class BeaconCacheEntry {
      * Get a snapshot of action data.
      *
      * <p>
-     *     This method shall only be used for testing purposes.
+     * This method shall only be used for testing purposes.
      * </p>
      */
     List<BeaconCacheRecord> getActionData() {
@@ -372,7 +383,7 @@ class BeaconCacheEntry {
      * Get a readonly list of event data being sent.
      *
      * <p>
-     *     This method shall only be used for testing purposes.
+     * This method shall only be used for testing purposes.
      * </p>
      */
     List<BeaconCacheRecord> getEventDataBeingSent() {
@@ -383,7 +394,7 @@ class BeaconCacheEntry {
      * Get a readonly list of action data being sent.
      *
      * <p>
-     *     This method shall only be used for testing purposes.
+     * This method shall only be used for testing purposes.
      * </p>
      */
     List<BeaconCacheRecord> getActionDataBeingSent() {

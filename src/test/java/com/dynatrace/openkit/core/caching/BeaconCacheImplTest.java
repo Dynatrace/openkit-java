@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
@@ -59,15 +60,15 @@ public class BeaconCacheImplTest {
 
         // then
         assertThat(target.getBeaconIDs(), is(Collections.singleton(1)));
-        assertThat(target.getEvents(1), is(equalTo(new String[] {"a"})));
+        assertThat(target.getEvents(1), is(equalTo(new String[]{"a"})));
 
         // and when adding beacon with id 2
         target.addEventData(2, 1100L, "b");
 
         // then
         assertThat(target.getBeaconIDs(), containsInAnyOrder(1, 2));
-        assertThat(target.getEvents(1), is(equalTo(new String[] {"a"})));
-        assertThat(target.getEvents(2), is(equalTo(new String[] {"b"})));
+        assertThat(target.getEvents(1), is(equalTo(new String[]{"a"})));
+        assertThat(target.getEvents(2), is(equalTo(new String[]{"b"})));
     }
 
     @Test
@@ -81,14 +82,14 @@ public class BeaconCacheImplTest {
 
         // then
         assertThat(target.getBeaconIDs(), is(Collections.singleton(1)));
-        assertThat(target.getEvents(1), is(equalTo(new String[] {"a"})));
+        assertThat(target.getEvents(1), is(equalTo(new String[]{"a"})));
 
         // and when adding other data with beacon id 1
         target.addEventData(1, 1100L, "bc");
 
         // then
         assertThat(target.getBeaconIDs(), is(Collections.singleton(1)));
-        assertThat(target.getEvents(1), is(equalTo(new String[] {"a", "bc"})));
+        assertThat(target.getEvents(1), is(equalTo(new String[]{"a", "bc"})));
     }
 
     @Test
@@ -103,10 +104,8 @@ public class BeaconCacheImplTest {
         target.addEventData(1, 1000L, "iii");
 
         // then
-        assertThat(target.getNumBytesInCache(),
-            is(new BeaconCacheRecord(1000L, "a").getDataSizeInBytes() +
-               new BeaconCacheRecord(1000L, "z").getDataSizeInBytes() +
-               new BeaconCacheRecord(1000L, "iii").getDataSizeInBytes()));
+        assertThat(target.getNumBytesInCache(), is(new BeaconCacheRecord(1000L, "a").getDataSizeInBytes() + new BeaconCacheRecord(1000L, "z")
+            .getDataSizeInBytes() + new BeaconCacheRecord(1000L, "iii").getDataSizeInBytes()));
     }
 
     @Test
@@ -142,15 +141,15 @@ public class BeaconCacheImplTest {
 
         // then
         assertThat(target.getBeaconIDs(), is(Collections.singleton(1)));
-        assertThat(target.getActions(1), is(equalTo(new String[] {"a"})));
+        assertThat(target.getActions(1), is(equalTo(new String[]{"a"})));
 
         // and when adding beacon with id 2
         target.addActionData(2, 1100L, "b");
 
         // then
         assertThat(target.getBeaconIDs(), containsInAnyOrder(1, 2));
-        assertThat(target.getActions(1), is(equalTo(new String[] {"a"})));
-        assertThat(target.getActions(2), is(equalTo(new String[] {"b"})));
+        assertThat(target.getActions(1), is(equalTo(new String[]{"a"})));
+        assertThat(target.getActions(2), is(equalTo(new String[]{"b"})));
     }
 
     @Test
@@ -164,14 +163,14 @@ public class BeaconCacheImplTest {
 
         // then
         assertThat(target.getBeaconIDs(), is(Collections.singleton(1)));
-        assertThat(target.getActions(1), is(equalTo(new String[] {"a"})));
+        assertThat(target.getActions(1), is(equalTo(new String[]{"a"})));
 
         // and when adding other data with beacon id 1
         target.addActionData(1, 1100L, "bc");
 
         // then
         assertThat(target.getBeaconIDs(), is(Collections.singleton(1)));
-        assertThat(target.getActions(1), is(equalTo(new String[] {"a", "bc"})));
+        assertThat(target.getActions(1), is(equalTo(new String[]{"a", "bc"})));
     }
 
     @Test
@@ -186,10 +185,8 @@ public class BeaconCacheImplTest {
         target.addActionData(1, 1000L, "iii");
 
         // then
-        assertThat(target.getNumBytesInCache(),
-            is(new BeaconCacheRecord(1000L, "a").getDataSizeInBytes() +
-                new BeaconCacheRecord(1000L, "z").getDataSizeInBytes() +
-                new BeaconCacheRecord(1000L, "iii").getDataSizeInBytes()));
+        assertThat(target.getNumBytesInCache(), is(new BeaconCacheRecord(1000L, "a").getDataSizeInBytes() + new BeaconCacheRecord(1000L, "z")
+            .getDataSizeInBytes() + new BeaconCacheRecord(1000L, "iii").getDataSizeInBytes()));
     }
 
     @Test
@@ -249,9 +246,8 @@ public class BeaconCacheImplTest {
         target.deleteCacheEntry(42);
 
         // then
-        assertThat(target.getNumBytesInCache(),
-            is(equalTo(new BeaconCacheRecord(1000L, "a").getDataSizeInBytes()
-                + new BeaconCacheRecord(1000L, "iii").getDataSizeInBytes())));
+        assertThat(target.getNumBytesInCache(), is(equalTo(new BeaconCacheRecord(1000L, "a").getDataSizeInBytes() + new BeaconCacheRecord(1000L, "iii")
+            .getDataSizeInBytes())));
     }
 
     @Test

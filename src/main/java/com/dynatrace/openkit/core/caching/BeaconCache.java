@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@ public interface BeaconCache {
     /**
      * Add an {@link Observer} which gets notified after a new event data or action data got inserted.
      *
-     * @param o Observer to add.s
+     * @param o Observer to add.
      */
     void addObserver(Observer o);
 
@@ -54,7 +54,7 @@ public interface BeaconCache {
     void addActionData(Integer beaconID, long timestamp, String data);
 
     /**
-     * Delete a cache entry for given BeaconID.
+     * Delete a cache entry for a given {@code beaconID}.
      *
      * @param beaconID The beacon's ID (aka Session ID) which to delete.
      */
@@ -64,7 +64,7 @@ public interface BeaconCache {
      * Get the next chunk for sending to the backend.
      *
      * <p>
-     *     Note: This method must only be invoked from the beacon sending thread.
+     * Note: This method must only be invoked from the beacon sending thread.
      * </p>
      *
      * @param beaconID The beacon id for which to get the next chunk.
@@ -77,15 +77,70 @@ public interface BeaconCache {
      */
     String getNextBeaconChunk(Integer beaconID, String chunkPrefix, int maxSize, char delimiter);
 
+    /**
+     * Remove all data that was previously included in chunks.
+     *
+     * <p>
+     * This method must be called, when data retrieved via {@link #getNextBeaconChunk(Integer, String, int, char)}
+     * was successfully sent to the backend, otherwise subsequent calls to {@link #getNextBeaconChunk(Integer, String, int, char)}
+     * will retrieve the same data again and again.
+     * </p>
+     *
+     * <p>
+     * Note: This method must only be invoked from the beacon sending thread.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to remove already chunked data.
+     */
     void removeChunkedData(Integer beaconID);
 
+    /**
+     * Reset all data that was previously included in chunks.
+     *
+     * <p>
+     * Note: This method must only be invoked from the beacon sending thread.
+     * </p>
+     *
+     * @param beaconID The beacon id for which to remove already chunked data.
+     */
     void resetChunkedData(Integer beaconID);
 
+    /**
+     * Get a Set of currently inserted Beacon ids.
+     *
+     * <p>
+     * The return value is a snapshot of currently inserted beacon ids.
+     * All changes made after this call are not reflected in the returned Set.
+     * </p>
+     *
+     * @return Snapshot of all beacon ids in the cache.
+     */
     Set<Integer> getBeaconIDs();
 
+    /**
+     * Evict {@link BeaconCacheRecord beacon cache records} by age for a given beacon.
+     *
+     * @param beaconID The beacon's identifier.
+     * @param maxAge   The maximum age allowed for beacon's records.
+     *
+     * @return Returns the number of evicted cache records.
+     */
     int evictRecordsByAge(Integer beaconID, long maxAge);
 
+    /**
+     * Evict {@link BeaconCacheRecord beacon cache records} by number for given beacon.
+     *
+     * @param beaconID   The beacon's identifier.
+     * @param numRecords The maximum number of records to evict.
+     *
+     * @return Returns the number of evicted cache records.
+     */
     int evictRecordsByNumber(Integer beaconID, int numRecords);
 
+    /**
+     * Get number of bytes currently stored in cache.
+     *
+     * @return Number of bytes currently stored in cache.
+     */
     long getNumBytesInCache();
 }

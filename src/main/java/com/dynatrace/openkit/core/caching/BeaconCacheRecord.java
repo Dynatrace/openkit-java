@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,11 +22,11 @@ import java.util.Arrays;
  * A single record in the {@link BeaconCacheImpl}
  *
  * <p>
- *     A record is described by
- *     <ol>
- *         <li>The timestamp when it was created/ended</li>
- *         <li>Serialized data</li>
- *     </ol>
+ * A record is described by
+ * <ol>
+ * <li>The timestamp when it was created/ended</li>
+ * <li>Serialized data</li>
+ * </ol>
  * </p>
  */
 class BeaconCacheRecord {
@@ -41,7 +41,7 @@ class BeaconCacheRecord {
      * Create a new {@link BeaconCacheRecord}
      *
      * @param timestamp Timestamp for this record.
-     * @param data Data to store for this record.
+     * @param data      Data to store for this record.
      */
     BeaconCacheRecord(long timestamp, String data) {
         this.timestamp = timestamp;
@@ -66,10 +66,10 @@ class BeaconCacheRecord {
      * Get data size estimation of this record.
      *
      * <p>
-     *     Note that this is just a very rough estimation required for cache eviction.
+     * Note that this is just a very rough estimation required for cache eviction.
      *
-     *     It's sufficient to approximate the bytes required by the string and omit any other information like
-     *     the timestamp, any references and so on.
+     * It's sufficient to approximate the bytes required by the string and omit any other information like
+     * the timestamp, any references and so on.
      * </p>
      *
      * @return Data size in bytes.
@@ -114,9 +114,8 @@ class BeaconCacheRecord {
             return false;
         }
         BeaconCacheRecord record = (BeaconCacheRecord) o;
-        return getTimestamp() == record.getTimestamp()
-            && isMarkedForSending() == record.isMarkedForSending()
-            && getData().equals(record.getData());
+        return getTimestamp() == record.getTimestamp() && isMarkedForSending() == record.isMarkedForSending() && getData()
+            .equals(record.getData());
     }
 
     @Override

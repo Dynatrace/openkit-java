@@ -124,6 +124,16 @@ public class Beacon {
 
     // *** constructors ***
 
+    /**
+     * Constructor.
+     *
+     * @param logger Logger for logging messages.
+     * @param beaconCache Cache storing beacon related data.
+     * @param configuration OpenKit related configuration.
+     * @param clientIPAddress The client's IP address.
+     * @param threadIDProvider Provider for retrieving thread id.
+     * @param timingProvider Provider for time related methods.
+     */
     public Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
         this.logger = logger;
         this.beaconCache = beaconCache;
@@ -146,9 +156,16 @@ public class Beacon {
         basicBeaconData = createBasicBeaconData();
     }
 
-    // *** public methods ***
-
-    // create next ID
+    /**
+     * Create a unique identifier.
+     *
+     * <p>
+     * The identifier returned is only unique per Beacon.
+     * Calling this method on two different Beacon instances, might give the same result.
+     * </p>
+     *
+     * @return A unique identifier.
+     */
     public int createID() {
         return nextID.incrementAndGet();
     }
@@ -156,18 +173,37 @@ public class Beacon {
     /**
      * Get the current timestamp in milliseconds by delegating to TimingProvider
      *
-     * @return
+     * @return Current timestamp in milliseconds.
      */
     public long getCurrentTimestamp() {
         return timingProvider.provideTimestampInMilliseconds();
     }
 
-    // create next sequence number
+    /**
+     * Create a unique sequence number.
+     *
+     * <p>
+     * The sequence number returned is only unique per Beacon.
+     * Calling this method on two different Beacon instances, might give the same result.
+     * </p>
+     *
+     * @return A unique sequence number.
+     */
     public int createSequenceNumber() {
         return nextSequenceNumber.incrementAndGet();
     }
 
-    // create web request tag
+    /**
+     * Create a web request tag.
+     *
+     * <p>
+     * Web request tags can be attached as HTTP header for web request tracing.
+     * </p>
+     *
+     * @param parentAction The action for which to create a web request tag.
+     * @param sequenceNo Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
+     * @return A web request tracer tag.
+     */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
         return TAG_PREFIX + "_"
             + PROTOCOL_VERSION + "_"
@@ -180,7 +216,15 @@ public class Beacon {
             + sequenceNo;
     }
 
-    // add an Action to this Beacon
+    /**
+     * Add {@link ActionImpl} to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param action The action to add.
+     */
     public void addAction(ActionImpl action) {
         StringBuilder actionBuilder = new StringBuilder();
 
@@ -196,7 +240,15 @@ public class Beacon {
         addActionData(action.getStartTime(), actionBuilder);
     }
 
-    // end Session on this Beacon
+    /**
+     * Add {@link SessionImpl} to Beacon when session is ended.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param session The session to add.
+     */
     public void endSession(SessionImpl session) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -209,7 +261,17 @@ public class Beacon {
         addEventData(session.getEndTime(), eventBuilder);
     }
 
-    // report int value on the provided Action
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
+     */
     public void reportValue(ActionImpl parentAction, String valueName, int value) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -219,7 +281,17 @@ public class Beacon {
         addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report double value on the provided Action
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
+     */
     public void reportValue(ActionImpl parentAction, String valueName, double value) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -229,7 +301,17 @@ public class Beacon {
         addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report string value on the provided Action
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
+     */
     public void reportValue(ActionImpl parentAction, String valueName, String value) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -239,7 +321,16 @@ public class Beacon {
         addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report named event on the provided Action
+    /**
+     * Add event (aka. named event) to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this event was reported.
+     * @param eventName Event's name.
+     */
     public void reportEvent(ActionImpl parentAction, String eventName) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -248,7 +339,18 @@ public class Beacon {
         addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report error on the provided Action
+    /**
+     * Add error to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this error was reported.
+     * @param errorName Error's name.
+     * @param errorCode Some error code.
+     * @param reason Reason for that error.
+     */
     public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
         // if capture errors is off -> do nothing
         if (!configuration.isCaptureErrors()) {
@@ -269,7 +371,17 @@ public class Beacon {
         addEventData(timestamp, eventBuilder);
     }
 
-    // report a crash
+    /**
+     * Add crash to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param errorName Error's name.
+     * @param reason Reason for that error.
+     * @param stacktrace Crash stacktrace.
+     */
     public void reportCrash(String errorName, String reason, String stacktrace) {
         // if capture crashes is off -> do nothing
         if (!configuration.isCaptureCrashes()) {
@@ -290,7 +402,16 @@ public class Beacon {
         addEventData(timestamp, eventBuilder);
     }
 
-    // add web request to the provided Action
+    /**
+     * Add web request to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
+     * @param webRequestTracer Web request tracer to serialize.
+     */
     public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -316,8 +437,15 @@ public class Beacon {
 
         addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
-
-    // identify the user
+    /**
+     * Add user identification to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param userTag User tag containing data to serialize.
+     */
     public void identifyUser(String userTag) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -331,7 +459,17 @@ public class Beacon {
         addEventData(timestamp, eventBuilder);
     }
 
-    // send current state of Beacon
+    /**
+     * Send current state of Beacon.
+     *
+     * <p>
+     * This method tries to send all so far collected and serialized data.
+     * </p>
+     *
+     * @param provider Provider for getting an {@link HTTPClient} required to send the data.
+     *
+     * @return Returns the last status response retrieved from the server side, or {@code null} if an error occurred.
+     */
     public StatusResponse send(HTTPClientProvider provider) {
 
         HTTPClient httpClient = provider.createClient(httpConfiguration);
@@ -341,6 +479,9 @@ public class Beacon {
 
             // prefix for this chunk - must be built up newly, due to changing timestamps
             String prefix = basicBeaconData + BEACON_DATA_DELIMITER + createTimestampData();
+            // subtract 1024 to ensure that the chunk does not exceed the send size configured on server side?
+            // i guess that was the original intention, but i'm not sure about this
+            // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
             String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getMaxBeaconSize() - 1024, BEACON_DATA_DELIMITER);
             if (chunk == null || chunk.isEmpty()) {
                 // no data added so far or no data to send
@@ -398,9 +539,12 @@ public class Beacon {
         return beaconCache.getActions(sessionNumber);
     }
 
-
-    // *** private methods ***
-
+    /**
+     * Add previously serialized action data to the beacon cache.
+     *
+     * @param timestamp The timestamp when the action data occurred.
+     * @param actionBuilder Contains the serialized action data.
+     */
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
 
         if (configuration.isCapture()) {
@@ -408,6 +552,12 @@ public class Beacon {
         }
     }
 
+    /**
+     * Add previously serialized event data to the beacon cache.
+     *
+     * @param timestamp The timestamp when the event data occurred.
+     * @param eventBuilder Contains the serialized event data.
+     */
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
 
         if (configuration.isCapture()) {
@@ -415,13 +565,28 @@ public class Beacon {
         }
     }
 
+    /**
+     * Clears all previously collected data for this Beacon.
+     *
+     * <p>
+     * This only affects the so far serialized data, which gets removed from the cache.
+     * </p>
+     */
     public void clearData() {
 
         // remove all cached data for this Beacon from the cache
         beaconCache.deleteCacheEntry(sessionNumber);
     }
 
-    // helper method for building events
+    /**
+     * Serialization helper for event data.
+     *
+     * @param builder String builder storing the serialzed data.
+     * @param eventType The event's type.
+     * @param name Event name
+     * @param parentAction The action on which this event was reported.
+     * @return The timestamp associated with the event (timestamp since session start time).
+     */
     private long buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
         buildBasicEventData(builder, eventType, name);
 
@@ -434,7 +599,13 @@ public class Beacon {
         return eventTimestamp;
     }
 
-    // helper method for building basic event data
+    /**
+     * Serializeation for building basic event data.
+     *
+     * @param builder String builder storing serialized data.
+     * @param eventType The event's type.
+     * @param name Event's name.
+     */
     private void buildBasicEventData(StringBuilder builder, EventType eventType, String name) {
         addKeyValuePair(builder, BEACON_KEY_EVENT_TYPE, eventType.protocolValue());
         if (name != null) {
@@ -443,7 +614,11 @@ public class Beacon {
         addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
     }
 
-    // helper method for creating basic beacon protocol data
+    /**
+     * Serialization helper method for creating basic beacon protocol data.
+     *
+     * @return Serialized data.
+     */
     private String createBasicBeaconData() {
         StringBuilder basicBeaconBuilder = new StringBuilder();
 
@@ -478,7 +653,11 @@ public class Beacon {
         return basicBeaconBuilder.toString();
     }
 
-    // helper method for creating basic timestamp data
+    /**
+     * Serialization helper method for creating basic timestamp data.
+     *
+     * @return Serialized data.
+     */
     private String createTimestampData() {
         StringBuilder timestampBuilder = new StringBuilder();
 
@@ -492,7 +671,13 @@ public class Beacon {
         return timestampBuilder.toString();
     }
 
-    // helper method for adding key/value pairs with string values
+    /**
+     * Serialization helper method for adding key/value pairs with string values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param stringValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, String stringValue) {
         String encodedValue;
         try {
@@ -507,25 +692,48 @@ public class Beacon {
         builder.append(encodedValue);
     }
 
-    // helper method for adding key/value pairs with long values
+    /**
+     * Serialization helper method for adding key/value pairs with long values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param longValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, long longValue) {
         appendKey(builder, key);
         builder.append(longValue);
     }
 
-    // helper method for adding key/value pairs with int values
+    /**
+     * Serialization helper method for adding key/value pairs with int values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param intValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, int intValue) {
         appendKey(builder, key);
         builder.append(intValue);
     }
 
-    // helper method for adding key/value pairs with double values
+    /**
+     * Serialization helper method for adding key/value pairs with double values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param doubleValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, double doubleValue) {
         appendKey(builder, key);
         builder.append(doubleValue);
     }
 
-    // helper method for appending a key
+    /**
+     * Serialization helper method for appending a key.
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     */
     private void appendKey(StringBuilder builder, String key) {
         if (!builder.toString().isEmpty()) {
             builder.append('&');
@@ -534,7 +742,9 @@ public class Beacon {
         builder.append('=');
     }
 
-    // helper method for truncating name at max name size
+    /**
+     * helper method for truncating name at max name size
+     */
     private String truncate(String name) {
         name = name.trim();
         if (name.length() > MAX_NAME_LEN) {
@@ -543,6 +753,12 @@ public class Beacon {
         return name;
     }
 
+    /**
+     * Get a timestamp relative to the time this session (aka. beacon) was created.
+     *
+     * @param timestamp The absolute timestamp for which to get a relative one.
+     * @return Relative timestamp.
+     */
     private long getTimeSinceSessionStartTime(long timestamp) {
         return timestamp - sessionStartTime;
     }

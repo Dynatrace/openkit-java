@@ -1,11 +1,12 @@
 /**
+/**
  * Copyright 2018 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,13 +28,12 @@ import org.mockito.stubbing.Answer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
-public class BeaconCacheTimeEvictionTest {
+public class TimeEvictionStrategyTest {
 
     private Logger mockLogger;
     private BeaconCache mockBeaconCache;
@@ -52,7 +52,7 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(-1L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         // then
         assertThat(target.getLastRunTimestamp(), is(-1L));
@@ -63,7 +63,7 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(-1L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         // then
         assertThat(target.isStrategyDisabled(), is(true));
@@ -77,7 +77,7 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(0L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         // then
         assertThat(target.isStrategyDisabled(), is(true));
@@ -91,7 +91,7 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         // then
         assertThat(target.isStrategyDisabled(), is(false));
@@ -105,10 +105,11 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         target.setLastRunTimestamp(1000);
-        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(target.getLastRunTimestamp() + configuration.getMaxRecordAge() - 1);
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+            .thenReturn(target.getLastRunTimestamp() + configuration.getMaxRecordAge() - 1);
 
         // then
         assertThat(target.shouldRun(), is(false));
@@ -119,10 +120,11 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         target.setLastRunTimestamp(1000);
-        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(target.getLastRunTimestamp() + configuration.getMaxRecordAge());
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+            .thenReturn(target.getLastRunTimestamp() + configuration.getMaxRecordAge());
 
         // then
         assertThat(target.shouldRun(), is(true));
@@ -133,10 +135,11 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         target.setLastRunTimestamp(1000);
-        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(target.getLastRunTimestamp() + configuration.getMaxRecordAge() + 1);
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+            .thenReturn(target.getLastRunTimestamp() + configuration.getMaxRecordAge() + 1);
 
         // then
         assertThat(target.shouldRun(), is(true));
@@ -147,12 +150,12 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(0L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockLogger.isInfoEnabled()).thenReturn(true);
 
         // when executing the first time
-        target.executeEviction();
+        target.execute();
 
         // then
         verify(mockLogger, times(1)).isInfoEnabled();
@@ -161,7 +164,7 @@ public class BeaconCacheTimeEvictionTest {
         verifyZeroInteractions(mockBeaconCache, mockTimingProvider);
 
         // and when executing a second time
-        target.executeEviction();
+        target.execute();
 
         // then
         verify(mockLogger, times(1)).isInfoEnabled();
@@ -175,12 +178,12 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(0L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockLogger.isInfoEnabled()).thenReturn(false);
 
         // when executing the first time
-        target.executeEviction();
+        target.execute();
 
         // then
         verify(mockLogger, times(1)).isInfoEnabled();
@@ -188,7 +191,7 @@ public class BeaconCacheTimeEvictionTest {
         verifyZeroInteractions(mockBeaconCache, mockTimingProvider);
 
         // and when executing a second time
-        target.executeEviction();
+        target.execute();
 
         // then
         verify(mockLogger, times(2)).isInfoEnabled();
@@ -201,19 +204,19 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 1001L);
 
         // when executing the first time
-        target.executeEviction();
+        target.execute();
 
         // then
         assertThat(target.getLastRunTimestamp(), is(1000L));
         verify(mockTimingProvider, times(2)).provideTimestampInMilliseconds();
 
         // when executing the second time
-        target.executeEviction();
+        target.execute();
 
         // then
         assertThat(target.getLastRunTimestamp(), is(1000L));
@@ -225,13 +228,13 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2000L);
         when(mockBeaconCache.getBeaconIDs()).thenReturn(Collections.<Integer>emptySet());
 
         // when
-        target.executeEviction();
+        target.execute();
 
         // then verify interactions
         verify(mockBeaconCache, times(1)).getBeaconIDs();
@@ -247,13 +250,13 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
 
         // when
-        target.executeEviction();
+        target.execute();
 
         // then verify interactions
         verify(mockBeaconCache, times(1)).getBeaconIDs();
@@ -271,7 +274,7 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
@@ -281,7 +284,7 @@ public class BeaconCacheTimeEvictionTest {
         when(mockLogger.isDebugEnabled()).thenReturn(true);
 
         // when
-        target.executeEviction();
+        target.execute();
 
         // then verify that the logger was invoked
         verify(mockLogger, times(2)).isDebugEnabled();
@@ -295,20 +298,20 @@ public class BeaconCacheTimeEvictionTest {
 
         // given
         BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
-        BeaconCacheTimeEviction target = new BeaconCacheTimeEviction(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
+        TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
         when(mockBeaconCache.evictRecordsByAge(anyInt(), anyLong())).thenAnswer(new Answer<Integer>() {
             @Override
-            public Integer answer(InvocationOnMock invocation) throws Throwable {
+            public Integer answer(InvocationOnMock invocation) {
                 Thread.currentThread().interrupt();
                 return 2;
             }
         });
 
         // when
-        target.executeEviction();
+        target.execute();
 
         // then verify interactions
         verify(mockBeaconCache, times(1)).getBeaconIDs();

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,6 +20,7 @@ import com.dynatrace.openkit.protocol.Beacon;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -27,17 +28,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Class used in OpenKit to cache serialized {@link Beacon} data.
  *
  * <p>
- *     This cache needs to deal with high concurrency, since it's possible that a lot of threads
- *     insert new data concurrently.
+ * This cache needs to deal with high concurrency, since it's possible that a lot of threads
+ * insert new data concurrently.
  *
- *     Furthermore the sending thread also accesses this cache and also an own eviction cache.
+ * Furthermore two OpenKit internal threads are also accessing the cache.
  * </p>
  */
 public class BeaconCacheImpl extends Observable implements BeaconCache {
 
     private final ReadWriteLock globalCacheLock;
     private final Map<Integer, BeaconCacheEntry> beacons;
-    private final BeaconCacheStats cacheStats;
+    private final AtomicLong cacheSizeInBytes;
 
     /**
      * Create BeaconCache.
@@ -45,7 +46,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     public BeaconCacheImpl() {
         globalCacheLock = new ReentrantReadWriteLock();
         beacons = new HashMap<Integer, BeaconCacheEntry>();
-        cacheStats = new BeaconCacheStats();
+        cacheSizeInBytes = new AtomicLong(0L);
     }
 
 
@@ -66,7 +67,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         // update cache stats
-        cacheStats.numBytesAdded(record.getDataSizeInBytes());
+        cacheSizeInBytes.addAndGet(record.getDataSizeInBytes());
 
         // notify observers
         onDataAdded();
@@ -89,7 +90,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         // update cache stats
-        cacheStats.numBytesAdded(record.getDataSizeInBytes());
+        cacheSizeInBytes.addAndGet(record.getDataSizeInBytes());
 
         // notify observers
         onDataAdded();
@@ -108,7 +109,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         if (entry != null) {
-            cacheStats.numBytesRemoved(entry.getTotalNumberOfBytes());
+            cacheSizeInBytes.addAndGet(-1L * entry.getTotalNumberOfBytes());
         }
     }
 
@@ -134,28 +135,13 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
                 entry.unlock();
             }
             // assumption: sending will work fine, and everything we copied will be removed quite soon
-            cacheStats.numBytesRemoved(numBytes);
+            cacheSizeInBytes.addAndGet(-1L * numBytes);
         }
 
         // data for chunking is available
         return entry.getChunk(chunkPrefix, maxSize, delimiter);
     }
 
-    /**
-     * Remove all data that was previously included in chunks.
-     *
-     * <p>
-     *     This method must be called, when data retrieved via {@link #getNextBeaconChunk(Integer, String, int, char)}
-     *     was successfully sent to the backend, otherwise subsequent calls to {@link #getNextBeaconChunk(Integer, String, int, char)}
-     *     will retrieve the same data again and again.
-     * </p>
-     *
-     * <p>
-     *     Note: This method must only be invoked from the beacon sending thread.
-     * </p>
-     *
-     * @param beaconID The beacon id for which to remove already chunked data.
-     */
     @Override
     public void removeChunkedData(Integer beaconID) {
 
@@ -168,16 +154,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         entry.removeDataMarkedForSending();
     }
 
-    /**
-     * Reset all data that was previously included in chunks.
-     *
-     * <p>
-     *     Note: This method should only be invoked from the beacon sending thread,
-     *     but can be from any, since it's thread safe.
-     * </p>
-     *
-     * @param beaconID The beacon id for which to remove already chunked data.
-     */
+
     @Override
     public void resetChunkedData(Integer beaconID) {
 
@@ -198,7 +175,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
             entry.unlock();
         }
 
-        cacheStats.numBytesAdded(numBytes);
+        cacheSizeInBytes.addAndGet(numBytes);
 
         // notify observers
         onDataAdded();
@@ -239,7 +216,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
      * Get a shallow copy of events collected so far.
      *
      * <p>
-     *     Although this method is intended for debugging purposes only, it still does appropriate locking.
+     * Although this method is intended for debugging purposes only, it still does appropriate locking.
      * </p>
      *
      * @param beaconID The beacon id for which to retrieve the events.
@@ -283,7 +260,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
      * Get a shallow copy of actions collected so far.
      *
      * <p>
-     *     Although this method is intended for debugging purposes only, it still does appropriate locking.
+     * Although this method is intended for debugging purposes only, it still does appropriate locking.
      * </p>
      *
      * @param beaconID The beacon id for which to retrieve the events.
@@ -354,16 +331,6 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         return entry;
     }
 
-    /**
-     * Get a Set of currently inserted Beacon ids.
-     *
-     * <p>
-     * The return value is a snapshot of currently inserted beacon ids.
-     * All changes made after this call are not reflected in the returned Set.
-     * </p>
-     *
-     * @return Snapshot of all beacon ids in the cache.
-     */
     @Override
     public Set<Integer> getBeaconIDs() {
 
@@ -378,12 +345,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         return result;
     }
 
-    /**
-     * Evict {@link BeaconCacheRecord beacon cache records} by age for a given beacon.
-     *
-     * @param beaconID The beacon's identifier.
-     * @param maxAge The maximum age allowed for beacon's records.
-     */
+
     @Override
     public int evictRecordsByAge(Integer beaconID, long maxAge) {
 
@@ -404,12 +366,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         return numRecordsRemoved;
     }
 
-    /**
-     * Evict {@link BeaconCacheRecord beacon cache records} by number for given beacon.
-     *
-     * @param beaconID The beacon's identifier.
-     * @param numRecords The maximum number of records to evict.
-     */
+
     @Override
     public int evictRecordsByNumber(Integer beaconID, int numRecords) {
 
@@ -430,12 +387,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         return numRecordsRemoved;
     }
 
-    /**
-     * Get number of bytes currently stored in cache.
-     */
     @Override
     public long getNumBytesInCache() {
-        return cacheStats.getNumBytesInCache();
+        return cacheSizeInBytes.get();
     }
 
     /**
@@ -444,25 +398,5 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     private void onDataAdded() {
         setChanged();
         notifyObservers();
-    }
-
-    /**
-     * Cache statistics
-     */
-    private static final class BeaconCacheStats {
-
-        private long totalNumBytes = 0;
-
-        synchronized void numBytesAdded(long numBytes) {
-            totalNumBytes += numBytes;
-        }
-
-        synchronized void numBytesRemoved(long numBytes) {
-            totalNumBytes -= numBytes;
-        }
-
-        synchronized long getNumBytesInCache() {
-            return totalNumBytes;
-        }
     }
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -136,14 +136,14 @@ public class BeaconCacheEvictorTest {
     public void triggeringEvictionStrategiesInThread() throws Exception {
 
         // given
-        final Observer[] observers  = new Observer[]{null};
+        final Observer[] observers = new Observer[]{null};
         final CountDownLatch addObserverLath = new CountDownLatch(1);
         final CyclicBarrier strategyInvokedBarrier = new CyclicBarrier(2);
 
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                observers[0] = (Observer)invocation.getArguments()[0];
+                observers[0] = (Observer) invocation.getArguments()[0];
                 addObserverLath.countDown();
 
                 return null;
@@ -157,7 +157,7 @@ public class BeaconCacheEvictorTest {
 
                 return null;
             }
-        }).when(mockStrategyTwo).executeEviction();
+        }).when(mockStrategyTwo).execute();
 
         // first step start the eviction thread
         evictor = new BeaconCacheEvictor(mockLogger, mockBeaconCache, mockStrategyOne, mockStrategyTwo);
@@ -182,7 +182,7 @@ public class BeaconCacheEvictorTest {
         assertThat(stopped, is(true));
         assertThat(evictor.isAlive(), is(false));
 
-        verify(mockStrategyOne, times(10)).executeEviction();
-        verify(mockStrategyTwo, times(10)).executeEviction();
+        verify(mockStrategyOne, times(10)).execute();
+        verify(mockStrategyTwo, times(10)).execute();
     }
 }
