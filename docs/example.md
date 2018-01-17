@@ -32,7 +32,7 @@ OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, device
 
 ### AppMon
 
-An OpenKit instance for Dynatrace Managed can be obtained by using `AppMonOpenKitBuilder`.
+An OpenKit instance for AppMon can be obtained by using the `AppMonOpenKitBuilder`.
 
 ```java
 String applicationName = "My OpenKit application";
