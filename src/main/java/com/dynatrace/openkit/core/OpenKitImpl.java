@@ -19,6 +19,7 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
@@ -31,6 +32,8 @@ public class OpenKitImpl implements OpenKit {
 
     // Beacon cache
     private final BeaconCacheImpl beaconCache;
+    // Cache evictor
+    private final BeaconCacheEvictor beaconCacheEvictor;
 
     // BeaconSender reference
     private final BeaconSender beaconSender;
@@ -55,8 +58,8 @@ public class OpenKitImpl implements OpenKit {
         this.threadIDProvider = threadIDProvider;
         this.timingProvider = timingProvider;
         beaconCache = new BeaconCacheImpl();
-        // TODO stefan.eberl@dynatrace.com - BeaconCacheEvictor must be instantiated here too
         beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
+        beaconCacheEvictor = new BeaconCacheEvictor(logger, beaconCache, configuration.getBeaconCacheConfiguration(), timingProvider);
     }
 
     /**

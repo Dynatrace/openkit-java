@@ -16,10 +16,20 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Configuration for beacon cache.
  */
 public class BeaconCacheConfiguration {
+
+    /**
+     * The default {@link BeaconCacheConfiguration} when user does not override it.
+     *
+     * Default settings allow beacons which are max 2 hours old and unbounded memory limits.
+     */
+    public static final BeaconCacheConfiguration DEFAULT = new BeaconCacheConfiguration(TimeUnit.HOURS.toMillis(2),
+        -1, -1);
 
     private final long maxRecordAge;
     private final long cacheSizeLowerBound;

@@ -59,9 +59,9 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
     Configuration buildConfiguration() {
         Device device = new Device(getOperatingSystem(), getManufacturer(), getModelID());
 
-        // TODO stefan.eberl - offer a real BeaconCacheConfiguration via the builder
-        // for now this configuration instance just disables any eviction
-        BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(-1, -1, -1);
+        BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxBeaconAge(),
+            getBeaconCacheLowerMemoryBoundary(),
+            getBeaconCacheUpperMemoryBoundary());
 
         return new Configuration(
             OpenKitType.DYNATRACE,
