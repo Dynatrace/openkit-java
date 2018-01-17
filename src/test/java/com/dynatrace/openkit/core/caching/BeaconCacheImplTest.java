@@ -430,4 +430,176 @@ public class BeaconCacheImplTest {
         }
         assertThat(target.getEventsBeingSent(1), is(equalTo(expectedEventRecords)));
     }
+
+    @Test
+    public void resetChunkedRestoresData() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // do same step we'd do when we send the
+        target.getNextBeaconChunk(1, "prefix", 10, '&');
+
+        // data has been copied, but still add some new event & action data
+        target.addActionData(1, 6666L, "123");
+        target.addEventData(1, 6666L, "987");
+
+        // and when resetting the previously copied data
+        target.resetChunkedData(1);
+
+        // then
+        assertThat(target.getActionsBeingSent(1), is(nullValue()));
+        assertThat(target.getEventsBeingSent(1), is(nullValue()));
+        assertThat(target.getActions(1), is(equalTo(new String[]{"a", "iii", "123"})));
+        assertThat(target.getEvents(1), is(equalTo(new String[]{"b", "jjj", "987"})));
+    }
+
+    @Test
+    public void resetChunkedRestoresCacheSize() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // do same step we'd do when we send the
+        target.getNextBeaconChunk(1, "prefix", 10, '&');
+
+        // data has been copied, but still add some new event & action data
+        target.addActionData(1, 6666L, "123");
+        target.addEventData(1, 6666L, "987");
+
+        // and when resetting the previously copied data
+        target.resetChunkedData(1);
+
+        // then
+        assertThat(target.getNumBytesInCache(), is(28L));
+    }
+
+    @Test
+    public void resetChunkedNotifiesObservers() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // do same step we'd do when we send the
+        target.getNextBeaconChunk(1, "prefix", 10, '&');
+
+        // data has been copied, but still add some new event & action data
+        target.addActionData(1, 6666L, "123");
+        target.addEventData(1, 6666L, "987");
+
+        target.addObserver(observer);
+
+        // and when resetting the previously copied data
+        target.resetChunkedData(1);
+
+        // then
+        verify(observer, times(1)).update(target, null);
+    }
+
+    @Test
+    public void resetChunkedDoesNothingIfEntryDoesNotExist() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // do same step we'd do when we send the
+        target.getNextBeaconChunk(1, "prefix", 10, '&');
+
+        // data has been copied, but still add some new event & action data
+        target.addActionData(1, 6666L, "123");
+        target.addEventData(1, 6666L, "987");
+
+        target.addObserver(observer);
+
+        // and when resetting the previously copied data
+        target.resetChunkedData(666);
+
+        // then
+        assertThat(target.getNumBytesInCache(), is(12L));
+        verifyZeroInteractions(observer);
+    }
+
+    @Test
+    public void evictRecordsByAgeDoesNothingAndReturnsZeroIfBeaconIDDoesNotExist() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // when
+        int obtained = target.evictRecordsByAge(666, 0);
+
+        // then
+        assertThat(obtained, is(0));
+    }
+
+    @Test
+    public void evictRecordsByAge() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // when
+        int obtained = target.evictRecordsByAge(1, 1001);
+
+        // then
+        assertThat(obtained, is(2));
+    }
+
+    @Test
+    public void evictRecordsByNumberDoesNothingAndReturnsZeroIfBeaconIDDoesNotExist() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // when
+        int obtained = target.evictRecordsByNumber(666, 100);
+
+        // then
+        assertThat(obtained, is(0));
+    }
+
+    @Test
+    public void evictRecordsByNumber() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // when
+        int obtained = target.evictRecordsByNumber(1, 2);
+
+        // then
+        assertThat(obtained, is(2));
+    }
 }

@@ -300,6 +300,42 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
+    public void getChunksTakesSizeIntoAccount() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        target.copyDataForChunking();
+
+        // when requesting first chunk
+        String obtained = target.getChunk("prefix", 1, '&');
+
+        // then only prefix is returned, since "prefix".length > maxSize (=1)
+        assertThat(obtained, is("prefix"));
+
+        // and when retrieving something which is one character longer than "prefix"
+        obtained = target.getChunk("prefix", "prefix".length(), '&');
+
+        // then based on the algorithm prefix and first element are retrieved
+        assertThat(obtained, is("prefix&One"));
+
+        // and when retrieving another chunk
+        obtained = target.getChunk("prefix", "prefix&One".length(), '&');
+
+        // then
+        assertThat(obtained, is("prefix&One&Four"));
+    }
+
+    @Test
     public void resetDataMarkedForSendingMovesPreviouslyCopiedDataBack() {
 
         // given

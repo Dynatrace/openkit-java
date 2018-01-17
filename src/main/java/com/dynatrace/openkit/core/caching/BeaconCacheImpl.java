@@ -253,7 +253,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     List<BeaconCacheRecord> getEventsBeingSent(Integer beaconID) {
 
         BeaconCacheEntry entry = getCachedEntry(beaconID);
-        return Collections.unmodifiableList(entry.getEventDataBeingSent());
+        return entry.getEventDataBeingSent();
     }
 
     /**
@@ -297,7 +297,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     List<BeaconCacheRecord> getActionsBeingSent(Integer beaconID) {
 
         BeaconCacheEntry entry = getCachedEntry(beaconID);
-        return Collections.unmodifiableList(entry.getActionDataBeingSent());
+        return entry.getActionDataBeingSent();
     }
 
     private static String[] extractData(List<BeaconCacheRecord> eventData) {
