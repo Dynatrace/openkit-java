@@ -142,7 +142,7 @@ class TimeEvictionStrategy implements BeaconCacheEvictionStrategy {
         while (!Thread.currentThread().isInterrupted() && beaconIDIterator.hasNext()) {
             Integer beaconID = beaconIDIterator.next();
             int numRecordsRemoved = beaconCache.evictRecordsByAge(beaconID, smallestAllowedBeaconTimestamp);
-            if (logger.isDebugEnabled()) {
+            if (numRecordsRemoved  > 0 && logger.isDebugEnabled()) {
                 logger.debug("Removed " + numRecordsRemoved + " records from Beacon with ID " + beaconID);
             }
         }

@@ -233,7 +233,7 @@ public class SpaceEvictionStrategyTest {
         target.execute();
 
         // then
-        verify(mockLogger, times(2)).isDebugEnabled();
+        verify(mockLogger, times(3)).isDebugEnabled();
         verify(mockLogger, times(1)).debug("Removed 5 records from Beacon with ID 1");
         verify(mockLogger, times(1)).debug("Removed 1 records from Beacon with ID 42");
         verifyNoMoreInteractions(mockLogger);
@@ -261,7 +261,7 @@ public class SpaceEvictionStrategyTest {
         target.execute();
 
         // then
-        verify(mockLogger, times(2)).isDebugEnabled();
+        verify(mockLogger, times(3)).isDebugEnabled();
         verifyNoMoreInteractions(mockLogger);
     }
 

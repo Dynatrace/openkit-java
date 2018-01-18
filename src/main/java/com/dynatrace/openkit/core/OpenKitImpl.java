@@ -71,6 +71,7 @@ public class OpenKitImpl implements OpenKit {
      * </p>
      */
     public void initialize() {
+        beaconCacheEvictor.start();
         beaconSender.initialize();
     }
 

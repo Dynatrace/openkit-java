@@ -19,8 +19,7 @@ package com.dynatrace.openkit.core.caching;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Space based eviction strategy for the beacon cache.
@@ -105,6 +104,9 @@ class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {
      * Performs execution of strategy.
      */
     private void doExecute() {
+
+        Map<Integer, Integer> removedRecordsPerBeacon = new HashMap<Integer, Integer>();
+
         while (!Thread.currentThread().isInterrupted()
             && beaconCache.getNumBytesInCache() > configuration.getCacheSizeLowerBound()) {
 
@@ -120,9 +122,20 @@ class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {
                 // remove 1 record from Beacon cache for given beaconID
                 // the result is the number of records removed, which might be in range [0, numRecords=1]
                 int numRecordsRemoved = beaconCache.evictRecordsByNumber(beaconID, 1);
+
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Removed " + numRecordsRemoved + " records from Beacon with ID " + beaconID);
+                    if (!removedRecordsPerBeacon.containsKey(beaconID)) {
+                        removedRecordsPerBeacon.put(beaconID, numRecordsRemoved);
+                    } else {
+                        removedRecordsPerBeacon.put(beaconID, removedRecordsPerBeacon.get(beaconID) + numRecordsRemoved);
+                    }
                 }
+            }
+        }
+
+        if (logger.isDebugEnabled()) {
+            for (Map.Entry<Integer, Integer> entries : removedRecordsPerBeacon.entrySet()) {
+                logger.debug("Removed " + entries.getValue() + " records from Beacon with ID " + entries.getKey());
             }
         }
     }
