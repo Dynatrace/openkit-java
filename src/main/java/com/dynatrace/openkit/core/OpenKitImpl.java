@@ -32,7 +32,7 @@ public class OpenKitImpl implements OpenKit {
 
     // Beacon cache
     private final BeaconCacheImpl beaconCache;
-    // Cache evictor
+    // Cache eviction thread
     private final BeaconCacheEvictor beaconCacheEvictor;
 
     // BeaconSender reference
@@ -105,6 +105,7 @@ public class OpenKitImpl implements OpenKit {
 
     @Override
     public void shutdown() {
+        beaconCacheEvictor.stop();
         beaconSender.shutdown();
     }
 }

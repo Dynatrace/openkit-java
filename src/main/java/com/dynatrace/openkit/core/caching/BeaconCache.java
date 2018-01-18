@@ -143,4 +143,12 @@ public interface BeaconCache {
      * @return Number of bytes currently stored in cache.
      */
     long getNumBytesInCache();
+
+    /**
+     * Tests if an cached entry for {@code beaconID} is empty.
+     *
+     * @param beaconID beaconID   The beacon's identifier.
+     * @return {@code true} if the cached entry is empty, false otherwise.
+     */
+    boolean isEmpty(Integer beaconID);
 }

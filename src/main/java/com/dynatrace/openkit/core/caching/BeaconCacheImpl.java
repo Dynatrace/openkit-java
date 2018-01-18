@@ -399,4 +399,24 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         setChanged();
         notifyObservers();
     }
+
+    @Override
+    public boolean isEmpty(Integer beaconID) {
+
+        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        if (entry == null) {
+            // already removed
+            return true;
+        }
+
+        boolean isEmpty;
+        try {
+            entry.lock();
+            isEmpty = entry.getTotalNumberOfBytes() == 0;
+        } finally {
+            entry.unlock();
+        }
+
+        return isEmpty;
+    }
 }

@@ -762,4 +762,17 @@ public class Beacon {
     private long getTimeSinceSessionStartTime(long timestamp) {
         return timestamp - sessionStartTime;
     }
+
+    /**
+     * Tests if the Beacon is empty.
+     *
+     * <p>
+     * A beacon is considered to be empty, if it does not contain any action or event data.
+     * </p>
+     *
+     * @return {@code true} if the beacon is empty, {@code false} otherwise.
+     */
+    public boolean isEmpty() {
+        return beaconCache.isEmpty(sessionNumber);
+    }
 }

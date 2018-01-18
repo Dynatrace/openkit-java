@@ -28,8 +28,9 @@ public class BeaconCacheConfiguration {
      *
      * Default settings allow beacons which are max 2 hours old and unbounded memory limits.
      */
-    public static final BeaconCacheConfiguration DEFAULT = new BeaconCacheConfiguration(TimeUnit.HOURS.toMillis(2),
-        -1, -1);
+    public static final long DEFAULT_MAX_RECORD_AGE_IN_MILLIS = TimeUnit.MINUTES.toMillis(105); // 1hour and 45 minutes
+    public static final long DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES = 100 * 1024 * 1024;                // 100 MiB
+    public static final long DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES = 80 * 1024 * 1024;                 // 80 MiB
 
     private final long maxRecordAge;
     private final long cacheSizeLowerBound;

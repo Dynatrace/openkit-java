@@ -602,4 +602,44 @@ public class BeaconCacheImplTest {
         // then
         assertThat(obtained, is(2));
     }
+
+    @Test
+    public void isEmptyGivesTrueIfBeaconDoesNotExistInCache() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addActionData(1, 1001L, "iii");
+        target.addEventData(1, 1000L, "b");
+        target.addEventData(1, 1001L, "jjj");
+
+        // then
+        assertThat(target.isEmpty(666), is(true));
+    }
+
+    @Test
+    public void isEmptyGivesFalseIfBeaconDataSizeIsNotEqualToZero() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addEventData(1, 1000L, "b");
+
+        // then
+        assertThat(target.isEmpty(1), is(false));
+    }
+
+    @Test
+    public void isEmptyGivesTrueIfBeaconDoesNotContainActiveData() {
+
+        // given
+        BeaconCacheImpl target = new BeaconCacheImpl();
+        target.addActionData(1, 1000L, "a");
+        target.addEventData(1, 1000L, "b");
+
+        target.getNextBeaconChunk(1, "prefix", 0, '&');
+
+        // then
+        assertThat(target.isEmpty(1), is(true));
+    }
 }

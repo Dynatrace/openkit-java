@@ -101,7 +101,7 @@ public class SessionImpl implements Session {
 
     /**
      * Clears data that has been captured so far.
-     * <p>
+     *
      * <p>
      * This is called, when capturing is turned off to avoid having too much data.
      * </p>
@@ -109,5 +109,18 @@ public class SessionImpl implements Session {
     public void clearCapturedData() {
 
         beacon.clearData();
+    }
+
+    /**
+     * Test if this Session is empty or not.
+     *
+     * <p>
+     * A session is considered to be empty, if it does not contain any action or event data.
+     * </p>
+     *
+     * @return {@code true} if the session is empty, {@code false} otherwise.
+     */
+    public boolean isEmpty() {
+        return beacon.isEmpty();
     }
 }

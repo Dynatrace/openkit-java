@@ -442,6 +442,19 @@ public class BeaconSendingContext {
     }
 
     /**
+     * Push back a finished session, that was previously retrieved via {@link #getNextFinishedSession()}.
+     *
+     * <p>
+     * This method will not check for duplicate entries, so be careful what's pushed back.
+     * </p>
+     *
+     * @param session The session to push back to the list of finished ones.
+     */
+    public void pushBackFinishedSession(SessionImpl session) {
+        finishedSessions.add(session);
+    }
+
+    /**
      * Finish a session which has been started previously using {@link #startSession(SessionImpl)}.
      * <p>
      * <p>

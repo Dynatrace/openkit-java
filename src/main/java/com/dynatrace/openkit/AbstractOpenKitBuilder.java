@@ -43,9 +43,9 @@ public abstract class AbstractOpenKitBuilder {
     private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
     private String modelID = OpenKitConstants.DEFAULT_MODEL_ID;
     private String applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
-    private long beaconCacheMaxBeaconAge = BeaconCacheConfiguration.DEFAULT.getMaxRecordAge();
-    private long beaconCacheLowerMemoryBoundary = BeaconCacheConfiguration.DEFAULT.getCacheSizeLowerBound();
-    private long beaconCacheUpperMemoryBoundary = BeaconCacheConfiguration.DEFAULT.getCacheSizeUpperBound();
+    private long beaconCacheMaxRecordAge = BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS;
+    private long beaconCacheLowerMemoryBoundary = BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES;
+    private long beaconCacheUpperMemoryBoundary = BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
@@ -148,13 +148,13 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the maximum beacon age of beacon data in cache.
+     * Sets the maximum beacon record age of beacon data in cache.
      *
-     * @param maxBeaconAgeInMilliseconds The maximum beacon age in milliseconds, or unbounded if negative.
+     * @param maxRecordAgeInMilliseconds The maximum beacon record age in milliseconds, or unbounded if negative.
      * @return {@code this}
      */
-    public AbstractOpenKitBuilder withBeaconCacheMaxRecordAge(long maxBeaconAgeInMilliseconds) {
-        this.beaconCacheMaxBeaconAge = maxBeaconAgeInMilliseconds;
+    public AbstractOpenKitBuilder withBeaconCacheMaxRecordAge(long maxRecordAgeInMilliseconds) {
+        this.beaconCacheMaxRecordAge = maxRecordAgeInMilliseconds;
         return this;
     }
 
@@ -166,11 +166,11 @@ public abstract class AbstractOpenKitBuilder {
      * until the data size in the cache falls below the configured limit.
      * </p>
      *
-     * @param lowerMemoryBoundary The lower boundary of the beacon cache or negative if unlimited.
+     * @param lowerMemoryBoundaryInBytes The lower boundary of the beacon cache or negative if unlimited.
      * @return {@code this}
      */
-    public AbstractOpenKitBuilder withBeaconCacheLowerMemoryBoundary(long lowerMemoryBoundary) {
-        this.beaconCacheLowerMemoryBoundary = lowerMemoryBoundary;
+    public AbstractOpenKitBuilder withBeaconCacheLowerMemoryBoundary(long lowerMemoryBoundaryInBytes) {
+        this.beaconCacheLowerMemoryBoundary = lowerMemoryBoundaryInBytes;
         return this;
     }
 
@@ -182,11 +182,11 @@ public abstract class AbstractOpenKitBuilder {
      * data from the beacon cache when the cache size exceeds this setting.
      * </p>
      *
-     * @param upperMemoryBoundary The lower boundary of the beacon cache or negative if unlimited.
+     * @param upperMemoryBoundaryInBytes The lower boundary of the beacon cache or negative if unlimited.
      * @return {@code this}
      */
-    public AbstractOpenKitBuilder withBeaconCacheUpperMemoryBoundary(long upperMemoryBoundary) {
-        this.beaconCacheUpperMemoryBoundary = upperMemoryBoundary;
+    public AbstractOpenKitBuilder withBeaconCacheUpperMemoryBoundary(long upperMemoryBoundaryInBytes) {
+        this.beaconCacheUpperMemoryBoundary = upperMemoryBoundaryInBytes;
         return this;
     }
 
@@ -240,8 +240,8 @@ public abstract class AbstractOpenKitBuilder {
         return trustManager;
     }
 
-    long getBeaconCacheMaxBeaconAge() {
-        return beaconCacheMaxBeaconAge;
+    long getBeaconCacheMaxRecordAge() {
+        return beaconCacheMaxRecordAge;
     }
 
     long getBeaconCacheLowerMemoryBoundary() {

@@ -82,6 +82,18 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         SessionImpl finishedSession = context.getNextFinishedSession();
         while (finishedSession != null) {
             statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
+            if (statusResponse == null) {
+                // something went wrong,
+                if (!finishedSession.isEmpty()) {
+                    // well there is more data to send, and we could not do it (now)
+                    // just push it back
+                    context.pushBackFinishedSession(finishedSession);
+                    break; //  sending did not work, break out for now and retry it later
+                }
+            }
+
+            // session was sent - so remove it from beacon cache
+            finishedSession.clearCapturedData();
             finishedSession = context.getNextFinishedSession();
         }
     }

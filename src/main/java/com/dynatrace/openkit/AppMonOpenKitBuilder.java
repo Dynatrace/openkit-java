@@ -45,7 +45,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
     Configuration buildConfiguration() {
         Device device = new Device(getOperatingSystem(), getManufacturer(), getModelID());
 
-        BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxBeaconAge(),
+        BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxRecordAge(),
             getBeaconCacheLowerMemoryBoundary(),
             getBeaconCacheUpperMemoryBoundary());
         return new Configuration(
