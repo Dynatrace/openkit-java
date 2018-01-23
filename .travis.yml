@@ -4,7 +4,7 @@ script: ./gradlew check -i
 before_deploy:
 - git config --local user.name renepanzar
 - git config --local user.email rene.panzar@dynatrace.com
-- git tag "openkit-java $(date +'%Y%m%d%H%M%S')"
+- git tag "openkit-java-$(date +'%Y%m%d%H%M%S')"
 deploy:
   provider: releases
   api_key:
