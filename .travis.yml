@@ -3,6 +3,8 @@ install: ./gradlew assemble
 script: ./gradlew check -i
 deploy:
   provider: releases
+  api_key:
+    secure: $API_KEY_SECURE
   file_glob: true
   file:
   - build/libs/openkit-java-*.jar
@@ -13,4 +15,5 @@ deploy:
 # remove before production
     branch: travis-ci
 # end remove
+  name: openkit-java $(git tag --contains HEAD)
   prerelease: true
