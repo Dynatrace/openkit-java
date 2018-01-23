@@ -1,4 +1,4 @@
-# Dynatrace OpenKit - Java Reference Implementation
+# Dynatrace OpenKit - Java Reference Implementation [![Build Status](https://travis-ci.com/Dynatrace/openkit-java.svg?token=JELesyPDCqGWLCyh3HeS&branch=master)](https://travis-ci.com/Dynatrace/openkit-java)
 
 ## What is the OpenKit?
 
