@@ -13,4 +13,4 @@ deploy:
   file: build/libs/openkit-java-*.jar
   skip_cleanup: true
   on:
-    tags: true
+    tags: false
