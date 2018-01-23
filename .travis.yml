@@ -1,3 +1,6 @@
 language: java
-install: ./gradlew assemble
+install:
+  - pwd
+  - ls -l
+  - ./gradlew assemble
 script: ./gradlew check
