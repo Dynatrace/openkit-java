@@ -15,5 +15,5 @@ deploy:
   on:
     tags: false
     branch: travis-ci
-    draft: true
-    prerelease: true
+  draft: true
+  prerelease: true
