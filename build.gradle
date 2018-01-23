@@ -20,3 +20,12 @@ dependencies {
 test {
     exclude '**/local/*.class'
 }
+
+task javadocZip(type: Zip, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocZip
+}

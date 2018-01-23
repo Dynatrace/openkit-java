@@ -10,7 +10,9 @@ deploy:
   api_key:
     secure: S6UR3dmnFoWUgkYUglBMbWJE1YafWNr1MD33YopXbLO+rovEeYZE0Wo0wDPtYDjiwCt9P3qGh5oC3eiBZUGn9T+UneRrftN0a5GHCdK+EzqIdvKw4i+2Xi6Cg9scAYWu/n5DKt1vawlR5Jz0+CbyfeHEwRzJp5ZQe8P6pUf+vuhWwvoq/6SH9IppVQOUUTE2cVP+LEEUrbkzimn7Mlj+fX70JMw92guQwqu65ly5hxh1vZlega2XJ700BwiPeK2ipEwUp/45VXBJ5F7EGd8zdUlBuv3jld/VSpyMXQP4l0seT9SzeolbiTddgM+ea/uIbsOIyNo9AXfEjuxFHrVfZP8xKmSgTiRXtrbNCPvE8DfMopbLYHUd/NY66oKOfZi12TcU8+pk53FHxKBGwVv4L54urYfNOwUueZpsaB99UrJ5erm5YfsLvATDKmJ7YPmXSd/SyKxdoj/LtA2mm1wmHRQT8ESCa7ZzkNg2y6L7+nesbfvn/6tOoBxZqTqgCz9hBvjiSfh4NUdSKK430GklrzAEvZuk9IvgMOJceCUnT6lvn8eJAvUBA4j2CkOPNVt5VNMsZZ8G6xdr7CYQxaO5KPR5MRwJNxHkbPndJ+U1D4j53iyXyOAXmEjHIEjscFU1hG+bshoa6WRGAy22+Nk2NunQNETUbmxT8PMP8FFo6Y4=
   file_glob: true
-  file: build/libs/openkit-java-*.jar
+  file:
+  - build/libs/openkit-java-*.jar
+  - build/distributions/openkit-java-*.zip
   skip_cleanup: true
   on:
     tags: false
