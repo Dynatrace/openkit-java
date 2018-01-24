@@ -26,7 +26,7 @@ import java.util.*;
  *
  * <p>
  * This strategy checks if the number of cached bytes is greater than {@link BeaconCacheConfiguration#getCacheSizeLowerBound()}
- * and if
+ * and in this case runs the strategy.
  * </p>
  */
 class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {

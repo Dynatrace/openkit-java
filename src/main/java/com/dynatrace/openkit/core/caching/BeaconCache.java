@@ -120,12 +120,12 @@ public interface BeaconCache {
     /**
      * Evict {@link BeaconCacheRecord beacon cache records} by age for a given beacon.
      *
-     * @param beaconID The beacon's identifier.
-     * @param maxAge   The maximum age allowed for beacon's records.
+     * @param beaconID      The beacon's identifier.
+     * @param minTimestamp  The minimum timestamp allowed.
      *
      * @return Returns the number of evicted cache records.
      */
-    int evictRecordsByAge(Integer beaconID, long maxAge);
+    int evictRecordsByAge(Integer beaconID, long minTimestamp);
 
     /**
      * Evict {@link BeaconCacheRecord beacon cache records} by number for given beacon.
@@ -148,7 +148,7 @@ public interface BeaconCache {
      * Tests if an cached entry for {@code beaconID} is empty.
      *
      * @param beaconID beaconID   The beacon's identifier.
-     * @return {@code true} if the cached entry is empty, false otherwise.
+     * @return {@code true} if the cached entry is empty, {@code false} otherwise.
      */
     boolean isEmpty(Integer beaconID);
 }

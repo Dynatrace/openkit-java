@@ -126,7 +126,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void getBeaconConfiguration() {
+    public void getBeaconCacheConfiguration() {
 
         // given
         BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
