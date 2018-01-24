@@ -20,6 +20,7 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
+import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
@@ -29,9 +30,6 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -96,10 +94,7 @@ public class Beacon {
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
 
-    /**
-     * Initial time to sleep after the first failed beacon send attempt.
-     */
-    private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+    private static final char BEACON_DATA_DELIMITER = '&';
 
     // next ID and sequence number
     private AtomicInteger nextID = new AtomicInteger(0);
@@ -123,17 +118,25 @@ public class Beacon {
     // HTTPClientConfiguration reference
     private final HTTPClientConfiguration httpConfiguration;
 
-    // lists of events and actions currently on the Beacon
-    private final LinkedList<String> eventDataList = new LinkedList<String>();
-    private final LinkedList<String> actionDataList = new LinkedList<String>();
-
     private final Logger logger;
+
+    private final BeaconCacheImpl beaconCache;
 
     // *** constructors ***
 
-    public Beacon(Logger logger, Configuration configuration, String clientIPAddress,
-                  ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
+    /**
+     * Constructor.
+     *
+     * @param logger Logger for logging messages.
+     * @param beaconCache Cache storing beacon related data.
+     * @param configuration OpenKit related configuration.
+     * @param clientIPAddress The client's IP address.
+     * @param threadIDProvider Provider for retrieving thread id.
+     * @param timingProvider Provider for time related methods.
+     */
+    public Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
         this.logger = logger;
+        this.beaconCache = beaconCache;
         this.sessionNumber = configuration.createSessionNumber();
         this.timingProvider = timingProvider;
 
@@ -153,9 +156,16 @@ public class Beacon {
         basicBeaconData = createBasicBeaconData();
     }
 
-    // *** public methods ***
-
-    // create next ID
+    /**
+     * Create a unique identifier.
+     *
+     * <p>
+     * The identifier returned is only unique per Beacon.
+     * Calling this method on two different Beacon instances, might give the same result.
+     * </p>
+     *
+     * @return A unique identifier.
+     */
     public int createID() {
         return nextID.incrementAndGet();
     }
@@ -163,18 +173,37 @@ public class Beacon {
     /**
      * Get the current timestamp in milliseconds by delegating to TimingProvider
      *
-     * @return
+     * @return Current timestamp in milliseconds.
      */
     public long getCurrentTimestamp() {
         return timingProvider.provideTimestampInMilliseconds();
     }
 
-    // create next sequence number
+    /**
+     * Create a unique sequence number.
+     *
+     * <p>
+     * The sequence number returned is only unique per Beacon.
+     * Calling this method on two different Beacon instances, might give the same result.
+     * </p>
+     *
+     * @return A unique sequence number.
+     */
     public int createSequenceNumber() {
         return nextSequenceNumber.incrementAndGet();
     }
 
-    // create web request tag
+    /**
+     * Create a web request tag.
+     *
+     * <p>
+     * Web request tags can be attached as HTTP header for web request tracing.
+     * </p>
+     *
+     * @param parentAction The action for which to create a web request tag.
+     * @param sequenceNo Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
+     * @return A web request tracer tag.
+     */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
         return TAG_PREFIX + "_"
             + PROTOCOL_VERSION + "_"
@@ -187,7 +216,15 @@ public class Beacon {
             + sequenceNo;
     }
 
-    // add an Action to this Beacon
+    /**
+     * Add {@link ActionImpl} to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param action The action to add.
+     */
     public void addAction(ActionImpl action) {
         StringBuilder actionBuilder = new StringBuilder();
 
@@ -200,11 +237,18 @@ public class Beacon {
         addKeyValuePair(actionBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, action.getEndSequenceNo());
         addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
-
-        addActionData(actionBuilder);
+        addActionData(action.getStartTime(), actionBuilder);
     }
 
-    // end Session on this Beacon
+    /**
+     * Add {@link SessionImpl} to Beacon when session is ended.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param session The session to add.
+     */
     public void endSession(SessionImpl session) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -214,49 +258,99 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
 
-        addEventData(eventBuilder);
+        addEventData(session.getEndTime(), eventBuilder);
     }
 
-    // report int value on the provided Action
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
+     */
     public void reportValue(ActionImpl parentAction, String valueName, int value) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report double value on the provided Action
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
+     */
     public void reportValue(ActionImpl parentAction, String valueName, double value) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report string value on the provided Action
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
+     */
     public void reportValue(ActionImpl parentAction, String valueName, String value) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, truncate(value));
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report named event on the provided Action
+    /**
+     * Add event (aka. named event) to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this event was reported.
+     * @param eventName Event's name.
+     */
     public void reportEvent(ActionImpl parentAction, String eventName) {
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
 
-        addEventData(eventBuilder);
+        addEventData(eventTimestamp, eventBuilder);
     }
 
-    // report error on the provided Action
+    /**
+     * Add error to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this error was reported.
+     * @param errorName Error's name.
+     * @param errorCode Some error code.
+     * @param reason Reason for that error.
+     */
     public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
         // if capture errors is off -> do nothing
         if (!configuration.isCaptureErrors()) {
@@ -267,16 +361,27 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
 
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
-        addEventData(eventBuilder);
+        addEventData(timestamp, eventBuilder);
     }
 
-    // report a crash
+    /**
+     * Add crash to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param errorName Error's name.
+     * @param reason Reason for that error.
+     * @param stacktrace Crash stacktrace.
+     */
     public void reportCrash(String errorName, String reason, String stacktrace) {
         // if capture crashes is off -> do nothing
         if (!configuration.isCaptureCrashes()) {
@@ -287,16 +392,26 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
 
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
-        addEventData(eventBuilder);
+        addEventData(timestamp, eventBuilder);
     }
 
-    // add web request to the provided Action
+    /**
+     * Add web request to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
+     * @param webRequestTracer Web request tracer to serialize.
+     */
     public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -320,120 +435,177 @@ public class Beacon {
             addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
         }
 
-        addEventData(eventBuilder);
+        addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
-
-    // identify the user
+    /**
+     * Add user identification to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param userTag User tag containing data to serialize.
+     */
     public void identifyUser(String userTag) {
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
 
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
 
-        addEventData(eventBuilder);
+        addEventData(timestamp, eventBuilder);
     }
 
-    // send current state of Beacon
-    public StatusResponse send(HTTPClientProvider provider, int numRetries) throws InterruptedException {
+    /**
+     * Send current state of Beacon.
+     *
+     * <p>
+     * This method tries to send all so far collected and serialized data.
+     * </p>
+     *
+     * @param provider Provider for getting an {@link HTTPClient} required to send the data.
+     *
+     * @return Returns the last status response retrieved from the server side, or {@code null} if an error occurred.
+     */
+    public StatusResponse send(HTTPClientProvider provider) {
+
         HTTPClient httpClient = provider.createClient(httpConfiguration);
-        ArrayList<byte[]> beaconDataChunks = createBeaconDataChunks();
         StatusResponse response = null;
-        for (byte[] beaconData : beaconDataChunks) {
-            response = sendBeaconRequest(httpClient, beaconData, numRetries);
+
+        while (true) {
+
+            // prefix for this chunk - must be built up newly, due to changing timestamps
+            String prefix = basicBeaconData + BEACON_DATA_DELIMITER + createTimestampData();
+            // subtract 1024 to ensure that the chunk does not exceed the send size configured on server side?
+            // i guess that was the original intention, but i'm not sure about this
+            // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
+            String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getMaxBeaconSize() - 1024, BEACON_DATA_DELIMITER);
+            if (chunk == null || chunk.isEmpty()) {
+                // no data added so far or no data to send
+                return response;
+            }
+
+            byte[] encodedBeacon;
+            try {
+                encodedBeacon = chunk.getBytes(CHARSET);
+            } catch (UnsupportedEncodingException e) {
+                // must not happen, as UTF-8 should *really* be supported
+                logger.error("Required charset \"" + CHARSET + "\" is not supported.", e);
+                beaconCache.resetChunkedData(sessionNumber);
+                return response;
+            }
+
+            // send the request
+            response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon);
+            if (response == null) {
+                // error happened - but don't know what exactly
+                // reset the previously retrieved chunk (restore it in internal cache) & retry another time
+                beaconCache.resetChunkedData(sessionNumber);
+                break;
+            } else {
+                // worked -> remove previously retrieved chunk from cache
+                beaconCache.removeChunkedData(sessionNumber);
+            }
         }
 
-        // only return last status response for updating the settings
         return response;
     }
 
 
     /**
      * Gets all events.
-     * <p>
+     *
      * <p>
      * This returns a shallow copy of events entries and is intended only
      * for testing purposes.
      * </p>
      */
     String[] getEvents() {
-        return eventDataList.toArray(new String[0]);
+        return beaconCache.getEvents(sessionNumber);
     }
 
     /**
      * Gets all actions.
-     * <p>
+     *
      * <p>
      * This returns a shallow copy of all actions and is intended only
      * for testing purposes.
      * </p>
      */
     String[] getActions() {
-        return actionDataList.toArray(new String[0]);
+        return beaconCache.getActions(sessionNumber);
     }
 
+    /**
+     * Add previously serialized action data to the beacon cache.
+     *
+     * @param timestamp The timestamp when the action data occurred.
+     * @param actionBuilder Contains the serialized action data.
+     */
+    private void addActionData(long timestamp, StringBuilder actionBuilder) {
 
-    // *** private methods ***
-
-    private void addActionData(StringBuilder actionBuilder) {
-        synchronized (actionDataList) {
-            if (configuration.isCapture()) {
-                actionDataList.add(actionBuilder.toString());
-            }
+        if (configuration.isCapture()) {
+            beaconCache.addActionData(sessionNumber, timestamp, actionBuilder.toString());
         }
     }
 
-    private void addEventData(StringBuilder eventBuilder) {
-        synchronized (eventDataList) {
-            if (configuration.isCapture()) {
-                eventDataList.add(eventBuilder.toString());
-            }
+    /**
+     * Add previously serialized event data to the beacon cache.
+     *
+     * @param timestamp The timestamp when the event data occurred.
+     * @param eventBuilder Contains the serialized event data.
+     */
+    private void addEventData(long timestamp, StringBuilder eventBuilder) {
+
+        if (configuration.isCapture()) {
+            beaconCache.addEventData(sessionNumber, timestamp, eventBuilder.toString());
         }
     }
 
+    /**
+     * Clears all previously collected data for this Beacon.
+     *
+     * <p>
+     * This only affects the so far serialized data, which gets removed from the cache.
+     * </p>
+     */
     public void clearData() {
 
-        synchronized (eventDataList) {
-            synchronized (actionDataList) {
-                eventDataList.clear();
-                actionDataList.clear();
-            }
-        }
+        // remove all cached data for this Beacon from the cache
+        beaconCache.deleteCacheEntry(sessionNumber);
     }
 
-    private StatusResponse sendBeaconRequest(HTTPClient httpClient, byte[] beaconData, int numRetries) throws InterruptedException {
-
-        StatusResponse response;
-        int retry = 0;
-        long retrySleepMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
-
-        while (true) {
-
-            response = httpClient.sendBeaconRequest(clientIPAddress, beaconData);
-            if (response != null || (retry >= numRetries)) {
-                break; // success or max retry count reached
-            }
-
-            Thread.sleep(retrySleepMillis);
-            retrySleepMillis *= 2;
-            retry++;
-        }
-
-        return response;
-    }
-
-    // helper method for building events
-    private void buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
+    /**
+     * Serialization helper for event data.
+     *
+     * @param builder String builder storing the serialzed data.
+     * @param eventType The event's type.
+     * @param name Event name
+     * @param parentAction The action on which this event was reported.
+     * @return The timestamp associated with the event (timestamp since session start time).
+     */
+    private long buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
         buildBasicEventData(builder, eventType, name);
+
+        long eventTimestamp = timingProvider.provideTimestampInMilliseconds();
 
         addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
         addKeyValuePair(builder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(builder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime());
+        addKeyValuePair(builder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(eventTimestamp));
+
+        return eventTimestamp;
     }
 
-    // helper method for building basic event data
+    /**
+     * Serializeation for building basic event data.
+     *
+     * @param builder String builder storing serialized data.
+     * @param eventType The event's type.
+     * @param name Event's name.
+     */
     private void buildBasicEventData(StringBuilder builder, EventType eventType, String name) {
         addKeyValuePair(builder, BEACON_KEY_EVENT_TYPE, eventType.protocolValue());
         if (name != null) {
@@ -442,54 +614,11 @@ public class Beacon {
         addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
     }
 
-    // creates (possibly) multiple beacon chunks based on max beacon size
-    public ArrayList<byte[]> createBeaconDataChunks() {
-        ArrayList<byte[]> beaconDataChunks = new ArrayList<byte[]>();
-
-        synchronized (eventDataList) {
-            synchronized (actionDataList) {
-                while (!eventDataList.isEmpty() || !actionDataList.isEmpty()) {
-                    StringBuilder beaconBuilder = new StringBuilder();
-
-                    beaconBuilder.append(basicBeaconData);
-                    beaconBuilder.append('&');
-                    beaconBuilder.append(createTimestampData());
-
-                    while (!eventDataList.isEmpty()) {
-                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
-                            break;
-                        }
-
-                        String eventData = eventDataList.removeFirst();
-                        beaconBuilder.append('&');
-                        beaconBuilder.append(eventData);
-                    }
-
-                    while (!actionDataList.isEmpty()) {
-                        if (beaconBuilder.length() > configuration.getMaxBeaconSize() - 1024) {
-                            break;
-                        }
-
-                        String actionData = actionDataList.removeFirst();
-                        beaconBuilder.append('&');
-                        beaconBuilder.append(actionData);
-                    }
-
-                    byte[] encodedBeacon = null;
-                    try {
-                        encodedBeacon = beaconBuilder.toString().getBytes(CHARSET);
-                    } catch (UnsupportedEncodingException e) {
-                        // must not happen, as UTF-8 should *really* be supported
-                    }
-                    beaconDataChunks.add(encodedBeacon);
-                }
-            }
-        }
-
-        return beaconDataChunks;
-    }
-
-    // helper method for creating basic beacon protocol data
+    /**
+     * Serialization helper method for creating basic beacon protocol data.
+     *
+     * @return Serialized data.
+     */
     private String createBasicBeaconData() {
         StringBuilder basicBeaconBuilder = new StringBuilder();
 
@@ -524,7 +653,11 @@ public class Beacon {
         return basicBeaconBuilder.toString();
     }
 
-    // helper method for creating basic timestamp data
+    /**
+     * Serialization helper method for creating basic timestamp data.
+     *
+     * @return Serialized data.
+     */
     private String createTimestampData() {
         StringBuilder timestampBuilder = new StringBuilder();
 
@@ -538,7 +671,13 @@ public class Beacon {
         return timestampBuilder.toString();
     }
 
-    // helper method for adding key/value pairs with string values
+    /**
+     * Serialization helper method for adding key/value pairs with string values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param stringValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, String stringValue) {
         String encodedValue;
         try {
@@ -553,25 +692,48 @@ public class Beacon {
         builder.append(encodedValue);
     }
 
-    // helper method for adding key/value pairs with long values
+    /**
+     * Serialization helper method for adding key/value pairs with long values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param longValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, long longValue) {
         appendKey(builder, key);
         builder.append(longValue);
     }
 
-    // helper method for adding key/value pairs with int values
+    /**
+     * Serialization helper method for adding key/value pairs with int values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param intValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, int intValue) {
         appendKey(builder, key);
         builder.append(intValue);
     }
 
-    // helper method for adding key/value pairs with double values
+    /**
+     * Serialization helper method for adding key/value pairs with double values
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param doubleValue The value to add.
+     */
     private void addKeyValuePair(StringBuilder builder, String key, double doubleValue) {
         appendKey(builder, key);
         builder.append(doubleValue);
     }
 
-    // helper method for appending a key
+    /**
+     * Serialization helper method for appending a key.
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     */
     private void appendKey(StringBuilder builder, String key) {
         if (!builder.toString().isEmpty()) {
             builder.append('&');
@@ -580,7 +742,9 @@ public class Beacon {
         builder.append('=');
     }
 
-    // helper method for truncating name at max name size
+    /**
+     * helper method for truncating name at max name size
+     */
     private String truncate(String name) {
         name = name.trim();
         if (name.length() > MAX_NAME_LEN) {
@@ -589,12 +753,26 @@ public class Beacon {
         return name;
     }
 
+    /**
+     * Get a timestamp relative to the time this session (aka. beacon) was created.
+     *
+     * @param timestamp The absolute timestamp for which to get a relative one.
+     * @return Relative timestamp.
+     */
     private long getTimeSinceSessionStartTime(long timestamp) {
         return timestamp - sessionStartTime;
     }
 
-    private long getTimeSinceSessionStartTime() {
-        return getTimeSinceSessionStartTime(timingProvider.provideTimestampInMilliseconds());
+    /**
+     * Tests if the Beacon is empty.
+     *
+     * <p>
+     * A beacon is considered to be empty, if it does not contain any action or event data.
+     * </p>
+     *
+     * @return {@code true} if the beacon is empty, {@code false} otherwise.
+     */
+    public boolean isEmpty() {
+        return beaconCache.isEmpty(sessionNumber);
     }
-
 }

@@ -18,7 +18,7 @@ package com.dynatrace.openkit.core.communication;
 
 /**
  * Base class for all beacon sending states.
- * <p>
+ *
  * <p>
  * Transition to:
  * <ul>
@@ -39,7 +39,7 @@ abstract class AbstractBeaconSendingState {
 
     /**
      * Execute the current state.
-     * <p>
+     *
      * <p>
      * In case shutdown was requested, a state transition is performed by this method to the {@link AbstractBeaconSendingState}
      * returned by {@link AbstractBeaconSendingState#getShutdownState()}.

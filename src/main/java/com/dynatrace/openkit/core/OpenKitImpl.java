@@ -19,6 +19,8 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
+import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.*;
@@ -27,6 +29,11 @@ import com.dynatrace.openkit.providers.*;
  * Actual implementation of the {@link OpenKit} interface.
  */
 public class OpenKitImpl implements OpenKit {
+
+    // Beacon cache
+    private final BeaconCacheImpl beaconCache;
+    // Cache eviction thread
+    private final BeaconCacheEvictor beaconCacheEvictor;
 
     // BeaconSender reference
     private final BeaconSender beaconSender;
@@ -50,7 +57,9 @@ public class OpenKitImpl implements OpenKit {
         this.logger = logger;
         this.threadIDProvider = threadIDProvider;
         this.timingProvider = timingProvider;
+        beaconCache = new BeaconCacheImpl();
         beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
+        beaconCacheEvictor = new BeaconCacheEvictor(logger, beaconCache, configuration.getBeaconCacheConfiguration(), timingProvider);
     }
 
     /**
@@ -62,6 +71,7 @@ public class OpenKitImpl implements OpenKit {
      * </p>
      */
     public void initialize() {
+        beaconCacheEvictor.start();
         beaconSender.initialize();
     }
 
@@ -89,13 +99,14 @@ public class OpenKitImpl implements OpenKit {
     @Override
     public Session createSession(String clientIPAddress) {
         // create beacon for session
-        Beacon beacon = new Beacon(logger, configuration, clientIPAddress, threadIDProvider, timingProvider);
+        Beacon beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
         // create session
         return new SessionImpl(beaconSender, beacon);
     }
 
     @Override
     public void shutdown() {
+        beaconCacheEvictor.stop();
         beaconSender.shutdown();
     }
 }
