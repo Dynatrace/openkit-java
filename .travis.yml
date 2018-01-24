@@ -25,7 +25,7 @@ after_script:
 - find -name "*.jar" -ls
 
 after_success:
-- mv build/libs/$FILENAME.jar $(ls build/libs/openkit-java-*.jar | sed "s/-java-/-java$TARGET_COMPATIBILITY-/g")
+- mv -v build/libs/openkit-java-*.jar $(ls build/libs/openkit-java-*.jar | sed "s/-java-/-java$TARGET_COMPATIBILITY-/g")
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
