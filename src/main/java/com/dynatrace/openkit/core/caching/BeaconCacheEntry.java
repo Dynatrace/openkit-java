@@ -202,6 +202,11 @@ class BeaconCacheEntry {
      */
     void removeDataMarkedForSending() {
 
+        if (!hasDataToSend()) {
+            // data has not been copied yet - avoid NPE
+            return;
+        }
+
         Iterator<BeaconCacheRecord> iterator = eventDataBeingSent.iterator();
         while (iterator.hasNext() && iterator.next().isMarkedForSending()) {
             iterator.remove();
@@ -220,6 +225,11 @@ class BeaconCacheEntry {
      * This method removes the marked for sending and prepends the copied data back to the data.
      */
     void resetDataMarkedForSending() {
+
+        if (!hasDataToSend()) {
+            // data has not been copied yet - avoid NPE
+            return;
+        }
 
         // reset the "sending marks" and in the same traversal count the bytes which are added back
         long numBytes = 0;
@@ -318,7 +328,7 @@ class BeaconCacheEntry {
      *
      * @return Number of actually removed records.
      */
-    public int removeOldestRecords(int numRecords) {
+    int removeOldestRecords(int numRecords) {
 
         int numRecordsRemoved = 0;
 
