@@ -83,13 +83,18 @@ in `isDebugEnabled` and `isInfoEnabled`.
 ## Initializing OpenKit
 
 When obtaining an OpenKit instance from the OpenKit builder the instance starts an automatic 
-initialization phase. Since initialization happens asynchronously the application developers 
-might want to wait until initialization completes, as shown in the example below.
+initialization phase. By default, initialization is performed asynchronously. 
+
+There might be situations when a developer wants to ensure that initialization is completed before proceeding with 
+the program logic. For example, short-lived applications where a valid init and shutdown cannot be guaranteed. In
+such a case `waitForInitCompletion` can be used.
 
 ```java
 // wait until the OpenKit instance is fully initialized
 boolean success = openKit.waitForInitCompletion();
 ```
+
+:grey_exclamation: Please refer to the Javadoc for additional information.
 
 The method `waitForInitCompletion` blocks the calling thread until OpenKit is initialized. In case
 of misconfiguration this might block the calling thread indefinitely. The return value
@@ -330,4 +335,4 @@ When an OpenKit instance is no longer needed (e.g. the application using OpenKit
 obtained instance can be cleared by invoking the `shutdown` method.  
 Calling the `shutdown` method blocks the calling thread while the OpenKit flushes data which has not been
 transmitted yet to the backend (Dynatrace SaaS/Dynatrace Managed/AppMon).  
-Details are explained in [internals.md](#internals.md)
+Details are explained in [internals.md](internals.md)
