@@ -1,7 +1,10 @@
+dist: trusty
+
 # The main language that this repo uses - this enables Gradle support
 language: java
 
 jdk:
+- oraclejdk6
 - oraclejdk7
 - oraclejdk8
 
