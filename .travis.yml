@@ -1,16 +1,40 @@
+# The main language that this repo uses - this enables Gradle support
 language: java
+
+# Install the repository locally - this downloads dependencies, compiles the source code, and
+# creates all artifacts
 install: ./gradlew assemble
-script: ./gradlew check -i
+
+# Runs tests that check the implementation (unit tests)
+script: ./gradlew check
+
+# Creates a GitHub release and deploys artifacts to this release
 deploy:
+  # The provider that simplifies communication with GitHub
   provider: releases
+  # The GitHub API key is read from the environment (needs to be configured in Travis CI)
   api_key: $API_KEY
+
+  # Conditions that all must be true to create a release in the first place
+  on:
+    # Only if this commit has tags should a release be initiated
+    tags: true
+    # Only if this commit is part of the master branch should a release be initiated
+    branch: master
+
+  # Metadata of this release
+  #
+  # The name of this release
   name: openkit-java $(git tag --contains HEAD)
+  # This release should be flagged as pre-release
   prerelease: true
-  file_glob: true
+
+  # Files to be added to this release
   file:
   - build/libs/openkit-java-*.jar
   - build/distributions/openkit-java-*.zip
+  # Enable wildcard operators in the file selector above
+  file_glob: true
+
+  # Prevent cleanup of build that would otherwise delete artifacts
   skip_cleanup: true
-  on:
-    tags: true
-    branch: master
