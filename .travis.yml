@@ -3,7 +3,7 @@ install: ./gradlew assemble
 script: ./gradlew check -i
 deploy:
   provider: releases
-  api_key: "$API_KEY"
+  api_key: $API_KEY
   name: openkit-java $(git tag --contains HEAD)
   prerelease: true
   file_glob: true
@@ -13,3 +13,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+    branch: master
