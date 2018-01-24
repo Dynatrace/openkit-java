@@ -1,26 +1,12 @@
-dist: precise
-
 # The main language that this repo uses - this enables Gradle support
 language: java
 
-jdk:
-- oraclejdk6
-- oraclejdk7
-- oraclejdk8
-
-before_install:
-- ls -l $JAVA_HOME
 # Install the repository locally - this downloads dependencies, compiles the source code, and
 # creates all artifacts
 install: ./gradlew assemble
-after_install:
-- mv build/libs build/libs-$(java -version 2>&1 | head -1 | sed 's/.*"\(.*\)"/\1/g')
-- mv build/distributions build/distributions-$(java -version 2>&1 | head -1 | sed 's/.*"\(.*\)"/\1/g')
 
 # Runs tests that check the implementation (unit tests)
 script: ./gradlew check --info
-
-after_script: ls -l build/
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
