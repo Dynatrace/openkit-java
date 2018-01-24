@@ -1,4 +1,4 @@
-dist: precise
+dist: trusty
 
 # The main language that this repo uses - this enables Gradle support
 language: java
@@ -25,7 +25,7 @@ after_script:
 - find -name "*.jar" -ls
 
 after_success:
-- mv build/libs/openkit-java-*.jar build/libs/openkit-java-vX.Y.Z-java$TARGET_COMPATIBILITY.jar
+- mv build/libs/$FILENAME.jar $(ls build/libs/openkit-java-*.jar | sed "s/-java-/-java$TARGET_COMPATIBILITY-/g")
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
@@ -39,7 +39,7 @@ deploy:
     # Only if this commit has tags should a release be initiated
     tags: true
     # Only if this commit is part of the master branch should a release be initiated
-    branch: master
+    #branch: master
 
   # Metadata of this release
   #
@@ -50,8 +50,8 @@ deploy:
 
   # Files to be added to this release
   file:
-  - build/libs/openkit-java-*.jar
-  - build/distributions/openkit-java-*.zip
+  - build/libs/openkit-java*.jar
+  - build/distributions/openkit-java*.zip
   # Enable wildcard operators in the file selector above
   file_glob: true
 
