@@ -3,7 +3,8 @@ dist: precise
 # The main language that this repo uses - this enables Gradle support
 language: java
 
-jdk: oraclejdk8
+jdk:
+- oraclejdk8
 
 env:
 - TARGET_COMPATIBILITY=6
@@ -11,6 +12,7 @@ env:
 - TARGET_COMPATIBILITY=8
 
 before_install:
+- echo $JAVA_HOME
 - ls -l $JAVA_HOME
 # Install the repository locally - this downloads dependencies, compiles the source code, and
 # creates all artifacts
