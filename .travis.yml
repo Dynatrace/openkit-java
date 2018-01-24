@@ -30,7 +30,7 @@ deploy:
     # Only if this commit has tags should a release be initiated
     tags: true
     # Only if this commit is part of the master branch should a release be initiated
-    #branch: master
+    branch: master
 
   # Metadata of this release
   #
