@@ -69,7 +69,7 @@ public interface BeaconCache {
      *
      * @param beaconID The beacon id for which to get the next chunk.
      * @param chunkPrefix Prefix to append to the beginning of the chunk.
-     * @param maxSize Maximum chunk size. As soon as chunk's size >= maxSize result is returned.
+     * @param maxSize Maximum chunk size. As soon as chunk's size is greater than or equal to maxSize result is returned.
      * @param delimiter Delimiter between consecutive chunks.
      *
      * @return {@code null} if given {@code beaconID} does not exist, an empty string, if there is no more data to send
