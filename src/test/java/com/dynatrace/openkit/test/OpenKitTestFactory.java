@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.test;
 
 import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.core.util.DefaultLogger;
@@ -81,7 +82,8 @@ public class OpenKitTestFactory {
             new TestSessionIDProvider(),
             new SSLStrictTrustManager(),
             testConfiguration.getDevice(),
-            testConfiguration.getApplicationVersion());
+            testConfiguration.getApplicationVersion(),
+            new BeaconCacheConfiguration(-1, -1, -1));
     }
 
     private static Configuration getAppMonConfig(String applicationName, String endpointURL, long deviceID) {
@@ -94,7 +96,8 @@ public class OpenKitTestFactory {
             new TestSessionIDProvider(),
             new SSLStrictTrustManager(),
             new Device("", "", ""),
-            "");
+            "",
+            new BeaconCacheConfiguration(-1, -1, -1));
     }
 
     private static Configuration getDynatraceConfig(String applicationName, String applicationID, String endpointURL, long deviceID) {
@@ -107,6 +110,7 @@ public class OpenKitTestFactory {
             new TestSessionIDProvider(),
             new SSLStrictTrustManager(),
             new Device("", "", ""),
-            "");
+            "",
+            new BeaconCacheConfiguration(-1, -1, -1));
     }
 }

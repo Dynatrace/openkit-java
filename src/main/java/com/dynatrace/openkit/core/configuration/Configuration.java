@@ -53,12 +53,16 @@ public class Configuration {
     private final String applicationVersion;
     private final Device device;
 
+    // caching settings
+    private final BeaconCacheConfiguration beaconCacheConfiguration;
+
     private SessionIDProvider sessionIDProvider;
 
     // *** constructors ***
 
     public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL,
-                         SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion) {
+                         SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion,
+                         BeaconCacheConfiguration beaconCacheConfiguration) {
 
         this.openKitType = openKitType;
 
@@ -85,6 +89,8 @@ public class Configuration {
                 trustManager);
 
         this.applicationVersion = applicationVersion;
+
+        this.beaconCacheConfiguration = beaconCacheConfiguration;
 
         this.sessionIDProvider = sessionIDProvider;
     }
@@ -218,5 +224,9 @@ public class Configuration {
      */
     public HTTPClientConfiguration getHttpClientConfig() {
         return httpClientConfiguration;
+    }
+
+    public BeaconCacheConfiguration getBeaconCacheConfiguration() {
+         return beaconCacheConfiguration;
     }
 }

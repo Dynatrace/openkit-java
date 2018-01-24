@@ -19,9 +19,11 @@ package com.dynatrace.openkit;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,6 +61,12 @@ public class OpenKitBuilderTest {
 
         // default trust manager
         assertThat(configuration.getHttpClientConfig().getSSLTrustManager(), instanceOf(SSLStrictTrustManager.class));
+
+        // default values for beacon cache configuration
+        assertThat(configuration.getBeaconCacheConfiguration(), is(notNullValue()));
+        assertThat(configuration.getBeaconCacheConfiguration().getMaxRecordAge(), is(BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS));
+        assertThat(configuration.getBeaconCacheConfiguration().getCacheSizeUpperBound(), is(BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES));
+        assertThat(configuration.getBeaconCacheConfiguration().getCacheSizeLowerBound(), is(BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES));
     }
 
     @Test
@@ -204,5 +212,101 @@ public class OpenKitBuilderTest {
         assertThat(target, is(instanceOf(DefaultLogger.class)));
         assertThat(target.isDebugEnabled(), is(true));
         assertThat(target.isInfoEnabled(), is(true));
+    }
+
+    @Test
+    public void canSetCustomMaxBeaconRecordAgeForDynatrace() {
+
+        // given
+        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID);
+        final long maxRecordAge = 123456L;
+
+        // when
+        AbstractOpenKitBuilder obtained = target.withBeaconCacheMaxRecordAge(maxRecordAge);
+
+        // then
+        assertThat(obtained, is(Matchers.<AbstractOpenKitBuilder>instanceOf(DynatraceOpenKitBuilder.class)));
+        assertThat((DynatraceOpenKitBuilder)obtained, is(sameInstance(target)));
+        assertThat(target.getBeaconCacheMaxRecordAge(), is(maxRecordAge));
+    }
+
+    @Test
+    public void canSetCustomMaxBeaconRecordAgeForAppMon() {
+
+        // given
+        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(endpoint, appID, deviceID);
+        final long maxRecordAge = 123456L;
+
+        // when
+        AbstractOpenKitBuilder obtained = target.withBeaconCacheMaxRecordAge(maxRecordAge);
+
+        // then
+        assertThat(obtained, is(Matchers.<AbstractOpenKitBuilder>instanceOf(AppMonOpenKitBuilder.class)));
+        assertThat((AppMonOpenKitBuilder)obtained, is(sameInstance(target)));
+        assertThat(target.getBeaconCacheMaxRecordAge(), is(maxRecordAge));
+    }
+
+    @Test
+    public void canSetBeaconCacheLowerMemoryBoundaryForDynatrace() {
+
+        // given
+        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID);
+        final long lowerMemoryBoundary = 42L * 1024L;
+
+        // when
+        AbstractOpenKitBuilder obtained = target.withBeaconCacheLowerMemoryBoundary(lowerMemoryBoundary);
+
+        // then
+        assertThat(obtained, is(Matchers.<AbstractOpenKitBuilder>instanceOf(DynatraceOpenKitBuilder.class)));
+        assertThat((DynatraceOpenKitBuilder)obtained, is(sameInstance(target)));
+        assertThat(target.getBeaconCacheLowerMemoryBoundary(), is(lowerMemoryBoundary));
+    }
+
+    @Test
+    public void canSetBeaconCacheLowerMemoryBoundaryForAppMon() {
+
+        // given
+        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(endpoint, appID, deviceID);
+        final long lowerMemoryBoundary = 42L * 1024L;
+
+        // when
+        AbstractOpenKitBuilder obtained = target.withBeaconCacheLowerMemoryBoundary(lowerMemoryBoundary);
+
+        // then
+        assertThat(obtained, is(Matchers.<AbstractOpenKitBuilder>instanceOf(AppMonOpenKitBuilder.class)));
+        assertThat((AppMonOpenKitBuilder)obtained, is(sameInstance(target)));
+        assertThat(target.getBeaconCacheLowerMemoryBoundary(), is(lowerMemoryBoundary));
+    }
+
+    @Test
+    public void canSetBeaconCacheUpperMemoryBoundaryForDynatrace() {
+
+        // given
+        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID);
+        final long upperMemoryBoundary = 42L * 1024L;
+
+        // when
+        AbstractOpenKitBuilder obtained = target.withBeaconCacheUpperMemoryBoundary(upperMemoryBoundary);
+
+        // then
+        assertThat(obtained, is(Matchers.<AbstractOpenKitBuilder>instanceOf(DynatraceOpenKitBuilder.class)));
+        assertThat((DynatraceOpenKitBuilder)obtained, is(sameInstance(target)));
+        assertThat(target.getBeaconCacheUpperMemoryBoundary(), is(upperMemoryBoundary));
+    }
+
+    @Test
+    public void canSetBeaconCacheUpperMemoryBoundaryForAppMon() {
+
+        // given
+        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(endpoint, appID, deviceID);
+        final long upperMemoryBoundary = 42L * 1024L;
+
+        // when
+        AbstractOpenKitBuilder obtained = target.withBeaconCacheUpperMemoryBoundary(upperMemoryBoundary);
+
+        // then
+        assertThat(obtained, is(Matchers.<AbstractOpenKitBuilder>instanceOf(AppMonOpenKitBuilder.class)));
+        assertThat((AppMonOpenKitBuilder)obtained, is(sameInstance(target)));
+        assertThat(target.getBeaconCacheUpperMemoryBoundary(), is(upperMemoryBoundary));
     }
 }

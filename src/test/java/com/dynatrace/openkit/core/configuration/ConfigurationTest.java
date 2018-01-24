@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -124,6 +125,20 @@ public class ConfigurationTest {
         assertThat(target.isCapture(), is(false));
     }
 
+    @Test
+    public void getBeaconConfiguration() {
+
+        // given
+        BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", 777, "", beaconCacheConfiguration);
+
+        // when
+        BeaconCacheConfiguration obtained = target.getBeaconCacheConfiguration();
+
+        // then
+        assertThat(obtained, is(sameInstance(beaconCacheConfiguration)));
+    }
+
     private final class TestConfiguration extends Configuration {
 
         private TestConfiguration() {
@@ -131,7 +146,14 @@ public class ConfigurationTest {
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL, new TestSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "");
+            this(openKitType, applicationName, applicationID, deviceID, endpointURL,
+                new BeaconCacheConfiguration(-1, -1, -1));
+        }
+
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration) {
+            super(openKitType, applicationName, applicationID, deviceID, endpointURL,
+                new TestSessionIDProvider(), new SSLStrictTrustManager(),
+                new Device("", "", ""), "", beaconCacheConfiguration);
         }
     }
 }

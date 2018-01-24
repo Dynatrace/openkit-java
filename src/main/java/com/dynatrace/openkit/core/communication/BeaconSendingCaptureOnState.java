@@ -33,8 +33,6 @@ import com.dynatrace.openkit.protocol.StatusResponse;
  */
 class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
-    private static final int BEACON_SEND_RETRY_ATTEMPTS = 2;
-
     /**
      * store last received status response
      */
@@ -78,12 +76,24 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
      *
      * @param context Context.
      */
-    private void sendFinishedSessions(BeaconSendingContext context) throws InterruptedException {
+    private void sendFinishedSessions(BeaconSendingContext context) {
 
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
         SessionImpl finishedSession = context.getNextFinishedSession();
         while (finishedSession != null) {
-            statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
+            statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
+            if (statusResponse == null) {
+                // something went wrong,
+                if (!finishedSession.isEmpty()) {
+                    // well there is more data to send, and we could not do it (now)
+                    // just push it back
+                    context.pushBackFinishedSession(finishedSession);
+                    break; //  sending did not work, break out for now and retry it later
+                }
+            }
+
+            // session was sent - so remove it from beacon cache
+            finishedSession.clearCapturedData();
             finishedSession = context.getNextFinishedSession();
         }
     }
@@ -94,7 +104,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
      * @param context
      * @throws InterruptedException
      */
-    private void sendOpenSessions(BeaconSendingContext context) throws InterruptedException {
+    private void sendOpenSessions(BeaconSendingContext context) {
 
         long currentTimestamp = context.getCurrentTimestamp();
         if (currentTimestamp <= context.getLastOpenSessionBeaconSendTime() + context.getSendInterval()) {
@@ -103,7 +113,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
         SessionImpl[] openSessions = context.getAllOpenSessions();
         for (SessionImpl session : openSessions) {
-            statusResponse = session.sendBeacon(context.getHTTPClientProvider(), BEACON_SEND_RETRY_ATTEMPTS);
+            statusResponse = session.sendBeacon(context.getHTTPClientProvider());
         }
 
         context.setLastOpenSessionBeaconSendTime(currentTimestamp);

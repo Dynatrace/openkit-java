@@ -21,6 +21,7 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.OpenKitImpl;
+import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
@@ -42,6 +43,9 @@ public abstract class AbstractOpenKitBuilder {
     private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
     private String modelID = OpenKitConstants.DEFAULT_MODEL_ID;
     private String applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
+    private long beaconCacheMaxRecordAge = BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS;
+    private long beaconCacheLowerMemoryBoundary = BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES;
+    private long beaconCacheUpperMemoryBoundary = BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
@@ -144,6 +148,49 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
+     * Sets the maximum beacon record age of beacon data in cache.
+     *
+     * @param maxRecordAgeInMilliseconds The maximum beacon record age in milliseconds, or unbounded if negative.
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withBeaconCacheMaxRecordAge(long maxRecordAgeInMilliseconds) {
+        this.beaconCacheMaxRecordAge = maxRecordAgeInMilliseconds;
+        return this;
+    }
+
+    /**
+     * Sets the lower memory boundary of the beacon cache.
+     *
+     * <p>
+     * When this is set to a positive value the memory based eviction strategy clears the collected data,
+     * until the data size in the cache falls below the configured limit.
+     * </p>
+     *
+     * @param lowerMemoryBoundaryInBytes The lower boundary of the beacon cache or negative if unlimited.
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withBeaconCacheLowerMemoryBoundary(long lowerMemoryBoundaryInBytes) {
+        this.beaconCacheLowerMemoryBoundary = lowerMemoryBoundaryInBytes;
+        return this;
+    }
+
+    /**
+     * Sets the upper memory boundary of the beacon cache.
+     *
+     * <p>
+     * When this is set to a positive value the memory based eviction strategy starts to clear
+     * data from the beacon cache when the cache size exceeds this setting.
+     * </p>
+     *
+     * @param upperMemoryBoundaryInBytes The lower boundary of the beacon cache or negative if unlimited.
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withBeaconCacheUpperMemoryBoundary(long upperMemoryBoundaryInBytes) {
+        this.beaconCacheUpperMemoryBoundary = upperMemoryBoundaryInBytes;
+        return this;
+    }
+
+    /**
      * Builds the configuration for the OpenKit instance
      *
      * @return
@@ -191,6 +238,18 @@ public abstract class AbstractOpenKitBuilder {
 
     SSLTrustManager getTrustManager() {
         return trustManager;
+    }
+
+    long getBeaconCacheMaxRecordAge() {
+        return beaconCacheMaxRecordAge;
+    }
+
+    long getBeaconCacheLowerMemoryBoundary() {
+        return beaconCacheLowerMemoryBoundary;
+    }
+
+    long getBeaconCacheUpperMemoryBoundary() {
+        return beaconCacheUpperMemoryBoundary;
     }
 
     Logger getLogger() {
