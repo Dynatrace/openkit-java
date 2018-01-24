@@ -1,4 +1,4 @@
-dist: trusty
+dist: precise
 
 # The main language that this repo uses - this enables Gradle support
 language: java
