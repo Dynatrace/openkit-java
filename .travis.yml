@@ -35,7 +35,7 @@ deploy:
   # Metadata of this release
   #
   # The name of this release
-  name: openkit-java $(git tag --contains HEAD)
+  name: openkit-java $(git tag --contains HEAD | sed 's/^v//g')
   # This release should be flagged as pre-release
   prerelease: true
 
