@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.test;
+package com.dynatrace.openkit.core.util;
 
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import org.junit.Test;
