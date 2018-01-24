@@ -3,6 +3,8 @@ dist: precise
 # The main language that this repo uses - this enables Gradle support
 language: java
 
+jdk: oraclejdk8
+
 env:
 - TARGET_COMPATIBILITY=6
 - TARGET_COMPATIBILITY=7
