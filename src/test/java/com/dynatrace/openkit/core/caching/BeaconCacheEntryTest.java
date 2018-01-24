@@ -336,6 +336,56 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
+    public void removeDataMarkedForSendingReturnsIfDataHasNotBeenCopied() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        // when
+        target.removeDataMarkedForSending();
+
+        // then
+        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataOne, dataFour))));
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+        assertThat(target.getEventDataBeingSent(), is(nullValue()));
+        assertThat(target.getActionDataBeingSent(), is(nullValue()));
+    }
+
+    @Test
+    public void resetDataMarkedForSendingReturnsIfDataHasNotBeenCopied() {
+
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(0L, "Two");
+        BeaconCacheRecord dataThree = new BeaconCacheRecord(1L, "Three");
+        BeaconCacheRecord dataFour = new BeaconCacheRecord(1L, "Four");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataFour);
+        target.addActionData(dataTwo);
+        target.addActionData(dataThree);
+
+        // when
+        target.resetDataMarkedForSending();
+
+        // then
+        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataOne, dataFour))));
+        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+        assertThat(target.getEventDataBeingSent(), is(nullValue()));
+        assertThat(target.getActionDataBeingSent(), is(nullValue()));
+    }
+
+    @Test
     public void resetDataMarkedForSendingMovesPreviouslyCopiedDataBack() {
 
         // given
@@ -392,10 +442,10 @@ public class BeaconCacheEntryTest {
         target.resetDataMarkedForSending();
 
         // then
-        assertThat(target.getEventData(), is(equalTo(Arrays.asList(dataOne, dataFour))));
-        assertThat(target.getActionData(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
-        assertThat(target.getEventDataBeingSent(), is(nullValue()));
-        assertThat(target.getActionDataBeingSent(), is(nullValue()));
+        assertThat(dataOne.isMarkedForSending(), is(false));
+        assertThat(dataTwo.isMarkedForSending(), is(false));
+        assertThat(dataThree.isMarkedForSending(), is(false));
+        assertThat(dataFour.isMarkedForSending(), is(false));
     }
 
     @Test

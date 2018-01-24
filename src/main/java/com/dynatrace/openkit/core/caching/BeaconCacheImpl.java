@@ -347,7 +347,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
 
     @Override
-    public int evictRecordsByAge(Integer beaconID, long maxAge) {
+    public int evictRecordsByAge(Integer beaconID, long minTimestamp) {
 
         BeaconCacheEntry entry = getCachedEntry(beaconID);
         if (entry == null) {
@@ -358,7 +358,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         int numRecordsRemoved;
         try {
             entry.lock();
-            numRecordsRemoved = entry.removeRecordsOlderThan(maxAge);
+            numRecordsRemoved = entry.removeRecordsOlderThan(minTimestamp);
         } finally {
             entry.unlock();
         }
