@@ -1,12 +1,26 @@
+dist: precise
+
 # The main language that this repo uses - this enables Gradle support
 language: java
 
+env:
+- TARGET_COMPATIBILITY=6
+- TARGET_COMPATIBILITY=7
+- TARGET_COMPATIBILITY=8
+
+before_install:
+- ls -l $JAVA_HOME
 # Install the repository locally - this downloads dependencies, compiles the source code, and
 # creates all artifacts
 install: ./gradlew assemble
+after_install:
+- mv build/libs/openkit-java-*.jar build/libs/openkit-java-vX.Y.Z-java$TARGET_COMPATIBILITY.jar
 
 # Runs tests that check the implementation (unit tests)
 script: ./gradlew check --info
+
+after_script:
+- find -name "*.jar" -ls
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
