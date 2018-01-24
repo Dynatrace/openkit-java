@@ -7,8 +7,10 @@ repositories {
     mavenCentral()
 }
 
+def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
+
 sourceCompatibility = 1.6
-targetCompatibility = "1." + (System.getenv("TARGET_COMPATIBILITY") ?: "6")
+targetCompatibility = "1." + target
 
 
 dependencies {
@@ -21,7 +23,13 @@ test {
     exclude '**/local/*.class'
 }
 
+jar {
+    baseName = 'openkit'
+    classifier = 'java' + target
+}
+
 task javadocZip(type: Zip, dependsOn: javadoc) {
+    baseName = 'openkit'
     classifier = 'javadoc'
     from javadoc.destinationDir
 }

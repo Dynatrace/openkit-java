@@ -11,21 +11,12 @@ env:
 - TARGET_COMPATIBILITY=7
 - TARGET_COMPATIBILITY=8
 
-before_install:
-- echo $JAVA_HOME
-- ls -l $JAVA_HOME
 # Install the repository locally - this downloads dependencies, compiles the source code, and
 # creates all artifacts
 install: ./gradlew assemble
 
 # Runs tests that check the implementation (unit tests)
 script: ./gradlew check --info
-
-after_script:
-- find -name "*.jar" -ls
-
-after_success:
-- mv -v build/libs/openkit-java-*.jar $(ls build/libs/openkit-java-*.jar | sed "s/-java-/-java$TARGET_COMPATIBILITY-/g")
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
@@ -50,8 +41,8 @@ deploy:
 
   # Files to be added to this release
   file:
-  - build/libs/openkit-java*.jar
-  - build/distributions/openkit-java*.zip
+  - build/libs/openkit*-java*.jar
+  - build/distributions/openkit*-javadoc.zip
   # Enable wildcard operators in the file selector above
   file_glob: true
 
