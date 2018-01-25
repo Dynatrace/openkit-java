@@ -21,12 +21,12 @@ This repository contains the reference implementation in pure Java. Other implem
 * Create Sessions and User Actions
 * Report values, events, errors and crashes
 * Trace web requests to server-side PurePaths
-* Sessions can be tagged with a user tag
+* Tag Sessions with a user tag
 * Use it together with Dynatrace or AppMon
 
 ## What you cannot do with the OpenKit
-* Create server-side PurePaths (you have to use an ADK for that)
-* Create metrics (you have to use an ADK for that)
+* Create server-side PurePaths (this functionality will be provided by OneAgent SDKs)
+* Create metrics (this functionality will be provided by OneAgent SDKs)
 
 ## Design Principles
 * API should be as simple and easy-to-understand as possible
@@ -142,7 +142,7 @@ Detailed explanation is available in [example.md](docs/example.md).
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
 long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
+String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
 
 OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
     .withApplicationName(applicationName)
@@ -152,6 +152,8 @@ OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, device
     .withModelID("MyModelID")
     .build();
 
+// This call is optional. If waitForInitCompletion is not called, OpenKit
+// will be initialized asynchronously. 
 openKit.waitForInitCompletion();
 
 String clientIP = "8.8.8.8";
@@ -171,12 +173,6 @@ session.end();
 openKit.shutdown();
 ``` 
 
-
 ## Known Current Limitations
 * problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
   * fixed in Java 6u171, which is only available via Oracle support (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8182231)
-
-## TODOs
-* prevent re-entrances e.g. of startup/shutdown
-* HTTP optimizations (reuse connection, pool http client?)
-* introduce traffic control
