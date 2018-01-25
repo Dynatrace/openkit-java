@@ -142,7 +142,7 @@ Detailed explanation is available in [example.md](docs/example.md).
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
 long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com";
+String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
 
 OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
     .withApplicationName(applicationName)
