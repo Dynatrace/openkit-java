@@ -54,11 +54,16 @@ customize OpenKit. This includes device specific information like operating syst
 
 | Method Name | Description | Default Value |
 | ------------- | ------------- | ---------- |
-| `withApplicationVersion`  | sets the application version  | `"0.4"` |
-| `withOperatingSystem`  | sets the operating system name | `"OpenKit 0.4"` |
+| `withApplicationVersion`  | sets the application version  | `"1.0.0"` |
+| `withOperatingSystem`  | sets the operating system name | `"OpenKit 1.0.0"` |
 | `withManufacturer`  | sets the manufacturer | `"Dynatrace"` |
 | `withModelID`  | sets the model id  | `"OpenKitDevice"` |
+| `withBeaconCacheMaxRecordAge`  | sets the maximum age of an entry in the beacon cache in milliseconds | 1 h 45 min |
+| `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes  | 100 MB |
+| `withBeaconCacheUpperMemoryBoundary`  |  sets the upper memory boundary of the beacon cache in bytes | 80 MB |
 | `enableVerbose`  | enables extended log output for OpenKit if the default logger is used  | `false` |
+
+:grey_exclamation: Please refer to the the JavaDoc for more information regarding possible configuration values.
 
 ## SSL/TLS Security in OpenKit
 

@@ -18,10 +18,12 @@ package com.dynatrace.openkit.test.appmon.local;
 
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.MultipleRootActionTestShared;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
+@Ignore("Integration tests are ignored")
 public class MultipleRootActionTest extends AbstractLocalAppMonTest {
 
     @Test

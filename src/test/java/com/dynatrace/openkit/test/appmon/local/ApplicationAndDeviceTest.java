@@ -20,10 +20,12 @@ import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.ApplicationAndDeviceTestShared;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
+@Ignore("Integration tests are ignored")
 public class ApplicationAndDeviceTest extends AbstractLocalAppMonTest {
 
     @Before

@@ -20,10 +20,12 @@ import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
 import com.dynatrace.openkit.test.TestHTTPClient.Request;
 import com.dynatrace.openkit.test.shared.ChangeMonitorURLTestShared;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
+@Ignore("Integration tests are ignored")
 public class ChangeMonitorURLTest extends AbstractLocalAppMonTest {
 
     public void setUp() throws InterruptedException {
