@@ -152,10 +152,6 @@ OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, device
     .withModelID("MyModelID")
     .build();
 
-// This call is optional. If waitForInitCompletion is not called, OpenKit
-// will be initialized asynchronously. 
-openKit.waitForInitCompletion();
-
 String clientIP = "8.8.8.8";
 Session session = openKit.createSession(clientIP);
 
