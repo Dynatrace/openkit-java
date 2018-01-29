@@ -31,13 +31,13 @@ import static org.mockito.Mockito.when;
 public class ConfigurationTest {
 
     @Test
-    public void aDefaultConstructedConfigurationDisablesCapturing() {
+    public void aDefaultConstructedConfigurationEnablesCapturing() {
 
         // given
         TestConfiguration target = new TestConfiguration();
 
         // then
-        assertThat(target.isCapture(), is(false));
+        assertThat(target.isCapture(), is(true));
     }
 
     @Test
