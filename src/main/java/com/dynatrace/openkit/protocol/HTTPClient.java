@@ -313,7 +313,7 @@ public class HTTPClient {
     }
 
     // helper method for gzipping beacon data
-    static byte[] gzip(byte[] data) throws IOException {
+    private static byte[] gzip(byte[] data) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
         gzipOutputStream.write(data);
