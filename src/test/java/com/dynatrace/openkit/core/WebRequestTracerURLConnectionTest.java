@@ -16,27 +16,22 @@
 
 package com.dynatrace.openkit.core;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.dynatrace.openkit.api.OpenKitConstants;
+import com.dynatrace.openkit.protocol.Beacon;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.junit.Test;
-
-import com.dynatrace.openkit.api.OpenKitConstants;
-import com.dynatrace.openkit.protocol.Beacon;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests the {@link WebRequestTracerBaseImpl} implementation having knowledge of the code.
@@ -44,7 +39,7 @@ import com.dynatrace.openkit.protocol.Beacon;
 public class WebRequestTracerURLConnectionTest {
 
     @Test
-    public void testConstructors() {
+    public void canConstructorInstantiate() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final ActionImpl action = mock(ActionImpl.class);
@@ -52,7 +47,7 @@ public class WebRequestTracerURLConnectionTest {
 
         // test the constructor call
         final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(beacon, action, urlConnection);
-        assertThat(conn, not(nullValue()));
+        assertThat(conn, notNullValue());
 
         // verify the correct methods being called
         verify(beacon, times(1)).createSequenceNumber();
@@ -60,7 +55,7 @@ public class WebRequestTracerURLConnectionTest {
     }
 
     @Test
-    public void testConnectionTagging() throws MalformedURLException, IOException {
+    public void isWebRequestTagSetInConnection() throws MalformedURLException, IOException {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final String tag = "Some tag";
@@ -74,11 +69,11 @@ public class WebRequestTracerURLConnectionTest {
 
         // test the constructor call
         final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(beacon, action, urlConnection);
-        assertThat(conn, not(nullValue()));
+        assertThat(conn, notNullValue());
 
         // verify that the tag is now set
         existingTag = urlConnection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
-        assertThat(existingTag, not(nullValue()));
+        assertThat(existingTag, notNullValue());
         assertThat(existingTag, is(tag));
     }
 }

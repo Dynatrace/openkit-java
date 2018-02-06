@@ -21,10 +21,6 @@ import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -34,6 +30,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.zip.GZIPOutputStream;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * HTTP client helper which abstracts the 3 basic request types:
@@ -128,23 +129,34 @@ public class HTTPClient {
             if (logger.isDebugEnabled()) {
                 logger.debug("HTTP " + requestType.getRequestName() + " Request: " + url);
             }
-            return sendRequestInternal(requestType, url, clientIPAddress, data, method);
+            URL httpURL = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) httpURL.openConnection();
+            return sendRequestInternal(requestType, connection, clientIPAddress, data, method);
         } catch (Exception e) {
-            logger.error("ERROR: " + requestType.getRequestName() + " Request failed!", e);
+            logger.error("ERROR: " + requestType + " Request failed!", e);
         }
         return null;
     }
 
     // *** private methods ***
 
+    // only for unit testing the HTTPClient
+    Response sendRequest(RequestType requestType, HttpURLConnection connection, String clientIPAddress, byte[] data,
+            String method) {
+        try {
+            return sendRequestInternal(requestType, connection, clientIPAddress, data, method);
+        } catch (Exception e) {
+            logger.error("ERROR: " + requestType + " Request failed!", e);
+        }
+        return null;
+    }
+
     // generic internal request send
-    private Response sendRequestInternal(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) throws IOException, GeneralSecurityException {
+    private Response sendRequestInternal(RequestType requestType, HttpURLConnection connection, String clientIPAddress,
+            byte[] data, String method) throws IOException, GeneralSecurityException {
         int retry = 1;
         while (true) {
             try {
-                URL httpURL = new URL(url);
-                HttpURLConnection connection = (HttpURLConnection) httpURL.openConnection();
-
                 // specific handling for HTTPS
                 if (connection instanceof HttpsURLConnection) {
                     applySSLTrustManager((HttpsURLConnection) connection);
@@ -158,7 +170,7 @@ public class HTTPClient {
                 connection.setRequestMethod(method);
 
                 // gzip beacon data, if available
-                if ((data != null) && (data.length > 0)) {
+                if (data != null && data.length > 0) {
                     byte[] gzippedData = gzip(data);
 
                     String decodedData = "";
@@ -301,7 +313,7 @@ public class HTTPClient {
     }
 
     // helper method for gzipping beacon data
-    private static byte[] gzip(byte[] data) throws IOException {
+    static byte[] gzip(byte[] data) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
         gzipOutputStream.write(data);

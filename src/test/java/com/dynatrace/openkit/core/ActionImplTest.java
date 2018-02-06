@@ -16,27 +16,6 @@
 
 package com.dynatrace.openkit.core;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-
-import org.junit.Test;
-
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.WebRequestTracer;
@@ -46,6 +25,20 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
+import org.junit.Test;
+
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+
 /**
  * Tests the action having some knowledge of the internals of action, rootaction and beacon.
  */
@@ -54,7 +47,7 @@ public class ActionImplTest {
     private final String actionName = "TestAction";
 
     @Test
-    public void testReportEvent() {
+    public void canReportEvent() {
         // create test environment
         final String eventName = "TestEvent";
         final Beacon beacon = mock(Beacon.class);
@@ -71,7 +64,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueIntNameNull() {
+    public void canReportValueIntWithNameNull() {
         // create test environment
         final String valueName = null;
         final int value = 42;
@@ -89,7 +82,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueInt() {
+    public void canReportValueIntWithValidValue() {
         // create test environment
         final String valueName = "IntegerValue";
         final int value = 42;
@@ -107,7 +100,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueDoubleNameNull() {
+    public void canReportValueDoubleWithNameNull() {
         // create test environment
         final String valueName = null;
         final double value = 8.3;
@@ -125,7 +118,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueDouble() {
+    public void canReportValueDoubleWithValidValue() {
         // create test environment
         final String valueName = "DoubleValue";
         final double value = 8.3;
@@ -143,7 +136,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueStringNameNull() {
+    public void canReportValueStringWithNameNull() {
         // create test environment
         final String valueName = null;
         final String value = "This is a string";
@@ -161,7 +154,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueString() {
+    public void canReportValueStringWithValidValue() {
         // create test environment
         final String valueName = "StringValue";
         final String value = "This is a string";
@@ -179,7 +172,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueStringNull() {
+    public void canReportValueStringWithValueNull() {
         // create test environment
         final String valueName = "StringValue";
         final String value = null;
@@ -197,7 +190,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueStringNullNameNull() {
+    public void canReportValueStringWithNameNullAndValueNull() {
         // create test environment
         final String valueName = null;
         final String value = null;
@@ -215,7 +208,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testReportValueError() {
+    public void canReportValueError() {
         // create test environment
         final String errorName = "FATAL ERROR";
         final int errorCode = 0x8005037;
@@ -234,7 +227,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testTraceWebRequestConnection() throws MalformedURLException {
+    public void canTraceWebRequestConnection() throws MalformedURLException {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final URLConnection connection = mock(URLConnection.class);
@@ -254,7 +247,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testTraceWebRequestConnectionWithParameters() throws MalformedURLException {
+    public void canTraceWebRequestConnectionWithParameters() throws MalformedURLException {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final URLConnection connection = mock(URLConnection.class);
@@ -275,7 +268,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testTraceWebRequestUrl() throws MalformedURLException {
+    public void canTraceWebRequestUrl() throws MalformedURLException {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final String urlStr = "http://example.com/pages/";
@@ -292,7 +285,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testTraceWebRequestUrlWithParameters() throws MalformedURLException {
+    public void canTraceWebRequestUrlWithParameters() throws MalformedURLException {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final String urlStr = "http://example.com/pages/";
@@ -312,7 +305,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testTraceWebRequestUrlWithParametersUtf8() throws MalformedURLException, UnsupportedEncodingException {
+    public void canTraceWebRequestUrlWithParametersUtf8() throws MalformedURLException, UnsupportedEncodingException {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final String urlStr = "http://example.com/pages/";
@@ -332,7 +325,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testParents() {
+    public void canActionsBeEnteredAndLeft() {
         // create test environment: IDs are created by the beacon, thus we cannot simply mock the beacon
         final Beacon beacon = createTestBeacon();
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -371,7 +364,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testLeaveAction() {
+    public void canLeaveActionEndTheActions() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final long ts = System.currentTimeMillis();
@@ -380,16 +373,15 @@ public class ActionImplTest {
 
         // execute the test call: simulate a few reportValues and then leaveAction
         final ActionImpl action = new ActionImpl(beacon, actionName, actions);
-        assertEquals(ts, action.getStartTime());
-        assertEquals(-1, action.getEndTime()); // not ended yet
-        assertEquals(0, action.getStartSequenceNo());
-        assertEquals(-1, action.getEndSequenceNo()); // not ended yet
+        assertThat(action.getStartTime(), is(ts));
+        assertThat(action.getEndTime(), is(-1L)); // not ended yet
+        assertThat(action.getStartSequenceNo(), is(0));
+        assertThat(action.getEndSequenceNo(), is(-1)); // not ended yet
         action.reportValue("DoubleValue", 3.141592654);
         action.reportValue("IntValue", 42);
         action.reportValue("StringValue", "nice value!");
         final Action retAction = action.leaveAction();
 
-        // TODO: Check if seq. nrs can be asserted
         // verify
         assertThat(retAction, is(nullValue())); // no parent action -> null
         assertThat(action.getStartTime(), is(ts));
@@ -399,7 +391,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testLeaveActionTwice() {
+    public void canLeaveActionTwice() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final long ts = System.currentTimeMillis();
@@ -415,7 +407,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testSequenceNumbersParents() {
+    public void verifySequenceNumbersParents() {
         // create test environment: IDs are created by the beacon, thus we cannot simply mock the beacon
         final Beacon beacon = createTestBeacon();
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -438,7 +430,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testSequenceNumbersParents2() {
+    public void verifySequenceNumbersParents2() {
         // create test environment: IDs are created by the beacon, thus we cannot simply mock the beacon
         final Beacon beacon = createTestBeacon();
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -461,7 +453,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testSequenceNumbersParentWithTwoChildren() {
+    public void verifySequenceNumbersParentWithTwoChildren() {
         // create test environment: IDs are created by the beacon, thus we cannot simply mock the beacon
         final Beacon beacon = createTestBeacon();
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -498,7 +490,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testSequenceNumbersParentWithTwoChildrenParentLeavesFirst() {
+    public void verifySequenceNumbersParentWithTwoChildrenParentLeavesFirst() {
         // create test environment: IDs are created by the beacon, thus we cannot simply mock the beacon
         final Beacon beacon = createTestBeacon();
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -533,7 +525,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void testGetters() {
+    public void verifyGetters() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final int sequenceNr = 13;

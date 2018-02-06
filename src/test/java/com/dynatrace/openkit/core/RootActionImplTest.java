@@ -16,18 +16,15 @@
 
 package com.dynatrace.openkit.core;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
+import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.protocol.Beacon;
 
 import org.junit.Test;
 
-import com.dynatrace.openkit.api.Action;
-import com.dynatrace.openkit.api.RootAction;
-import com.dynatrace.openkit.protocol.Beacon;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests the root action having some knowledge of the internals of the underlying actions.
@@ -35,23 +32,23 @@ import com.dynatrace.openkit.protocol.Beacon;
 public class RootActionImplTest {
 
     @Test
-    public void testEnterNull() {
+    public void canEnterNullAction() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         // create root action with a null child action (must be valid)
         final String rootActionStr = "rootAction";
-        final RootAction rootAction = new RootActionImpl(beacon, rootActionStr, actions);
+        final RootActionImpl rootAction = new RootActionImpl(beacon, rootActionStr, actions);
         final Action childAction = rootAction.enterAction(null);
 
         // child leaves immediately
         final Action retAction = childAction.leaveAction();
-        assertThat(retAction, is(equalTo((Action) rootAction)));
+        assertThat(retAction, is(sameInstance((Action) rootAction)));
     }
 
     @Test
-    public void testEnterLeaveAction() {
+    public void canEnterAndLeaveActions() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -65,23 +62,23 @@ public class RootActionImplTest {
         // verify
         assertThat(rootAction, is(instanceOf(ActionImpl.class)));
         assertThat(childAction, is(instanceOf(ActionImpl.class)));
-        assertThat(((ActionImpl) rootAction).getName(), is(equalTo(rootActionStr)));
-        assertThat(((ActionImpl) childAction).getName(), is(equalTo(childActionStr)));
+        assertThat(((ActionImpl) rootAction).getName(), is(rootActionStr));
+        assertThat(((ActionImpl) childAction).getName(), is(childActionStr));
 
         // child leaves
         Action retAction = childAction.leaveAction();
-        assertThat(retAction, is(equalTo((Action) rootAction)));
+        assertThat(retAction, is(sameInstance((Action) rootAction)));
 
         // parent leaves
         retAction = rootAction.leaveAction();
         assertThat(retAction, is(nullValue()));
 
-        // verify that beacon cache is now empty
+        // verify that open child actions are now empty
         assertThat(actions.toArrayList().isEmpty(), is(true));
     }
 
     @Test
-    public void testEnterLeaveAction2() {
+    public void canEnterAndLeaveActionsWithMultipleChildren() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -98,9 +95,9 @@ public class RootActionImplTest {
         assertThat(rootAction, is(instanceOf(ActionImpl.class)));
         assertThat(childAction1, is(instanceOf(ActionImpl.class)));
         assertThat(childAction2, is(instanceOf(ActionImpl.class)));
-        assertThat(((ActionImpl) rootAction).getName(), is(equalTo(rootActionStr)));
-        assertThat(((ActionImpl) childAction1).getName(), is(equalTo(childOneActionStr)));
-        assertThat(((ActionImpl) childAction2).getName(), is(equalTo(childTwoActionStr)));
+        assertThat(((ActionImpl) rootAction).getName(), is(rootActionStr));
+        assertThat(((ActionImpl) childAction1).getName(), is(childOneActionStr));
+        assertThat(((ActionImpl) childAction2).getName(), is(childTwoActionStr));
 
         // parent leaves, thus the children are also left
         final Action retAction = rootAction.leaveAction();

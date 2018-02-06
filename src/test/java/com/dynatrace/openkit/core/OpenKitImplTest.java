@@ -16,47 +16,61 @@
 
 package com.dynatrace.openkit.core;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.api.Session;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests the {@link OpenKitImpl} implementation having some knowledge of the sessions.
  */
 public class OpenKitImplTest {
 
-    @Test
-    public void testConstructors() {
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
+    private static final String APP_ID = "appID";
+    private static final String APP_NAME = "appName";
 
+    private Logger logger;
+    private Configuration config;
+
+    @Before
+    public void setUp() {
+        logger = mock(Logger.class);
+        when(logger.isDebugEnabled()).thenReturn(true);
+
+        config = mock(Configuration.class);
+        when(config.getApplicationID()).thenReturn(APP_ID);
+        when(config.getApplicationName()).thenReturn(APP_NAME);
+        when(config.getDevice()).thenReturn(new Device("", "", ""));
+        when(config.isCapture()).thenReturn(true);
+        final HTTPClientConfiguration httpClientConfig = mock(HTTPClientConfiguration.class);
+        when(httpClientConfig.getBaseURL()).thenReturn("http://example.com/");
+        when(httpClientConfig.getApplicationID()).thenReturn(APP_ID);
+        when(config.getHttpClientConfig()).thenReturn(httpClientConfig);
+    }
+
+    @Test
+    public void canConstructorsInstantiate() {
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         assertThat(openKit.getConfiguration(), is(equalTo(config)));
     }
 
     @Test
-    public void testInitialize() {
+    public void canInitialize() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         assertThat(openKit.isInitialized(), is(false));
 
@@ -70,10 +84,8 @@ public class OpenKitImplTest {
 
     @Ignore
     @Test(timeout = 1000)
-    public void testWaitForInitCompletion() {
+    public void canFullyInitialized() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
         // walk through minimum life cycle
@@ -83,10 +95,8 @@ public class OpenKitImplTest {
     }
 
     @Test(timeout = 3000)
-    public void testWaitForInitCompletionWithTimeout() {
+    public void canInitializeWithWaitForInitCompletionTimeout() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
         // walk through minimum life cycle
@@ -103,10 +113,8 @@ public class OpenKitImplTest {
     }
 
     @Test(timeout = 3000)
-    public void testWaitForInitCompletionWithTimeoutZero() {
+    public void canInitializeWithWaitForInitCompletionTimeoutZero() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
         // walk through minimum life cycle with zero time
@@ -124,10 +132,8 @@ public class OpenKitImplTest {
     }
 
     @Test(timeout = 3000)
-    public void testWaitForInitCompletionWithTimeoutNegative() {
+    public void canInitializeWithWaitForInitCompletionTimeoutNegative() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
         // walk through minimum life cycle with a negative time
@@ -148,10 +154,8 @@ public class OpenKitImplTest {
      * Asynchronously invokes the OpenKit initialization, let it run in a blocking wait and then trigger the shutdown.
      */
     @Test
-    public void testWaitForInitCompletionWithShuttingDown() throws InterruptedException {
+    public void canShutdownWhileWaitingToInitialize() throws InterruptedException {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
         // asynchronously invokes the OpenKit initialization
@@ -181,16 +185,14 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void testCreateSession() {
+    public void canCreateSession() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         openKit.initialize();
 
         // create a valid session
         final Session session = openKit.createSession("127.0.0.1");
-        assertThat(session, not(nullValue()));
+        assertThat(session, notNullValue());
         assertThat(session, instanceOf(SessionImpl.class));
         final SessionImpl sessionImpl = (SessionImpl) session;
         assertThat(sessionImpl.isEmpty(), is(true));
@@ -198,23 +200,19 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void testCreateSessionWhenNotInitialized() {
+    public void canCreateSessionWhenNotInitialized() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
         // User has forgotten to initialize => shall not throw an exception
         final Session session = openKit.createSession("127.0.0.1");
-        assertThat(session, not(nullValue()));
+        assertThat(session, notNullValue());
         assertThat(session, instanceOf(SessionImpl.class));
     }
 
     @Test
-    public void testCreateSessionMultiple() {
+    public void canCreateMultipleSessions() {
         // create test environment
-        final Logger logger = mock(Logger.class);
-        final Configuration config = createTestConfig();
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         openKit.initialize();
 
@@ -227,21 +225,6 @@ public class OpenKitImplTest {
         final SessionImpl session2impl = (SessionImpl)session2;
 
         // verify that the two sessions exist and are not the same
-        assertThat(session1impl, not(session2impl));
-    }
-
-    private Configuration createTestConfig() {
-        final String appID = "appID";
-        final String appName = "appName";
-        final Configuration config = mock(Configuration.class);
-        when(config.getApplicationID()).thenReturn(appID);
-        when(config.getApplicationName()).thenReturn(appName);
-        when(config.getDevice()).thenReturn(new Device("", "", ""));
-        when(config.isCapture()).thenReturn(true);
-        final HTTPClientConfiguration httpClientConfig = mock(HTTPClientConfiguration.class);
-        when(httpClientConfig.getBaseURL()).thenReturn("http://example.com/");
-        when(httpClientConfig.getApplicationID()).thenReturn(appID);
-        when(config.getHttpClientConfig()).thenReturn(httpClientConfig);
-        return config;
+        assertThat(session1impl, not(sameInstance(session2impl)));
     }
 }
