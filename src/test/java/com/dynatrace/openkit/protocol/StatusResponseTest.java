@@ -26,7 +26,7 @@ import static org.junit.Assert.assertThat;
 public class StatusResponseTest {
 
     @Test
-    public void canParseValidResponse() {
+    public void parseValidResponse() {
         // given
         String response = "type=m&cp=1&si=2&bn=someName&id=3&bl=4&er=1&cr=1";
         int responseCode = 418;
@@ -46,7 +46,7 @@ public class StatusResponseTest {
     }
 
     @Test
-    public void canParseEmptyResponse() {
+    public void parseEmptyResponse() {
         // given
         String response = "";
         int responseCode = 418;
@@ -67,7 +67,7 @@ public class StatusResponseTest {
 
     @Ignore
     @Test
-    public void canParseTruncatedResponse() {
+    public void parseTruncatedResponse() {
         // given: truncated before the monitor name VALUE, therefore we have a KEY without a VALUE
         String response = "type=m&cp=1&si=2&bn=";
         int responseCode = 418;

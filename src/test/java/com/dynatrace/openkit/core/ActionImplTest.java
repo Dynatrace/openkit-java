@@ -47,7 +47,7 @@ public class ActionImplTest {
     private final String actionName = "TestAction";
 
     @Test
-    public void canReportEvent() {
+    public void reportEvent() {
         // create test environment
         final String eventName = "TestEvent";
         final Beacon beacon = mock(Beacon.class);
@@ -64,7 +64,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueIntWithNameNull() {
+    public void reportValueIntWithNameNull() {
         // create test environment
         final String valueName = null;
         final int value = 42;
@@ -82,7 +82,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueIntWithValidValue() {
+    public void reportValueIntWithValidValue() {
         // create test environment
         final String valueName = "IntegerValue";
         final int value = 42;
@@ -100,7 +100,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueDoubleWithNameNull() {
+    public void reportValueDoubleWithNameNull() {
         // create test environment
         final String valueName = null;
         final double value = 8.3;
@@ -118,7 +118,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueDoubleWithValidValue() {
+    public void reportValueDoubleWithValidValue() {
         // create test environment
         final String valueName = "DoubleValue";
         final double value = 8.3;
@@ -136,7 +136,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueStringWithNameNull() {
+    public void reportValueStringWithNameNull() {
         // create test environment
         final String valueName = null;
         final String value = "This is a string";
@@ -154,7 +154,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueStringWithValidValue() {
+    public void reportValueStringWithValidValue() {
         // create test environment
         final String valueName = "StringValue";
         final String value = "This is a string";
@@ -172,7 +172,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueStringWithValueNull() {
+    public void reportValueStringWithValueNull() {
         // create test environment
         final String valueName = "StringValue";
         final String value = null;
@@ -190,7 +190,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueStringWithNameNullAndValueNull() {
+    public void reportValueStringWithNameNullAndValueNull() {
         // create test environment
         final String valueName = null;
         final String value = null;
@@ -208,7 +208,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canReportValueError() {
+    public void reportValueError() {
         // create test environment
         final String errorName = "FATAL ERROR";
         final int errorCode = 0x8005037;
@@ -325,7 +325,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canActionsBeEnteredAndLeft() {
+    public void actionsEnteredAndLeft() {
         // create test environment: IDs are created by the beacon, thus we cannot simply mock the beacon
         final Beacon beacon = createTestBeacon();
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -364,7 +364,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canLeaveActionEndTheActions() {
+    public void leaveAction() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final long ts = System.currentTimeMillis();
@@ -391,7 +391,7 @@ public class ActionImplTest {
     }
 
     @Test
-    public void canLeaveActionTwice() {
+    public void leaveActionTwice() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final long ts = System.currentTimeMillis();

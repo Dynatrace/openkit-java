@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 public class WebRequestTracerURLConnectionTest {
 
     @Test
-    public void canConstructorInstantiate() {
+    public void constructor() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final ActionImpl action = mock(ActionImpl.class);

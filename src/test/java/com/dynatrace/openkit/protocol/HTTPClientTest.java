@@ -57,7 +57,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canConstructorInstantiate() {
+    public void constructor() {
         HTTPClient client = new HTTPClient(logger, configuration);
 
         // verify
@@ -90,7 +90,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendStatusRequestToSomeValidUrl() {
+    public void sendStatusRequestToSomeValidUrl() {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
 
@@ -102,7 +102,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendBeaconRequestToSomeValidUrl() {
+    public void sendBeaconRequestToSomeValidUrl() {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
 
@@ -114,7 +114,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendTimesyncRequestToSomeValidUrl() {
+    public void sendTimesyncRequestToSomeValidUrl() {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
 
@@ -126,7 +126,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendStatusRequestAndReadErrorResponse() throws IOException {
+    public void sendStatusRequestAndReadErrorResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -142,7 +142,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendStatusRequestAndReadStatusResponse() throws IOException {
+    public void sendStatusRequestAndReadStatusResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -159,7 +159,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendBeaconRequestAndReadStatusResponse() throws IOException {
+    public void sendBeaconRequestAndReadStatusResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -175,7 +175,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendBeaconRequestWithGzippedDataAndReadStatusResponse() throws IOException {
+    public void sendBeaconRequestWithGzippedDataAndReadStatusResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -194,6 +194,9 @@ public class HTTPClientTest {
         assertThat(gunzip(os.toByteArray()), is(data));
     }
 
+    /**
+     * Local helper function to decompress a GZIP compressed byte array
+     */
     private static String gunzip(byte[] compressed) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
         GZIPInputStream gis = new GZIPInputStream(bis);
@@ -210,7 +213,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendTimesyncRequestAndReadStatusResponse() throws IOException {
+    public void sendTimesyncRequestAndReadStatusResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -226,7 +229,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void canSendTimesyncRequestWithHttps() throws IOException {
+    public void sendTimesyncRequestWithHttps() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpsURLConnection.class);
@@ -245,7 +248,7 @@ public class HTTPClientTest {
      * Tests the retry mechanism in the send method (method eventually shall succeed),
      */
     @Test
-    public void canSendRequestRetrySucceed() throws IOException {
+    public void sendRequestWithRetrySucces() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -271,7 +274,7 @@ public class HTTPClientTest {
      * Breaks the retry mechanism (method shall never succeed).
      */
     @Test
-    public void canSendRequestRetryFail() throws IOException {
+    public void sendRequestWithRetryFail() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);

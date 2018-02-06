@@ -70,7 +70,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canConstructorInstantiate() {
+    public void constructor() {
         // test the constructor call
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -81,7 +81,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canEnterActionWithNull() {
+    public void enterActionWithNull() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -97,7 +97,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canEnterNotClosedAction() {
+    public void enterNotClosedAction() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -110,7 +110,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canEnterSingleAction() {
+    public void enterSingleAction() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -123,7 +123,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canEnterMultipleActions() {
+    public void enterMultipleActions() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -138,7 +138,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canEnterSameAction() {
+    public void enterSameAction() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -155,7 +155,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canIdentifyUserWithNull() {
+    public void identifyUserWithNull() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -169,7 +169,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canIdentifySingleUser() {
+    public void identifySingleUser() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -184,7 +184,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canIdentifyMultipleUsers() {
+    public void identifyMultipleUsers() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -205,7 +205,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canIdentifySameUser() {
+    public void identifySameUser() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -221,7 +221,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canReportCrashWithNull() {
+    public void reportCrashWithNull() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -235,7 +235,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canReportSingleCrash() {
+    public void reportSingleCrash() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -252,7 +252,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canReportMultipleCrashs() {
+    public void reportMultipleCrashs() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -274,7 +274,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canReportSameCrash() {
+    public void reportSameCrash() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -292,7 +292,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canSessionBeEnded() {
+    public void endSession() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -308,7 +308,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canSessionBeEndedTwice() {
+    public void endSessionTwice() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -325,7 +325,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canSessionWithOpenRootActionsBeEnded() {
+    public void endSessionWithOpenRootActions() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
@@ -347,7 +347,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canSendBeacon() {
+    public void sendBeacon() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
@@ -361,7 +361,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void canClearCapturedData() {
+    public void clearCapturedData() {
         // create test environment
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 

@@ -63,13 +63,13 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void canConstructorsInstantiate() {
+    public void constructor() {
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         assertThat(openKit.getConfiguration(), is(equalTo(config)));
     }
 
     @Test
-    public void canInitialize() {
+    public void initialize() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         assertThat(openKit.isInitialized(), is(false));
@@ -82,9 +82,9 @@ public class OpenKitImplTest {
         assertThat(openKit.isInitialized(), is(false));
     }
 
-    @Ignore
+    @Ignore // with no proper beacon endpoint the current implementation waits forever
     @Test(timeout = 1000)
-    public void canFullyInitialized() {
+    public void fullyInitialized() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
@@ -95,7 +95,7 @@ public class OpenKitImplTest {
     }
 
     @Test(timeout = 3000)
-    public void canInitializeWithWaitForInitCompletionTimeout() {
+    public void waitForInitCompletionWithTimeout() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
@@ -113,7 +113,7 @@ public class OpenKitImplTest {
     }
 
     @Test(timeout = 3000)
-    public void canInitializeWithWaitForInitCompletionTimeoutZero() {
+    public void waitForInitCompletionWithZeroTimeout() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
@@ -132,7 +132,7 @@ public class OpenKitImplTest {
     }
 
     @Test(timeout = 3000)
-    public void canInitializeWithWaitForInitCompletionTimeoutNegative() {
+    public void waitForInitCompletionWithNegativeTimeout() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
@@ -185,7 +185,7 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void canCreateSession() {
+    public void createSession() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         openKit.initialize();
@@ -200,7 +200,7 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void canCreateSessionWhenNotInitialized() {
+    public void createSessionWhenNotInitialized() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
 
@@ -211,7 +211,7 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void canCreateMultipleSessions() {
+    public void createMultipleSessions() {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
         openKit.initialize();

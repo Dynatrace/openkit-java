@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 public class RootActionImplTest {
 
     @Test
-    public void canEnterNullAction() {
+    public void enterNullAction() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -48,7 +48,7 @@ public class RootActionImplTest {
     }
 
     @Test
-    public void canEnterAndLeaveActions() {
+    public void enterAndLeaveActions() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -78,7 +78,7 @@ public class RootActionImplTest {
     }
 
     @Test
-    public void canEnterAndLeaveActionsWithMultipleChildren() {
+    public void enterAndLeaveActionsWithMultipleChildren() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();

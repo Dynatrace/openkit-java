@@ -73,7 +73,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canCreateIDs() {
+    public void createIDs() {
         // create test environment
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -90,7 +90,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canGetCurrentTimestamp() {
+    public void getCurrentTimestamp() {
         // create test environment
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new DefaultTimingProvider());
@@ -102,7 +102,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canCreateSequenceNumbers() {
+    public void createSequenceNumbers() {
         // create test environment
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -119,7 +119,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canCreateWebRequestTag() {
+    public void createWebRequestTag() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -136,7 +136,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddValidActionEvent() {
+    public void addValidActionEvent() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -157,7 +157,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddEndSessionEvent() {
+    public void addEndSessionEvent() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -172,7 +172,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportValidValueInt() {
+    public void reportValidValueInt() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -191,7 +191,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportValidValueDouble() {
+    public void reportValidValueDouble() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -210,7 +210,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportValidValueString() {
+    public void reportValidValueString() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -230,7 +230,7 @@ public class BeaconTest {
 
     @Ignore
     @Test
-    public void canReportValueStringWithValueNull() {
+    public void reportValueStringWithValueNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -250,7 +250,7 @@ public class BeaconTest {
 
     @Ignore
     @Test
-    public void canReportValueStringWithValueNullAndNameNull() {
+    public void reportValueStringWithValueNullAndNameNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -269,7 +269,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportValidEvent() {
+    public void reportValidEvent() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -287,7 +287,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportEventWithNameNull() {
+    public void reportEventWithNameNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -304,7 +304,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportError() {
+    public void reportError() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -325,7 +325,7 @@ public class BeaconTest {
 
     @Ignore
     @Test
-    public void canReportErrorNull() {
+    public void reportErrorNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -345,7 +345,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canReportValidCrash() {
+    public void reportValidCrash() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -364,7 +364,7 @@ public class BeaconTest {
 
     @Ignore
     @Test
-    public void canReportCrashWithDetailsNull() {
+    public void reportCrashWithDetailsNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -381,7 +381,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddWebRequest() {
+    public void addWebRequest() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -402,7 +402,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddUserIdentifyEvent() {
+    public void addUserIdentifyEvent() {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -417,7 +417,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddUserIdentifyWithNullUserIDEvent() {
+    public void addUserIdentifyWithNullUserIDEvent() {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
@@ -620,7 +620,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canSendValidData() {
+    public void sendValidData() {
         // given
         String ipAddr = "127.0.0.1";
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, ipAddr, threadIDProvider,
@@ -643,7 +643,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canSendDataButGetAnErrorResponse() {
+    public void sendDataAndFakeErrorResponse() {
         // given
         String ipAddr = "127.0.0.1";
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, ipAddr, threadIDProvider,
@@ -666,7 +666,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void canClearDataFromBeaconCache() {
+    public void clearDataFromBeaconCache() {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
