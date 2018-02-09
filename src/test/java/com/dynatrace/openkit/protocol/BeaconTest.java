@@ -387,7 +387,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         ActionImpl action = mock(ActionImpl.class);
         when(action.getID()).thenReturn(ACTION_ID);
-        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerURLConnection.class);
+        WebRequestTracerURLConnection webRequestTracer = mock(WebRequestTracerURLConnection.class);
         when(webRequestTracer.getBytesSent()).thenReturn(13);
         when(webRequestTracer.getBytesReceived()).thenReturn(14);
         when(webRequestTracer.getResponseCode()).thenReturn(15);

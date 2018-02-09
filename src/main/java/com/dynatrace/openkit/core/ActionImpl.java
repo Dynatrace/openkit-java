@@ -21,11 +21,14 @@ import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
 import java.net.URLConnection;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Actual implementation of the {@link Action} interface.
  */
 public class ActionImpl implements Action {
+
+    private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
 
     // Action ID, name and parent ID (default: null)
     private final int id;
@@ -34,12 +37,12 @@ public class ActionImpl implements Action {
 
     // start/end time & sequence number
     private final long startTime;
-    private long endTime = -1;
+    private final AtomicLong endTime = new AtomicLong(-1);
     private final int startSequenceNo;
     private int endSequenceNo = -1;
 
     // Beacon reference
-    private Beacon beacon;
+    private final Beacon beacon;
 
     private SynchronizedQueue<Action> thisLevelActions = null;
 
@@ -66,48 +69,66 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportEvent(String eventName) {
-        beacon.reportEvent(this, eventName);
+        if (isActionOpen()) {
+            beacon.reportEvent(this, eventName);
+        }
         return this;
     }
 
     @Override
     public Action reportValue(String valueName, int value) {
-        beacon.reportValue(this, valueName, value);
+        if (isActionOpen()) {
+            beacon.reportValue(this, valueName, value);
+        }
         return this;
     }
 
     @Override
     public Action reportValue(String valueName, double value) {
-        beacon.reportValue(this, valueName, value);
+        if (isActionOpen()) {
+            beacon.reportValue(this, valueName, value);
+        }
         return this;
     }
 
     @Override
     public Action reportValue(String valueName, String value) {
-        beacon.reportValue(this, valueName, value);
+        if (isActionOpen()) {
+            beacon.reportValue(this, valueName, value);
+        }
         return this;
     }
 
     @Override
     public Action reportError(String errorName, int errorCode, String reason) {
-        beacon.reportError(this, errorName, errorCode, reason);
+        if (isActionOpen()) {
+            beacon.reportError(this, errorName, errorCode, reason);
+        }
         return this;
     }
 
     @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
-        return new WebRequestTracerURLConnection(beacon, this, connection);
+        if (isActionOpen()) {
+            return new WebRequestTracerURLConnection(beacon, this, connection);
+        }
+
+        return NULL_WEB_REQUEST_TRACER;
     }
 
     @Override
     public WebRequestTracer traceWebRequest(String url) {
-        return new WebRequestTracerStringURL(beacon, this, url);
+        if (isActionOpen()) {
+            return new WebRequestTracerStringURL(beacon, this, url);
+        }
+
+        return NULL_WEB_REQUEST_TRACER;
     }
 
     @Override
     public Action leaveAction() {
         // check if leaveAction() was already called before by looking at endTime
-        if (endTime != -1) {
+        if (!endTime.compareAndSet(-1, beacon.getCurrentTimestamp())) {
             return parentAction;
         }
 
@@ -116,7 +137,7 @@ public class ActionImpl implements Action {
 
     protected Action doLeaveAction() {
         // set end time and end sequence number
-        endTime = beacon.getCurrentTimestamp();
+        endTime.set(beacon.getCurrentTimestamp());
         endSequenceNo = beacon.createSequenceNumber();
 
         // add Action to Beacon
@@ -147,7 +168,7 @@ public class ActionImpl implements Action {
     }
 
     public long getEndTime() {
-        return endTime;
+        return endTime.get();
     }
 
     public int getStartSequenceNo() {
@@ -156,6 +177,10 @@ public class ActionImpl implements Action {
 
     public int getEndSequenceNo() {
         return endSequenceNo;
+    }
+
+    boolean isActionOpen() {
+        return getEndTime() == -1;
     }
 
 }

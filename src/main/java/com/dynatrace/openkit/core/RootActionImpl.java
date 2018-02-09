@@ -41,7 +41,11 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
     @Override
     public Action enterAction(String actionName) {
-        return new ActionImpl(beacon, actionName, this, openChildActions);
+        if (isActionOpen()) {
+            return new ActionImpl(beacon, actionName, this, openChildActions);
+        }
+
+        return new NullAction(this);
     }
 
     // *** protected methods ***

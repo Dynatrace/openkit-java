@@ -28,6 +28,7 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,13 +47,12 @@ public class SessionImplTest {
     private static final String APP_ID = "appID";
     private static final String APP_NAME = "appName";
 
-    private Logger logger;
     private Beacon beacon;
     private BeaconSender beaconSender;
 
     @Before
     public void setUp() {
-        logger = mock(Logger.class);
+        Logger logger = mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
         beaconSender = mock(BeaconSender.class);
         final BeaconCacheImpl beaconCache = new BeaconCacheImpl();
@@ -252,12 +252,12 @@ public class SessionImplTest {
     }
 
     @Test
-    public void reportMultipleCrashs() {
+    public void reportMultipleCrashes() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SessionImpl session = new SessionImpl(beaconSender, beacon);
 
-        // report multiple crashs
+        // report multiple crashes
         final String errorName1 = "error name 1";
         final String reason1 = "error reason 1";
         final String stacktrace1 = "the stacktrace causing the error 1";
@@ -318,7 +318,7 @@ public class SessionImplTest {
         session.end();
 
         verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).getCurrentTimestamp();
+        verify(beacon, times(2)).getCurrentTimestamp();
         verify(beacon, times(1)).endSession(session);
         verify(beaconSender, times(1)).finishSession(session);
         assertThat(session.getEndTime(), not(-1L));
@@ -377,6 +377,74 @@ public class SessionImplTest {
         session.clearCapturedData();
 
         // verify that the cached items are cleared and the cache is empty
+        assertThat(session.isEmpty(), is(true));
+    }
+
+    @Test
+    public void aNewlyConstructedSessionIsNotEnded() {
+
+        // given
+        SessionImpl session = new SessionImpl(beaconSender, beacon);
+
+        // when, then
+        assertThat(session.isSessionEnded(), is(false));
+    }
+
+    @Test
+    public void aSessionIsEndedIfEndIsCalled() {
+
+        // given
+        SessionImpl session = new SessionImpl(beaconSender,  beacon);
+
+        // when end is called
+        session.end();
+
+        // then the session is ended
+        assertThat(session.isSessionEnded(), is(true));
+    }
+
+    @Test
+    public void enterActionGivesNullRootActionIfSessionIsAlreadyEnded() {
+
+        // given
+        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        session.end();
+
+        // when entering an action on already ended session
+        RootAction obtained = session.enterAction("Test");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullRootAction.class)));
+    }
+
+    @Test
+    public void identifyUserDoesNothingIfSessionIsEnded() {
+
+        // given
+        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        session.end();
+        beacon.clearData();
+
+        // when trying to identify a user on an ended session
+        session.identifyUser("Jane Doe");
+
+        // then
+        assertThat(session.isEmpty(), is(true));
+    }
+
+    @Test
+    public void reportCrashDoesNothingIfSessionIsEnded() {
+
+        // given
+        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        session.end();
+        beacon.clearData();
+
+        // when trying to identify a user on an ended session
+        session.reportCrash("errorName", "reason", "stacktrace");
+
+        // then
         assertThat(session.isEmpty(), is(true));
     }
 }

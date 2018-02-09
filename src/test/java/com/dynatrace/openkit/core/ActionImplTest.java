@@ -25,6 +25,7 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -542,9 +543,135 @@ public class ActionImplTest {
         assertThat(action.getParentID(), is(0));
     }
 
+    @Test
+    public void aNewlyCreatedActionIsOpen() {
+
+        // given
+        ActionImpl target = new ActionImpl(createTestBeacon(), "test", new SynchronizedQueue<Action>());
+
+        // then
+        assertThat(target.isActionOpen(), is(true));
+    }
+
+    @Test
+    public void afterLeavingAnActionItIsNotOpen() {
+
+        // given
+        ActionImpl target = new ActionImpl(createTestBeacon(), "test", new SynchronizedQueue<Action>());
+
+        // when
+        target.leaveAction();
+
+        // then
+        assertThat(target.isActionOpen(), is(false));
+    }
+
+    @Test
+    public void reportEventDoesNothingIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+        beacon.clearData();
+
+        // when
+        Action obtained = target.reportEvent("eventName");
+
+        // then
+        assertThat(beacon.isEmpty(), is(true));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportIntValueDoesNothingIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+        beacon.clearData();
+
+        // when
+        int value = 42;
+        Action obtained = target.reportValue("intValue", value);
+
+        // then
+        assertThat(beacon.isEmpty(), is(true));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportDoubleValueDoesNothingIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+        beacon.clearData();
+
+        // when
+        double value = 42.0;
+        Action obtained = target.reportValue("doubleValue", value);
+
+        // then
+        assertThat(beacon.isEmpty(), is(true));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportStringValueDoesNothingIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+        beacon.clearData();
+
+        // when
+        String value = "42";
+        Action obtained = target.reportValue("stringValue", value);
+
+        // then
+        assertThat(beacon.isEmpty(), is(true));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void traceWebRequestWithURLConnectionArgumentGivesNullTracerIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest(mock(URLConnection.class));
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+    }
+
+    @Test
+    public void traceWebRequestWithStringArgumentGivesNullTracerIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest("http://www.google.com");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+    }
+
     private Beacon createTestBeacon() {
         final Logger logger = mock(Logger.class);
-        final BeaconCacheImpl beaconCache = mock(BeaconCacheImpl.class);
+        final BeaconCacheImpl beaconCache = new BeaconCacheImpl();
         final Configuration configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn("appID");
         when(configuration.getApplicationName()).thenReturn("appName");

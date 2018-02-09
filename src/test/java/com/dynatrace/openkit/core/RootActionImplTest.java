@@ -19,7 +19,10 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.protocol.Beacon;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.*;
@@ -95,7 +98,7 @@ public class RootActionImplTest {
         assertThat(rootAction, is(instanceOf(ActionImpl.class)));
         assertThat(childAction1, is(instanceOf(ActionImpl.class)));
         assertThat(childAction2, is(instanceOf(ActionImpl.class)));
-        assertThat(((ActionImpl) rootAction).getName(), is(rootActionStr));
+        assertThat(rootAction.getName(), is(rootActionStr));
         assertThat(((ActionImpl) childAction1).getName(), is(childOneActionStr));
         assertThat(((ActionImpl) childAction2).getName(), is(childTwoActionStr));
 
@@ -103,5 +106,20 @@ public class RootActionImplTest {
         final Action retAction = rootAction.leaveAction();
         assertThat(retAction, is(nullValue()));
         assertThat(actions.toArrayList().isEmpty(), is(true));
+    }
+
+    @Test
+    public void enterActionGivesNullActionIfAlreadyLeft() {
+
+        // given
+        RootActionImpl target = new RootActionImpl(mock(Beacon.class), "parent action", new SynchronizedQueue<Action>());
+        target.leaveAction();
+
+        // when
+        Action obtained = target.enterAction("child action");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullAction.class)));
     }
 }
