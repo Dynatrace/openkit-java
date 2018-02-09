@@ -544,17 +544,17 @@ public class ActionImplTest {
     }
 
     @Test
-    public void aNewlyCreatedActionIsOpen() {
+    public void aNewlyCreatedActionIsNotLeft() {
 
         // given
         ActionImpl target = new ActionImpl(createTestBeacon(), "test", new SynchronizedQueue<Action>());
 
         // then
-        assertThat(target.isActionOpen(), is(true));
+        assertThat(target.isActionLeft(), is(false));
     }
 
     @Test
-    public void afterLeavingAnActionItIsNotOpen() {
+    public void afterLeavingAnActionItIsLeft() {
 
         // given
         ActionImpl target = new ActionImpl(createTestBeacon(), "test", new SynchronizedQueue<Action>());
@@ -563,7 +563,7 @@ public class ActionImplTest {
         target.leaveAction();
 
         // then
-        assertThat(target.isActionOpen(), is(false));
+        assertThat(target.isActionLeft(), is(true));
     }
 
     @Test
