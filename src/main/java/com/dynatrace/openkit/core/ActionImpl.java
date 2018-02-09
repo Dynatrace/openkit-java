@@ -69,7 +69,7 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportEvent(String eventName) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             beacon.reportEvent(this, eventName);
         }
         return this;
@@ -77,7 +77,7 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportValue(String valueName, int value) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
         }
         return this;
@@ -85,7 +85,7 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportValue(String valueName, double value) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
         }
         return this;
@@ -93,7 +93,7 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportValue(String valueName, String value) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
         }
         return this;
@@ -101,7 +101,7 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportError(String errorName, int errorCode, String reason) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             beacon.reportError(this, errorName, errorCode, reason);
         }
         return this;
@@ -109,7 +109,7 @@ public class ActionImpl implements Action {
 
     @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             return new WebRequestTracerURLConnection(beacon, this, connection);
         }
 
@@ -118,7 +118,7 @@ public class ActionImpl implements Action {
 
     @Override
     public WebRequestTracer traceWebRequest(String url) {
-        if (isActionOpen()) {
+        if (!isActionLeft()) {
             return new WebRequestTracerStringURL(beacon, this, url);
         }
 
@@ -179,8 +179,8 @@ public class ActionImpl implements Action {
         return endSequenceNo;
     }
 
-    boolean isActionOpen() {
-        return getEndTime() == -1;
+    boolean isActionLeft() {
+        return getEndTime() != -1;
     }
 
 }

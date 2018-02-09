@@ -124,7 +124,7 @@ public class SessionImpl implements Session {
      *
      * <p>
      * A session is considered to be empty, if it does not contain any action or event data.
-     * </p>e
+     * </p>
      *
      * @return {@code true} if the session is empty, {@code false} otherwise.
      */
