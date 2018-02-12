@@ -1,0 +1,9 @@
+apply plugin: 'com.github.hierynomus.license'
+
+license {
+    header = rootProject.file('docs/licenses/HEADER.txt')
+    strictCheck = true
+    ignoreFailures = true // enable if this should break the build
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.name = 'Dynatrace LLC'
+}
