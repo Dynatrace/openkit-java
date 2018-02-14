@@ -638,6 +638,23 @@ public class ActionImplTest {
     }
 
     @Test
+    public void reportErrorDoesNothingIfActionIsLeft() {
+
+        // given
+        Beacon beacon = createTestBeacon();
+        ActionImpl target = new ActionImpl(beacon, "test", new SynchronizedQueue<Action>());
+        target.leaveAction();
+        beacon.clearData();
+
+        // when
+        Action obtained = target.reportError("teapot", 418, "I'm a teapot");
+
+        // then
+        assertThat(beacon.isEmpty(), is(true));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
     public void traceWebRequestWithURLConnectionArgumentGivesNullTracerIfActionIsLeft() {
 
         // given
