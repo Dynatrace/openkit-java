@@ -19,6 +19,8 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Abstract base class implementation of the {@link WebRequestTracer} interface.
  */
@@ -35,7 +37,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     // start/end time & sequence number
     private long startTime = -1;
-    private long endTime = -1;
+    private final AtomicLong endTime = new AtomicLong(-1);
     private int startSequenceNo = -1;
     private int endSequenceNo = -1;
 
@@ -64,31 +66,42 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public WebRequestTracer setResponseCode(int responseCode) {
-        this.responseCode = responseCode;
+        if (!isStopped()) {
+            this.responseCode = responseCode;
+        }
         return this;
     }
 
     @Override
     public WebRequestTracer setBytesSent(int bytesSent) {
-        this.bytesSent = bytesSent;
+        if (!isStopped()) {
+            this.bytesSent = bytesSent;
+        }
         return this;
     }
 
     @Override
     public WebRequestTracer setBytesReceived(int bytesReceived) {
-        this.bytesReceived = bytesReceived;
+        if (!isStopped()) {
+            this.bytesReceived = bytesReceived;
+        }
         return this;
     }
 
     @Override
     public WebRequestTracer start() {
-        startTime = beacon.getCurrentTimestamp();
+        if (!isStopped()) {
+            startTime = beacon.getCurrentTimestamp();
+        }
         return this;
     }
 
     @Override
     public void stop() {
-        endTime = beacon.getCurrentTimestamp();
+        if (!endTime.compareAndSet(-1, beacon.getCurrentTimestamp())) {
+            // stop already called
+            return;
+        }
         endSequenceNo = beacon.createSequenceNumber();
 
         // add web request to beacon
@@ -110,7 +123,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
     }
 
     public long getEndTime() {
-        return endTime;
+        return endTime.get();
     }
 
     public int getStartSequenceNo() {
@@ -127,6 +140,10 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     public int getBytesReceived() {
         return bytesReceived;
+    }
+
+    boolean isStopped() {
+        return getEndTime() != -1;
     }
 
 }

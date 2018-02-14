@@ -23,13 +23,17 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Actual implementation of the {@link Session} interface.
  */
 public class SessionImpl implements Session {
 
+    private static final RootAction NULL_ROOT_ACTION = new NullRootAction();
+
     // end time of this Session
-    private long endTime = -1;
+    private final AtomicLong endTime = new AtomicLong(-1);
 
     // BeaconSender and Beacon reference
     private final BeaconSender beaconSender;
@@ -51,23 +55,30 @@ public class SessionImpl implements Session {
 
     @Override
     public RootAction enterAction(String actionName) {
+        if (isSessionEnded()) {
+            return NULL_ROOT_ACTION;
+        }
         return new RootActionImpl(beacon, actionName, openRootActions);
     }
 
     @Override
     public void identifyUser(String userTag) {
-        beacon.identifyUser(userTag);
+        if (!isSessionEnded()) {
+            beacon.identifyUser(userTag);
+        }
     }
 
     @Override
     public void reportCrash(String errorName, String reason, String stacktrace) {
-        beacon.reportCrash(errorName, reason, stacktrace);
+        if (!isSessionEnded()) {
+            beacon.reportCrash(errorName, reason, stacktrace);
+        }
     }
 
     @Override
     public void end() {
         // check if end() was already called before by looking at endTime
-        if (endTime != -1) {
+        if (!endTime.compareAndSet(-1L, beacon.getCurrentTimestamp())) {
             return;
         }
 
@@ -76,8 +87,6 @@ public class SessionImpl implements Session {
             Action action = openRootActions.get();
             action.leaveAction();
         }
-
-        endTime = beacon.getCurrentTimestamp();
 
         // create end session data on beacon
         beacon.endSession(this);
@@ -96,7 +105,7 @@ public class SessionImpl implements Session {
     // *** getter methods ***
 
     public long getEndTime() {
-        return endTime;
+        return endTime.get();
     }
 
     /**
@@ -107,7 +116,6 @@ public class SessionImpl implements Session {
      * </p>
      */
     public void clearCapturedData() {
-
         beacon.clearData();
     }
 
@@ -122,5 +130,18 @@ public class SessionImpl implements Session {
      */
     public boolean isEmpty() {
         return beacon.isEmpty();
+    }
+
+    /**
+     * Test if the session has already been ended.
+     *
+     * <p>
+     * A session is considered as ended, if the endTime is set to something other than minus 1.
+     * </p>
+     *
+     * @return {@code true} if the session has been ended already, {@code false} if the session is not ended yet.
+     */
+    boolean isSessionEnded() {
+        return getEndTime() != -1L;
     }
 }

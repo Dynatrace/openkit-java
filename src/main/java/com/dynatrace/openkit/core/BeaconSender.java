@@ -69,7 +69,7 @@ public class BeaconSender {
      * If it's a must to have OpenKit fully initialized use the {@link #waitForInit()} method to wait until initialized.
      * </p>
      */
-    public void initialize() {
+    public synchronized void initialize() {
 
         // create and start the sending thread
         beaconSenderThread = new Thread(new Runnable() {
@@ -120,7 +120,7 @@ public class BeaconSender {
     /**
      * Shutdown the BeaconSender and wait until it's shutdown (at most {@link BeaconSender#SHUTDOWN_TIMEOUT} milliseconds.
      */
-    public void shutdown() {
+    public synchronized void shutdown() {
 
         context.requestShutdown();
 

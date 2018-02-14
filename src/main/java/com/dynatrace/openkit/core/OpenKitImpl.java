@@ -25,10 +25,14 @@ import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.*;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Actual implementation of the {@link OpenKit} interface.
  */
 public class OpenKitImpl implements OpenKit {
+
+    private static final Session NULL_SESSION = new NullSession();
 
     // Beacon cache
     private final BeaconCacheImpl beaconCache;
@@ -45,6 +49,8 @@ public class OpenKitImpl implements OpenKit {
 
     //Logging context
     private final Logger logger;
+
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
     // *** constructors ***
 
@@ -64,7 +70,7 @@ public class OpenKitImpl implements OpenKit {
 
     /**
      * Initialize this OpenKit instance.
-     * <p>
+     *
      * <p>
      * This method starts the {@link BeaconSender} and is called directly after
      * the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
@@ -98,6 +104,9 @@ public class OpenKitImpl implements OpenKit {
 
     @Override
     public Session createSession(String clientIPAddress) {
+        if (isShutdown.get()) {
+            return NULL_SESSION;
+        }
         // create beacon for session
         Beacon beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
         // create session
@@ -106,6 +115,7 @@ public class OpenKitImpl implements OpenKit {
 
     @Override
     public void shutdown() {
+        isShutdown.set(true);
         beaconCacheEvictor.stop();
         beaconSender.shutdown();
     }

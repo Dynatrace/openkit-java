@@ -21,6 +21,8 @@ import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -226,5 +228,21 @@ public class OpenKitImplTest {
 
         // verify that the two sessions exist and are not the same
         assertThat(session1impl, not(sameInstance(session2impl)));
+    }
+
+    @Test
+    public void anAlreadyShutdownOpenKitCreatesANullSession() {
+
+        // given
+        OpenKitImpl target = new OpenKitImpl(logger, config);
+        target.initialize();
+        target.shutdown();
+
+        // when
+        Session obtained = target.createSession("127.0.0.1");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullSession.class)));
     }
 }
