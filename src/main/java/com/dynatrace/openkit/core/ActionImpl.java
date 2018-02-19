@@ -48,8 +48,8 @@ public class ActionImpl implements Action {
 
     // *** constructors ***
 
-    ActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
-        this(beacon, name, null, parentActions);
+    ActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> thisLevelActions) {
+        this(beacon, name, null, thisLevelActions);
     }
 
     ActionImpl(Beacon beacon, String name, ActionImpl parentAction, SynchronizedQueue<Action> thisLevelActions) {
