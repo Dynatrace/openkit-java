@@ -116,7 +116,7 @@ public class BeaconCacheEvictor {
                 evictionThread.join(timeout);
                 result = !isAlive();
             } catch (InterruptedException e) {
-                logger.warning("Stopping BeaconCacheEviction thread was interrupted.");
+                logger.warn("Stopping BeaconCacheEviction thread was interrupted.");
                 Thread.currentThread().interrupt(); // re-interrupt the current thread
             }
         } else {

@@ -245,7 +245,7 @@ public class BeaconTest {
 
         // then (verify, that calling reportValue with a null value doesn't throw an exception but instead only triggers a warning)
         assertThat(events, emptyArray());
-        verify(logger, times(1)).warning(anyString());
+        verify(logger, times(1)).warn(anyString());
     }
 
     @Ignore
@@ -265,7 +265,7 @@ public class BeaconTest {
 
         // then (verify, that calling reportValue with a null name and null value does throw an exception)
         assertThat(events, emptyArray());
-        verify(logger, times(1)).warning(anyString());
+        verify(logger, times(1)).warn(anyString());
     }
 
     @Test
