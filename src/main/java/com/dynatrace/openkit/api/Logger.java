@@ -42,7 +42,7 @@ public interface Logger {
      *
      * @param message the message to write to the log
      */
-    void warn(String message);
+    void warning(String message);
 
     /**
      * Log with level 'info'
@@ -85,4 +85,6 @@ public interface Logger {
      * @return true if 'debug' level messages are printed, 'false' if not
      */
     boolean isDebugEnabled();
+
+
 }

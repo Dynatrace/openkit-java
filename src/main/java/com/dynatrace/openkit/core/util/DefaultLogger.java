@@ -59,7 +59,7 @@ public class DefaultLogger implements Logger {
     }
 
     @Override
-    public void warn(String message) {
+    public void warning(String message) {
         System.out.println(getUTCTime() + " [WARN ] " + message);
     }
 
