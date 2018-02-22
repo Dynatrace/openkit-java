@@ -92,8 +92,7 @@ as Beacon. Each OpenKit instance has such a cache, so if your application starts
 in parallel, keep in mind that each OpenKit instance consumes cache memory.  
 
 The example image shows three Sessions started from one OpenKit instance and for each Session a different number of Event Data
-and Action Data. The distinction between Event Data and Action Data is only used to determine the sending
-order of captured events.
+and Action Data.
 
 ### BeaconCache Records
 
@@ -102,31 +101,30 @@ OpenKit. A record is already serialized data which can be sent to the backend sy
 
 ### BeaconCache Eviction
 
-By default the BeaconCache has two Eviction strategies, which are triggered whenever new data
+By default the BeaconCache has two eviction strategies, which are triggered whenever new data
 is inserted. Triggering such a strategy does not necessarily mean that records are evicted from the cache, but rather
 the strategy evaluates whether it makes sense to run or not.
 
-The eviction strategies are ran in a separate background thread, which is started when OpenKit is started and
+The eviction strategies run in a separate background thread, which is started when OpenKit is started and
 shut down when OpenKit is terminated.
 
 #### Time Based Eviction
 
-Since Dynatrace/AppMon backend services will throw away too old data, it make sense to not send such data to the
+Since Dynatrace/AppMon backend services does not process too old data, it make sense to not send such data to the
 backend system.
-By default records that are older than 1 hour and 45 minutes are thrown away, but when initializing an
-OpenKit instance via the builder the value can be set by calling `withBeaconCacheMaxRecordAge` with a long argument specifying the
-maximum record age in milliseconds. Bear in mind that Dynatrace/AppMon might still throw away the data, so setting
-this value too high might have no effect.
+By default records that are older than 1 hour and 45 minutes are evicted, but when initializing an
+OpenKit instance via the builder the value can be set by calling `withBeaconCacheMaxRecordAge` with an argument specifying the
+maximum record age in milliseconds.
 
 It is possible to disable this strategy by setting the argument to `withBeaconCacheMaxRecordAge` to a value less than
 or equal to 0.
 
 #### Size based Eviction
 
-The second eviction strategy is used to keep the memory consumed by an OpenKit instance within certain boundaries.
-This strategy starts to run when the memory consumed by the BeaconCache exceeds a certain upper threshold and stops
-as soon as the memory consumed by the cache reaches a configured lower bound. By default the upper boundary, when the
-strategy starts to run, is 100 Megabytes and the lower boundary is 80 Megabytes.
+The second eviction strategy is used to limit the memory consumption of OpenKit.
+This strategy evicts beacons if the memory usage of the BeaconCache exceeds a configured upper bound and stops
+as soon as the memory consumed by the cache reaches a configured lower bound.
+By default, the upper boundary is set to 100 megabytes and the lower boundary is 80 megabytes.
 The defaults can be changed when initializing the OpenKit instance via the builder by calling `withBeaconCacheLowerMemoryBoundary`
 and `withBeaconCacheUpperMemoryBoundary`.
 
