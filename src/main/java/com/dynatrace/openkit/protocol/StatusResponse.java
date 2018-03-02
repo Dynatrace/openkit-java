@@ -24,13 +24,13 @@ import java.util.StringTokenizer;
 public class StatusResponse extends Response {
 
     // status response constants
-    private static final String RESPONSE_KEY_CAPTURE = "cp";
-    private static final String RESPONSE_KEY_SEND_INTERVAL = "si";
-    private static final String RESPONSE_KEY_MONITOR_NAME = "bn";
-    private static final String RESPONSE_KEY_SERVER_ID = "id";
-    private static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
-    private static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
-    private static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
+    public static final String RESPONSE_KEY_CAPTURE = "cp";
+    public static final String RESPONSE_KEY_SEND_INTERVAL = "si";
+    public static final String RESPONSE_KEY_MONITOR_NAME = "bn";
+    public static final String RESPONSE_KEY_SERVER_ID = "id";
+    public static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
+    public static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
+    public static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
 
     // settings contained in status response
     private boolean capture = true;
@@ -52,10 +52,21 @@ public class StatusResponse extends Response {
 
     // parses status check response
     private void parseResponse(String response) {
-        StringTokenizer tokenizer = new StringTokenizer(response, "&=");
+
+        if (response == null || response.isEmpty()) {
+            return;
+        }
+
+        StringTokenizer tokenizer = new StringTokenizer(response, "&");
         while (tokenizer.hasMoreTokens()) {
-            String key = tokenizer.nextToken();
-            String value = tokenizer.nextToken();
+
+            String token = tokenizer.nextToken();
+            int keyValueSeparatorIndex = token.indexOf('=');
+            if (keyValueSeparatorIndex == -1) {
+                throw new IllegalArgumentException("Invalid response; even number of tokens expected.");
+            }
+            String key = token.substring(0, keyValueSeparatorIndex);
+            String value = token.substring(keyValueSeparatorIndex + 1);
 
             if (RESPONSE_KEY_CAPTURE.equals(key)) {
                 capture = (Integer.parseInt(value) == 1);
@@ -104,5 +115,4 @@ public class StatusResponse extends Response {
     public boolean isCaptureCrashes() {
         return captureCrashes;
     }
-
 }

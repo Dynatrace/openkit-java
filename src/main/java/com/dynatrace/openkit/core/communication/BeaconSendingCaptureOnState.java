@@ -21,7 +21,7 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
  * The sending state, when init is completed and capturing is turned on.
- * <p>
+ *
  * <p>
  * Transitions to:
  * <ul>

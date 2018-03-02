@@ -42,10 +42,21 @@ public class TimeSyncResponse extends Response {
 
     // parses time sync response
     private void parseResponse(String response) {
-        StringTokenizer tokenizer = new StringTokenizer(response, "&=");
+
+        if (response == null || response.isEmpty()) {
+            return;
+        }
+
+        StringTokenizer tokenizer = new StringTokenizer(response, "&");
         while (tokenizer.hasMoreTokens()) {
-            String key = tokenizer.nextToken();
-            String value = tokenizer.nextToken();
+
+            String token = tokenizer.nextToken();
+            int keyValueSeparatorIndex = token.indexOf('=');
+            if (keyValueSeparatorIndex == -1) {
+                throw new IllegalArgumentException("Invalid response; even number of tokens expected.");
+            }
+            String key = token.substring(0, keyValueSeparatorIndex);
+            String value = token.substring(keyValueSeparatorIndex + 1);
 
             if (RESPONSE_KEY_REQUEST_RECEIVE_TIME.equals(key)) {
                 requestReceiveTime = Long.parseLong(value);
