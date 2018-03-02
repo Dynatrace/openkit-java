@@ -280,12 +280,10 @@ public class StatusResponseTest {
     @Test
     public void parsingTooBigMaxBeaconSizeOverflows() {
         // when the value is positive, then
-        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MAX_BEACON_SIZE + "=2097152", 200).getMaxBeaconSize(),
-            is(equalTo(-2147483648)));
+        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MAX_BEACON_SIZE + "=2097152", 200).getMaxBeaconSize(), is(equalTo(-2147483648)));
 
         // when the value is negative, then
-        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MAX_BEACON_SIZE + "=-2097153", 200).getMaxBeaconSize(),
-            is(equalTo(2147482624)));
+        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MAX_BEACON_SIZE + "=-2097153", 200).getMaxBeaconSize(), is(equalTo(2147482624)));
     }
 
     @Test

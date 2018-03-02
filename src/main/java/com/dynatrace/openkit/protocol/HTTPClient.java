@@ -192,7 +192,7 @@ public class HTTPClient {
                     outputStream.close();
                 }
 
-                return handleResponse(connection);
+                return handleResponse(requestType, connection);
 
 
             } catch (IOException exception) {
@@ -210,7 +210,7 @@ public class HTTPClient {
         }
     }
 
-    private Response handleResponse(HttpURLConnection connection) throws IOException {
+    private Response handleResponse(RequestType requestType, HttpURLConnection connection) throws IOException {
         // get response code
         int responseCode = connection.getResponseCode();
 
@@ -234,22 +234,70 @@ public class HTTPClient {
 
             // reading HTTP response
             String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
-
-
             if (logger.isDebugEnabled()) {
                 logger.debug("HTTP Response: " + response);
                 logger.debug("HTTP Response Code: " + responseCode);
             }
 
-            // create typed response based on response content
-            if (response.startsWith(REQUEST_TYPE_TIMESYNC)) {
-                return new TimeSyncResponse(response, responseCode);
-            } else if (response.startsWith(REQUEST_TYPE_MOBILE)) {
-                return new StatusResponse(response, responseCode);
-            } else {
+            // create typed response based on request type and response content
+            if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
+                return parseTimeSyncResponse(response, responseCode);
+            }
+            else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
+                || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))) {
+                return parseStatusResponse(response, responseCode);
+            }
+            else {
+                logger.warning("Unknown request type " + requestType + " - ignoring response");
                 return null;
             }
         }
+    }
+
+    private Response parseTimeSyncResponse(String response, int responseCode) {
+        if (isTimeSyncResponse(response))
+        {
+            try
+            {
+                return new TimeSyncResponse(response, responseCode);
+            }
+            catch(Exception e)
+            {
+                logger.error("Failed to parse TimeSyncResponse", e);
+                return null;
+            }
+        }
+
+        // invalid/unexpected response
+        logger.warning("The HTTPResponse \"" + response + "\" is not a valid time sync response");
+        return null;
+    }
+
+    private Response parseStatusResponse(String response, int responseCode) {
+        if (isStatusResponse(response) && !isTimeSyncResponse(response))
+        {
+            try
+            {
+                return new StatusResponse(response, responseCode);
+            }
+            catch (Exception e)
+            {
+                logger.error("Failed to parse StatusResponse", e);
+                return null;
+            }
+        }
+
+        // invalid/unexpected response
+        logger.warning("The HTTPResponse \"" + response + "\" is not a valid status response");
+        return null;
+    }
+
+    private static  boolean isStatusResponse(String response) {
+        return response.startsWith(REQUEST_TYPE_MOBILE);
+    }
+
+    private static boolean isTimeSyncResponse(String response) {
+        return response.startsWith(REQUEST_TYPE_TIMESYNC);
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
