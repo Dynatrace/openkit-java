@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.protocol;
 
-import java.util.StringTokenizer;
+import java.util.List;
 
 /**
  * Implements a status response which is sent for the request types status check and beacon send.
@@ -24,13 +24,13 @@ import java.util.StringTokenizer;
 public class StatusResponse extends Response {
 
     // status response constants
-    public static final String RESPONSE_KEY_CAPTURE = "cp";
-    public static final String RESPONSE_KEY_SEND_INTERVAL = "si";
-    public static final String RESPONSE_KEY_MONITOR_NAME = "bn";
-    public static final String RESPONSE_KEY_SERVER_ID = "id";
-    public static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
-    public static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
-    public static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
+    static final String RESPONSE_KEY_CAPTURE = "cp";
+    static final String RESPONSE_KEY_SEND_INTERVAL = "si";
+    static final String RESPONSE_KEY_MONITOR_NAME = "bn";
+    static final String RESPONSE_KEY_SERVER_ID = "id";
+    static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
+    static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
+    static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
 
     // settings contained in status response
     private boolean capture = true;
@@ -57,31 +57,23 @@ public class StatusResponse extends Response {
             return;
         }
 
-        StringTokenizer tokenizer = new StringTokenizer(response, "&");
-        while (tokenizer.hasMoreTokens()) {
+        List<KeyValuePair> parsedResponse = Response.parseResponseKeyValuePair(response);
+        for (KeyValuePair kv : parsedResponse) {
 
-            String token = tokenizer.nextToken();
-            int keyValueSeparatorIndex = token.indexOf('=');
-            if (keyValueSeparatorIndex == -1) {
-                throw new IllegalArgumentException("Invalid response; even number of tokens expected.");
-            }
-            String key = token.substring(0, keyValueSeparatorIndex);
-            String value = token.substring(keyValueSeparatorIndex + 1);
-
-            if (RESPONSE_KEY_CAPTURE.equals(key)) {
-                capture = (Integer.parseInt(value) == 1);
-            } else if (RESPONSE_KEY_SEND_INTERVAL.equals(key)) {
-                sendInterval = Integer.parseInt(value) * 1000;
-            } else if (RESPONSE_KEY_MONITOR_NAME.equals(key)) {
-                monitorName = value;
-            } else if (RESPONSE_KEY_SERVER_ID.equals(key)) {
-                serverID = Integer.parseInt(value);
-            } else if (RESPONSE_KEY_MAX_BEACON_SIZE.equals(key)) {
-                maxBeaconSize = Integer.parseInt(value) * 1024;
-            } else if (RESPONSE_KEY_CAPTURE_ERRORS.equals(key)) {
-                captureErrors = (Integer.parseInt(value) != 0);                    // 1 (always on) and 2 (only on WiFi) are treated the same
-            } else if (RESPONSE_KEY_CAPTURE_CRASHES.equals(key)) {
-                captureCrashes = (Integer.parseInt(value) != 0);                // 1 (always on) and 2 (only on WiFi) are treated the same
+            if (RESPONSE_KEY_CAPTURE.equals(kv.key)) {
+                capture = (Integer.parseInt(kv.value) == 1);
+            } else if (RESPONSE_KEY_SEND_INTERVAL.equals(kv.key)) {
+                sendInterval = Integer.parseInt(kv.value) * 1000;
+            } else if (RESPONSE_KEY_MONITOR_NAME.equals(kv.key)) {
+                monitorName = kv.value;
+            } else if (RESPONSE_KEY_SERVER_ID.equals(kv.key)) {
+                serverID = Integer.parseInt(kv.value);
+            } else if (RESPONSE_KEY_MAX_BEACON_SIZE.equals(kv.key)) {
+                maxBeaconSize = Integer.parseInt(kv.value) * 1024;
+            } else if (RESPONSE_KEY_CAPTURE_ERRORS.equals(kv.key)) {
+                captureErrors = (Integer.parseInt(kv.value) != 0);                    // 1 (always on) and 2 (only on WiFi) are treated the same
+            } else if (RESPONSE_KEY_CAPTURE_CRASHES.equals(kv.key)) {
+                captureCrashes = (Integer.parseInt(kv.value) != 0);                // 1 (always on) and 2 (only on WiFi) are treated the same
             }
         }
     }
