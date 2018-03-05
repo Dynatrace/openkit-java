@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.protocol;
 
-import java.util.StringTokenizer;
+import java.util.List;
 
 /**
  * Implements a time sync response which is sent for time sync requests.
@@ -42,15 +42,19 @@ public class TimeSyncResponse extends Response {
 
     // parses time sync response
     private void parseResponse(String response) {
-        StringTokenizer tokenizer = new StringTokenizer(response, "&=");
-        while (tokenizer.hasMoreTokens()) {
-            String key = tokenizer.nextToken();
-            String value = tokenizer.nextToken();
 
-            if (RESPONSE_KEY_REQUEST_RECEIVE_TIME.equals(key)) {
-                requestReceiveTime = Long.parseLong(value);
-            } else if (RESPONSE_KEY_RESPONSE_SEND_TIME.equals(key)) {
-                responseSendTime = Long.parseLong(value);
+        if (response == null || response.isEmpty()) {
+            return;
+        }
+
+
+        List<KeyValuePair> parsedResponse = Response.parseResponseKeyValuePair(response);
+        for (KeyValuePair kv : parsedResponse) {
+
+            if (RESPONSE_KEY_REQUEST_RECEIVE_TIME.equals(kv.key)) {
+                requestReceiveTime = Long.parseLong(kv.value);
+            } else if (RESPONSE_KEY_RESPONSE_SEND_TIME.equals(kv.key)) {
+                responseSendTime = Long.parseLong(kv.value);
             }
         }
     }

@@ -16,10 +16,24 @@
 
 package com.dynatrace.openkit.protocol;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 /**
  * Abstract base class for a response to one of the 3 request types (status check, beacon send, time sync).
  */
 public abstract class Response {
+
+    static class KeyValuePair {
+        final String key;
+        final String value;
+
+        KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 
     private final int responseCode;
 
@@ -33,5 +47,26 @@ public abstract class Response {
 
     public int getResponseCode() {
         return responseCode;
+    }
+
+    static List<KeyValuePair> parseResponseKeyValuePair(String response) {
+
+        List<KeyValuePair> result = new ArrayList<KeyValuePair>();
+        StringTokenizer tokenizer = new StringTokenizer(response, "&");
+        while (tokenizer.hasMoreTokens()) {
+
+
+            String token = tokenizer.nextToken();
+            int keyValueSeparatorIndex = token.indexOf('=');
+            if (keyValueSeparatorIndex == -1) {
+                throw new IllegalArgumentException("Invalid response; even number of tokens expected.");
+            }
+            String key = token.substring(0, keyValueSeparatorIndex);
+            String value = token.substring(keyValueSeparatorIndex + 1);
+
+            result.add(new KeyValuePair(key, value));
+        }
+
+        return result;
     }
 }

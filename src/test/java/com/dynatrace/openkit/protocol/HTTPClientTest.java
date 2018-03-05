@@ -290,4 +290,54 @@ public class HTTPClientTest {
         // then
         assertThat(response, nullValue());
     }
+
+    @Test
+    public void sendTimesyncRequestWithMobileResponse() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpsURLConnection.class);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        Response response = client.sendRequest(RequestType.TIMESYNC, connection, null, null, "GET");
+
+        // then (verify null response)
+        assertThat(response, is(nullValue()));
+    }
+
+    @Test
+    public void sendStatusRequestWithTimeSyncResponse() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpsURLConnection.class);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
+
+        // then (verify null response)
+        assertThat(response, is(nullValue()));
+    }
+
+    @Test
+    public void sendBeaconRequestWithTimeSyncResponse() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+        when(connection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+        String data = "type=m";
+
+        // when
+        Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
+
+        // then
+        assertThat(response, nullValue());
+    }
 }
