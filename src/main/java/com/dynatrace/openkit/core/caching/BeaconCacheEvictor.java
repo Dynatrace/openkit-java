@@ -163,9 +163,7 @@ public class BeaconCacheEvictor {
                             lockObject.wait();
                         }
                     } catch (InterruptedException e) {
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Caught InterruptedException while waiting for new cache records ... Exiting");
-                        }
+                        // re-interrupt the current thread
                         Thread.currentThread().interrupt();
                         break;
                     }
@@ -179,6 +177,10 @@ public class BeaconCacheEvictor {
                 for (BeaconCacheEvictionStrategy strategy : strategies) {
                     strategy.execute();
                 }
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("BeaconCacheEviction thread is stopped.");
             }
         }
 
