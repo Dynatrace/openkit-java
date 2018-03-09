@@ -32,6 +32,9 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -446,5 +449,20 @@ public class SessionImplTest {
 
         // then
         assertThat(session.isEmpty(), is(true));
+    }
+
+    @Test
+    public void closeSessionEndsTheSession() throws IOException {
+
+        // given
+        Closeable target = new SessionImpl(beaconSender, beacon);
+        beacon.clearData();
+
+        // when
+        target.close();
+
+        // then
+        assertThat(beacon.isEmpty(), is(false));
+        verify(beaconSender, times(1)).finishSession((SessionImpl)target);
     }
 }

@@ -16,10 +16,12 @@
 
 package com.dynatrace.openkit.api;
 
+import java.io.Closeable;
+
 /**
  * This interface provides basic OpenKit functionality, like creating a Session and shutting down OpenKit.
  */
-public interface OpenKit {
+public interface OpenKit extends Closeable {
 
     /**
      * Waits until OpenKit is fully initialized.

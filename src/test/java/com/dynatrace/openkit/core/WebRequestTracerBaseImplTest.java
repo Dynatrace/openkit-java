@@ -5,6 +5,9 @@ import com.dynatrace.openkit.protocol.Beacon;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -218,6 +221,22 @@ public class WebRequestTracerBaseImplTest {
         // then
         verify(mockBeacon, times(2)).createSequenceNumber();
         verify(mockBeacon, times(1)).addWebRequest(mockActionImpl, target);
+    }
+
+    @Test
+    public void closingAWebRequestStopsIt() throws IOException {
+
+        // given
+        Closeable target = new TestWebRequestTracerBaseImpl(mockBeacon, mockActionImpl);
+        when(mockBeacon.createSequenceNumber()).thenReturn(42);
+
+        // when executed the first time
+        target.close();
+
+        // then
+        assertThat(((WebRequestTracerBaseImpl)target).getEndSequenceNo(), is(42));
+        verify(mockBeacon, times(2)).createSequenceNumber();
+        verify(mockBeacon, times(1)).addWebRequest(mockActionImpl, (WebRequestTracerBaseImpl)target);
     }
 
     private static final class TestWebRequestTracerBaseImpl extends WebRequestTracerBaseImpl {

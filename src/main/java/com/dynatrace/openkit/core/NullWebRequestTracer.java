@@ -55,4 +55,9 @@ public class NullWebRequestTracer implements WebRequestTracer {
     public void stop() {
         // intentionally left empty, due to NullObject pattern
     }
+
+    @Override
+    public void close() {
+        stop();
+    }
 }

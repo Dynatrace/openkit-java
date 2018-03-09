@@ -53,6 +53,12 @@ public class SessionImpl implements Session {
 
     // *** Session interface methods ***
 
+
+    @Override
+    public void close() {
+        end();
+    }
+
     @Override
     public RootAction enterAction(String actionName) {
         if (isSessionEnded()) {

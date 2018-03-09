@@ -83,6 +83,12 @@ public class OpenKitImpl implements OpenKit {
 
     // *** OpenKit interface methods ***
 
+
+    @Override
+    public void close() {
+        shutdown();
+    }
+
     @Override
     public boolean waitForInitCompletion() {
         return beaconSender.waitForInit();

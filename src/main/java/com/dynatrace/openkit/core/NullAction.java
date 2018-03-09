@@ -41,7 +41,7 @@ class NullAction implements Action {
 
     /**
      * Construct null action with parent action.
-     * @param parentAction
+     * @param parentAction The parent action, which might be {@code null}.
      */
     NullAction(Action parentAction) {
         this.parentAction = parentAction;
@@ -85,5 +85,10 @@ class NullAction implements Action {
     @Override
     public Action leaveAction() {
         return parentAction;
+    }
+
+    @Override
+    public void close() {
+        leaveAction();
     }
 }

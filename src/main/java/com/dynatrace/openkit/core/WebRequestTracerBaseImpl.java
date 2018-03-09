@@ -38,7 +38,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
     // start/end time & sequence number
     private long startTime = -1;
     private final AtomicLong endTime = new AtomicLong(-1);
-    private int startSequenceNo = -1;
+    private int startSequenceNo;
     private int endSequenceNo = -1;
 
     // Beacon and Action references
@@ -47,7 +47,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     // *** constructors ***
 
-    public WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
+    WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
         this.beacon = beacon;
         this.action = action;
 
@@ -106,6 +106,11 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
         // add web request to beacon
         beacon.addWebRequest(action, this);
+    }
+
+    @Override
+    public void close() {
+        stop();
     }
 
     // *** getter methods ***
