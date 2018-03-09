@@ -19,6 +19,8 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.WebRequestTracer;
 
+import java.io.IOException;
+
 /**
  * This class is returned as WebRequestTracer by {@link Action#traceWebRequest(String)} or
  * {@link Action#traceWebRequest(java.net.URLConnection)} when the {@link Action#leaveAction()} ()}
@@ -54,5 +56,10 @@ public class NullWebRequestTracer implements WebRequestTracer {
     @Override
     public void stop() {
         // intentionally left empty, due to NullObject pattern
+    }
+
+    @Override
+    public void close() {
+        stop();
     }
 }

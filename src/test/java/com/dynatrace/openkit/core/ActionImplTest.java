@@ -28,6 +28,8 @@ import com.dynatrace.openkit.providers.TimingProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -684,6 +686,29 @@ public class ActionImplTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+    }
+
+    @Test
+    public void closeActionLeavesTheAction() throws IOException {
+
+        // given
+        Beacon mockBeacon = mock(Beacon.class);
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
+        when(mockBeacon.createSequenceNumber()).thenReturn(42);
+
+        SynchronizedQueue queue = new SynchronizedQueue<Action>();
+        Closeable target = new ActionImpl(mockBeacon, actionName, queue);
+
+        // when
+        target.close();
+
+        // then
+        assertThat(((ActionImpl)target).getEndTime(), is(equalTo(1234L)));
+        assertThat(((ActionImpl)target).getEndSequenceNo(), is(equalTo(42)));
+
+        verify(mockBeacon, times(1)).addAction((ActionImpl)target);
+        verify(mockBeacon, times(3)).getCurrentTimestamp();
+        verify(mockBeacon, times(2)).createSequenceNumber();
     }
 
     private Beacon createTestBeacon() {

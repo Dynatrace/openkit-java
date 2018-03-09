@@ -20,6 +20,7 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
+import java.io.IOException;
 import java.net.URLConnection;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -66,6 +67,12 @@ public class ActionImpl implements Action {
     }
 
     // *** Action interface methods ***
+
+
+    @Override
+    public void close() {
+        leaveAction();
+    }
 
     @Override
     public Action reportEvent(String eventName) {

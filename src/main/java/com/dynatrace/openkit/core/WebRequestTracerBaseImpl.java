@@ -19,6 +19,7 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -106,6 +107,11 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
         // add web request to beacon
         beacon.addWebRequest(action, this);
+    }
+
+    @Override
+    public void close() {
+        stop();
     }
 
     // *** getter methods ***

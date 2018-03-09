@@ -20,6 +20,7 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
 
+import java.io.IOException;
 import java.net.URLConnection;
 
 /**
@@ -85,5 +86,10 @@ class NullAction implements Action {
     @Override
     public Action leaveAction() {
         return parentAction;
+    }
+
+    @Override
+    public void close() {
+        leaveAction();
     }
 }

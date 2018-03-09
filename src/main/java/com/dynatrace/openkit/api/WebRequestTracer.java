@@ -16,10 +16,12 @@
 
 package com.dynatrace.openkit.api;
 
+import java.io.Closeable;
+
 /**
  * This interface allows tracing and timing of a web request.
  */
-public interface WebRequestTracer {
+public interface WebRequestTracer extends Closeable {
 
     /**
      * Returns the Dynatrace tag which has to be set manually as Dynatrace HTTP header
