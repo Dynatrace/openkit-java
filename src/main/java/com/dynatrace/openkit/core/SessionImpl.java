@@ -23,7 +23,6 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**

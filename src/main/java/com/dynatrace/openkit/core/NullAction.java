@@ -20,7 +20,6 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
 
-import java.io.IOException;
 import java.net.URLConnection;
 
 /**
@@ -42,7 +41,7 @@ class NullAction implements Action {
 
     /**
      * Construct null action with parent action.
-     * @param parentAction
+     * @param parentAction The parent action, which might be {@code null}.
      */
     NullAction(Action parentAction) {
         this.parentAction = parentAction;

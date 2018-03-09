@@ -19,7 +19,6 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -39,7 +38,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
     // start/end time & sequence number
     private long startTime = -1;
     private final AtomicLong endTime = new AtomicLong(-1);
-    private int startSequenceNo = -1;
+    private int startSequenceNo;
     private int endSequenceNo = -1;
 
     // Beacon and Action references
@@ -48,7 +47,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     // *** constructors ***
 
-    public WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
+    WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
         this.beacon = beacon;
         this.action = action;
 

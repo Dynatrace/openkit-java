@@ -20,8 +20,6 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 
-import java.io.IOException;
-
 /**
  * This class is returned as Session by {@link OpenKit#createSession(String)} when the {@link OpenKit#shutdown()}
  * has been called before.
