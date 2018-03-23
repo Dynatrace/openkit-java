@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -33,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BeaconSender {
 
-    private static final String THREAD_NAME = BeaconCacheEvictor.class.getSimpleName();
+    private static final String THREAD_NAME = BeaconSender.class.getSimpleName();
     static final long SHUTDOWN_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
     /**
