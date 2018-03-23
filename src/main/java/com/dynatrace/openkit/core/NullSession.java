@@ -47,4 +47,9 @@ public class NullSession implements Session {
     public void end() {
         // intentionally left empty, due to NullObject pattern
     }
+
+    @Override
+    public void close() {
+        end();
+    }
 }

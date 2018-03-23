@@ -16,12 +16,13 @@
 
 package com.dynatrace.openkit.api;
 
+import java.io.Closeable;
 import java.net.URLConnection;
 
 /**
  * This interface provides functionality to create (child) Actions, report events/values/errors and tracing web requests.
  */
-public interface Action {
+public interface Action extends Closeable {
 
     /**
      * Reports an event with a specified name (but without any value).

@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.caching;
 
 import com.dynatrace.openkit.api.Logger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -137,14 +138,14 @@ public class BeaconCacheEvictorTest {
 
         // given
         final Observer[] observers = new Observer[]{null};
-        final CountDownLatch addObserverLath = new CountDownLatch(1);
+        final CountDownLatch addObserverLatch = new CountDownLatch(1);
         final CyclicBarrier strategyInvokedBarrier = new CyclicBarrier(2);
 
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 observers[0] = (Observer) invocation.getArguments()[0];
-                addObserverLath.countDown();
+                addObserverLatch.countDown();
 
                 return null;
             }
@@ -164,7 +165,7 @@ public class BeaconCacheEvictorTest {
         evictor.start();
 
         // wait until the eviction thread registered itself as observer
-        addObserverLath.await();
+        addObserverLatch.await();
 
         // verify the observer was set
         assertThat(observers[0], is(notNullValue()));
@@ -176,7 +177,7 @@ public class BeaconCacheEvictorTest {
             strategyInvokedBarrier.reset();
         }
 
-        // stop teh stuff and ensure it's invoked
+        // stop the stuff and ensure it's invoked
         boolean stopped = evictor.stop();
 
         assertThat(stopped, is(true));

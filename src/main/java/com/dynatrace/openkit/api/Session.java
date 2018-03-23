@@ -16,10 +16,12 @@
 
 package com.dynatrace.openkit.api;
 
+import java.io.Closeable;
+
 /**
  * This interface provides functionality to create Actions in a Session.
  */
-public interface Session {
+public interface Session extends Closeable {
 
     /**
      * Enters an Action with a specified name in this Session.

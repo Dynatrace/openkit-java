@@ -67,6 +67,12 @@ public class ActionImpl implements Action {
 
     // *** Action interface methods ***
 
+
+    @Override
+    public void close() {
+        leaveAction();
+    }
+
     @Override
     public Action reportEvent(String eventName) {
         if (!isActionLeft()) {
