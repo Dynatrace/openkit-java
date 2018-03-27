@@ -19,7 +19,7 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.core.SessionImpl;
 
 /**
- * Un this state open sessions are finished. After that all sessions are sent tot the server.
+ * In this state open sessions are finished. After that all sessions are sent to the server.
  * <p>
  * <p>
  * Transition to:
