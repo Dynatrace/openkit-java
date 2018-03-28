@@ -316,7 +316,9 @@ public class Beacon {
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
-        addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, truncate(value));
+        if (value != null) {
+            addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, truncate(value));
+        }
 
         addEventData(eventTimestamp, eventBuilder);
     }
@@ -366,7 +368,9 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
-        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        if (reason != null) {
+            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        }
 
         addEventData(timestamp, eventBuilder);
     }
@@ -396,8 +400,12 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
-        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
+        if (reason != null) {
+            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        }
+        if (stacktrace != null) {
+            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
+        }
 
         addEventData(timestamp, eventBuilder);
     }
@@ -600,7 +608,7 @@ public class Beacon {
     }
 
     /**
-     * Serializeation for building basic event data.
+     * Serialization for building basic event data.
      *
      * @param builder String builder storing serialized data.
      * @param eventType The event's type.

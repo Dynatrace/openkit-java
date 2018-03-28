@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
@@ -29,6 +30,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ActionImpl implements Action {
 
     private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
+
+    // logger
+    private final Logger logger;
 
     // Action ID, name and parent ID (default: null)
     private final int id;
@@ -48,11 +52,13 @@ public class ActionImpl implements Action {
 
     // *** constructors ***
 
-    ActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> thisLevelActions) {
-        this(beacon, name, null, thisLevelActions);
+    ActionImpl(Logger logger, Beacon beacon, String name, SynchronizedQueue<Action> thisLevelActions) {
+        this(logger, beacon, name, null, thisLevelActions);
     }
 
-    ActionImpl(Beacon beacon, String name, ActionImpl parentAction, SynchronizedQueue<Action> thisLevelActions) {
+    ActionImpl(Logger logger, Beacon beacon, String name, ActionImpl parentAction, SynchronizedQueue<Action> thisLevelActions) {
+        this.logger = logger;
+
         this.beacon = beacon;
         this.parentAction = parentAction;
 
@@ -75,6 +81,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportEvent(String eventName) {
+        if (eventName == null || eventName.isEmpty()) {
+            logger.warning("Action.reportEvent: eventName must not be null or empty");
+            return this;
+        }
         if (!isActionLeft()) {
             beacon.reportEvent(this, eventName);
         }
@@ -83,6 +93,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportValue(String valueName, int value) {
+        if (valueName == null || valueName.isEmpty()) {
+            logger.warning("Action.reportValue (int): valueName must not be null or empty");
+            return this;
+        }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
         }
@@ -91,6 +105,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportValue(String valueName, double value) {
+        if (valueName == null || valueName.isEmpty()) {
+            logger.warning("Action.reportValue (double): valueName must not be null or empty");
+            return this;
+        }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
         }
@@ -99,6 +117,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportValue(String valueName, String value) {
+        if (valueName == null || valueName.isEmpty()) {
+            logger.warning("Action.reportValue (string): valueName must not be null or empty");
+            return this;
+        }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
         }
@@ -107,6 +129,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Action reportError(String errorName, int errorCode, String reason) {
+        if (errorName == null || errorName.isEmpty()) {
+            logger.warning("Action.reportError: errorName must not be null or empty");
+            return this;
+        }
         if (!isActionLeft()) {
             beacon.reportError(this, errorName, errorCode, reason);
         }
@@ -115,6 +141,10 @@ public class ActionImpl implements Action {
 
     @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
+        if (connection == null) {
+            logger.warning("Action.traceWebRequest (URLConnection): connection must not be null");
+            return NULL_WEB_REQUEST_TRACER;
+        }
         if (!isActionLeft()) {
             return new WebRequestTracerURLConnection(beacon, this, connection);
         }
@@ -124,6 +154,10 @@ public class ActionImpl implements Action {
 
     @Override
     public WebRequestTracer traceWebRequest(String url) {
+        if (url == null || url.isEmpty()) {
+            logger.warning("Action.traceWebRequest (String): url must not be null or empty");
+            return NULL_WEB_REQUEST_TRACER;
+        }
         if (!isActionLeft()) {
             return new WebRequestTracerStringURL(beacon, this, url);
         }
@@ -189,4 +223,7 @@ public class ActionImpl implements Action {
         return getEndTime() != -1;
     }
 
+    Logger getLogger() {
+        return logger;
+    }
 }
