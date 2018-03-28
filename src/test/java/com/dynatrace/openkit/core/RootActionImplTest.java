@@ -17,37 +17,64 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.protocol.Beacon;
 
-import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests the root action having some knowledge of the internals of the underlying actions.
  */
 public class RootActionImplTest {
 
+    private Logger logger;
+
+    @Before
+    public void setUp() {
+        logger = mock(Logger.class);
+        when(logger.isInfoEnabled()).thenReturn(true);
+        when(logger.isDebugEnabled()).thenReturn(true);
+    }
+
     @Test
-    public void enterNullAction() {
+    public void enterActionWithNullNameGivesNullAction() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         // create root action with a null child action (must be valid)
         final String rootActionStr = "rootAction";
-        final RootActionImpl rootAction = new RootActionImpl(beacon, rootActionStr, actions);
+        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
         final Action childAction = rootAction.enterAction(null);
 
         // child leaves immediately
-        final Action retAction = childAction.leaveAction();
-        assertThat(retAction, is(sameInstance((Action) rootAction)));
+        assertThat(childAction, is(instanceOf(NullAction.class)));
+        verify(logger, times(1)).warning("RootAction.enterAction: actionName must not be null or empty");
+    }
+
+    @Test
+    public void enterActionWithEmptyNameGivesNullAction() {
+        // create test environment
+        final Beacon beacon = mock(Beacon.class);
+        final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
+
+        // create root action with a null child action (must be valid)
+        final String rootActionStr = "rootAction";
+        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
+        final Action childAction = rootAction.enterAction("");
+
+        // child leaves immediately
+        assertThat(childAction, is(instanceOf(NullAction.class)));
+        verify(logger, times(1)).warning("RootAction.enterAction: actionName must not be null or empty");
     }
 
     @Test
@@ -59,13 +86,13 @@ public class RootActionImplTest {
         // create root action with child action
         final String rootActionStr = "rootAction";
         final String childActionStr = "childAction";
-        final RootActionImpl rootAction = new RootActionImpl(beacon, rootActionStr, actions);
+        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
         final Action childAction = rootAction.enterAction(childActionStr);
 
         // verify
         assertThat(rootAction, is(instanceOf(ActionImpl.class)));
         assertThat(childAction, is(instanceOf(ActionImpl.class)));
-        assertThat(((ActionImpl) rootAction).getName(), is(rootActionStr));
+        assertThat(rootAction.getName(), is(rootActionStr));
         assertThat(((ActionImpl) childAction).getName(), is(childActionStr));
 
         // child leaves
@@ -90,7 +117,7 @@ public class RootActionImplTest {
         final String rootActionStr = "rootAction";
         final String childOneActionStr = "childOneAction";
         final String childTwoActionStr = "childTwoAction";
-        final RootActionImpl rootAction = new RootActionImpl(beacon, rootActionStr, actions);
+        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
         final Action childAction1 = rootAction.enterAction(childOneActionStr);
         final Action childAction2 = rootAction.enterAction(childTwoActionStr);
 
@@ -112,7 +139,8 @@ public class RootActionImplTest {
     public void enterActionGivesNullActionIfAlreadyLeft() {
 
         // given
-        RootActionImpl target = new RootActionImpl(mock(Beacon.class), "parent action", new SynchronizedQueue<Action>());
+        RootActionImpl target = new RootActionImpl(logger, mock(Beacon.class),
+            "parent action", new SynchronizedQueue<Action>());
         target.leaveAction();
 
         // when

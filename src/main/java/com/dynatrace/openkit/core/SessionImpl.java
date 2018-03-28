@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.protocol.Beacon;
@@ -42,9 +43,12 @@ public class SessionImpl implements Session {
     // used for taking care to really leave all Actions at the end of this Session
     private SynchronizedQueue<Action> openRootActions = new SynchronizedQueue<Action>();
 
+    private final Logger logger;
+
     // *** constructors ***
 
-    SessionImpl(BeaconSender beaconSender, Beacon beacon) {
+    SessionImpl(Logger logger, BeaconSender beaconSender, Beacon beacon) {
+        this.logger = logger;
         this.beaconSender = beaconSender;
         this.beacon = beacon;
 
@@ -61,14 +65,22 @@ public class SessionImpl implements Session {
 
     @Override
     public RootAction enterAction(String actionName) {
+        if (actionName == null || actionName.isEmpty()) {
+            logger.warning("Session.enterAction: actionName must not be null or empty");
+            return NULL_ROOT_ACTION;
+        }
         if (isSessionEnded()) {
             return NULL_ROOT_ACTION;
         }
-        return new RootActionImpl(beacon, actionName, openRootActions);
+        return new RootActionImpl(logger, beacon, actionName, openRootActions);
     }
 
     @Override
     public void identifyUser(String userTag) {
+        if (userTag == null || userTag.isEmpty()) {
+            logger.warning("Session.identifyUser: userTag must not be null or empty");
+            return;
+        }
         if (!isSessionEnded()) {
             beacon.identifyUser(userTag);
         }
@@ -76,6 +88,10 @@ public class SessionImpl implements Session {
 
     @Override
     public void reportCrash(String errorName, String reason, String stacktrace) {
+        if (errorName == null || errorName.isEmpty()) {
+            logger.warning("Session.reportCrash: errorName must not be null or empty");
+            return;
+        }
         if (!isSessionEnded()) {
             beacon.reportCrash(errorName, reason, stacktrace);
         }

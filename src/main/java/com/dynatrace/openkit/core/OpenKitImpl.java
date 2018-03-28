@@ -116,7 +116,7 @@ public class OpenKitImpl implements OpenKit {
         // create beacon for session
         Beacon beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
         // create session
-        return new SessionImpl(beaconSender, beacon);
+        return new SessionImpl(logger, beaconSender, beacon);
     }
 
     @Override

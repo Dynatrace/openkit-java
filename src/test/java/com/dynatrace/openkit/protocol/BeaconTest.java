@@ -228,7 +228,6 @@ public class BeaconTest {
                 "et=11&na=" + valueName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&vl=" + value })));
     }
 
-    @Ignore
     @Test
     public void reportValueStringWithValueNull() {
         // given
@@ -243,12 +242,10 @@ public class BeaconTest {
         beacon.reportValue(action, valueName, value);
         String[] events = beacon.getEvents();
 
-        // then (verify, that calling reportValue with a null value doesn't throw an exception but instead only triggers a warning)
-        assertThat(events, emptyArray());
-        verify(logger, times(1)).warning(anyString());
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=11&na=StringValue&it=111222333&pa=17&s0=1&t0=0" } )));
     }
 
-    @Ignore
     @Test
     public void reportValueStringWithValueNullAndNameNull() {
         // given
@@ -263,9 +260,8 @@ public class BeaconTest {
         beacon.reportValue(action, valueName, value);
         String[] events = beacon.getEvents();
 
-        // then (verify, that calling reportValue with a null name and null value does throw an exception)
-        assertThat(events, emptyArray());
-        verify(logger, times(1)).warning(anyString());
+        // then
+        assertThat(events, is(equalTo(new String[] { "et=11&it=111222333&pa=17&s0=1&t0=0" } )));
     }
 
     @Test
@@ -362,13 +358,12 @@ public class BeaconTest {
                 + "&pa=0&s0=1&t0=0&rs=" + reason + "&st=" + stacktrace })));
     }
 
-    @Ignore
     @Test
     public void reportCrashWithDetailsNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String errorName = null;
+        String errorName = "errorName";
         String reason = null;
         String stacktrace = null;
 
@@ -377,7 +372,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=50&it=" + THREAD_ID + "&pa=0&s0=1&t0=0" })));
+        assertThat(events, is(equalTo(new String[] { "et=50&na=" + errorName + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0" })));
     }
 
     @Test

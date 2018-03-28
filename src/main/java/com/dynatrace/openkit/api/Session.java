@@ -26,6 +26,11 @@ public interface Session extends Closeable {
     /**
      * Enters an Action with a specified name in this Session.
      *
+     * <p>
+     *     If the given {@code actionName} is {@code null} or an empty string,
+     *     no reporting will happen on that {@link RootAction}.
+     * </p>
+     *
      * @param actionName name of the Action
      * @return Action instance to work with
      */
@@ -34,12 +39,22 @@ public interface Session extends Closeable {
     /**
      * Tags a session with the provided {@code userTag}.
      *
+     * <p>
+     *     If the given {@code userTag} is {@code null} or an empty string,
+     *     no user identification will be reported to the server.
+     * </p>
+     *
      * @param userTag id of the user
      */
     void identifyUser(String userTag);
 
     /**
      * Reports a crash with a specified error name, crash reason and a stacktrace.
+     *
+     * <p>
+     *     If the given {@code errorName} is {@code null} or an empty string,
+     *     no crash report will be sent to the server.
+     * </p>
      *
      * @param errorName  name of the error leading to the crash (e.g. Exception class)
      * @param reason     reason or description of that error

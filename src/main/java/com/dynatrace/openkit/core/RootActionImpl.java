@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.protocol.Beacon;
 
@@ -32,8 +33,8 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
     // *** constructors ***
 
-    RootActionImpl(Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
-        super(beacon, name, parentActions);
+    RootActionImpl(Logger logger, Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
+        super(logger, beacon, name, parentActions);
         this.beacon = beacon;
     }
 
@@ -41,8 +42,12 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
     @Override
     public Action enterAction(String actionName) {
+        if (actionName == null || actionName.isEmpty()) {
+            getLogger().warning("RootAction.enterAction: actionName must not be null or empty");
+            return new NullAction(this);
+        }
         if (!isActionLeft()) {
-            return new ActionImpl(beacon, actionName, this, openChildActions);
+            return new ActionImpl(getLogger(), beacon, actionName, this, openChildActions);
         }
 
         return new NullAction(this);

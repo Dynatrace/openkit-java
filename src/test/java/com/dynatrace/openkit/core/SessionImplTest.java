@@ -50,12 +50,14 @@ public class SessionImplTest {
     private static final String APP_ID = "appID";
     private static final String APP_NAME = "appName";
 
+    private Logger logger;
     private Beacon beacon;
     private BeaconSender beaconSender;
 
     @Before
     public void setUp() {
-        Logger logger = mock(Logger.class);
+        logger = mock(Logger.class);
+        when(logger.isInfoEnabled()).thenReturn(true);
         when(logger.isDebugEnabled()).thenReturn(true);
         beaconSender = mock(BeaconSender.class);
         final BeaconCacheImpl beaconCache = new BeaconCacheImpl();
@@ -75,7 +77,7 @@ public class SessionImplTest {
     @Test
     public void constructor() {
         // test the constructor call
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // verify default values
         assertThat(session, notNullValue());
@@ -84,25 +86,39 @@ public class SessionImplTest {
     }
 
     @Test
-    public void enterActionWithNull() {
+    public void enterActionWithNullActionName() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // add/enter "null-action"
         final RootAction rootAction = session.enterAction(null);
 
-        // verify that a "null-action" is still valid
-        assertThat(rootAction, notNullValue());
-        rootAction.leaveAction();
+        // we definitely got a NullRootAction instance
+        assertThat(rootAction, is(instanceOf(NullRootAction.class)));
 
-        // verify that also if a "null-action" is closed, it is moved to the beacon cache (thus the cache is no longer empty)
-        assertThat(session.isEmpty(), is(false));
+        // ensure that some log message has been written
+        verify(logger, times(1)).warning("Session.enterAction: actionName must not be null or empty");
+    }
+
+    @Test
+    public void enterActionWithEmptyActionName() {
+        // create test environment
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+
+        // add/enter "null-action"
+        final RootAction rootAction = session.enterAction("");
+
+        // we definitely got a NullRootAction instance
+        assertThat(rootAction, is(instanceOf(NullRootAction.class)));
+
+        // ensure that some log message has been written
+        verify(logger, times(1)).warning("Session.enterAction: actionName must not be null or empty");
     }
 
     @Test
     public void enterNotClosedAction() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // add/enter one action
         final RootAction rootAction = session.enterAction("Some action");
@@ -115,7 +131,7 @@ public class SessionImplTest {
     @Test
     public void enterSingleAction() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // add/enter one action
         final RootAction rootAction = session.enterAction("Some action");
@@ -128,7 +144,7 @@ public class SessionImplTest {
     @Test
     public void enterMultipleActions() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // add/enter two actions
         final RootAction rootAction1 = session.enterAction("Some action 1");
@@ -143,7 +159,7 @@ public class SessionImplTest {
     @Test
     public void enterSameAction() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // add/enter two actions
         final RootAction rootAction1 = session.enterAction("Some action");
@@ -158,24 +174,40 @@ public class SessionImplTest {
     }
 
     @Test
-    public void identifyUserWithNull() {
+    public void identifyUserWithNullTagDoesNothing() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // identify a "null-user" must be possible
         session.identifyUser(null);
 
         // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).identifyUser(isNull(String.class));
+        verify(logger, times(1)).warning("Session.identifyUser: userTag must not be null or empty");
+        verifyZeroInteractions(beacon);
+        verify(beacon, times(0)).identifyUser(anyString());
+    }
+
+    @Test
+    public void identifyUserWithEmptyTagDoesNothing() {
+        // create test environment
+        final Beacon beacon = mock(Beacon.class);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+
+        // identify a "null-user" must be possible
+        session.identifyUser("");
+
+        // verify the correct methods being called
+        verify(logger, times(1)).warning("Session.identifyUser: userTag must not be null or empty");
+        verifyZeroInteractions(beacon);
+        verify(beacon, times(0)).identifyUser(anyString());
     }
 
     @Test
     public void identifySingleUser() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // identify a single user
         final String userTag = "Some user";
@@ -190,7 +222,7 @@ public class SessionImplTest {
     public void identifyMultipleUsers() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // identify multiple users
         final String userTag1 = "Some user";
@@ -211,7 +243,7 @@ public class SessionImplTest {
     public void identifySameUser() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // identify the same user twice
         final String userTag = "Some user";
@@ -224,24 +256,52 @@ public class SessionImplTest {
     }
 
     @Test
-    public void reportCrashWithNull() {
+    public void reportingCrashWithNullErrorNameDoesNotReportAnything() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report a crash, passing null values
-        session.reportCrash(null, null, null);
+        session.reportCrash(null, "some reason", "some stack trace");
+
+        // verify the correct methods being called
+        verify(logger, times(1)).warning("Session.reportCrash: errorName must not be null or empty");
+        verifyZeroInteractions(beacon, beacon);
+    }
+
+    @Test
+    public void reportingCrashWithEmptyErrorNameDoesNotReportAnything() {
+        // create test environment
+        final Beacon beacon = mock(Beacon.class);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+
+        // report a crash, passing null values
+        session.reportCrash("", "some reason", "some stack trace");
+
+        // verify the correct methods being called
+        verify(logger, times(1)).warning("Session.reportCrash: errorName must not be null or empty");
+        verifyZeroInteractions(beacon, beacon);
+    }
+
+    @Test
+    public void reportingCrashWithNullReasonAndStacktraceWorks() {
+        // create test environment
+        final Beacon beacon = mock(Beacon.class);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+
+        // report a crash, passing null values
+        session.reportCrash("errorName", null, null);
 
         // verify the correct methods being called
         verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).reportCrash(isNull(String.class), isNull(String.class), isNull(String.class));
+        verify(beacon, times(1)).reportCrash("errorName", null, null);
     }
 
     @Test
     public void reportSingleCrash() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report a single crash
         final String errorName = "error name";
@@ -258,7 +318,7 @@ public class SessionImplTest {
     public void reportMultipleCrashes() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report multiple crashes
         final String errorName1 = "error name 1";
@@ -280,7 +340,7 @@ public class SessionImplTest {
     public void reportSameCrash() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report the same cache twice
         final String errorName = "error name";
@@ -298,7 +358,7 @@ public class SessionImplTest {
     public void endSession() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // end the session
         session.end();
@@ -314,7 +374,7 @@ public class SessionImplTest {
     public void endSessionTwice() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // end the session twice
         session.end();
@@ -330,7 +390,7 @@ public class SessionImplTest {
     @Test
     public void endSessionWithOpenRootActions() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // end the session containing open (=not left) actions
         session.enterAction("Some action 1");
@@ -353,7 +413,7 @@ public class SessionImplTest {
     public void sendBeacon() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
         final HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
 
         session.sendBeacon(clientProvider);
@@ -366,7 +426,7 @@ public class SessionImplTest {
     @Test
     public void clearCapturedData() {
         // create test environment
-        final SessionImpl session = new SessionImpl(beaconSender, beacon);
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // end the session containing closed actions (moved to the beacon cache)
         final RootAction rootAction1 = session.enterAction("Some action 1");
@@ -387,7 +447,7 @@ public class SessionImplTest {
     public void aNewlyConstructedSessionIsNotEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // when, then
         assertThat(session.isSessionEnded(), is(false));
@@ -397,7 +457,7 @@ public class SessionImplTest {
     public void aSessionIsEndedIfEndIsCalled() {
 
         // given
-        SessionImpl session = new SessionImpl(beaconSender,  beacon);
+        SessionImpl session = new SessionImpl(logger, beaconSender,  beacon);
 
         // when end is called
         session.end();
@@ -410,7 +470,7 @@ public class SessionImplTest {
     public void enterActionGivesNullRootActionIfSessionIsAlreadyEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
         session.end();
 
         // when entering an action on already ended session
@@ -425,7 +485,7 @@ public class SessionImplTest {
     public void identifyUserDoesNothingIfSessionIsEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
         session.end();
         beacon.clearData();
 
@@ -440,7 +500,7 @@ public class SessionImplTest {
     public void reportCrashDoesNothingIfSessionIsEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(beaconSender, beacon);
+        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
         session.end();
         beacon.clearData();
 
@@ -455,7 +515,7 @@ public class SessionImplTest {
     public void closeSessionEndsTheSession() throws IOException {
 
         // given
-        Closeable target = new SessionImpl(beaconSender, beacon);
+        Closeable target = new SessionImpl(logger, beaconSender, beacon);
         beacon.clearData();
 
         // when

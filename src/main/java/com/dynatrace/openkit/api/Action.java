@@ -27,6 +27,10 @@ public interface Action extends Closeable {
     /**
      * Reports an event with a specified name (but without any value).
      *
+     * <p>
+     *     If given {@code eventName} is {@code null} then no event is reported to the system.
+     * </p>
+     *
      * @param eventName name of the event
      * @return this Action (for usage as fluent API)
      */
