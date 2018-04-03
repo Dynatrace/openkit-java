@@ -23,9 +23,7 @@ script: ./gradlew check --info
 # Runs code coverage when everything else was successful
 
 after_success:
-- test $TRAVIS_BRANCH = "master"
-  && $TARGET_COMPATIBILITY = 8
-  && ./gradlew jacocoTestReport coveralls
+- ./gradlew jacocoTestReport coveralls
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
