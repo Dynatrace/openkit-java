@@ -24,7 +24,6 @@ script: ./gradlew check --info
 
 after_success:
 - test $TRAVIS_BRANCH = "master"
-  && $TRAVIS_PULL_REQUEST = false
   && $TARGET_COMPATIBILITY = 8
   && ./gradlew jacocoTestReport coveralls
 
