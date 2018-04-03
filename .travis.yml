@@ -20,6 +20,14 @@ install: ./gradlew assemble
 # Runs tests that check the implementation (unit tests)
 script: ./gradlew check --info
 
+# Runs code coverage when everything else was successful
+
+after_success:
+- test $TRAVIS_BRANCH = "master"
+  && $TRAVIS_PULL_REQUEST = false
+  && $TARGET_COMPATIBILITY = 8
+  && ./gradlew jacocoTestReport coveralls
+
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
   # The provider that simplifies communication with GitHub
