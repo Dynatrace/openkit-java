@@ -23,7 +23,13 @@ script: ./gradlew check --info
 # Runs code coverage when everything else was successful
 
 after_success:
-- ./gradlew jacocoTestReport coveralls
+- |
+  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$TARGET_COMPATIBILITY" = "8" ]; then
+    ./gradlew jacocoTestReport coveralls
+  else
+    echo "Skipping coveralls [branch=$TRAVIS_BRANCH; pull_request=$TRAVIS_PULL_REQUEST; target_compat=$TARGET_COMPATIBILITY]"
+  fi
+
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
