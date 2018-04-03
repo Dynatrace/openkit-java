@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build Status](https://travis-ci.org/Dynatrace/openkit-java.svg?branch=master)](https://travis-ci.org/Dynatrace/openkit-java)
+[![Coverage Status](https://coveralls.io/repos/github/Dynatrace/openkit-java/badge.svg?branch=master)](https://coveralls.io/github/Dynatrace/openkit-java?branch=master)
 
 ## What is the OpenKit?
 
