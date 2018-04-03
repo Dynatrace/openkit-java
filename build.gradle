@@ -78,7 +78,7 @@ jacocoTestReport {
 }
 
 coveralls {
-    jacocoReportPath = "${buildDir}/reports/coverage/debug/report.xml"
+    jacocoReportPath = coverageXmlReportFile.toString()
 }
 
 tasks.coveralls {
