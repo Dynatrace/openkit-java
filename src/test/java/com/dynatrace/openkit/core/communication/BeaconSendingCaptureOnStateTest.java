@@ -17,15 +17,16 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.SessionImpl;
-import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class BeaconSendingCaptureOnStateTest {
@@ -38,18 +39,12 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Before
     public void setUp() {
-
         mockSession1Open = mock(SessionImpl.class);
         mockSession2Open = mock(SessionImpl.class);
         mockSession3Finished = mock(SessionImpl.class);
         mockSession4Finished = mock(SessionImpl.class);
         when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 200));
         when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 404));
-
-        StatusResponse mockResponse = mock(StatusResponse.class);
-
-        HTTPClient mockHTTPClient = mock(HTTPClient.class);
-        when(mockHTTPClient.sendStatusRequest()).thenReturn(mockResponse);
 
         HTTPClientProvider mockHTTPClientProvider = mock(HTTPClientProvider.class);
 
@@ -69,7 +64,7 @@ public class BeaconSendingCaptureOnStateTest {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        //verify that BeaconSendingCaptureOffState is not a terminal state
+        // verify that BeaconSendingCaptureOnState is not a terminal state
         assertThat(target.isTerminalState(), is(false));
     }
 

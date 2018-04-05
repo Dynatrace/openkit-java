@@ -19,7 +19,7 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
- * Utility class for sending requests to the server and retry several timesl
+ * Utility class for sending requests to the server and retry several times
  */
 class BeaconSendingRequestUtil {
 
@@ -31,7 +31,7 @@ class BeaconSendingRequestUtil {
      *
      * @param context                   Used to retrieve the {@link com.dynatrace.openkit.protocol.HTTPClient} and for delaying methods.
      * @param numRetries                The number of retries (total number of tries = numRetries + 1)
-     * @param initialRetryDelayInMillis The initial delay which is doubles between one unsuccessful attempt and the next retry.
+     * @param initialRetryDelayInMillis The initial delay which is doubled between one unsuccessful attempt and the next retry.
      * @return A status response or {@code null} if shutdown was requested or number of retries was reached.
      */
     static StatusResponse sendStatusRequest(BeaconSendingContext context, int numRetries, long initialRetryDelayInMillis) throws InterruptedException {

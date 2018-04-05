@@ -78,7 +78,7 @@ public class BeaconSendingContext {
     /**
      * boolean indicating whether init was successful or not
      */
-    private AtomicBoolean initSucceeded = new AtomicBoolean(false);
+    private final AtomicBoolean initSucceeded = new AtomicBoolean(false);
     /**
      * boolean indicating whether the server supports a time sync (true) or not (false).
      */
@@ -130,7 +130,7 @@ public class BeaconSendingContext {
      * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
-     * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted.
+     * @return {@code true} OpenKit is fully initialized, {@code false} OpenKit init got interrupted.
      */
     public boolean waitForInit() {
         try {
@@ -149,8 +149,9 @@ public class BeaconSendingContext {
      * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
-     * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
-     * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted or time to wait expired.
+     * @param timeoutMillis
+     *            The maximum number of milliseconds to wait for initialization being completed.
+     * @return {@code true} if OpenKit is fully initialized, {@code false} if OpenKit init got interrupted or time to wait expired.
      */
     public boolean waitForInit(long timeoutMillis) {
         try {
