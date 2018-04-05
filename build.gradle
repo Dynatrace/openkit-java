@@ -66,7 +66,7 @@ jacoco {
     reportsDir = coverageReportDir
 }
 
-def coverageXmlReportFile = file("${coverageReportDir}/jacocoReport.xm")
+def coverageXmlReportFile = file("${coverageReportDir}/jacocoReport.xml")
 
 jacocoTestReport {
     reports {
