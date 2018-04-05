@@ -20,6 +20,7 @@ import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,31 +60,31 @@ public class BeaconSendingFlushSessionsStateTest {
     @Test
     public void aBeaconSendingFlushSessionsStateIsNotATerminalState() {
 
-        //given
+        // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
-        //verify that BeaconSendingCaptureOffState is not a terminal state
+        // verify that BeaconSendingCaptureOffState is not a terminal state
         assertThat(target.isTerminalState(), is(false));
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsStateHasTerminalStateBeaconSendingFlushSessions() {
+    public void aBeaconSendingFlushSessionsStateHasTerminalStateBeaconSendingTerminalState() {
 
-        //given
+        // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
         AbstractBeaconSendingState terminalState = target.getShutdownState();
-        //verify that terminal state is BeaconSendingFlushSessions
+        // verify that terminal state is BeaconSendingTerminalState
         assertThat(terminalState, is(instanceOf(BeaconSendingTerminalState.class)));
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsTransitionsToTimeSyncStateWhenCapturingNotActive() {
+    public void aBeaconSendingFlushSessionsStateTransitionsToTerminalStateWhenDataIsSent() {
 
-        //given
+        // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
-        //when
+        // when
         target.doExecute(mockContext);
 
         // verify transition to terminal state
@@ -92,26 +93,26 @@ public class BeaconSendingFlushSessionsStateTest {
 
     @Test
     public void aBeaconSendingFlushSessionsClosesOpenSessions() {
-        //given
+        // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
-        //when
+        // when
         target.doExecute(mockContext);
 
-        //verify that open sessions are closed
+        // verify that open sessions are closed
         verify(mockSession1Open, times(1)).end();
         verify(mockSession2Open, times(1)).end();
     }
 
     @Test
-    public void aBeaconSendingFlushSessionsEndsAllSessions() {
-        //given
+    public void aBeaconSendingFlushSessionStateSendsAllOpenAndClosedBeacons() {
+        // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
-        //when
+        // when
         target.doExecute(mockContext);
 
-        //verify that open sessions are closed
+        // verify that beacons are sent
         verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
         verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
         verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
