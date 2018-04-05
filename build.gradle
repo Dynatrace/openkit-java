@@ -66,14 +66,14 @@ jacoco {
     reportsDir = coverageReportDir
 }
 
-def coverageXmlReportFile = file(coverageReportDir.toString() + '/jacocoReport.xml')
+def coverageXmlReportFile = file("${coverageReportDir}/jacocoReport.xm")
 
 jacocoTestReport {
     reports {
         xml.enabled = true
         xml.destination = coverageXmlReportFile
         html.enabled = true
-        html.destination = file(coverageReportDir.toString() + '/html')
+        html.destination = file("${coverageReportDir}/html")
     }
 }
 
