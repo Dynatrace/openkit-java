@@ -102,7 +102,6 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
      * Check if the send interval (configured by server) has expired and start to send open sessions if it has expired.
      *
      * @param context
-     * @throws InterruptedException
      */
     private void sendOpenSessions(BeaconSendingContext context) {
 

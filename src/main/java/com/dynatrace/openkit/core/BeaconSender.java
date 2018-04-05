@@ -152,7 +152,7 @@ public class BeaconSender {
      * When finishing a Session, remove it from open Sessions and put it into finished Sessions.
      * <p>
      * <p>
-     * As soon as a session get's finished it will transferred to the server.
+     * As soon as a session get's finished it will be transferred to the server.
      * </p>
      *
      * @param session Session to finish.

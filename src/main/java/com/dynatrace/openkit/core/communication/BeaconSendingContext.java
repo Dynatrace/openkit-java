@@ -150,7 +150,7 @@ public class BeaconSendingContext {
      * </p>
      *
      * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
-     * @return {@code} true OpenKit is fully initialized, {@code false} OpenKit init got interrupted or time to wait expired.
+     * @return {@code} true if OpenKit is fully initialized, {@code false} if OpenKit init got interrupted or time to wait expired.
      */
     public boolean waitForInit(long timeoutMillis) {
         try {
