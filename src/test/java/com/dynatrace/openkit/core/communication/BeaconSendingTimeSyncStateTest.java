@@ -19,12 +19,15 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.TimingProvider;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.*;
 
 public class BeaconSendingTimeSyncStateTest {
@@ -73,7 +76,7 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void getShutdownStateGivesAFlushSessionsStateInstanceForInitialTimeSync() {
+    public void getShutdownStateGivesAFlushSessionsStateInstanceForNotInitialTimeSync() {
 
         // given
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
