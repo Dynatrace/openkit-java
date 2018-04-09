@@ -566,7 +566,6 @@ public class ActionImplTest {
         final ActionImpl action = new ActionImpl(logger, beacon, actionName, actions);
         assertThat(action.getStartTime(), is(ts));
         assertThat(action.getEndTime(), is(-1L)); // not ended yet
-        assertThat(action.getStartSequenceNo(), is(0));
         assertThat(action.getEndSequenceNo(), is(-1)); // not ended yet
         action.reportValue("DoubleValue", 3.141592654);
         action.reportValue("IntValue", 42);
@@ -577,7 +576,6 @@ public class ActionImplTest {
         assertThat(retAction, is(nullValue())); // no parent action -> null
         assertThat(action.getStartTime(), is(ts));
         assertThat(action.getEndTime(), is(ts)); // now the action has ended
-        assertThat(action.getStartSequenceNo(), is(0));
         assertThat(action.getEndSequenceNo(), not(-1));
     }
 
