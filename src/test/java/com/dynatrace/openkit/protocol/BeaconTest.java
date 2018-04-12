@@ -43,7 +43,7 @@ public class BeaconTest {
     private static final int ACTION_ID = 17;
     private static final int SERVER_ID = 123;
     private static final long DEVICE_ID = 456;
-    private static final long THREAD_ID = 111222333L;
+    private static final int THREAD_ID = 1234567;
 
     private Configuration configuration;
     private ThreadIDProvider threadIDProvider;
@@ -243,7 +243,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=11&na=StringValue&it=111222333&pa=17&s0=1&t0=0" } )));
+        assertThat(events, is(equalTo(new String[] { "et=11&na=StringValue&it=1234567&pa=17&s0=1&t0=0" } )));
     }
 
     @Test
@@ -261,7 +261,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=11&it=111222333&pa=17&s0=1&t0=0" } )));
+        assertThat(events, is(equalTo(new String[] { "et=11&it=1234567&pa=17&s0=1&t0=0" } )));
     }
 
     @Test

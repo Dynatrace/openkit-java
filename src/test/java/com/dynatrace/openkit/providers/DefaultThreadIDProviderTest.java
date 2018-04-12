@@ -28,7 +28,9 @@ public class DefaultThreadIDProviderTest {
         // given
         ThreadIDProvider provider = new DefaultThreadIDProvider();
 
+        long threadID64 = Thread.currentThread().getId();
+        int threadHash = (int)((threadID64 ^ (threadID64 >>> 32)) & 0x7fffffff );
         // then
-        assertThat(provider.getThreadID(), is(equalTo(Thread.currentThread().getId())));
+        assertThat(provider.getThreadID(), is(equalTo(threadHash)));
     }
 }

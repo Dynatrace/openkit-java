@@ -22,8 +22,11 @@ package com.dynatrace.openkit.providers;
 public class DefaultThreadIDProvider implements ThreadIDProvider {
 
     @Override
-    public long getThreadID() {
-        return Thread.currentThread().getId();
+    public int getThreadID() {
+        long threadID64 = Thread.currentThread().getId();
+        int hash = (int)((threadID64 ^ (threadID64 >>> 32)) & 0x7fffffff );
+
+        return hash;
     }
 
 }
