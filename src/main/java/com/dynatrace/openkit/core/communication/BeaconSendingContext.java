@@ -64,6 +64,10 @@ public class BeaconSendingContext {
      */
     private AbstractBeaconSendingState currentState;
     /**
+     * state following after current state, nextState is usually set by doExecute of the current state
+     */
+    private AbstractBeaconSendingState nextState;
+    /**
      * timestamp when open sessions were last sent
      */
     private long lastOpenSessionBeaconSendTime;
@@ -106,7 +110,15 @@ public class BeaconSendingContext {
      * Executes the current state.
      */
     public void executeCurrentState() {
+        nextState = null;
         currentState.execute(this);
+
+        if(nextState != null){ // currentState.execute(...) can trigger state changes
+            // TODO: roland.ettinger log transition
+            currentState = nextState;
+            nextState = null;
+        }
+
     }
 
     /**
