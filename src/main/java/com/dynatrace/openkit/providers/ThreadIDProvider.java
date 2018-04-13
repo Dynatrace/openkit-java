@@ -25,5 +25,5 @@ public interface ThreadIDProvider {
      *
      * @return
      */
-    long getThreadID();
+    int getThreadID();
 }

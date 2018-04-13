@@ -60,7 +60,7 @@ public class OpenKitTestImpl extends OpenKitImpl {
 
     private static ThreadIDProvider createThreadIdProvider() {
         ThreadIDProvider provider = mock(ThreadIDProvider.class);
-        when(provider.getThreadID()).thenReturn(1L);
+        when(provider.getThreadID()).thenReturn(1234567);
         return provider;
     }
 
