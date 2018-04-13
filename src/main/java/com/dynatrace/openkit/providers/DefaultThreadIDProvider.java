@@ -27,19 +27,20 @@ public class DefaultThreadIDProvider implements ThreadIDProvider {
         return convertNativeThreadIDToPositiveInteger(threadID64);
     }
 
-    /*
-     * Thread.currentThread().getId() returns a long value.
-     * The Beacon protocol requires the thread id to be a positive integer value. By using the xor operation
-     * between higher and lower 32 bits of the long value we get an integer value. The returned integer
-     * can be negative though.
-     * Therefore  the most significant bit is forced to '0' by a bitwise-and operation with an integer
-     * where all bits except for the most significant bit are set to '1'.
-     */
-
     /**
      * Converts a native thread id to a positive integer Thread.currentThread().getId()
+     *
+     * <p>
+     *      Thread.currentThread().getId() returns a long value.
+     *      The Beacon protocol requires the thread id to be a positive integer value. By using the xor operation
+     *      between higher and lower 32 bits of the long value we get an integer value. The returned integer
+     *      can be negative though.
+     *      Therefore  the most significant bit is forced to '0' by a bitwise-and operation with an integer
+     *      where all bits except for the most significant bit are set to '1'.
+     * </p>
+     *
      * @param nativeThreadID the native thread id returned by
-     * @return
+     * @return a positive integer value calculated from the native thread id
      */
     public static int convertNativeThreadIDToPositiveInteger(long nativeThreadID) {
         return (int)((nativeThreadID ^ (nativeThreadID >>> 32)) & 0x7fffffff );
