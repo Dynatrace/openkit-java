@@ -55,6 +55,9 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
         startSequenceNo = beacon.createSequenceNumber();
 
         tag = beacon.createTag(action, startSequenceNo);
+
+        // if start is not called before using the setters the start time (e.g. load time) is not in 1970
+        startTime = beacon.getCurrentTimestamp();
     }
 
     // *** WebRequestTracer interface methods ***
