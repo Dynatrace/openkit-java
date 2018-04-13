@@ -40,7 +40,7 @@ public class WebRequestTracerBaseImplTest {
         // then
         assertThat(target.getURL(), is("<unknown>"));
         assertThat(target.getResponseCode(), is(-1));
-        assertThat(target.getStartTime(), is(-1L));
+        assertThat(target.getStartTime(), is(0L));
         assertThat(target.getEndTime(), is(-1L));
         assertThat(target.getStartSequenceNo(), is(SEQUENCE_NUMBER));
         assertThat(target.getEndSequenceNo(), is(-1));
@@ -196,7 +196,7 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.start();
 
         // then
-        assertThat(target.getStartTime(), is(-1L));
+        assertThat(target.getStartTime(), is(0L));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
