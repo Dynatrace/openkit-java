@@ -41,8 +41,7 @@ public class DefaultThreadIDProvider implements ThreadIDProvider {
      * @param nativeThreadID the native thread id returned by
      * @return
      */
-    public static int convertNativeThreadIDToPositiveInteger(long nativeThreadID)
-    {
+    public static int convertNativeThreadIDToPositiveInteger(long nativeThreadID) {
         return (int)((nativeThreadID ^ (nativeThreadID >>> 32)) & 0x7fffffff );
     }
 }
