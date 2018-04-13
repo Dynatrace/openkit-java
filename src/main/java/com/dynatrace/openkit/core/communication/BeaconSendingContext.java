@@ -113,7 +113,7 @@ public class BeaconSendingContext {
         nextState = null;
         currentState.execute(this);
 
-        if(nextState != null){
+        if(nextState != null){ // currentState.execute(...) can trigger state changes
             // TODO: roland.ettinger log transition
             currentState = nextState;
             nextState = null;
