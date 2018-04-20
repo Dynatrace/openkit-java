@@ -231,4 +231,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             setNextState(context);
         }
     }
+
+    @Override
+    public String toString() {
+        return "TimeSync";
+    }
 }

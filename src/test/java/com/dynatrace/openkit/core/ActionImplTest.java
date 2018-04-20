@@ -25,8 +25,6 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,7 +39,7 @@ import java.net.URLEncoder;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -81,6 +79,7 @@ public class ActionImplTest {
     public void reportEventDoesNothingIfEventNameIsNull() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
 
@@ -89,7 +88,8 @@ public class ActionImplTest {
 
         // then
         assertThat(obtained,is(sameInstance((Action)target)));
-        verify(logger, times(1)).warning("Action.reportEvent: eventName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportEvent: eventName must not be null or empty");
         verify(beacon, times(0)).reportEvent(org.mockito.Matchers.any(ActionImpl.class),
             anyString());
     }
@@ -98,6 +98,7 @@ public class ActionImplTest {
     public void reportEventDoesNothingIfEventNameIsEmpty() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
 
@@ -106,7 +107,8 @@ public class ActionImplTest {
 
         // then
         assertThat(obtained,is(sameInstance((Action)target)));
-        verify(logger, times(1)).warning("Action.reportEvent: eventName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportEvent: eventName must not be null or empty"); //
         verify(beacon, times(0)).reportEvent(org.mockito.Matchers.any(ActionImpl.class),
             anyString());
     }
@@ -115,6 +117,7 @@ public class ActionImplTest {
     public void reportValueIntWithNullNameDoesNotReportValue() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -127,13 +130,15 @@ public class ActionImplTest {
         assertThat(retAction, is(sameInstance((Action)target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportValue (int): valueName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (int): valueName must not be null or empty");
     }
 
     @Test
     public void reportValueIntWithEmptyNameDoesNotReportValue() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -146,7 +151,8 @@ public class ActionImplTest {
         assertThat(retAction, is(sameInstance((Action)target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportValue (int): valueName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (int): valueName must not be null or empty");
     }
 
     @Test
@@ -155,6 +161,7 @@ public class ActionImplTest {
         final String valueName = "IntegerValue";
         final int value = 42;
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         // execute the test call
@@ -172,6 +179,7 @@ public class ActionImplTest {
     public void reportValueDoubleWithNullNameDoesNotReportValue() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -184,13 +192,15 @@ public class ActionImplTest {
         assertThat(retAction, is(sameInstance((Action)target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportValue (double): valueName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (double): valueName must not be null or empty");
     }
 
     @Test
     public void reportValueDoubleWithEmptyNameDoesNotReportValue() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -203,7 +213,8 @@ public class ActionImplTest {
         assertThat(obtained, is(sameInstance((Action)target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportValue (double): valueName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (double): valueName must not be null or empty");
     }
 
     @Test
@@ -245,6 +256,7 @@ public class ActionImplTest {
     public void reportValueStringWithNullNameDoesNotReportValue() {
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -257,7 +269,8 @@ public class ActionImplTest {
         assertThat(obtained, is(equalTo((Action)target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportValue (string): valueName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (string): valueName must not be null or empty");
     }
 
     @Test
@@ -284,6 +297,7 @@ public class ActionImplTest {
         final int errorCode = 0x8005037;
         final String reason = "Some reason for this fatal error";
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         // execute the test call
@@ -302,6 +316,7 @@ public class ActionImplTest {
         final int errorCode = 0x8005037;
         final String reason = "Some reason for this fatal error";
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -315,7 +330,8 @@ public class ActionImplTest {
         assertThat((ActionImpl) retAction, is(equalTo(target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportError: errorName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportError: errorName must not be null or empty");
     }
 
     @Test
@@ -324,6 +340,7 @@ public class ActionImplTest {
         final int errorCode = 0x8005037;
         final String reason = "Some reason for this fatal error";
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -337,7 +354,8 @@ public class ActionImplTest {
         assertThat((ActionImpl) retAction, is(equalTo(target)));
 
         // verify that a log message has been generated
-        verify(logger, times(1)).warning("Action.reportError: errorName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportError: errorName must not be null or empty");
     }
 
     @Test
@@ -460,6 +478,7 @@ public class ActionImplTest {
 
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -472,7 +491,8 @@ public class ActionImplTest {
         assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
 
         // and a warning message has been generated
-        verify(logger, times(1)).warning("Action.traceWebRequest (String): url must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (string): url must not be null or empty");
     }
 
     @Test
@@ -480,6 +500,7 @@ public class ActionImplTest {
 
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -492,7 +513,8 @@ public class ActionImplTest {
         assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
 
         // and a warning message has been generated
-        verify(logger, times(1)).warning("Action.traceWebRequest (String): url must not be null or empty");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (string): url must not be null or empty");
     }
 
     @Test
@@ -500,6 +522,7 @@ public class ActionImplTest {
 
         // given
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
 
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
@@ -512,7 +535,8 @@ public class ActionImplTest {
         assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
 
         // and a warning message has been generated
-        verify(logger, times(1)).warning("Action.traceWebRequest (URLConnection): connection must not be null");
+        verify(logger, times(1)).warning(
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (URLConnection): connection must not be null");
     }
 
     @Test
@@ -558,6 +582,7 @@ public class ActionImplTest {
     public void leaveAction() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final long ts = System.currentTimeMillis();
         when(beacon.getCurrentTimestamp()).thenReturn(ts);
         final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
@@ -899,7 +924,7 @@ public class ActionImplTest {
 
     private Beacon createTestBeacon() {
         final Logger logger = mock(Logger.class);
-        final BeaconCacheImpl beaconCache = new BeaconCacheImpl();
+        final BeaconCacheImpl beaconCache = new BeaconCacheImpl(logger);
         final Configuration configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn("appID");
         when(configuration.getApplicationName()).thenReturn("appName");

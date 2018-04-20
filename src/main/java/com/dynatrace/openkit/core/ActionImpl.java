@@ -32,11 +32,12 @@ public class ActionImpl implements Action {
     private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
 
     // logger
-    private final Logger logger;
+    protected final Logger logger;
 
     // Action ID, name and parent ID (default: null)
     private final int id;
     private final String name;
+
     private ActionImpl parentAction = null;
 
     // start/end time & sequence number
@@ -82,8 +83,11 @@ public class ActionImpl implements Action {
     @Override
     public Action reportEvent(String eventName) {
         if (eventName == null || eventName.isEmpty()) {
-            logger.warning("Action.reportEvent: eventName must not be null or empty");
+            logger.warning(this + "reportEvent: eventName must not be null or empty");
             return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportEvent(" + eventName + ")");
         }
         if (!isActionLeft()) {
             beacon.reportEvent(this, eventName);
@@ -94,8 +98,11 @@ public class ActionImpl implements Action {
     @Override
     public Action reportValue(String valueName, int value) {
         if (valueName == null || valueName.isEmpty()) {
-            logger.warning("Action.reportValue (int): valueName must not be null or empty");
+            logger.warning(this + "reportValue (int): valueName must not be null or empty");
             return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportValue (int) (" + valueName + ", " + value + ")");
         }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
@@ -106,8 +113,11 @@ public class ActionImpl implements Action {
     @Override
     public Action reportValue(String valueName, double value) {
         if (valueName == null || valueName.isEmpty()) {
-            logger.warning("Action.reportValue (double): valueName must not be null or empty");
+            logger.warning(this + "reportValue (double): valueName must not be null or empty");
             return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportValue (double) (" + valueName + ", " + value + ")");
         }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
@@ -118,8 +128,11 @@ public class ActionImpl implements Action {
     @Override
     public Action reportValue(String valueName, String value) {
         if (valueName == null || valueName.isEmpty()) {
-            logger.warning("Action.reportValue (string): valueName must not be null or empty");
+            logger.warning(this + "reportValue (string): valueName must not be null or empty");
             return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportValue (string) (" + valueName + ", " + value + ")");
         }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
@@ -130,8 +143,11 @@ public class ActionImpl implements Action {
     @Override
     public Action reportError(String errorName, int errorCode, String reason) {
         if (errorName == null || errorName.isEmpty()) {
-            logger.warning("Action.reportError: errorName must not be null or empty");
+            logger.warning(this + "reportError: errorName must not be null or empty");
             return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportError(" + errorName + ", " + errorCode + ", " + reason + ")");
         }
         if (!isActionLeft()) {
             beacon.reportError(this, errorName, errorCode, reason);
@@ -142,8 +158,11 @@ public class ActionImpl implements Action {
     @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
         if (connection == null) {
-            logger.warning("Action.traceWebRequest (URLConnection): connection must not be null");
+            logger.warning(this + "traceWebRequest (URLConnection): connection must not be null");
             return NULL_WEB_REQUEST_TRACER;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
         if (!isActionLeft()) {
             return new WebRequestTracerURLConnection(beacon, this, connection);
@@ -155,8 +174,11 @@ public class ActionImpl implements Action {
     @Override
     public WebRequestTracer traceWebRequest(String url) {
         if (url == null || url.isEmpty()) {
-            logger.warning("Action.traceWebRequest (String): url must not be null or empty");
+            logger.warning(this + "traceWebRequest (string): url must not be null or empty");
             return NULL_WEB_REQUEST_TRACER;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "traceWebRequest (string) (" + url + ")");
         }
         if (!isActionLeft()) {
             return new WebRequestTracerStringURL(beacon, this, url);
@@ -167,6 +189,9 @@ public class ActionImpl implements Action {
 
     @Override
     public Action leaveAction() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "leaveAction(" + name + ")");
+        }
         // check if leaveAction() was already called before by looking at endTime
         if (!endTime.compareAndSet(-1, beacon.getCurrentTimestamp())) {
             return parentAction;
@@ -223,7 +248,9 @@ public class ActionImpl implements Action {
         return getEndTime() != -1;
     }
 
-    Logger getLogger() {
-        return logger;
+    @Override
+    public String toString() {
+        return "ActionImpl [sn=" + beacon.getSessionNumber() + ", id=" + id + ", name=" + name + ", pa="
+                + (parentAction != null ? "" + parentAction.id : "no parent") + "] ";
     }
 }

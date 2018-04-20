@@ -41,7 +41,7 @@ public class SessionImpl implements Session {
     private final Beacon beacon;
 
     // used for taking care to really leave all Actions at the end of this Session
-    private SynchronizedQueue<Action> openRootActions = new SynchronizedQueue<Action>();
+    private final SynchronizedQueue<Action> openRootActions = new SynchronizedQueue<Action>();
 
     private final Logger logger;
 
@@ -66,8 +66,11 @@ public class SessionImpl implements Session {
     @Override
     public RootAction enterAction(String actionName) {
         if (actionName == null || actionName.isEmpty()) {
-            logger.warning("Session.enterAction: actionName must not be null or empty");
+            logger.warning(this + "enterAction: actionName must not be null or empty");
             return NULL_ROOT_ACTION;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "enterAction(" + actionName + ")");
         }
         if (isSessionEnded()) {
             return NULL_ROOT_ACTION;
@@ -78,8 +81,11 @@ public class SessionImpl implements Session {
     @Override
     public void identifyUser(String userTag) {
         if (userTag == null || userTag.isEmpty()) {
-            logger.warning("Session.identifyUser: userTag must not be null or empty");
+            logger.warning(this + "identifyUser: userTag must not be null or empty");
             return;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "identifyUser(" + userTag + ")");
         }
         if (!isSessionEnded()) {
             beacon.identifyUser(userTag);
@@ -89,8 +95,11 @@ public class SessionImpl implements Session {
     @Override
     public void reportCrash(String errorName, String reason, String stacktrace) {
         if (errorName == null || errorName.isEmpty()) {
-            logger.warning("Session.reportCrash: errorName must not be null or empty");
+            logger.warning(this + "reportCrash: errorName must not be null or empty");
             return;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportCrash(" + errorName + ", " + reason + ", " + stacktrace + ")");
         }
         if (!isSessionEnded()) {
             beacon.reportCrash(errorName, reason, stacktrace);
@@ -99,6 +108,10 @@ public class SessionImpl implements Session {
 
     @Override
     public void end() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "end()");
+        }
+
         // check if end() was already called before by looking at endTime
         if (!endTime.compareAndSet(-1L, beacon.getCurrentTimestamp())) {
             return;
@@ -165,5 +178,10 @@ public class SessionImpl implements Session {
      */
     boolean isSessionEnded() {
         return getEndTime() != -1L;
+    }
+
+    @Override
+    public String toString() {
+        return "SessionImpl [sn=" + beacon.getSessionNumber() + "] ";
     }
 }

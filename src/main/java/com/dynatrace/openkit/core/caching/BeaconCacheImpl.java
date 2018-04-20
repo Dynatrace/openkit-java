@@ -16,10 +16,10 @@
 
 package com.dynatrace.openkit.core.caching;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.protocol.Beacon;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -36,14 +36,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class BeaconCacheImpl extends Observable implements BeaconCache {
 
+    private final Logger logger;
     private final ReadWriteLock globalCacheLock;
     private final Map<Integer, BeaconCacheEntry> beacons;
     private final AtomicLong cacheSizeInBytes;
 
     /**
      * Create BeaconCache.
+     *
+     * @param logger
      */
-    public BeaconCacheImpl() {
+    public BeaconCacheImpl(Logger logger) {
+        this.logger = logger;
         globalCacheLock = new ReentrantReadWriteLock();
         beacons = new HashMap<Integer, BeaconCacheEntry>();
         cacheSizeInBytes = new AtomicLong(0L);
@@ -52,7 +56,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
     @Override
     public void addEventData(Integer beaconID, long timestamp, String data) {
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("addEventData(sn=" + beaconID + ", timestamp=" + timestamp + ", data=" + data + ")");
+        }
         // get a reference to the cache entry
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
 
@@ -75,7 +81,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
     @Override
     public void addActionData(Integer beaconID, long timestamp, String data) {
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("addActionData(sn=" + beaconID + ", timestamp=" + timestamp + ", data=" + data + ")");
+        }
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
 
         // add event data for that beacon
@@ -98,7 +106,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
     @Override
     public void deleteCacheEntry(Integer beaconID) {
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("deleteCacheEntry(sn=" + beaconID + ")");
+        }
         BeaconCacheEntry entry;
         try {
             globalCacheLock.writeLock().lock();
@@ -363,6 +373,10 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
             entry.unlock();
         }
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("evictRecordsByAge(sn=" + beaconID + ", minTimestamp=" + minTimestamp + ") has evicted "
+                    + numRecordsRemoved + " records");
+        }
         return numRecordsRemoved;
     }
 
@@ -384,6 +398,10 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
             entry.unlock();
         }
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("evictRecordsByNumber(sn=" + beaconID + ", numRecords=" + numRecords + ") has evicted "
+                    + numRecordsRemoved + " records");
+        }
         return numRecordsRemoved;
     }
 

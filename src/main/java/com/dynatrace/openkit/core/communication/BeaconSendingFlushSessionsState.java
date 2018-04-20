@@ -59,4 +59,9 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
     AbstractBeaconSendingState getShutdownState() {
         return new BeaconSendingTerminalState();
     }
+
+    @Override
+    public String toString() {
+        return "FlushSessions";
+    }
 }

@@ -26,7 +26,7 @@ import java.util.TimeZone;
 
 public class DefaultLogger implements Logger {
 
-    private boolean verbose;
+    private final boolean verbose;
 
     static final String DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
@@ -45,7 +45,7 @@ public class DefaultLogger implements Logger {
 
     @Override
     public void error(String message) {
-        System.out.println(getUTCTime() + " [ERROR] " + message);
+        System.out.println(getUTCTime() + " ERROR [" + Thread.currentThread().getName() + "] " + message);
     }
 
     @Override
@@ -55,40 +55,45 @@ public class DefaultLogger implements Logger {
         t.printStackTrace(printWriter);
         final String stacktrace = stringWriter.getBuffer().toString();
 
-        System.out.println(getUTCTime() + " [ERROR] " + message + System.getProperty("line.separator") + stacktrace);
+        System.out.println(getUTCTime() + " ERROR [" + Thread.currentThread().getName() + "] " + message
+                + System.getProperty("line.separator") + stacktrace);
     }
 
     @Override
     public void warning(String message) {
-        System.out.println(getUTCTime() + " [WARN ] " + message);
+        System.out.println(getUTCTime() + " WARN  [" + Thread.currentThread().getName() + "] " + message);
     }
 
     @Override
     public void info(String message) {
         if (isInfoEnabled()) {
-            System.out.println(getUTCTime() + " [INFO ] " + message);
+            System.out.println(getUTCTime() + " INFO  [" + Thread.currentThread().getName() + "] " + message);
         }
     }
 
     @Override
     public void debug(String message) {
         if (isDebugEnabled()) {
-            System.out.println(getUTCTime() + " [DEBUG] " + message);
+            System.out.println(getUTCTime() + " DEBUG [" + Thread.currentThread().getName() + "] " + message);
         }
     }
 
+    @Override
     public boolean isErrorEnabled() {
         return true;
     }
 
+    @Override
     public boolean isWarnEnabled() {
         return true;
     }
 
+    @Override
     public boolean isInfoEnabled() {
         return verbose;
     }
 
+    @Override
     public boolean isDebugEnabled() {
         return verbose;
     }

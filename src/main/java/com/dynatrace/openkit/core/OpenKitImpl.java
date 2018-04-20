@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
@@ -59,12 +60,21 @@ public class OpenKitImpl implements OpenKit {
     }
 
     protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
+        if (logger.isInfoEnabled()) {
+            logger.info(config.getOpenKitType() + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
+                    + " instantiated");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    "applicationName=" + config.getApplicationName() + ", applicationID=" + config.getApplicationID()
+                            + ", deviceID=" + config.getDeviceID() + ", endpointURL=" + config.getEndpointURL());
+        }
         configuration = config;
         this.logger = logger;
         this.threadIDProvider = threadIDProvider;
         this.timingProvider = timingProvider;
-        beaconCache = new BeaconCacheImpl();
-        beaconSender = new BeaconSender(configuration, httpClientProvider, timingProvider);
+        beaconCache = new BeaconCacheImpl(logger);
+        beaconSender = new BeaconSender(logger, configuration, httpClientProvider, timingProvider);
         beaconCacheEvictor = new BeaconCacheEvictor(logger, beaconCache, configuration.getBeaconCacheConfiguration(), timingProvider);
     }
 
@@ -110,6 +120,9 @@ public class OpenKitImpl implements OpenKit {
 
     @Override
     public Session createSession(String clientIPAddress) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("OpenKit createSession(" + clientIPAddress + ")");
+        }
         if (isShutdown.get()) {
             return NULL_SESSION;
         }
@@ -121,6 +134,9 @@ public class OpenKitImpl implements OpenKit {
 
     @Override
     public void shutdown() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("OpenKit shutdown requested");
+        }
         isShutdown.set(true);
         beaconCacheEvictor.stop();
         beaconSender.shutdown();

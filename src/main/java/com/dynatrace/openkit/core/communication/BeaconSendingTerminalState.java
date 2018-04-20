@@ -36,4 +36,9 @@ class BeaconSendingTerminalState extends AbstractBeaconSendingState {
     AbstractBeaconSendingState getShutdownState() {
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Terminal";
+    }
 }

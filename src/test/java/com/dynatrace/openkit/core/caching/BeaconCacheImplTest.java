@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.core.caching;
 
+import com.dynatrace.openkit.api.Logger;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,17 +26,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class BeaconCacheImplTest {
 
+    private Logger logger;
+
     private Observer observer;
 
     @Before
     public void setUp() {
+        logger = mock(Logger.class);
+        when(logger.isInfoEnabled()).thenReturn(true);
+        when(logger.isDebugEnabled()).thenReturn(true);
         observer = mock(Observer.class);
     }
 
@@ -42,7 +48,7 @@ public class BeaconCacheImplTest {
     public void aDefaultConstructedCacheDoesNotContainBeacons() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // then
         assertThat(target.getBeaconIDs(), is(empty()));
@@ -53,7 +59,7 @@ public class BeaconCacheImplTest {
     public void addEventDataAddsBeaconIdToCache() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // when adding beacon with id 1
         target.addEventData(1, 1000L, "a");
@@ -75,7 +81,7 @@ public class BeaconCacheImplTest {
     public void addEventDataAddsDataToAlreadyExistingBeaconId() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // when adding beacon with id 1
         target.addEventData(1, 1000L, "a");
@@ -96,7 +102,7 @@ public class BeaconCacheImplTest {
     public void addEventDataIncreasesCacheSize() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // when adding some data
         target.addEventData(1, 1000L, "a");
@@ -112,7 +118,7 @@ public class BeaconCacheImplTest {
     public void addEventDataNotifiesObserver() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         target.addObserver(observer);
 
@@ -134,7 +140,7 @@ public class BeaconCacheImplTest {
     public void addActionDataAddsBeaconIdToCache() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // when adding beacon with id 1
         target.addActionData(1, 1000L, "a");
@@ -156,7 +162,7 @@ public class BeaconCacheImplTest {
     public void addActionDataAddsDataToAlreadyExistingBeaconId() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // when adding beacon with id 1
         target.addActionData(1, 1000L, "a");
@@ -177,7 +183,7 @@ public class BeaconCacheImplTest {
     public void addActionDataIncreasesCacheSize() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         // when adding some data
         target.addActionData(1, 1000L, "a");
@@ -193,7 +199,7 @@ public class BeaconCacheImplTest {
     public void addActionDataNotifiesObserver() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
 
         target.addObserver(observer);
 
@@ -215,7 +221,7 @@ public class BeaconCacheImplTest {
     public void deleteCacheEntryRemovesTheGivenBeacon() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(42, 1000L, "z");
         target.addEventData(1, 1000L, "iii");
@@ -237,7 +243,7 @@ public class BeaconCacheImplTest {
     public void deleteCacheEntryDecrementsCacheSize() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(42, 1000L, "z");
         target.addEventData(1, 1000L, "iii");
@@ -254,7 +260,7 @@ public class BeaconCacheImplTest {
     public void deleteCacheEntryDoesNotNotifyObservers() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(42, 1000L, "z");
         target.addEventData(1, 1000L, "iii");
@@ -273,7 +279,7 @@ public class BeaconCacheImplTest {
     public void deleteCacheEntriesDoesNothingIfGivenBeaconIDIsNotInCache() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(42, 1000L, "z");
         target.addEventData(1, 1000L, "iii");
@@ -296,7 +302,7 @@ public class BeaconCacheImplTest {
     public void getNextBeaconChunkReturnsNullIfGivenBeaconIDDoesNotExist() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(42, 1000L, "z");
         target.addEventData(1, 1000L, "iii");
@@ -312,7 +318,7 @@ public class BeaconCacheImplTest {
     public void getNextBeaconChunkCopiesDataForSending() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addActionData(42, 2000L, "z");
@@ -335,7 +341,7 @@ public class BeaconCacheImplTest {
     public void getNextBeaconChunkDecreasesBeaconCacheSize() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addActionData(42, 2000L, "z");
@@ -353,7 +359,7 @@ public class BeaconCacheImplTest {
     public void getNextBeaconChunkRetrievesNextChunk() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addActionData(42, 2000L, "z");
@@ -379,7 +385,7 @@ public class BeaconCacheImplTest {
     public void removeChunkedDataClearsAlreadyRetrievedChunks() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addActionData(42, 2000L, "z");
@@ -411,7 +417,7 @@ public class BeaconCacheImplTest {
     public void removeChunkedDataDoesNothingIfCalledWithNonExistingBeaconID() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addActionData(42, 2000L, "z");
@@ -435,7 +441,7 @@ public class BeaconCacheImplTest {
     public void resetChunkedRestoresData() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -462,7 +468,7 @@ public class BeaconCacheImplTest {
     public void resetChunkedRestoresCacheSize() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -486,7 +492,7 @@ public class BeaconCacheImplTest {
     public void resetChunkedNotifiesObservers() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -512,7 +518,7 @@ public class BeaconCacheImplTest {
     public void resetChunkedDoesNothingIfEntryDoesNotExist() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -539,7 +545,7 @@ public class BeaconCacheImplTest {
     public void evictRecordsByAgeDoesNothingAndReturnsZeroIfBeaconIDDoesNotExist() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -556,7 +562,7 @@ public class BeaconCacheImplTest {
     public void evictRecordsByAge() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -573,7 +579,7 @@ public class BeaconCacheImplTest {
     public void evictRecordsByNumberDoesNothingAndReturnsZeroIfBeaconIDDoesNotExist() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -590,7 +596,7 @@ public class BeaconCacheImplTest {
     public void evictRecordsByNumber() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -607,7 +613,7 @@ public class BeaconCacheImplTest {
     public void isEmptyGivesTrueIfBeaconDoesNotExistInCache() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addActionData(1, 1001L, "iii");
         target.addEventData(1, 1000L, "b");
@@ -621,7 +627,7 @@ public class BeaconCacheImplTest {
     public void isEmptyGivesFalseIfBeaconDataSizeIsNotEqualToZero() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addEventData(1, 1000L, "b");
 
@@ -633,7 +639,7 @@ public class BeaconCacheImplTest {
     public void isEmptyGivesTrueIfBeaconDoesNotContainActiveData() {
 
         // given
-        BeaconCacheImpl target = new BeaconCacheImpl();
+        BeaconCacheImpl target = new BeaconCacheImpl(logger);
         target.addActionData(1, 1000L, "a");
         target.addEventData(1, 1000L, "b");
 

@@ -97,8 +97,8 @@ public class Beacon {
     private static final char BEACON_DATA_DELIMITER = '&';
 
     // next ID and sequence number
-    private AtomicInteger nextID = new AtomicInteger(0);
-    private AtomicInteger nextSequenceNumber = new AtomicInteger(0);
+    private final AtomicInteger nextID = new AtomicInteger(0);
+    private final AtomicInteger nextSequenceNumber = new AtomicInteger(0);
 
     // session number & start time
     private final int sessionNumber;
@@ -110,7 +110,7 @@ public class Beacon {
     private final String clientIPAddress;
 
     // basic beacon protocol data
-    private String basicBeaconData;
+    private final String basicBeaconData;
 
     // AbstractConfiguration reference
     private final Configuration configuration;
@@ -147,6 +147,9 @@ public class Beacon {
         if (InetAddressValidator.isValidIP(clientIPAddress)) {
             this.clientIPAddress = clientIPAddress;
         } else {
+            if (logger.isWarnEnabled()) {
+                logger.warning("Client IP address validation failed: " + clientIPAddress);
+            }
             this.clientIPAddress = "";
         }
 
@@ -783,4 +786,12 @@ public class Beacon {
     public boolean isEmpty() {
         return beaconCache.isEmpty(sessionNumber);
     }
+
+    /**
+     * @return the sessionNumber
+     */
+    public int getSessionNumber() {
+        return sessionNumber;
+    }
+
 }
