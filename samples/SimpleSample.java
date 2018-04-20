@@ -16,6 +16,7 @@
 
 package samples;
 
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.*;
 
 import java.io.IOException;
