@@ -61,6 +61,7 @@ public class OpenKitImpl implements OpenKit {
 
     protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
         if (logger.isInfoEnabled()) {
+            // TODO: Use proper version information (incl. the build number)
             logger.info(config.getOpenKitType() + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
                     + " instantiated");
         }

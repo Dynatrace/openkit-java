@@ -270,7 +270,7 @@ public class ActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (string): valueName must not be null or empty");
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (String): valueName must not be null or empty");
     }
 
     @Test
@@ -492,7 +492,7 @@ public class ActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (string): url must not be null or empty");
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url must not be null or empty");
     }
 
     @Test
@@ -514,7 +514,7 @@ public class ActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (string): url must not be null or empty");
+                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url must not be null or empty");
     }
 
     @Test

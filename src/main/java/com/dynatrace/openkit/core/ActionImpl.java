@@ -128,11 +128,11 @@ public class ActionImpl implements Action {
     @Override
     public Action reportValue(String valueName, String value) {
         if (valueName == null || valueName.isEmpty()) {
-            logger.warning(this + "reportValue (string): valueName must not be null or empty");
+            logger.warning(this + "reportValue (String): valueName must not be null or empty");
             return this;
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(this + "reportValue (string) (" + valueName + ", " + value + ")");
+            logger.debug(this + "reportValue (String) (" + valueName + ", " + value + ")");
         }
         if (!isActionLeft()) {
             beacon.reportValue(this, valueName, value);
@@ -174,11 +174,11 @@ public class ActionImpl implements Action {
     @Override
     public WebRequestTracer traceWebRequest(String url) {
         if (url == null || url.isEmpty()) {
-            logger.warning(this + "traceWebRequest (string): url must not be null or empty");
+            logger.warning(this + "traceWebRequest (String): url must not be null or empty");
             return NULL_WEB_REQUEST_TRACER;
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(this + "traceWebRequest (string) (" + url + ")");
+            logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
         if (!isActionLeft()) {
             return new WebRequestTracerStringURL(beacon, this, url);

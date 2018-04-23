@@ -127,7 +127,7 @@ public class BeaconSendingContext {
         nextState = null;
         currentState.execute(this);
 
-        if (nextState != currentState) { // currentState.execute(...) can trigger state changes
+        if (nextState != null && nextState != currentState) { // currentState.execute(...) can trigger state changes
             if (logger.isInfoEnabled()) {
                 logger.info("State change from '" + currentState + "' to '" + nextState + "'");
             }
@@ -273,6 +273,8 @@ public class BeaconSendingContext {
     }
 
     /**
+     * Returns the next state.
+     *
      * @return the nextState
      */
     public AbstractBeaconSendingState getNextState() {

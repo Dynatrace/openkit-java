@@ -788,6 +788,8 @@ public class Beacon {
     }
 
     /**
+     * Returns the session number.
+     *
      * @return the sessionNumber
      */
     public int getSessionNumber() {

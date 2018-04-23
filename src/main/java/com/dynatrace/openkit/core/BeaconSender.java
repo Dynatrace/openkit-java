@@ -143,7 +143,7 @@ public class BeaconSender {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("BeaconSender thread interrupted");
+                    logger.debug("Thread interrupted while waiting for BeaconSender thread to join");
                 }
             }
             beaconSenderThread = null;
