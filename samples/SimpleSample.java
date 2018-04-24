@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package samples;
+
 
 import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.*;
@@ -77,6 +77,8 @@ public class SimpleSample {
 
         // wait again
         Thread.sleep(2000);
+
+        childAction.reportEvent("I have a nightmare!");
 
         // report an event indicating that we finished sleeping
         rootAction.reportEvent("finished sleeping");

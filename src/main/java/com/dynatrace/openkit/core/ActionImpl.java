@@ -165,7 +165,7 @@ public class ActionImpl implements Action {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
         if (!isActionLeft()) {
-            return new WebRequestTracerURLConnection(beacon, this, connection);
+            return new WebRequestTracerURLConnection(logger, beacon, this, connection);
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -181,7 +181,7 @@ public class ActionImpl implements Action {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
         if (!isActionLeft()) {
-            return new WebRequestTracerStringURL(beacon, this, url);
+            return new WebRequestTracerStringURL(logger, beacon, this, url);
         }
 
         return NULL_WEB_REQUEST_TRACER;

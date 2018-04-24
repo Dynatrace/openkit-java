@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
@@ -26,8 +27,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
+    protected Logger logger;
+
     // Dynatrace tag that has to be used for tracing the web request
-    private String tag;
+    private final String tag;
 
     // HTTP information: URL & response code
     protected String url = "<unknown>";
@@ -38,16 +41,17 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
     // start/end time & sequence number
     private long startTime = -1;
     private final AtomicLong endTime = new AtomicLong(-1);
-    private int startSequenceNo;
+    private final int startSequenceNo;
     private int endSequenceNo = -1;
 
     // Beacon and Action references
-    private Beacon beacon;
-    private ActionImpl action;
+    private final Beacon beacon;
+    private final ActionImpl action;
 
     // *** constructors ***
 
-    WebRequestTracerBaseImpl(Beacon beacon, ActionImpl action) {
+    WebRequestTracerBaseImpl(Logger logger, Beacon beacon, ActionImpl action) {
+        this.logger = logger;
         this.beacon = beacon;
         this.action = action;
 
@@ -64,6 +68,9 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public String getTag() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "getTag() returning '" + tag + "'");
+        }
         return tag;
     }
 
@@ -93,6 +100,9 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public WebRequestTracer start() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "start()");
+        }
         if (!isStopped()) {
             startTime = beacon.getCurrentTimestamp();
         }
@@ -101,6 +111,9 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public void stop() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "stop()");
+        }
         if (!endTime.compareAndSet(-1, beacon.getCurrentTimestamp())) {
             // stop already called
             return;
@@ -154,4 +167,8 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
         return getEndTime() != -1;
     }
 
+    @Override
+    public String toString() {
+        return "WebRequestTracer [sn=" + beacon.getSessionNumber() + ", id=" + action.getID() + ", url='" + url + "'] ";
+    }
 }

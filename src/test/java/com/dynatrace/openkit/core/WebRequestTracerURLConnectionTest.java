@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
@@ -41,12 +42,14 @@ public class WebRequestTracerURLConnectionTest {
     @Test
     public void constructor() {
         // create test environment
+        Logger logger = mock(Logger.class);
         final Beacon beacon = mock(Beacon.class);
         final ActionImpl action = mock(ActionImpl.class);
         final URLConnection urlConnection = mock(URLConnection.class);
 
         // test the constructor call
-        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(beacon, action, urlConnection);
+        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, action,
+                urlConnection);
         assertThat(conn, notNullValue());
 
         // verify the correct methods being called
@@ -57,6 +60,7 @@ public class WebRequestTracerURLConnectionTest {
     @Test
     public void isWebRequestTagSetInConnection() throws MalformedURLException, IOException {
         // create test environment
+        Logger logger = mock(Logger.class);
         final Beacon beacon = mock(Beacon.class);
         final String tag = "Some tag";
         when(beacon.createTag(isA(ActionImpl.class), anyInt())).thenReturn(tag);
@@ -68,7 +72,8 @@ public class WebRequestTracerURLConnectionTest {
         assertThat(existingTag, is(nullValue()));
 
         // test the constructor call
-        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(beacon, action, urlConnection);
+        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, action,
+                urlConnection);
         assertThat(conn, notNullValue());
 
         // verify that the tag is now set

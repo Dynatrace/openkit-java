@@ -57,7 +57,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     @Override
     public void addEventData(Integer beaconID, long timestamp, String data) {
         if (logger.isDebugEnabled()) {
-            logger.debug("addEventData(sn=" + beaconID + ", timestamp=" + timestamp + ", data=" + data + ")");
+            logger.debug("addEventData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
         }
         // get a reference to the cache entry
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
@@ -82,7 +82,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     @Override
     public void addActionData(Integer beaconID, long timestamp, String data) {
         if (logger.isDebugEnabled()) {
-            logger.debug("addActionData(sn=" + beaconID + ", timestamp=" + timestamp + ", data=" + data + ")");
+            logger.debug("addActionData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
         }
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
 

@@ -450,7 +450,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesSent = 12321;
 
         // when
@@ -469,7 +469,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesSent = 0;
 
         // when
@@ -488,7 +488,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
 
         // when
         webRequest.start().setBytesSent(-5).stop(); // stop will add the web request to the beacon
@@ -506,7 +506,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesReceived = 12321;
 
         // when
@@ -525,7 +525,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesReceived = 0;
 
         // when
@@ -544,7 +544,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
 
         // when
         webRequest.start().setBytesReceived(-1).stop(); // stop will add the web request to the beacon
@@ -562,7 +562,7 @@ public class BeaconTest {
                 new NullTimeProvider());
         String testURL = "localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(beacon, rootAction, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesReceived = 12321;
         int bytesSent = 123;
 
