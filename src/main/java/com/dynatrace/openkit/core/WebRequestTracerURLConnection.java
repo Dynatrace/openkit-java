@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
@@ -30,18 +31,18 @@ public class WebRequestTracerURLConnection extends WebRequestTracerBaseImpl {
     // *** constructors ***
 
     // creates web request tag with a URLConnection
-    public WebRequestTracerURLConnection(Beacon beacon, ActionImpl action, URLConnection connection) {
-        super(beacon, action);
+    public WebRequestTracerURLConnection(Logger logger, Beacon beacon, ActionImpl action, URLConnection connection) {
+        super(logger, beacon, action);
 
         // only set tag header and URL if connection is not null
         if (connection != null) {
-            setTagOnConnection(connection);
-
             // separate query string from URL
             URL connectionURL = connection.getURL();
             if (connectionURL != null) {
                 this.url = connectionURL.toString().split("\\?")[0];
             }
+
+            setTagOnConnection(connection);
         }
     }
 

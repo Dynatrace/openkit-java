@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -35,6 +36,8 @@ public class BeaconSender {
     private static final String THREAD_NAME = BeaconSender.class.getSimpleName();
     static final long SHUTDOWN_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
+    private final Logger logger;
+
     /**
      * Thread used to send the beacons in the background
      */
@@ -51,12 +54,14 @@ public class BeaconSender {
      * To start the beacon sending the {@link #initialize()} method must be called.
      * </p>
      *
+     * @param logger
      * @param configuration  OpenKit configuration.
      * @param clientProvider Used for retrieving an {@link com.dynatrace.openkit.protocol.HTTPClient} instance.
      * @param timingProvider Used for some timing related things.
      */
-    public BeaconSender(Configuration configuration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
-        context = new BeaconSendingContext(configuration, clientProvider, timingProvider);
+    public BeaconSender(Logger logger, Configuration configuration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
+        this.logger = logger;
+        context = new BeaconSendingContext(logger, configuration, clientProvider, timingProvider);
     }
 
     /**
@@ -75,6 +80,9 @@ public class BeaconSender {
             @Override
             public void run() {
                 // run the loop as long as OpenKit does not get shutdown or ends itself.
+                if (logger.isDebugEnabled()) {
+                    logger.debug("BeaconSender thread started");
+                }
                 while (!context.isInTerminalState()) {
                     context.executeCurrentState();
                 }
@@ -120,15 +128,23 @@ public class BeaconSender {
      * Shutdown the BeaconSender and wait until it's shutdown (at most {@link BeaconSender#SHUTDOWN_TIMEOUT} milliseconds.
      */
     public synchronized void shutdown() {
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("BeaconSender thread request shutdown");
+        }
         context.requestShutdown();
 
         if (beaconSenderThread != null) {
             beaconSenderThread.interrupt();
             try {
                 beaconSenderThread.join(SHUTDOWN_TIMEOUT);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("BeaconSender thread stopped");
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Thread interrupted while waiting for BeaconSender thread to join");
+                }
             }
             beaconSenderThread = null;
         }
@@ -145,6 +161,9 @@ public class BeaconSender {
      * @param session Session to start.
      */
     public void startSession(SessionImpl session) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("BeaconSender startSession");
+        }
         context.startSession(session);
     }
 
@@ -158,6 +177,9 @@ public class BeaconSender {
      * @param session Session to finish.
      */
     public void finishSession(SessionImpl session) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("BeaconSender finishSession");
+        }
         context.finishSession(session);
     }
 }

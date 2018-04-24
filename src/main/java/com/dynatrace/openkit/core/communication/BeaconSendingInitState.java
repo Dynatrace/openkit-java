@@ -104,4 +104,9 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     void onInterrupted(BeaconSendingContext context) {
         context.initCompleted(false);
     }
+
+    @Override
+    public String toString() {
+        return "Initial";
+    }
 }

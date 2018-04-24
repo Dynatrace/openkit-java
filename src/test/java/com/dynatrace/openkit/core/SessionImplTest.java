@@ -28,7 +28,6 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,8 +37,8 @@ import java.io.IOException;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -60,7 +59,7 @@ public class SessionImplTest {
         when(logger.isInfoEnabled()).thenReturn(true);
         when(logger.isDebugEnabled()).thenReturn(true);
         beaconSender = mock(BeaconSender.class);
-        final BeaconCacheImpl beaconCache = new BeaconCacheImpl();
+        final BeaconCacheImpl beaconCache = new BeaconCacheImpl(logger);
         final Configuration configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
@@ -97,7 +96,7 @@ public class SessionImplTest {
         assertThat(rootAction, is(instanceOf(NullRootAction.class)));
 
         // ensure that some log message has been written
-        verify(logger, times(1)).warning("Session.enterAction: actionName must not be null or empty");
+        verify(logger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
     }
 
     @Test
@@ -112,7 +111,7 @@ public class SessionImplTest {
         assertThat(rootAction, is(instanceOf(NullRootAction.class)));
 
         // ensure that some log message has been written
-        verify(logger, times(1)).warning("Session.enterAction: actionName must not be null or empty");
+        verify(logger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
     }
 
     @Test
@@ -183,7 +182,8 @@ public class SessionImplTest {
         session.identifyUser(null);
 
         // verify the correct methods being called
-        verify(logger, times(1)).warning("Session.identifyUser: userTag must not be null or empty");
+        verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(beacon, times(1)).getSessionNumber();
         verifyZeroInteractions(beacon);
         verify(beacon, times(0)).identifyUser(anyString());
     }
@@ -198,7 +198,8 @@ public class SessionImplTest {
         session.identifyUser("");
 
         // verify the correct methods being called
-        verify(logger, times(1)).warning("Session.identifyUser: userTag must not be null or empty");
+        verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(beacon, times(1)).getSessionNumber();
         verifyZeroInteractions(beacon);
         verify(beacon, times(0)).identifyUser(anyString());
     }
@@ -265,7 +266,8 @@ public class SessionImplTest {
         session.reportCrash(null, "some reason", "some stack trace");
 
         // verify the correct methods being called
-        verify(logger, times(1)).warning("Session.reportCrash: errorName must not be null or empty");
+        verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
+        verify(beacon, times(1)).getSessionNumber();
         verifyZeroInteractions(beacon, beacon);
     }
 
@@ -279,7 +281,8 @@ public class SessionImplTest {
         session.reportCrash("", "some reason", "some stack trace");
 
         // verify the correct methods being called
-        verify(logger, times(1)).warning("Session.reportCrash: errorName must not be null or empty");
+        verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
+        verify(beacon, times(1)).getSessionNumber();
         verifyZeroInteractions(beacon, beacon);
     }
 
@@ -287,6 +290,7 @@ public class SessionImplTest {
     public void reportingCrashWithNullReasonAndStacktraceWorks() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report a crash, passing null values
@@ -301,6 +305,7 @@ public class SessionImplTest {
     public void reportSingleCrash() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report a single crash
@@ -318,6 +323,7 @@ public class SessionImplTest {
     public void reportMultipleCrashes() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report multiple crashes
@@ -340,6 +346,7 @@ public class SessionImplTest {
     public void reportSameCrash() {
         // create test environment
         final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
         final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // report the same cache twice

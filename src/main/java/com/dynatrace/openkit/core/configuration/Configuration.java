@@ -42,11 +42,11 @@ public class Configuration {
     private final String endpointURL;
 
     // mutable settings
-    private AtomicBoolean capture;                               // capture on/off; can be written/read by different threads -> atomic
+    private final AtomicBoolean capture;                               // capture on/off; can be written/read by different threads -> atomic
     private int sendInterval;                                    // beacon send interval; is only written/read by beacon sender thread -> non-atomic
     private int maxBeaconSize;                                   // max beacon size; is only written/read by beacon sender thread -> non-atomic
-    private AtomicBoolean captureErrors;                         // capture errors on/off; can be written/read by different threads -> atomic
-    private AtomicBoolean captureCrashes;                        // capture crashes on/off; can be written/read by different threads -> atomic
+    private final AtomicBoolean captureErrors;                         // capture errors on/off; can be written/read by different threads -> atomic
+    private final AtomicBoolean captureCrashes;                        // capture crashes on/off; can be written/read by different threads -> atomic
     private HTTPClientConfiguration httpClientConfiguration;     // the current http client configuration
 
     // application and device settings
@@ -56,7 +56,7 @@ public class Configuration {
     // caching settings
     private final BeaconCacheConfiguration beaconCacheConfiguration;
 
-    private SessionIDProvider sessionIDProvider;
+    private final SessionIDProvider sessionIDProvider;
 
     // *** constructors ***
 
@@ -158,6 +158,10 @@ public class Configuration {
 
     // *** getter methods ***
 
+    public OpenKitType getOpenKitType() {
+        return openKitType;
+    }
+
     public String getApplicationName() {
         return applicationName;
     }
@@ -168,6 +172,10 @@ public class Configuration {
 
     public long getDeviceID() {
         return deviceID;
+    }
+
+    public String getEndpointURL() {
+        return endpointURL;
     }
 
     /**

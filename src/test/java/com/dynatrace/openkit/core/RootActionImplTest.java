@@ -26,10 +26,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests the root action having some knowledge of the internals of the underlying actions.
@@ -58,7 +55,8 @@ public class RootActionImplTest {
 
         // child leaves immediately
         assertThat(childAction, is(instanceOf(NullAction.class)));
-        verify(logger, times(1)).warning("RootAction.enterAction: actionName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "RootActionImpl [sn=0, id=0, name=rootAction] enterAction: actionName must not be null or empty");
     }
 
     @Test
@@ -74,7 +72,8 @@ public class RootActionImplTest {
 
         // child leaves immediately
         assertThat(childAction, is(instanceOf(NullAction.class)));
-        verify(logger, times(1)).warning("RootAction.enterAction: actionName must not be null or empty");
+        verify(logger, times(1)).warning(
+                "RootActionImpl [sn=0, id=0, name=rootAction] enterAction: actionName must not be null or empty");
     }
 
     @Test

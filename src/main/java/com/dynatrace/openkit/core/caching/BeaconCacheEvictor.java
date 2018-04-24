@@ -45,7 +45,6 @@ public class BeaconCacheEvictor {
      * @param timingProvider Timing provider required for time retrieval
      */
     public BeaconCacheEvictor(Logger logger, BeaconCache beaconCache, BeaconCacheConfiguration configuration, TimingProvider timingProvider) {
-
         this(logger, beaconCache, new TimeEvictionStrategy(logger, beaconCache, configuration, timingProvider), new SpaceEvictionStrategy(logger, beaconCache, configuration));
     }
 
@@ -57,7 +56,6 @@ public class BeaconCacheEvictor {
      * @param strategies  Strategies passed to the actual Runnable.
      */
     BeaconCacheEvictor(Logger logger, BeaconCache beaconCache, BeaconCacheEvictionStrategy... strategies) {
-
         this.logger = logger;
         evictionThread = new Thread(new CacheEvictionRunnable(logger, beaconCache, strategies), THREAD_NAME);
     }
@@ -72,9 +70,6 @@ public class BeaconCacheEvictor {
 
         if (!isAlive()) {
             evictionThread.start();
-            if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEviction thread started.");
-            }
             result = true;
         } else {
             if (logger.isDebugEnabled()) {
@@ -151,6 +146,9 @@ public class BeaconCacheEvictor {
 
         @Override
         public void run() {
+            if (logger.isDebugEnabled()) {
+                logger.debug("BeaconCacheEviction thread started");
+            }
 
             // first register ourselves
             beaconCache.addObserver(this);
@@ -180,7 +178,7 @@ public class BeaconCacheEvictor {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEviction thread is stopped.");
+                logger.debug("BeaconCacheEviction thread is stopped");
             }
         }
 

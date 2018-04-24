@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -38,6 +39,7 @@ public class BeaconSendingContext {
      */
     static final long DEFAULT_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
+    private final Logger logger;
     private final Configuration configuration;
     private final HTTPClientProvider httpClientProvider;
     private final TimingProvider timingProvider;
@@ -95,15 +97,27 @@ public class BeaconSendingContext {
      * The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
-    public BeaconSendingContext(Configuration configuration,
+    public BeaconSendingContext(Logger logger, Configuration configuration,
                                 HTTPClientProvider httpClientProvider,
                                 TimingProvider timingProvider) {
+        this(logger, configuration, httpClientProvider, timingProvider, new BeaconSendingInitState());
+    }
 
+    /**
+     * Constructor.
+     *
+     * <p>
+     * The initial state is provided. This constructor is intended for unit testing.
+     * </p>
+     */
+    public BeaconSendingContext(Logger logger, Configuration configuration, HTTPClientProvider httpClientProvider,
+            TimingProvider timingProvider, AbstractBeaconSendingState initialState) {
+        this.logger = logger;
         this.configuration = configuration;
         this.httpClientProvider = httpClientProvider;
         this.timingProvider = timingProvider;
 
-        currentState = new BeaconSendingInitState();
+        currentState = initialState;
     }
 
     /**
@@ -113,12 +127,12 @@ public class BeaconSendingContext {
         nextState = null;
         currentState.execute(this);
 
-        if(nextState != null){ // currentState.execute(...) can trigger state changes
-            // TODO: roland.ettinger log transition
+        if (nextState != null && nextState != currentState) { // currentState.execute(...) can trigger state changes
+            if (logger.isInfoEnabled()) {
+                logger.info("State change from '" + currentState + "' to '" + nextState + "'");
+            }
             currentState = nextState;
-            nextState = null;
         }
-
     }
 
     /**
@@ -255,12 +269,21 @@ public class BeaconSendingContext {
      * @param nextState Next state when state transition is performed.
      */
     void setNextState(AbstractBeaconSendingState nextState) {
-        currentState = nextState;
+        this.nextState = nextState;
+    }
+
+    /**
+     * Returns the next state.
+     *
+     * @return the nextState
+     */
+    public AbstractBeaconSendingState getNextState() {
+        return nextState;
     }
 
     /**
      * Complete OpenKit initialization.
-
+     *
      * <p>
      * This will wake up every caller waiting in the {@link #waitForInit()} method.
      * </p>

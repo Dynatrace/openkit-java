@@ -130,4 +130,9 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             context.setNextState(new BeaconSendingCaptureOffState());
         }
     }
+
+    @Override
+    public String toString() {
+        return "CaptureOn";
+    }
 }

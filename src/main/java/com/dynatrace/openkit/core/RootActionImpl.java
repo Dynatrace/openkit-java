@@ -29,7 +29,7 @@ public class RootActionImpl extends ActionImpl implements RootAction {
     // Beacon reference
     private final Beacon beacon;
     // data structures for managing child actions
-    private SynchronizedQueue<Action> openChildActions = new SynchronizedQueue<Action>();
+    private final SynchronizedQueue<Action> openChildActions = new SynchronizedQueue<Action>();
 
     // *** constructors ***
 
@@ -42,12 +42,15 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
     @Override
     public Action enterAction(String actionName) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "enterAction(" + actionName + ")");
+        }
         if (actionName == null || actionName.isEmpty()) {
-            getLogger().warning("RootAction.enterAction: actionName must not be null or empty");
+            logger.warning(this + "enterAction: actionName must not be null or empty");
             return new NullAction(this);
         }
         if (!isActionLeft()) {
-            return new ActionImpl(getLogger(), beacon, actionName, this, openChildActions);
+            return new ActionImpl(logger, beacon, actionName, this, openChildActions);
         }
 
         return new NullAction(this);
@@ -65,5 +68,10 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
         // call leaveAction in base class
         return super.doLeaveAction();
+    }
+
+    @Override
+    public String toString() {
+        return "RootActionImpl [sn=" + beacon.getSessionNumber() + ", id=" + getID() + ", name=" + getName() + "] ";
     }
 }

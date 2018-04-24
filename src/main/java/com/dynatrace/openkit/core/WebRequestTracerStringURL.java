@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
@@ -28,8 +29,8 @@ public class WebRequestTracerStringURL extends WebRequestTracerBaseImpl {
     // *** constructors ***
 
     // creates web request tracer with a simple string URL
-    public WebRequestTracerStringURL(Beacon beacon, ActionImpl action, String url) {
-        super(beacon, action);
+    public WebRequestTracerStringURL(Logger logger, Beacon beacon, ActionImpl action, String url) {
+        super(logger, beacon, action);
 
         // separate query string from URL
         if (url != null) {
