@@ -177,6 +177,10 @@ public class ActionImpl implements Action {
             logger.warning(this + "traceWebRequest (String): url must not be null or empty");
             return NULL_WEB_REQUEST_TRACER;
         }
+        if (!WebRequestTracerStringURL.isValidURLScheme(url)) {
+            logger.warning(this + "traceWebRequest (String): url \"" + url + "\" does not have a valid scheme");
+            return NULL_WEB_REQUEST_TRACER;
+        }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }

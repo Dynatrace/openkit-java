@@ -20,11 +20,16 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
+import java.net.URL;
+import java.util.regex.Pattern;
+
 /**
  * Setting the Dynatrace tag to the {@link OpenKitConstants#WEBREQUEST_TAG_HEADER} HTTP header has to be done manually by the user.
  * Inherited class of {@link WebRequestTracerBaseImpl} which can be used for tracing and timing of a web request handled by any 3rd party HTTP Client.
  */
 public class WebRequestTracerStringURL extends WebRequestTracerBaseImpl {
+
+    private static final Pattern SCHEMA_VALIDATION_PATTERN = Pattern.compile("^[a-z][a-z0-9+\\-.]*://.+", Pattern.CASE_INSENSITIVE);
 
     // *** constructors ***
 
@@ -33,9 +38,12 @@ public class WebRequestTracerStringURL extends WebRequestTracerBaseImpl {
         super(logger, beacon, action);
 
         // separate query string from URL
-        if (url != null) {
+        if (isValidURLScheme(url)) {
             this.url = url.split("\\?")[0];
         }
     }
 
+    static boolean isValidURLScheme(String url) {
+        return url != null && SCHEMA_VALIDATION_PATTERN.matcher(url).matches();
+    }
 }

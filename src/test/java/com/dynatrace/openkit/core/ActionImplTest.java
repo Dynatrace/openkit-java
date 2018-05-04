@@ -518,6 +518,28 @@ public class ActionImplTest {
     }
 
     @Test
+    public void tracingAStringWebRequestWithInvalidURLIsNotAllowed() {
+
+        // given
+        final Beacon beacon = mock(Beacon.class);
+        when(beacon.getSessionNumber()).thenReturn(17);
+        final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
+
+        final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest("foobar/://");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+
+        // and a warning message has been generated
+        verify(logger, times(1)).warning(
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url \"foobar/://\" does not have a valid scheme");
+    }
+
+    @Test
     public void tracingANullURLConnectionWebRequestIsNotAllowed() {
 
         // given

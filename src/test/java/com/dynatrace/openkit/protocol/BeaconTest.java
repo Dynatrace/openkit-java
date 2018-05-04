@@ -29,6 +29,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -444,11 +447,11 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddSentBytesToWebRequestTracer() {
+    public void canAddSentBytesToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesSent = 12321;
@@ -458,16 +461,16 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID
                 + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) })));
     }
 
     @Test
-    public void canAddSentBytesValueZeroToWebRequestTracer() {
+    public void canAddSentBytesValueZeroToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesSent = 0;
@@ -477,16 +480,16 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID
                 + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String.valueOf(bytesSent) })));
     }
 
     @Test
-    public void cannotAddSentBytesWithInvalidValueSmallerZeroToWebRequestTracer() {
+    public void cannotAddSentBytesWithInvalidValueSmallerZeroToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
 
@@ -496,15 +499,15 @@ public class BeaconTest {
 
         // then
         assertThat(events,
-                is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0" })));
+                is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0" })));
     }
 
     @Test
-    public void canAddReceivedBytesToWebRequestTracer() {
+    public void canAddReceivedBytesToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesReceived = 12321;
@@ -514,16 +517,16 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID
                 + "&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived) })));
     }
 
     @Test
-    public void canAddReceivedBytesValueZeroToWebRequestTracer() {
+    public void canAddReceivedBytesValueZeroToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesReceived = 0;
@@ -533,16 +536,16 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID
+        assertThat(events, is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID
                 + "&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String.valueOf(bytesReceived) })));
     }
 
     @Test
-    public void cannotAddReceivedBytesWithInvalidValueSmallerZeroToWebRequestTracer() {
+    public void cannotAddReceivedBytesWithInvalidValueSmallerZeroToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
 
@@ -552,15 +555,15 @@ public class BeaconTest {
 
         // then
         assertThat(events,
-                is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0" })));
+                is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0" })));
     }
 
     @Test
-    public void canAddBothSentBytesAndReceivedBytesToWebRequestTracer() {
+    public void canAddBothSentBytesAndReceivedBytesToWebRequestTracer() throws UnsupportedEncodingException {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider,
                 new NullTimeProvider());
-        String testURL = "localhost";
+        String testURL = "https://localhost";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
         int bytesReceived = 12321;
@@ -572,7 +575,7 @@ public class BeaconTest {
 
         // then
         assertThat(events,
-                is(equalTo(new String[] { "et=30&na=" + testURL + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs="
+                is(equalTo(new String[] { "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs="
                         + String.valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived) })));
     }
 
