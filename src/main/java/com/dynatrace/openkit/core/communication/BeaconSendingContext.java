@@ -129,7 +129,7 @@ public class BeaconSendingContext {
 
         if (nextState != null && nextState != currentState) { // currentState.execute(...) can trigger state changes
             if (logger.isInfoEnabled()) {
-                logger.info("State change from '" + currentState + "' to '" + nextState + "'");
+                logger.info("BeaconSendingContext executeCurrentState() - State change from '" + currentState + "' to '" + nextState + "'");
             }
             currentState = nextState;
         }
