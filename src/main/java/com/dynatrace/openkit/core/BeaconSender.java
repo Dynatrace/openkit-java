@@ -81,7 +81,7 @@ public class BeaconSender {
             public void run() {
                 // run the loop as long as OpenKit does not get shutdown or ends itself.
                 if (logger.isDebugEnabled()) {
-                    logger.debug("BeaconSender thread started");
+                    logger.debug("BeaconSender initialize() - thread started");
                 }
                 while (!context.isInTerminalState()) {
                     context.executeCurrentState();
@@ -129,7 +129,7 @@ public class BeaconSender {
      */
     public synchronized void shutdown() {
         if (logger.isDebugEnabled()) {
-            logger.debug("BeaconSender thread request shutdown");
+            logger.debug("BeaconSender shutdown() - thread request shutdown");
         }
         context.requestShutdown();
 
@@ -138,12 +138,12 @@ public class BeaconSender {
             try {
                 beaconSenderThread.join(SHUTDOWN_TIMEOUT);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("BeaconSender thread stopped");
+                    logger.debug("BeaconSender shutdown() - thread stopped");
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Thread interrupted while waiting for BeaconSender thread to join");
+                    logger.debug("BeaconSender shutdown() - Thread interrupted while waiting for BeaconSender thread to join");
                 }
             }
             beaconSenderThread = null;
@@ -162,7 +162,7 @@ public class BeaconSender {
      */
     public void startSession(SessionImpl session) {
         if (logger.isDebugEnabled()) {
-            logger.debug("BeaconSender startSession");
+            logger.debug("BeaconSender startSession()");
         }
         context.startSession(session);
     }
@@ -178,7 +178,7 @@ public class BeaconSender {
      */
     public void finishSession(SessionImpl session) {
         if (logger.isDebugEnabled()) {
-            logger.debug("BeaconSender finishSession");
+            logger.debug("BeaconSender finishSession()");
         }
         context.finishSession(session);
     }

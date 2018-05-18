@@ -57,7 +57,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     @Override
     public void addEventData(Integer beaconID, long timestamp, String data) {
         if (logger.isDebugEnabled()) {
-            logger.debug("addEventData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
+            logger.debug("BeaconCacheImpl addEventData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
         }
         // get a reference to the cache entry
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
@@ -82,7 +82,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     @Override
     public void addActionData(Integer beaconID, long timestamp, String data) {
         if (logger.isDebugEnabled()) {
-            logger.debug("addActionData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
+            logger.debug("BeaconCacheImpl addActionData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
         }
         BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
 
@@ -107,7 +107,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     @Override
     public void deleteCacheEntry(Integer beaconID) {
         if (logger.isDebugEnabled()) {
-            logger.debug("deleteCacheEntry(sn=" + beaconID + ")");
+            logger.debug("BeaconCacheImpl deleteCacheEntry(sn=" + beaconID + ")");
         }
         BeaconCacheEntry entry;
         try {
@@ -374,7 +374,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("evictRecordsByAge(sn=" + beaconID + ", minTimestamp=" + minTimestamp + ") has evicted "
+            logger.debug("BeaconCacheImpl evictRecordsByAge(sn=" + beaconID + ", minTimestamp=" + minTimestamp + ") has evicted "
                     + numRecordsRemoved + " records");
         }
         return numRecordsRemoved;
@@ -399,7 +399,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("evictRecordsByNumber(sn=" + beaconID + ", numRecords=" + numRecords + ") has evicted "
+            logger.debug("BeaconCacheImpl evictRecordsByNumber(sn=" + beaconID + ", numRecords=" + numRecords + ") has evicted "
                     + numRecordsRemoved + " records");
         }
         return numRecordsRemoved;
