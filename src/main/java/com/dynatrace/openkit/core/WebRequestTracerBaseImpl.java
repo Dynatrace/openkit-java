@@ -169,6 +169,6 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public String toString() {
-        return "WebRequestTracer [sn=" + beacon.getSessionNumber() + ", id=" + action.getID() + ", url='" + url + "'] ";
+        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + action.getID() + ", url='" + url + "'] ";
     }
 }

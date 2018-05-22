@@ -127,13 +127,13 @@ public class HTTPClient {
     protected Response sendRequest(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
         try {
             if (logger.isDebugEnabled()) {
-                logger.debug("HTTPClient sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
+                logger.debug(getClass().getSimpleName() + " sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
             }
             URL httpURL = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) httpURL.openConnection();
             return sendRequestInternal(requestType, connection, clientIPAddress, data, method);
         } catch (Exception e) {
-            logger.error("HTTPClient sendRequest() - ERROR: " + requestType + " Request failed!", e);
+            logger.error(getClass().getSimpleName() + " sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
         return null;
     }
@@ -146,7 +146,7 @@ public class HTTPClient {
         try {
             return sendRequestInternal(requestType, connection, clientIPAddress, data, method);
         } catch (Exception e) {
-            logger.error("HTTPClient sendRequest() - ERROR: " + requestType + " Request failed!", e);
+            logger.error(getClass().getSimpleName() + "sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
         return null;
     }
@@ -177,11 +177,11 @@ public class HTTPClient {
                     try {
                         decodedData = new String(data, Beacon.CHARSET);
                     } catch (UnsupportedEncodingException e) {
-                        logger.error("HTTPClient sendRequestInternal() - JRE does not support UTF-8", e);
+                        logger.error(getClass().getSimpleName() + " sendRequestInternal() - JRE does not support UTF-8", e);
                     }
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("HTTPClient sendRequestInternal() - Beacon Payload: " + decodedData);
+                        logger.debug(getClass().getSimpleName() + " sendRequestInternal() - Beacon Payload: " + decodedData);
                     }
 
                     connection.setRequestProperty("Content-Encoding", "gzip");
@@ -222,8 +222,8 @@ public class HTTPClient {
             String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
 
             if (logger.isDebugEnabled()) {
-                logger.debug("HTTPClient handleResponse() - HTTP Response: " + response);
-                logger.debug("HTTPClient handleResponse() - HTTP Response Code: " + responseCode);
+                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
+                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response Code: " + responseCode);
             }
 
             // return null if error occurred
@@ -235,8 +235,8 @@ public class HTTPClient {
             // reading HTTP response
             String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
             if (logger.isDebugEnabled()) {
-                logger.debug("HTTPClient handleResponse() - HTTP Response: " + response);
-                logger.debug("HTTPClient handleResponse() - HTTP Response Code: " + responseCode);
+                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
+                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response Code: " + responseCode);
             }
 
             // create typed response based on request type and response content
@@ -248,7 +248,7 @@ public class HTTPClient {
                 return parseStatusResponse(response, responseCode);
             }
             else {
-                logger.warning("HTTPClient handleResponse() - Unknown request type " + requestType + " - ignoring response");
+                logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
                 return null;
             }
         }
@@ -263,13 +263,13 @@ public class HTTPClient {
             }
             catch(Exception e)
             {
-                logger.error("HTTPClient parseTimeSyncResponse() - Failed to parse TimeSyncResponse", e);
+                logger.error(getClass().getSimpleName() + " parseTimeSyncResponse() - Failed to parse TimeSyncResponse", e);
                 return null;
             }
         }
 
         // invalid/unexpected response
-        logger.warning("HTTPClient parseTimeSyncResponse() - The HTTPResponse \"" + response + "\" is not a valid time sync response");
+        logger.warning(getClass().getSimpleName() + " parseTimeSyncResponse() - The HTTPResponse \"" + response + "\" is not a valid time sync response");
         return null;
     }
 
@@ -282,13 +282,13 @@ public class HTTPClient {
             }
             catch (Exception e)
             {
-                logger.error("HTTPClient parseStatusResponse() - Failed to parse StatusResponse", e);
+                logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
                 return null;
             }
         }
 
         // invalid/unexpected response
-        logger.warning("HTTPClient parseStatusResponse() - The HTTPResponse \"" + response + "\" is not a valid status response");
+        logger.warning(getClass().getSimpleName() + " parseStatusResponse() - The HTTPResponse \"" + response + "\" is not a valid status response");
         return null;
     }
 

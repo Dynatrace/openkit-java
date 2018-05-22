@@ -72,6 +72,6 @@ public class RootActionImpl extends ActionImpl implements RootAction {
 
     @Override
     public String toString() {
-        return "RootActionImpl [sn=" + beacon.getSessionNumber() + ", id=" + getID() + ", name=" + getName() + "] ";
+        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + getID() + ", name=" + getName() + "] ";
     }
 }

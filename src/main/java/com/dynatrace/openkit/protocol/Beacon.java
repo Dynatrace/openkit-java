@@ -148,7 +148,7 @@ public class Beacon {
             this.clientIPAddress = clientIPAddress;
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warning("Client IP address validation failed: " + clientIPAddress);
+                logger.warning(getClass().getSimpleName() + " Client IP address validation failed: " + clientIPAddress);
             }
             this.clientIPAddress = "";
         }
@@ -504,7 +504,7 @@ public class Beacon {
                 encodedBeacon = chunk.getBytes(CHARSET);
             } catch (UnsupportedEncodingException e) {
                 // must not happen, as UTF-8 should *really* be supported
-                logger.error("Required charset \"" + CHARSET + "\" is not supported.", e);
+                logger.error(getClass().getSimpleName() + "Required charset \"" + CHARSET + "\" is not supported.", e);
                 beaconCache.resetChunkedData(sessionNumber);
                 return response;
             }
@@ -695,7 +695,7 @@ public class Beacon {
             encodedValue = URLEncoder.encode(stringValue, CHARSET);
         } catch (UnsupportedEncodingException e) {
             // if encoding fails, skip this key/value pair
-            logger.error("Skipped encoding of Key/Value: " + key + "/" + stringValue, e);
+            logger.error(getClass().getSimpleName() + "Skipped encoding of Key/Value: " + key + "/" + stringValue, e);
             return;
         }
 

@@ -56,7 +56,7 @@ class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {
         if (isStrategyDisabled()) {
             // immediately return if this strategy is disabled
             if (!infoShown && logger.isInfoEnabled()) {
-                logger.info("SpaceEvictionStrategy execute() - strategy is disabled");
+                logger.info(getClass().getSimpleName() + " execute() - strategy is disabled");
                 // suppress any further log output
                 infoShown = true;
             }
@@ -135,7 +135,7 @@ class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {
 
         if (logger.isDebugEnabled()) {
             for (Map.Entry<Integer, Integer> entries : removedRecordsPerBeacon.entrySet()) {
-                logger.debug("SpaceEvictionStraty doExecute()  - Removed " + entries.getValue() + " records from Beacon with ID " + entries.getKey());
+                logger.debug(getClass().getSimpleName() + " doExecute()  - Removed " + entries.getValue() + " records from Beacon with ID " + entries.getKey());
             }
         }
     }

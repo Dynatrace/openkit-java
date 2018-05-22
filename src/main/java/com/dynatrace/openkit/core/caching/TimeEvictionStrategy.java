@@ -60,7 +60,7 @@ class TimeEvictionStrategy implements BeaconCacheEvictionStrategy {
         if (isStrategyDisabled()) {
             // immediately return if this strategy is disabled
             if (!infoShown && logger.isInfoEnabled()) {
-                logger.info("TimeEvictionStrategy execute() - strategy is disabled");
+                logger.info(getClass().getSimpleName() + " execute() - strategy is disabled");
                 // suppress any further log output
                 infoShown = true;
             }
@@ -143,7 +143,7 @@ class TimeEvictionStrategy implements BeaconCacheEvictionStrategy {
             Integer beaconID = beaconIDIterator.next();
             int numRecordsRemoved = beaconCache.evictRecordsByAge(beaconID, smallestAllowedBeaconTimestamp);
             if (numRecordsRemoved  > 0 && logger.isDebugEnabled()) {
-                logger.debug("TimeEvictioStrategy  doExecute() - Removed " + numRecordsRemoved + " records from Beacon with ID " + beaconID);
+                logger.debug(getClass().getSimpleName() + " doExecute() - Removed " + numRecordsRemoved + " records from Beacon with ID " + beaconID);
             }
         }
 

@@ -74,14 +74,14 @@ public class BeaconSender {
      * </p>
      */
     public synchronized void initialize() {
-
+        final String className = getClass().getSimpleName();
         // create and start the sending thread
         beaconSenderThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 // run the loop as long as OpenKit does not get shutdown or ends itself.
                 if (logger.isDebugEnabled()) {
-                    logger.debug("BeaconSender initialize() - thread started");
+                    logger.debug(className + " initialize() - thread started");
                 }
                 while (!context.isInTerminalState()) {
                     context.executeCurrentState();
@@ -129,7 +129,7 @@ public class BeaconSender {
      */
     public synchronized void shutdown() {
         if (logger.isDebugEnabled()) {
-            logger.debug("BeaconSender shutdown() - thread request shutdown");
+            logger.debug(getClass().getSimpleName() + " shutdown() - thread request shutdown");
         }
         context.requestShutdown();
 
@@ -138,12 +138,12 @@ public class BeaconSender {
             try {
                 beaconSenderThread.join(SHUTDOWN_TIMEOUT);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("BeaconSender shutdown() - thread stopped");
+                    logger.debug(getClass().getSimpleName() + " shutdown() - thread stopped");
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("BeaconSender shutdown() - Thread interrupted while waiting for BeaconSender thread to join");
+                    logger.debug(getClass().getSimpleName() + " shutdown() - Thread interrupted while waiting for BeaconSender thread to join");
                 }
             }
             beaconSenderThread = null;
@@ -162,7 +162,7 @@ public class BeaconSender {
      */
     public void startSession(SessionImpl session) {
         if (logger.isDebugEnabled()) {
-            logger.debug("BeaconSender startSession()");
+            logger.debug(getClass().getSimpleName() + " startSession()");
         }
         context.startSession(session);
     }
@@ -178,7 +178,7 @@ public class BeaconSender {
      */
     public void finishSession(SessionImpl session) {
         if (logger.isDebugEnabled()) {
-            logger.debug("BeaconSender finishSession()");
+            logger.debug(getClass().getSimpleName() + " finishSession()");
         }
         context.finishSession(session);
     }

@@ -182,6 +182,6 @@ public class SessionImpl implements Session {
 
     @Override
     public String toString() {
-        return "SessionImpl [sn=" + beacon.getSessionNumber() + "] ";
+        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + "] ";
     }
 }

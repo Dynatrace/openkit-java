@@ -73,7 +73,7 @@ public class BeaconCacheEvictor {
             result = true;
         } else {
             if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEvictor start() - Not starting BeaconCacheEviction thread, since it's already running");
+                logger.debug(getClass().getSimpleName() + " start() - Not starting BeaconCacheEviction thread, since it's already running");
             }
         }
 
@@ -104,19 +104,19 @@ public class BeaconCacheEvictor {
 
         if (isAlive()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEvictor stop() - Stopping BeaconCacheEviction thread.");
+                logger.debug(getClass().getSimpleName() + " stop() - Stopping BeaconCacheEviction thread.");
             }
             evictionThread.interrupt();
             try {
                 evictionThread.join(timeout);
                 result = !isAlive();
             } catch (InterruptedException e) {
-                logger.warning("BeaconCacheEvictor stop() - Stopping BeaconCacheEviction thread was interrupted.");
+                logger.warning(getClass().getSimpleName() + " stop() - Stopping BeaconCacheEviction thread was interrupted.");
                 Thread.currentThread().interrupt(); // re-interrupt the current thread
             }
         } else {
             if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEvictor stop() - Not stopping BeaconCacheEviction thread, since it's not alive");
+                logger.debug(getClass().getSimpleName() + " stop() - Not stopping BeaconCacheEviction thread, since it's not alive");
             }
         }
 
@@ -147,7 +147,7 @@ public class BeaconCacheEvictor {
         @Override
         public void run() {
             if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEvictor run() - BeaconCacheEviction thread started");
+                logger.debug(getClass().getSimpleName() + " run() - BeaconCacheEviction thread started");
             }
 
             // first register ourselves
@@ -178,7 +178,7 @@ public class BeaconCacheEvictor {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("BeaconCacheEvictor run() - thread is stopped");
+                logger.debug(getClass().getSimpleName() + " run() - thread is stopped");
             }
         }
 

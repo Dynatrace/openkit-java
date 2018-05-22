@@ -288,8 +288,8 @@ public class TimeEvictionStrategyTest {
 
         // then verify that the logger was invoked
         verify(mockLogger, times(2)).isDebugEnabled();
-        verify(mockLogger, times(1)).debug("Removed 2 records from Beacon with ID 1");
-        verify(mockLogger, times(1)).debug("Removed 5 records from Beacon with ID 42");
+        verify(mockLogger, times(1)).debug("TimeEvictionStrategy doExecute() - Removed 2 records from Beacon with ID 1");
+        verify(mockLogger, times(1)).debug("TimeEvictionStrategy doExecute() - Removed 5 records from Beacon with ID 42");
         verifyNoMoreInteractions(mockLogger);
     }
 
