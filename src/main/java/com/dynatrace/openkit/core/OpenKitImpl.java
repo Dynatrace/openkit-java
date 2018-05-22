@@ -62,12 +62,12 @@ public class OpenKitImpl implements OpenKit {
     protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
         if (logger.isInfoEnabled()) {
             // TODO: Use proper version information (incl. the build number)
-            logger.info(config.getOpenKitType() + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
+            logger.info(getClass().getSimpleName() + " - " + config.getOpenKitType() + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
                     + " instantiated");
         }
         if (logger.isDebugEnabled()) {
             logger.debug(
-                    "applicationName=" + config.getApplicationName() + ", applicationID=" + config.getApplicationID()
+                getClass().getSimpleName() + " - applicationName=" + config.getApplicationName() + ", applicationID=" + config.getApplicationID()
                             + ", deviceID=" + config.getDeviceID() + ", endpointURL=" + config.getEndpointURL());
         }
         configuration = config;
@@ -122,7 +122,7 @@ public class OpenKitImpl implements OpenKit {
     @Override
     public Session createSession(String clientIPAddress) {
         if (logger.isDebugEnabled()) {
-            logger.debug("OpenKit createSession(" + clientIPAddress + ")");
+            logger.debug(getClass().getSimpleName() + " createSession(" + clientIPAddress + ")");
         }
         if (isShutdown.get()) {
             return NULL_SESSION;
@@ -136,7 +136,7 @@ public class OpenKitImpl implements OpenKit {
     @Override
     public void shutdown() {
         if (logger.isDebugEnabled()) {
-            logger.debug("OpenKit shutdown requested");
+            logger.debug(getClass().getSimpleName() + " shutdown() - shutdown requested");
         }
         isShutdown.set(true);
         beaconCacheEvictor.stop();

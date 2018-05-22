@@ -254,7 +254,7 @@ public class ActionImpl implements Action {
 
     @Override
     public String toString() {
-        return "ActionImpl [sn=" + beacon.getSessionNumber() + ", id=" + id + ", name=" + name + ", pa="
+        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + id + ", name=" + name + ", pa="
                 + (parentAction != null ? parentAction.id : "no parent") + "] ";
     }
 }
