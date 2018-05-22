@@ -73,10 +73,6 @@ public class HTTPClient {
     private static final String QUERY_KEY_PLATFORM_TYPE = "pt";
     private static final String QUERY_KEY_AGENT_TECHNOLOGY_TYPE = "tt";
 
-    // constant query parameter values
-    private static final String PLATFORM_TYPE_OPENKIT = "1";
-    private static final String AGENT_TECHNOLOGY_TYPE = "okjava";
-
     // connection constants
     private static final int MAX_SEND_RETRIES = 3;
     private static final int RETRY_SLEEP_TIME = 200;        // retry sleep time in ms
@@ -327,9 +323,9 @@ public class HTTPClient {
 
         appendQueryParam(monitorURLBuilder, QUERY_KEY_SERVER_ID, Integer.toString(serverID));
         appendQueryParam(monitorURLBuilder, QUERY_KEY_APPLICATION, applicationID);
-        appendQueryParam(monitorURLBuilder, QUERY_KEY_VERSION, Beacon.OPENKIT_VERSION);
-        appendQueryParam(monitorURLBuilder, QUERY_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
-        appendQueryParam(monitorURLBuilder, QUERY_KEY_AGENT_TECHNOLOGY_TYPE, AGENT_TECHNOLOGY_TYPE);
+        appendQueryParam(monitorURLBuilder, QUERY_KEY_VERSION, ProtocolConstants.OPENKIT_VERSION);
+        appendQueryParam(monitorURLBuilder, QUERY_KEY_PLATFORM_TYPE, String.valueOf(ProtocolConstants.PLATFORM_TYPE_OPENKIT));
+        appendQueryParam(monitorURLBuilder, QUERY_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
         return monitorURLBuilder.toString();
     }

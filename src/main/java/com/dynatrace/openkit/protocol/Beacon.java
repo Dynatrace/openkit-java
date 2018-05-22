@@ -79,12 +79,6 @@ public class Beacon {
     private static final String BEACON_KEY_WEBREQUEST_BYTES_SENT = "bs";
     private static final String BEACON_KEY_WEBREQUEST_BYTES_RECEIVED = "br";
 
-    // version constants
-    public static final String OPENKIT_VERSION = "7.0.0000";
-    private static final int PROTOCOL_VERSION = 3;
-    private static final int PLATFORM_TYPE_OPENKIT = 1;
-    private static final String AGENT_TECHNOLOGY_TYPE = "okjava";
-
     // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
     public static final String CHARSET = "UTF-8";
 
@@ -209,7 +203,7 @@ public class Beacon {
      */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
         return TAG_PREFIX + "_"
-            + PROTOCOL_VERSION + "_"
+            + ProtocolConstants.PROTOCOL_VERSION + "_"
             + httpConfiguration.getServerID() + "_"
             + configuration.getDeviceID() + "_"
             + sessionNumber + "_"
@@ -634,15 +628,15 @@ public class Beacon {
         StringBuilder basicBeaconBuilder = new StringBuilder();
 
         // version and application information
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PROTOCOL_VERSION, PROTOCOL_VERSION);
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, OPENKIT_VERSION);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PROTOCOL_VERSION, ProtocolConstants.PROTOCOL_VERSION);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, ProtocolConstants.OPENKIT_VERSION);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, configuration.getApplicationID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, configuration.getApplicationName());
         if (configuration.getApplicationVersion() != null) {
             addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
         }
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, PLATFORM_TYPE_OPENKIT);
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, AGENT_TECHNOLOGY_TYPE);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, ProtocolConstants.PLATFORM_TYPE_OPENKIT);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getDeviceID());
