@@ -26,15 +26,32 @@ public class InetAddressValidator {
 
     private static final Pattern IPV4_PATTERN =
         Pattern.compile(
-            "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
+            "^"                                             // start of string
+          + "(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)"             // first block - a number from 0-255
+          + "(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}"     // three more blocks - numbers from 0-255 - each prepended by a point character '.'
+          + "$"                                             // end of string
+        );
 
     private static final Pattern IPV6_STD_PATTERN =
         Pattern.compile(
-            "^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
+            "^"                           // start of string
+          + "(?:[0-9a-fA-F]{1,4}:){7}"    // 7 blocks of a 1 to 4 digit hex number followed by double colon ':'
+          + "[0-9a-fA-F]{1,4}"            // one more block of a 1 to 4 digit hex number
+          + "$");                         // end of string
 
     private static final Pattern IPV6_HEX_COMPRESSED_PATTERN =
         Pattern.compile(
-            "^((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)::((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)$");
+            "^"                             // start of string
+          + "("                             // 1st group
+          + "(?:[0-9A-Fa-f]{1,4}"           // at least one block of a 1 to 4 digit hex number
+          + "(?::[0-9A-Fa-f]{1,4})*)?"      // optional further blocks, any number
+          + ")"
+          + "::"                            // in the middle of the expression the two occurences of ':' are neccessary
+          + "("                             // 2nd group
+          + "(?:[0-9A-Fa-f]{1,4}"           // at least one block of a 1 to 4 digit hex number
+          + "(?::[0-9A-Fa-f]{1,4})*)?"      // optional further blocks, any number
+          + ")"
+          + "$");                           // end of string
 
     private static final Pattern IPV6_MIXED_STD_OR_COMPRESSED_PATTERN =
         Pattern.compile(
@@ -120,6 +137,10 @@ public class InetAddressValidator {
     /**
      * Check if the given address is a valid IPv6 address in the mixed-standard or mixed-compressed notation.
      *
+     * IPV6 Mixed mode consists of two parts, the first 96 bits (up to 6 blocks of 4 hex digits) are IPv6
+     * the IPV6 part can be either compressed or uncompressed
+     * the second block is a full IPv4 address
+     * e.g. '0:0:0:0:0:0:172.12.55.18'
      * @param input ip-address to check
      * @return true if <code>input</code> is in correct IPv6 (mixed-standard or mixed-compressed) notation.
      */
