@@ -53,22 +53,26 @@ public class InetAddressValidator {
           + ")"
           + "$");                           // end of string
 
-    private static final Pattern IPV6_MIXED_STD_OR_COMPRESSED_PATTERN =
-        Pattern.compile(
-            "(?ix)(?<![:.\\w])                                     # Anchor address\n" +
-                "(?:\n" +
-                " (?:[A-F0-9]{1,4}:){6}                                # Non-compressed\n" +
-                "|(?=(?:[A-F0-9]{0,4}:){2,6}                           # Compressed with 2 to 6 colons\n" +
-                "    (?:[0-9]{1,3}\\.){3}[0-9]{1,3}                    #    and 4 bytes\n" +
-                "    (?![:.\\w]))                                      #    and anchored\n" +
-                " (([0-9A-F]{1,4}:){1,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)  #    and at most 1 double colon\n" +
-                "|::(?:[A-F0-9]{1,4}:){5}                              # Compressed with 7 colons and 5 numbers\n" +
-                ")\n" +
-                "(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}  # 255.255.255.\n" +
-                "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])       # 255\n" +
-                "(?![:.\\w])                                           # Anchor address"
-        );
+    //this regex checks the ipv6 uncompressed part of a ipv6 mixed address
+    private static final Pattern IPV6_MIXED_COMPRESSED_REGEX =
+        Pattern.compile("^"                                               // start of string
+                      + "("                                               // 1st group
+                      + "(?:[0-9A-Fa-f]{1,4}"                             // at least one block of a 1 to 4 digit hex number
+                      + "(?::[0-9A-Fa-f]{1,4})*)?"                        // optional further blocks, any number
+                      + ")"
+                      + "::"                                              // in the middle of the expression the two occurences of ':' are neccessary
+                      + "("                                               // 2nd group
+                      + "(?:[0-9A-Fa-f]{1,4}:"                            // at least one block of a 1 to 4 digit hex number followed by a ':' character
+                      + "(?:[0-9A-Fa-f]{1,4}:)*)?"                        // optional further blocks, any number, all succeeded by ':' character
+                      + ")"
+                      + "$");                                             // end of string
 
+
+    //this regex checks the ipv6 uncompressed part of a ipv6 mixed address
+    private static final Pattern IPV6_MIXED_UNCOMPRESSED_REGEX =
+        Pattern.compile("^"  // start of string
+                      + "(?:[0-9a-fA-F]{1,4}:){6}"                             // 6 blocks of a 1 to 4 digit hex number followed by double colon ':'
+                      + "$" );                                                 // end of string
 
     /**
      * Check if <code>input</code> is a valid IPv4 address
@@ -145,7 +149,24 @@ public class InetAddressValidator {
      * @return true if <code>input</code> is in correct IPv6 (mixed-standard or mixed-compressed) notation.
      */
     public static boolean isIPv6MixedAddress(final String input) {
-        return IPV6_MIXED_STD_OR_COMPRESSED_PATTERN.matcher(input).matches();
+        int splitIndex = input.lastIndexOf(':');
+
+        if (splitIndex == -1) {
+            return false;
+        }
+
+        //the last part is a ipv4 address
+        boolean ipv4PartValid = isIPv4Address(input.substring(splitIndex + 1 ));
+
+        String ipV6Part = input.substring(0, splitIndex + 1 );
+        if(ipV6Part == "::") {
+            return ipv4PartValid;
+        }
+
+        boolean ipV6UncompressedDetected = IPV6_MIXED_UNCOMPRESSED_REGEX.matcher(ipV6Part).matches();
+        boolean ipV6CompressedDetected = IPV6_MIXED_COMPRESSED_REGEX.matcher(ipV6Part).matches();
+
+        return ipv4PartValid && (ipV6UncompressedDetected || ipV6CompressedDetected);
     }
 
     /**
