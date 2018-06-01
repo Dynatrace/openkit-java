@@ -58,6 +58,7 @@ public class BeaconCacheEvictor {
     BeaconCacheEvictor(Logger logger, BeaconCache beaconCache, BeaconCacheEvictionStrategy... strategies) {
         this.logger = logger;
         evictionThread = new Thread(new CacheEvictionRunnable(logger, beaconCache, strategies), THREAD_NAME);
+        evictionThread.setDaemon(true);
     }
 
     /**

@@ -88,6 +88,7 @@ public class BeaconSender {
                 }
             }
         });
+        beaconSenderThread.setDaemon(true);
         beaconSenderThread.setName(THREAD_NAME);
         beaconSenderThread.start();
     }
