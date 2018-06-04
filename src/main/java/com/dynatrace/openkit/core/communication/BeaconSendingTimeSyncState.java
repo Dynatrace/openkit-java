@@ -171,7 +171,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // the server does not support time sync at all (e.g. AppMon).
         //
         // -> handle this case
-
         if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
             handleErroneousTimeSyncRequest(context);
             return;
