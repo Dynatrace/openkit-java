@@ -179,8 +179,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         //sanity check to catch case with div/0
         long calculatedOffset = computeClusterTimeOffset(timeSyncOffsets);
-        if(calculatedOffset < 0)
-        {
+        if (calculatedOffset < 0) {
             return;
         }
 
@@ -220,7 +219,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             }
         }
 
-        if(count == 0){ // shouldn't come here under normal circumstances
+        if (count == 0) { // shouldn't come here under normal circumstances
             return -1; // prevents div/0
         }
 
