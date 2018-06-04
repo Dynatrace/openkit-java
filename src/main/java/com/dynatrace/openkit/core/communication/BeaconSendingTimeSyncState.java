@@ -171,13 +171,21 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // the server does not support time sync at all (e.g. AppMon).
         //
         // -> handle this case
+
         if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
             handleErroneousTimeSyncRequest(context);
             return;
         }
 
+        //sanity check to catch case with div/0
+        long calculatedOffset = computeClusterTimeOffset(timeSyncOffsets);
+        if(calculatedOffset < 0)
+        {
+            return;
+        }
+
         // initialize time provider with cluster time offset
-        context.initializeTimeSync(computeClusterTimeOffset(timeSyncOffsets), true);
+        context.initializeTimeSync(calculatedOffset, true);
 
         // also update the time when last time sync was performed to now
         context.setLastTimeSyncTime(context.getCurrentTimestamp());
@@ -210,6 +218,10 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                 sum += timeSyncOffsets.get(i);
                 count++;
             }
+        }
+
+        if(count == 0){
+            return -1;
         }
 
         return Math.round(sum / (double) count);
