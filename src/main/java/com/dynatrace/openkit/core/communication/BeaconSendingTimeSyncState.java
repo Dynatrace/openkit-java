@@ -220,8 +220,8 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             }
         }
 
-        if(count == 0){
-            return -1;
+        if(count == 0){ // shouldn't come here under normal circumstances
+            return -1; // prevents div/0
         }
 
         return Math.round(sum / (double) count);
