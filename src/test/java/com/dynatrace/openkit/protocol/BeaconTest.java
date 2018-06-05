@@ -335,7 +335,6 @@ public class BeaconTest {
                 + "&s0=1&t0=0&ev=" + errorCode + "&rs=" + reason })));
     }
 
-    @Ignore
     @Test
     public void reportErrorNull() {
         // given
@@ -354,7 +353,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(
-                new String[] { "et=40&&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&ev=" + errorCode })));
+                new String[] { "et=40&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&ev=" + errorCode })));
     }
 
     @Test
