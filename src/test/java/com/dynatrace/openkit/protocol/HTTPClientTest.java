@@ -126,6 +126,18 @@ public class HTTPClientTest {
     }
 
     @Test
+    public void sendNewSessionRequestToSomeValidUrl() {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+
+        // when
+        StatusResponse response = client.sendNewSessionRequest();
+
+        // then (we use a URL not understanding the beacon protocol, thus null is expected)
+        assertThat(response, nullValue());
+    }
+
+    @Test
     public void sendStatusRequestAndReadErrorResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
@@ -152,6 +164,39 @@ public class HTTPClientTest {
 
         // when
         Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
+
+        // then (verify that we properly send the request and parsed the response)
+        assertThat(response, notNullValue());
+        assertThat(response.getResponseCode(), is(200));
+    }
+
+    @Test
+    public void sendNewSessionRequestAndReadErrorResponse() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(connection.getResponseCode()).thenReturn(418);
+        InputStream is = new ByteArrayInputStream("err".getBytes(CHARSET));
+        when(connection.getErrorStream()).thenReturn(is);
+
+        // when
+        Response response = client.sendRequest(RequestType.NEW_SESSION, connection, null, null, "GET");
+
+        // then (verify that for error responses null is returned)
+        assertThat(response, nullValue());
+    }
+
+    @Test
+    public void sendNewSessionRequestAndReadStatusResponse() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        Response response = client.sendRequest(RequestType.NEW_SESSION, connection, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response, notNullValue());
