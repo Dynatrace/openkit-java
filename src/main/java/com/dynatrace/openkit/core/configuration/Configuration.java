@@ -237,9 +237,19 @@ public class Configuration {
         return httpClientConfiguration;
     }
 
+    /**
+     * Returns the current beacon cache configuration
+     *
+     * @return
+     */
     public BeaconCacheConfiguration getBeaconCacheConfiguration() {
          return beaconCacheConfiguration;
     }
 
+    /**
+     * Returns the current beacon configuration
+     *
+     * @return
+     */
     public BeaconConfiguration getBeaconConfiguration() { return beaconConfiguration; }
 }
