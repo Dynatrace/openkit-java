@@ -98,6 +98,15 @@ public class StatusResponseTest {
     }
 
     @Test
+    public void defaultMultiplicityIsOne() {
+        // given
+        StatusResponse target = new StatusResponse("", 200);
+
+        // then
+        assertThat(target.getMultiplicity(), is(equalTo(1)));
+    }
+
+    @Test
     public void oddNumberOfTokensThrowsException() {
         // given
         expectedException.expect(IllegalArgumentException.class);
@@ -407,6 +416,45 @@ public class StatusResponseTest {
 
         // when parsing 2^31, then
         new StatusResponse(StatusResponse.RESPONSE_KEY_CAPTURE_CRASHES + "=2147483648", 200);
+    }
+
+    @Test
+    public void parsingMultiplicity() {
+        // when it's a positive number greater than 1, then
+        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MULTIPLICITY + "=3", 200).getMultiplicity(), is(equalTo(3)));
+
+        // and when it's zero, then
+        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MULTIPLICITY + "=0", 200).getMultiplicity(), is(equalTo(0)));
+
+        // and when it's a negative number, then
+        assertThat(new StatusResponse(StatusResponse.RESPONSE_KEY_MULTIPLICITY + "=-5", 200).getMultiplicity(), is(equalTo(-5)));
+    }
+
+    @Test
+    public void parsingEmptyMultiplicityValueThrowsException() {
+        // given
+        expectedException.expect(NumberFormatException.class);
+
+        // when, then
+        new StatusResponse(StatusResponse.RESPONSE_KEY_MULTIPLICITY + "=", 200);
+    }
+
+    @Test
+    public void parsingNonNumericMultiplicityValueThrowsException() {
+        // given
+        expectedException.expect(NumberFormatException.class);
+
+        // when, then
+        new StatusResponse(StatusResponse.RESPONSE_KEY_MULTIPLICITY + "=a", 200);
+    }
+
+    @Test
+    public void parsingTooBigMultiplicityValueThrowsException() {
+        // given
+        expectedException.expect(NumberFormatException.class);
+
+        // when parsing 2^31, then
+        new StatusResponse(StatusResponse.RESPONSE_KEY_MULTIPLICITY + "=2147483648", 200);
     }
 
     @Test

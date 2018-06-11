@@ -48,7 +48,8 @@ public class HTTPClient {
 
         STATUS("Status"),                // status check
         BEACON("Beacon"),                // beacon send
-        TIMESYNC("TimeSync");            // time sync
+        TIMESYNC("TimeSync"),            // time sync
+        NEW_SESSION("NewSession");       // new session request
 
         private String requestName;
 
@@ -72,6 +73,7 @@ public class HTTPClient {
     private static final String QUERY_KEY_VERSION = "va";
     private static final String QUERY_KEY_PLATFORM_TYPE = "pt";
     private static final String QUERY_KEY_AGENT_TECHNOLOGY_TYPE = "tt";
+    private static final String QUERY_KEY_NEW_SESSION = "ns";
 
     // connection constants
     private static final int MAX_SEND_RETRIES = 3;
@@ -81,6 +83,7 @@ public class HTTPClient {
 
     // URLs for requests
     private final String monitorURL;
+    private final String newSessionURL;
     private final String timeSyncURL;
 
     private final int serverID;
@@ -95,6 +98,7 @@ public class HTTPClient {
         this.logger = logger;
         serverID = configuration.getServerID();
         monitorURL = buildMonitorURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
+        newSessionURL = buildNewSessionURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
         timeSyncURL = buildTimeSyncURL(configuration.getBaseURL());
         sslTrustManager = configuration.getSSLTrustManager();
     }
@@ -104,6 +108,10 @@ public class HTTPClient {
     // sends a status check request and returns a status response
     public StatusResponse sendStatusRequest() {
         return (StatusResponse) sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+    }
+
+    public StatusResponse sendNewSessionRequest() {
+        return (StatusResponse) sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
     }
 
     // sends a beacon send request and returns a status response
@@ -240,7 +248,8 @@ public class HTTPClient {
                 return parseTimeSyncResponse(response, responseCode);
             }
             else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
-                || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))) {
+                || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
+                || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
                 return parseStatusResponse(response, responseCode);
             }
             else {
@@ -314,7 +323,7 @@ public class HTTPClient {
     }
 
     // build URL used for status check and beacon send requests
-    private String buildMonitorURL(String baseURL, String applicationID, int serverID) {
+    private static String buildMonitorURL(String baseURL, String applicationID, int serverID) {
         StringBuilder monitorURLBuilder = new StringBuilder();
 
         monitorURLBuilder.append(baseURL);
@@ -330,8 +339,16 @@ public class HTTPClient {
         return monitorURLBuilder.toString();
     }
 
+    private static String buildNewSessionURL(String baseURL, String applicationID, int serverID) {
+        StringBuilder monitorURLBuilder = new StringBuilder(buildMonitorURL(baseURL, applicationID, serverID));
+
+        appendQueryParam(monitorURLBuilder, QUERY_KEY_NEW_SESSION, "1");
+
+        return monitorURLBuilder.toString();
+    }
+
     // build URL used for time sync requests
-    private String buildTimeSyncURL(String baseURL) {
+    private static String buildTimeSyncURL(String baseURL) {
         StringBuilder timeSyncURLBuilder = new StringBuilder();
 
         timeSyncURLBuilder.append(baseURL);
@@ -342,7 +359,7 @@ public class HTTPClient {
     }
 
     // helper method for appending query parameters
-    private void appendQueryParam(StringBuilder urlBuilder, String key, String value) {
+    private static void appendQueryParam(StringBuilder urlBuilder, String key, String value) {
         String encodedValue = "";
         try {
             encodedValue = URLEncoder.encode(value, Beacon.CHARSET);
@@ -368,7 +385,7 @@ public class HTTPClient {
 
     // *** getter methods ***
 
-    public int getServerID() {
+    int getServerID() {
         return serverID;
     }
 

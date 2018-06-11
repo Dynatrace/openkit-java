@@ -43,6 +43,6 @@ public class ConfigurationTest {
         return new Configuration(OpenKitType.DYNATRACE, "", "", 17, tenantURL,
             new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "",
             new BeaconCacheConfiguration(-1, -1, -1),
-            new BeaconConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
+            new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
     }
 }

@@ -31,6 +31,7 @@ public class StatusResponse extends Response {
     static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
     static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
     static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
+    static final String RESPONSE_KEY_MULTIPLICITY = "mp";
 
     // settings contained in status response
     private boolean capture = true;
@@ -40,6 +41,7 @@ public class StatusResponse extends Response {
     private int maxBeaconSize = -1;
     private boolean captureErrors = true;
     private boolean captureCrashes = true;
+    private int multiplicity = 1;
 
     // *** constructors ***
 
@@ -74,6 +76,8 @@ public class StatusResponse extends Response {
                 captureErrors = (Integer.parseInt(kv.value) != 0);                    // 1 (always on) and 2 (only on WiFi) are treated the same
             } else if (RESPONSE_KEY_CAPTURE_CRASHES.equals(kv.key)) {
                 captureCrashes = (Integer.parseInt(kv.value) != 0);                // 1 (always on) and 2 (only on WiFi) are treated the same
+            } else if (RESPONSE_KEY_MULTIPLICITY.equals(kv.key)) {
+                multiplicity = Integer.parseInt(kv.value);
             }
         }
     }
@@ -106,5 +110,9 @@ public class StatusResponse extends Response {
 
     public boolean isCaptureCrashes() {
         return captureCrashes;
+    }
+
+    public int getMultiplicity() {
+        return multiplicity;
     }
 }

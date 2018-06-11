@@ -49,7 +49,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
         BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxRecordAge(),
             getBeaconCacheLowerMemoryBoundary(),
             getBeaconCacheUpperMemoryBoundary());
-        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1,
             getDataCollectionLevel(),
             getCrashReportLevel());
         return new Configuration(
