@@ -21,6 +21,7 @@ import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
@@ -31,6 +32,7 @@ import com.dynatrace.openkit.providers.TimingProvider;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The Beacon class holds all the beacon data and the beacon protocol implementation.
@@ -48,6 +50,7 @@ public class Beacon {
     private static final String BEACON_KEY_VISITOR_ID = "vi";
     private static final String BEACON_KEY_SESSION_NUMBER = "sn";
     private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
+    private static final String BEACON_KEY_MULTIPLICITY = "mp";
 
     // device data constants
     private static final String BEACON_KEY_DEVICE_OS = "os";
@@ -103,8 +106,8 @@ public class Beacon {
     // client IP address
     private final String clientIPAddress;
 
-    // basic beacon protocol data
-    private final String basicBeaconData;
+    // basic beacon data which does not change over time
+    private final String immutableBasicBeaconData;
 
     // AbstractConfiguration reference
     private final Configuration configuration;
@@ -115,6 +118,9 @@ public class Beacon {
     private final Logger logger;
 
     private final BeaconCacheImpl beaconCache;
+
+    private static final BeaconConfiguration DEFAULT_CONFIGURATION = new BeaconConfiguration(1);
+    private final AtomicReference<BeaconConfiguration> beaconConfiguration;
 
     // *** constructors ***
 
@@ -150,7 +156,8 @@ public class Beacon {
         // store the current configuration
         this.httpConfiguration = configuration.getHttpClientConfig();
 
-        basicBeaconData = createBasicBeaconData();
+        immutableBasicBeaconData = createImmutableBasicBeaconData();
+        beaconConfiguration = new AtomicReference<BeaconConfiguration>(DEFAULT_CONFIGURATION);
     }
 
     /**
@@ -223,6 +230,11 @@ public class Beacon {
      * @param action The action to add.
      */
     public void addAction(ActionImpl action) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder actionBuilder = new StringBuilder();
 
         buildBasicEventData(actionBuilder, EventType.ACTION, action.getName());
@@ -247,6 +259,11 @@ public class Beacon {
      * @param session The session to add.
      */
     public void endSession(SessionImpl session) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.SESSION_END, null);
@@ -270,6 +287,11 @@ public class Beacon {
      * @param value Actual value to report.
      */
     public void reportValue(ActionImpl parentAction, String valueName, int value) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
@@ -290,6 +312,11 @@ public class Beacon {
      * @param value Actual value to report.
      */
     public void reportValue(ActionImpl parentAction, String valueName, double value) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
@@ -310,6 +337,11 @@ public class Beacon {
      * @param value Actual value to report.
      */
     public void reportValue(ActionImpl parentAction, String valueName, String value) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
@@ -331,6 +363,11 @@ public class Beacon {
      * @param eventName Event's name.
      */
     public void reportEvent(ActionImpl parentAction, String eventName) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
@@ -352,7 +389,7 @@ public class Beacon {
      */
     public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
         // if capture errors is off -> do nothing
-        if (!configuration.isCaptureErrors()) {
+        if (isCapturingDisabled() || !configuration.isCaptureErrors()) {
             return;
         }
 
@@ -385,7 +422,7 @@ public class Beacon {
      */
     public void reportCrash(String errorName, String reason, String stacktrace) {
         // if capture crashes is off -> do nothing
-        if (!configuration.isCaptureCrashes()) {
+        if (isCapturingDisabled() || !configuration.isCaptureCrashes()) {
             return;
         }
 
@@ -418,6 +455,11 @@ public class Beacon {
      * @param webRequestTracer Web request tracer to serialize.
      */
     public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.WEBREQUEST, webRequestTracer.getURL());
@@ -452,6 +494,11 @@ public class Beacon {
      * @param userTag User tag containing data to serialize.
      */
     public void identifyUser(String userTag) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
@@ -483,7 +530,7 @@ public class Beacon {
         while (true) {
 
             // prefix for this chunk - must be built up newly, due to changing timestamps
-            String prefix = basicBeaconData + BEACON_DATA_DELIMITER + createTimestampData();
+            String prefix = appendMutableBeaconData(immutableBasicBeaconData);
             // subtract 1024 to ensure that the chunk does not exceed the send size configured on server side?
             // i guess that was the original intention, but i'm not sure about this
             // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
@@ -519,6 +566,25 @@ public class Beacon {
         return response;
     }
 
+    private String appendMutableBeaconData(String immutableBasicBeaconData) {
+
+        StringBuilder mutableBeaconDataBuilder;
+        if (immutableBasicBeaconData != null && !immutableBasicBeaconData.isEmpty()) {
+            mutableBeaconDataBuilder = new StringBuilder(immutableBasicBeaconData);
+            mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER);
+        } else {
+            mutableBeaconDataBuilder = new StringBuilder();
+        }
+
+        // append timestamp data
+        mutableBeaconDataBuilder.append(createTimestampData());
+
+        // append multiplicity
+        mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER)
+               .append(createMultiplicityData());
+
+        return mutableBeaconDataBuilder.toString();
+    }
 
     /**
      * Gets all events.
@@ -624,7 +690,7 @@ public class Beacon {
      *
      * @return Serialized data.
      */
-    private String createBasicBeaconData() {
+    private String createImmutableBasicBeaconData() {
         StringBuilder basicBeaconBuilder = new StringBuilder();
 
         // version and application information
@@ -674,6 +740,21 @@ public class Beacon {
         }
 
         return timestampBuilder.toString();
+    }
+
+    /**
+     * Serialization helper method for creating multiplicity data.
+     *
+     * @return Serialized data.
+     */
+    private String createMultiplicityData() {
+
+        StringBuilder multiplicityBuilder = new StringBuilder();
+
+        // timestamp information
+        addKeyValuePair(multiplicityBuilder, BEACON_KEY_MULTIPLICITY, getMultiplicity());
+
+        return multiplicityBuilder.toString();
     }
 
     /**
@@ -790,4 +871,37 @@ public class Beacon {
         return sessionNumber;
     }
 
+    /**
+     * Sets the Beacon configuration.
+     *
+     * @param beaconConfiguration The new beacon configuration to set.
+     */
+    public void setBeaconConfiguration(BeaconConfiguration beaconConfiguration) {
+        if (beaconConfiguration != null) {
+            this.beaconConfiguration.set(beaconConfiguration);
+        }
+    }
+
+    /**
+     * Tests if capturing is allowed.
+     *
+     * <p>
+     *     Note: Due to multithreading this behaviour could already change,
+     *     when evaluating the result of this call.
+     * </p>
+     *
+     * @return {@code true} if capturing is allowed, {@code false} otherwise.
+     */
+    boolean isCapturingDisabled() {
+        return !beaconConfiguration.get().isCapturingAllowed();
+    }
+
+    /**
+     * Get multiplicity from {@link BeaconConfiguration}.
+     *
+     * @return Multiplicity received from the server.
+     */
+    int getMultiplicity() {
+        return beaconConfiguration.get().getMultiplicity();
+    }
 }
