@@ -23,6 +23,8 @@ import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
@@ -46,6 +48,8 @@ public abstract class AbstractOpenKitBuilder {
     private long beaconCacheMaxRecordAge = BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS;
     private long beaconCacheLowerMemoryBoundary = BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES;
     private long beaconCacheUpperMemoryBoundary = BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
+    private DataCollectionLevel dataCollectionLevel = OpenKitConstants.DEFAULT_DATA_COLLECTION_LEVEL;
+    private CrashReportingLevel crashReportLevel = OpenKitConstants.DEFAULT_CRASH_REPORTING_LEVEL;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
@@ -191,6 +195,40 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
+     * Sets the data collection level.
+     *
+     * <p>
+     * Depending on the chosen level the amount and granularity of data sent is controlled.
+     * OFF (0) - no data collected
+     * PERFORMANCE (1) - only performance related data is collected
+     * USER_BEHAVIOR (2) - all available RUM data including performance related data is collected
+     * default value is OFF(0)
+     * </p>
+     *
+     * @param dataCollectionLevel Data collection  level to apply.
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withDataCollectionLevel(DataCollectionLevel dataCollectionLevel) {
+        this.dataCollectionLevel = dataCollectionLevel;
+        return this;
+    }
+
+    /**
+     * Sets the flag if crash reporting is enabled
+     *
+     * <p>
+     * default value is false
+     * </p>
+     *
+     * @param crashReportLevel Flag if crash reporting is enabled
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withCrashReportingLevel(CrashReportingLevel crashReportLevel) {
+        this.crashReportLevel = crashReportLevel;
+        return this;
+    }
+
+    /**
      * Builds the configuration for the OpenKit instance
      *
      * @return
@@ -251,6 +289,10 @@ public abstract class AbstractOpenKitBuilder {
     long getBeaconCacheUpperMemoryBoundary() {
         return beaconCacheUpperMemoryBoundary;
     }
+
+    DataCollectionLevel getDataCollectionLevel(){ return dataCollectionLevel; }
+
+    CrashReportingLevel getCrashReportLevel() { return crashReportLevel; }
 
     Logger getLogger() {
         if (logger != null) {

@@ -16,10 +16,14 @@
 
 package com.dynatrace.openkit.api;
 
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
+
 /**
  * Defines constant values used in OpenKit
  */
 public class OpenKitConstants {
+
 
     /**
      * Explicit default constructor to hide implicit public one.
@@ -38,5 +42,8 @@ public class OpenKitConstants {
     public static final String DEFAULT_OPERATING_SYSTEM = "OpenKit " + DEFAULT_APPLICATION_VERSION;
     public static final String DEFAULT_MANUFACTURER = "Dynatrace";
     public static final String DEFAULT_MODEL_ID = "OpenKitDevice";
+
+    public static final DataCollectionLevel DEFAULT_DATA_COLLECTION_LEVEL = DataCollectionLevel.OFF;
+    public static final CrashReportingLevel DEFAULT_CRASH_REPORTING_LEVEL = CrashReportingLevel.OFF;
 
 }

@@ -25,6 +25,7 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -130,13 +131,28 @@ public class ConfigurationTest {
 
         // given
         BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", 777, "", beaconCacheConfiguration);
+        BeaconConfiguration beaconConfiguration = mock(BeaconConfiguration.class);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", 777, "", beaconCacheConfiguration, beaconConfiguration);
 
         // when
         BeaconCacheConfiguration obtained = target.getBeaconCacheConfiguration();
 
         // then
         assertThat(obtained, is(sameInstance(beaconCacheConfiguration)));
+    }
+
+    @Test
+    public void getBeaconConfiguration() {
+        // given
+        BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
+        BeaconConfiguration beaconConfiguration = mock(BeaconConfiguration.class);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", 777, "", beaconCacheConfiguration, beaconConfiguration);
+
+        //when
+        BeaconConfiguration obtained = target.getBeaconConfiguration();
+
+        //then
+        assertThat(obtained, is(sameInstance(beaconConfiguration)));
     }
 
     private final class TestConfiguration extends Configuration {
@@ -147,13 +163,16 @@ public class ConfigurationTest {
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
             this(openKitType, applicationName, applicationID, deviceID, endpointURL,
-                new BeaconCacheConfiguration(-1, -1, -1));
+                new BeaconCacheConfiguration(-1, -1, -1),
+                new BeaconConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration) {
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
             super(openKitType, applicationName, applicationID, deviceID, endpointURL,
                 new TestSessionIDProvider(), new SSLStrictTrustManager(),
-                new Device("", "", ""), "", beaconCacheConfiguration);
+                new Device("", "", ""), "",
+                beaconCacheConfiguration,
+                beaconConfiguration);
         }
     }
 }

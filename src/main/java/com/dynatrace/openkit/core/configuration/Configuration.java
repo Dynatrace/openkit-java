@@ -42,12 +42,13 @@ public class Configuration {
     private final String endpointURL;
 
     // mutable settings
-    private final AtomicBoolean capture;                               // capture on/off; can be written/read by different threads -> atomic
+    private final AtomicBoolean capture;                         // capture on/off; can be written/read by different threads -> atomic
     private int sendInterval;                                    // beacon send interval; is only written/read by beacon sender thread -> non-atomic
     private int maxBeaconSize;                                   // max beacon size; is only written/read by beacon sender thread -> non-atomic
-    private final AtomicBoolean captureErrors;                         // capture errors on/off; can be written/read by different threads -> atomic
-    private final AtomicBoolean captureCrashes;                        // capture crashes on/off; can be written/read by different threads -> atomic
+    private final AtomicBoolean captureErrors;                   // capture errors on/off; can be written/read by different threads -> atomic
+    private final AtomicBoolean captureCrashes;                  // capture crashes on/off; can be written/read by different threads -> atomic
     private HTTPClientConfiguration httpClientConfiguration;     // the current http client configuration
+    private BeaconConfiguration beaconConfiguration;             // data collection levels
 
     // application and device settings
     private final String applicationVersion;
@@ -62,7 +63,7 @@ public class Configuration {
 
     public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL,
                          SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion,
-                         BeaconCacheConfiguration beaconCacheConfiguration) {
+                         BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
 
         this.openKitType = openKitType;
 
@@ -93,6 +94,8 @@ public class Configuration {
         this.beaconCacheConfiguration = beaconCacheConfiguration;
 
         this.sessionIDProvider = sessionIDProvider;
+
+        this.beaconConfiguration = beaconConfiguration;
     }
 
     // *** public methods ***
@@ -237,4 +240,6 @@ public class Configuration {
     public BeaconCacheConfiguration getBeaconCacheConfiguration() {
          return beaconCacheConfiguration;
     }
+
+    public BeaconConfiguration getBeaconConfiguration() { return beaconConfiguration; }
 }
