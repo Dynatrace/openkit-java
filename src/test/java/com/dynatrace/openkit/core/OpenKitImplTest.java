@@ -83,38 +83,7 @@ public class OpenKitImplTest {
         openKit.shutdown();
         assertThat(openKit.isInitialized(), is(false));
     }
-
-    @Ignore // with no proper beacon endpoint the current implementation waits forever
-    @Test(timeout = 1000)
-    public void fullyInitialized() {
-        // create test environment
-        final OpenKitImpl openKit = new OpenKitImpl(logger, config);
-
-        // walk through minimum life cycle
-        openKit.initialize();
-        openKit.waitForInitCompletion(); // blocking call
-        openKit.shutdown();
-    }
-
-    @Ignore // FIXME: flaky test in Jenkins
-    @Test(timeout = 3000)
-    public void waitForInitCompletionWithTimeout() {
-        // create test environment
-        final OpenKitImpl openKit = new OpenKitImpl(logger, config);
-
-        // walk through minimum life cycle
-        openKit.initialize();
-        final long timeoutMs = 1000;
-        final long t1 = System.currentTimeMillis();
-        openKit.waitForInitCompletion(timeoutMs);
-        final long waitTime = System.currentTimeMillis() - t1;
-        // timeout should roughly be matched (within 100ms)
-        assertThat(Math.abs(waitTime - timeoutMs), is(lessThan(100L)));
-        openKit.shutdown();
-
-        assertThat(openKit.isInitialized(), is(false));
-    }
-
+    
     @Test(timeout = 3000)
     public void waitForInitCompletionWithZeroTimeout() {
         // create test environment

@@ -819,7 +819,6 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(0));
-
         ActionImpl parentAction = mock(ActionImpl.class);
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
 
