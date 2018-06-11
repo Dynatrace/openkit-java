@@ -877,7 +877,9 @@ public class Beacon {
      * @param beaconConfiguration The new beacon configuration to set.
      */
     public void setBeaconConfiguration(BeaconConfiguration beaconConfiguration) {
-        this.beaconConfiguration.set(beaconConfiguration);
+        if (beaconConfiguration != null) {
+            this.beaconConfiguration.set(beaconConfiguration);
+        }
     }
 
     /**
