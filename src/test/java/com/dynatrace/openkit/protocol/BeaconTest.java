@@ -874,9 +874,9 @@ public class BeaconTest {
 
         //then
         verify(mockAction, times(1)).getID();
-        verify(mockWebRequestTracer, times(2)).getBytesReceived();
-        verify(mockWebRequestTracer, times(2)).getBytesSent();
-        verify(mockWebRequestTracer, times(2)).getResponseCode();
+        verify(mockWebRequestTracer, times(1)).getBytesReceived();
+        verify(mockWebRequestTracer, times(1)).getBytesSent();
+        verify(mockWebRequestTracer, times(1)).getResponseCode();
         //verify nothing has been serialized
         assertThat(target.isEmpty(), is(false));
     }
@@ -894,9 +894,9 @@ public class BeaconTest {
 
         //then
         verify(mockAction, times(1)).getID();
-        verify(mockWebRequestTracer, times(2)).getBytesReceived();
-        verify(mockWebRequestTracer, times(2)).getBytesSent();
-        verify(mockWebRequestTracer, times(2)).getResponseCode();
+        verify(mockWebRequestTracer, times(1)).getBytesReceived();
+        verify(mockWebRequestTracer, times(1)).getBytesSent();
+        verify(mockWebRequestTracer, times(1)).getResponseCode();
         //verify nothing has been serialized
         assertThat(target.isEmpty(), is(false));
     }
@@ -986,5 +986,70 @@ public class BeaconTest {
         //then
         //verify user tag has been serialized
         assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void visitorIDIsRandomizedOnDataCollectionLevel0(){
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        //when
+        long visitorID = target.getVisitorID(mockConfiguration);
+
+        // then verify that the device id is not taken from the configuration
+        // this means it must have been generated randomly
+        verify(mockConfiguration, times(0)).getDeviceID();
+    }
+
+    @Test
+    public void visitorIDIsRandomizedOnDataCollectionLevel1(){
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        //when
+        long visitorID = target.getVisitorID(mockConfiguration);
+
+        // then verify that the device id is not taken from the configuration
+        // this means it must have been generated randomly
+        verify(mockConfiguration, times(0)).getDeviceID();
+    }
+
+    @Test
+    public void visitorIDIsRandomizedOnDataCollectionLevel2(){
+        long TEST_DEVICE_ID = 1338;
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        //when
+        long visitorID = target.getVisitorID(mockConfiguration);
+
+        //then verify that device id is taken from configuration
+        verify(mockConfiguration, times(1)).getDeviceID();
+        assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
     }
 }

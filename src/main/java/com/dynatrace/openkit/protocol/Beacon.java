@@ -24,6 +24,7 @@ import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -32,6 +33,7 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -156,8 +158,16 @@ public class Beacon {
         // store the current configuration
         this.httpConfiguration = configuration.getHttpClientConfig();
 
+        if(configuration.getBeaconConfiguration() != null) {
+            beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
+        }
+        else {
+            BeaconConfiguration defaultConfig = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+            beaconConfiguration = new AtomicReference<BeaconConfiguration>(defaultConfig);
+        }
+
         immutableBasicBeaconData = createImmutableBasicBeaconData();
-        beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
+
     }
 
     /**
@@ -406,9 +416,7 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
-        if (reason != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        }
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
         addEventData(timestamp, eventBuilder);
     }
@@ -438,12 +446,8 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
-        if (reason != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        }
-        if (stacktrace != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
-        }
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
         addEventData(timestamp, eventBuilder);
     }
@@ -477,17 +481,10 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
 
-        if (webRequestTracer.getBytesSent() > -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_SENT, webRequestTracer.getBytesSent());
-        }
+        addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_SENT, webRequestTracer.getBytesSent());
+        addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
+        addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
 
-        if (webRequestTracer.getBytesReceived() > -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
-        }
-
-        if (webRequestTracer.getResponseCode() != -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
-        }
 
         addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
@@ -709,30 +706,42 @@ public class Beacon {
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, ProtocolConstants.OPENKIT_VERSION);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, configuration.getApplicationID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, configuration.getApplicationName());
-        if (configuration.getApplicationVersion() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
-        }
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, ProtocolConstants.PLATFORM_TYPE_OPENKIT);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getDeviceID());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getVisitorID(configuration));
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, sessionNumber);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
-        if (configuration.getDevice().getOperatingSystem() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice().getOperatingSystem());
-        }
-        if (configuration.getDevice().getManufacturer() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
-                                                                                             .getManufacturer());
-        }
-        if (configuration.getDevice().getModelID() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
-        }
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice().getOperatingSystem());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice().getManufacturer());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
 
         return basicBeaconBuilder.toString();
+    }
+
+    /**
+     * Get a visitor ID for the current level of data collection
+     *
+     * in case of level 2 (USER_BEHAVIOR) the value from the configuration is used
+     * in case of level 1 (PERFORMANCE) or 0 (OFF) a random number in the positive Long range is used
+     *
+     * @param configuration configuration object
+     * @return
+     */
+    public long getVisitorID(Configuration configuration){
+
+        if(configuration != null && beaconConfiguration.get() != null)
+        {
+            DataCollectionLevel dataCollectionLevel = beaconConfiguration.get().getDataCollectionLevel();
+            if(dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
+                return configuration.getDeviceID();
+            }
+        }
+        return new Random().nextLong() & 0x7fffffffffffffffL; // ensure a positive long
     }
 
     /**
@@ -790,6 +799,22 @@ public class Beacon {
     }
 
     /**
+     * Serialization helper method for adding key/value pairs with string values
+     *
+     * if the string value turns out to be null the key value pair is not added
+     * to the string builder
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param stringValue The value to add.
+     */
+    private void addKeyValuePairIfNotNull(StringBuilder builder, String key, String stringValue) {
+        if(stringValue != null && stringValue.length() > 0) {
+            addKeyValuePair(builder, key, stringValue);
+        }
+    }
+
+    /**
      * Serialization helper method for adding key/value pairs with long values
      *
      * @param builder The string builder storing serialized data.
@@ -812,6 +837,22 @@ public class Beacon {
         appendKey(builder, key);
         builder.append(intValue);
     }
+
+    /**
+     * Serialization helper method for adding key/value pairs with int values
+     *
+     * the key value pair is only added to the string builder when the int is not negative
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param intValue The value to add.
+     */
+    private void addKeyValuePairIfNotNegative(StringBuilder builder, String key, int intValue) {
+        if(intValue >= 0) {
+            addKeyValuePair(builder, key, intValue);
+        }
+    }
+
 
     /**
      * Serialization helper method for adding key/value pairs with double values
