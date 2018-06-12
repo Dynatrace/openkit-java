@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -208,6 +209,9 @@ public class Beacon {
      * @return A web request tracer tag.
      */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return "";
+        }
         return TAG_PREFIX + "_"
             + ProtocolConstants.PROTOCOL_VERSION + "_"
             + httpConfiguration.getServerID() + "_"
@@ -456,6 +460,9 @@ public class Beacon {
     public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
 
         if (isCapturingDisabled()) {
+            return;
+        }
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 

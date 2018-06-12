@@ -843,4 +843,106 @@ public class BeaconTest {
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
     }
+
+    @Test
+    public void noWebRequestIsReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
+        //when
+        target.addWebRequest(mockAction, mockWebRequestTracer);
+
+        //then
+        verifyZeroInteractions(mockAction);
+        verifyZeroInteractions(mockWebRequestTracer);
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void webRequestIsReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
+
+        //when
+        target.addWebRequest(mockAction, mockWebRequestTracer);
+
+        //then
+        verify(mockAction, times(1)).getID();
+        verify(mockWebRequestTracer, times(2)).getBytesReceived();
+        verify(mockWebRequestTracer, times(2)).getBytesSent();
+        verify(mockWebRequestTracer, times(2)).getResponseCode();
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void webRequestIsReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
+
+        //when
+        target.addWebRequest(mockAction, mockWebRequestTracer);
+
+        //then
+        verify(mockAction, times(1)).getID();
+        verify(mockWebRequestTracer, times(2)).getBytesReceived();
+        verify(mockWebRequestTracer, times(2)).getBytesSent();
+        verify(mockWebRequestTracer, times(2)).getResponseCode();
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void beaconReturnsEmptyTagOnDataCollectionLevel0(){
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        String returnedTag = target.createTag(mockAction, 1 );
+
+        //then
+        assertThat(returnedTag.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void beaconReturnsValidTagOnDataCollectionLevel1(){
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        String returnedTag = target.createTag(mockAction, 1 );
+
+        //then
+        assertThat(returnedTag.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
+
+    @Test
+    public void beaconReturnsValidTagOnDataCollectionLevel2(){
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        String returnedTag = target.createTag(mockAction, 1 );
+
+        //then
+        assertThat(returnedTag.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
 }
