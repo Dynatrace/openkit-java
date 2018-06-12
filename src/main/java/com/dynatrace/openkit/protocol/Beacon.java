@@ -119,7 +119,6 @@ public class Beacon {
 
     private final BeaconCacheImpl beaconCache;
 
-    private static final BeaconConfiguration DEFAULT_CONFIGURATION = new BeaconConfiguration();
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
 
     // *** constructors ***
@@ -157,7 +156,7 @@ public class Beacon {
         this.httpConfiguration = configuration.getHttpClientConfig();
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
-        beaconConfiguration = new AtomicReference<BeaconConfiguration>(DEFAULT_CONFIGURATION);
+        beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
     }
 
     /**

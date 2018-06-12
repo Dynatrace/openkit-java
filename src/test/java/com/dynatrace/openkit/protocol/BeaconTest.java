@@ -66,6 +66,9 @@ public class BeaconTest {
         when(mockHTTPClientConfiguration.getServerID()).thenReturn(SERVER_ID);
         when(configuration.getHttpClientConfig()).thenReturn(mockHTTPClientConfiguration);
 
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
+
         threadIDProvider = mock(ThreadIDProvider.class);
         when(threadIDProvider.getThreadID()).thenReturn(THREAD_ID);
 

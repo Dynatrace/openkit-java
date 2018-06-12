@@ -19,7 +19,10 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -66,6 +69,8 @@ public class SessionImplTest {
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
         when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB=default size
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
         final String clientIPAddress = "127.0.0.1";
         final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
         final TimingProvider timingProvider = mock(TimingProvider.class);
