@@ -945,4 +945,46 @@ public class BeaconTest {
         assertThat(returnedTag.isEmpty(), is(false));
         verify(mockAction, times(1)).getID();
     }
+
+    @Test
+    public void cannotIdentifyUserOnDataCollectionLevel0(){
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        //when
+        target.identifyUser("jane@doe.com" );
+
+        //then
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void cannotIdentifyUserOnDataCollectionLevel1(){
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        //when
+        target.identifyUser("jane@doe.com" );
+
+        //then
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void canIdentifyUserOnDataCollectionLevel2(){
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        //when
+        target.identifyUser("jane@doe.com" );
+
+        //then
+        //verify user tag has been serialized
+        assertThat(target.isEmpty(), is(false));
+    }
 }

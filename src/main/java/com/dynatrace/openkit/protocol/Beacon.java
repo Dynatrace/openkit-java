@@ -505,6 +505,10 @@ public class Beacon {
             return;
         }
 
+        if(beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR){
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
