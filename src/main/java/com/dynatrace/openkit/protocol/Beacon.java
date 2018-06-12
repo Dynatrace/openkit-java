@@ -202,6 +202,7 @@ public class Beacon {
      *
      * <p>
      * Web request tags can be attached as HTTP header for web request tracing.
+     * If data collection level is 0 (OFF) an empty tag is returned.
      * </p>
      *
      * @param parentAction The action for which to create a web request tag.
