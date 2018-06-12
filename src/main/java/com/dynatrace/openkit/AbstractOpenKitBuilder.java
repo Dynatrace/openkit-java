@@ -210,7 +210,9 @@ public abstract class AbstractOpenKitBuilder {
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withDataCollectionLevel(DataCollectionLevel dataCollectionLevel) {
-        this.dataCollectionLevel = dataCollectionLevel;
+        if(dataCollectionLevel != null) {
+            this.dataCollectionLevel = dataCollectionLevel;
+        }
         return this;
     }
 
@@ -225,7 +227,9 @@ public abstract class AbstractOpenKitBuilder {
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withCrashReportingLevel(CrashReportingLevel crashReportLevel) {
-        this.crashReportLevel = crashReportLevel;
+        if(crashReportLevel != null) {
+            this.crashReportLevel = crashReportLevel;
+        }
         return this;
     }
 
@@ -291,9 +295,13 @@ public abstract class AbstractOpenKitBuilder {
         return beaconCacheUpperMemoryBoundary;
     }
 
-    DataCollectionLevel getDataCollectionLevel(){ return dataCollectionLevel; }
+    DataCollectionLevel getDataCollectionLevel() {
+        return dataCollectionLevel;
+    }
 
-    CrashReportingLevel getCrashReportLevel() { return crashReportLevel; }
+    CrashReportingLevel getCrashReportLevel() {
+        return crashReportLevel;
+    }
 
     Logger getLogger() {
         if (logger != null) {
