@@ -119,7 +119,7 @@ public class Beacon {
 
     private final BeaconCacheImpl beaconCache;
 
-    private static final BeaconConfiguration DEFAULT_CONFIGURATION = new BeaconConfiguration(1);
+    private static final BeaconConfiguration DEFAULT_CONFIGURATION = new BeaconConfiguration();
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
 
     // *** constructors ***

@@ -16,10 +16,14 @@
 
 package com.dynatrace.openkit.api;
 
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
+
 /**
  * Defines constant values used in OpenKit
  */
 public class OpenKitConstants {
+
 
     /**
      * Explicit default constructor to hide implicit public one.

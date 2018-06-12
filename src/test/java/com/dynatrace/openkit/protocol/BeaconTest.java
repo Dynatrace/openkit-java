@@ -19,9 +19,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.*;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.*;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -692,7 +690,7 @@ public class BeaconTest {
     public void noSessionIsAddedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         SessionImpl session = mock(SessionImpl.class);
 
         // when
@@ -707,7 +705,7 @@ public class BeaconTest {
     public void noActionIsAddedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         ActionImpl action = mock(ActionImpl.class);
 
         // when
@@ -722,7 +720,7 @@ public class BeaconTest {
     public void noIntValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         int intValue = 42;
         ActionImpl parentAction = mock(ActionImpl.class);
@@ -739,7 +737,7 @@ public class BeaconTest {
     public void noDoubleValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         double doubleValue = Math.E;
         ActionImpl parentAction = mock(ActionImpl.class);
@@ -756,7 +754,7 @@ public class BeaconTest {
     public void noStringValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         String stringValue = "Write once, debug everywhere";
         ActionImpl parentAction = mock(ActionImpl.class);
@@ -773,7 +771,7 @@ public class BeaconTest {
     public void noEventIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         ActionImpl parentAction = mock(ActionImpl.class);
 
@@ -789,7 +787,7 @@ public class BeaconTest {
     public void noErrorIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         ActionImpl parentAction = mock(ActionImpl.class);
 
@@ -805,7 +803,7 @@ public class BeaconTest {
     public void noCrashIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
@@ -818,7 +816,7 @@ public class BeaconTest {
     public void noWebRequestIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         ActionImpl parentAction = mock(ActionImpl.class);
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
 
@@ -834,7 +832,7 @@ public class BeaconTest {
     public void noUserIdentificationIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0));
+        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.identifyUser("jane.doe@acme.com");

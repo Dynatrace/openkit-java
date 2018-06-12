@@ -18,6 +18,7 @@ package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
@@ -48,6 +49,9 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
         BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxRecordAge(),
             getBeaconCacheLowerMemoryBoundary(),
             getBeaconCacheUpperMemoryBoundary());
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1,
+            getDataCollectionLevel(),
+            getCrashReportLevel());
         return new Configuration(
             OpenKitType.APPMON,
             applicationName,
@@ -58,6 +62,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
             getTrustManager(),
             device,
             getApplicationVersion(),
-            beaconCacheConfiguration);
+            beaconCacheConfiguration,
+            beaconConfiguration);
     }
 }

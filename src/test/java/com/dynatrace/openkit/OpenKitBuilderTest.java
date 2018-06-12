@@ -20,7 +20,10 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.hamcrest.Matchers;
@@ -39,6 +42,8 @@ public class OpenKitBuilderTest {
     private static final String os = "custom OS";
     private static final String manufacturer = "custom manufacturer";
     private static final String modelID = "custom model id";
+    private static final DataCollectionLevel dataCollectionLevel = DataCollectionLevel.PERFORMANCE;
+    private static final CrashReportingLevel crashReportingLevel = CrashReportingLevel.OPT_IN_CRASHES;
 
     @Test
     public void defaultsAreSetForAppMon() {
@@ -67,6 +72,8 @@ public class OpenKitBuilderTest {
         assertThat(configuration.getBeaconCacheConfiguration().getMaxRecordAge(), is(BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS));
         assertThat(configuration.getBeaconCacheConfiguration().getCacheSizeUpperBound(), is(BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES));
         assertThat(configuration.getBeaconCacheConfiguration().getCacheSizeLowerBound(), is(BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES));
+        assertThat(configuration.getBeaconConfiguration().getDataCollectionLevel(), is(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
+        assertThat(configuration.getBeaconConfiguration().getCrashReportingLevel(), is(BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL));
     }
 
     @Test
@@ -309,4 +316,45 @@ public class OpenKitBuilderTest {
         assertThat((AppMonOpenKitBuilder)obtained, is(sameInstance(target)));
         assertThat(target.getBeaconCacheUpperMemoryBoundary(), is(upperMemoryBoundary));
     }
+
+    @Test
+    public void canSetDataCollectionLevelForAppMon() {
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appID, deviceID)
+            .withDataCollectionLevel(dataCollectionLevel)
+            .buildConfiguration();
+
+        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(),
+            is(equalTo(dataCollectionLevel)));
+    }
+
+    @Test
+    public void canSetDataCollectionLevelForDynatrace() {
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
+            .withDataCollectionLevel(dataCollectionLevel)
+            .buildConfiguration();
+
+        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(),
+            is(equalTo(dataCollectionLevel)));
+    }
+
+    @Test
+    public void canSetCrashReportingLevelForAppMon() {
+        Configuration target = new AppMonOpenKitBuilder(endpoint, appID, deviceID)
+            .withCrashReportingLevel(crashReportingLevel)
+            .buildConfiguration();
+
+        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(),
+            is(equalTo(crashReportingLevel)));
+    }
+
+    @Test
+    public void canSetCrashReportingLevelForDynatrace() {
+        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
+            .withCrashReportingLevel(crashReportingLevel)
+            .buildConfiguration();
+
+        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(),
+            is(equalTo(crashReportingLevel)));
+    }
+
 }
