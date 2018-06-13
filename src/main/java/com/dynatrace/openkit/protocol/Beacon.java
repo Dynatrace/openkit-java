@@ -21,11 +21,7 @@ import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
-import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.*;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -177,10 +173,9 @@ public class Beacon {
         // store the current configuration
         this.httpConfiguration = configuration.getHttpClientConfig();
 
-        if(configuration.getBeaconConfiguration() != null) {
+        if (configuration.getBeaconConfiguration() != null) {
             beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
-        }
-        else {
+        } else {
             BeaconConfiguration defaultConfig = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
             beaconConfiguration = new AtomicReference<BeaconConfiguration>(defaultConfig);
         }
@@ -230,7 +225,7 @@ public class Beacon {
      *
      * <p>
      * Web request tags can be attached as HTTP header for web request tracing.
-     * If data collection level is 0 (OFF) an empty tag is returned.
+     * If data collection level is 0 ({@link DataCollectionLevel#OFF}) an empty tag is returned.
      * </p>
      *
      * @param parentAction The action for which to create a web request tag.
@@ -238,7 +233,7 @@ public class Beacon {
      * @return A web request tracer tag.
      */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
-        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
         return TAG_PREFIX + "_"
@@ -485,7 +480,7 @@ public class Beacon {
         if (isCapturingDisabled()) {
             return;
         }
-        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 
@@ -506,6 +501,7 @@ public class Beacon {
 
         addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
+
     /**
      * Add user identification to Beacon.
      *
@@ -521,7 +517,7 @@ public class Beacon {
             return;
         }
 
-        if(beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR){
+        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -607,7 +603,7 @@ public class Beacon {
 
         // append multiplicity
         mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER)
-               .append(createMultiplicityData());
+                                .append(createMultiplicityData());
 
         return mutableBeaconDataBuilder.toString();
     }
@@ -729,13 +725,15 @@ public class Beacon {
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getVisitorID(configuration));
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getVisitorID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionID(sessionNumber));
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
-        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice().getOperatingSystem());
-        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice().getManufacturer());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice()
+                                                                                        .getOperatingSystem());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
+                                                                                                  .getManufacturer());
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
 
         return basicBeaconBuilder.toString();
@@ -750,12 +748,11 @@ public class Beacon {
      * @param configuration configuration object
      * @return
      */
-    public long getVisitorID(Configuration configuration){
-
-        if(configuration != null && beaconConfiguration.get() != null)
-        {
-            DataCollectionLevel dataCollectionLevel = beaconConfiguration.get().getDataCollectionLevel();
-            if(dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
+    public long getVisitorID() {
+        BeaconConfiguration beaconConfig = beaconConfiguration.get();
+        if (configuration != null && beaconConfig != null) {
+            DataCollectionLevel dataCollectionLevel = beaconConfig.getDataCollectionLevel();
+            if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
                 return configuration.getDeviceID();
             }
         }
@@ -766,14 +763,14 @@ public class Beacon {
      * Get a session ID for the current data collection level
      * @param sessionNumber session number as generated by the SessionIDProvider
      *
-     * in case of level 2 (USER_BEHAVIOR) the value from the session id provider is used
-     * in case of level 1 (PERFORMANCE) or 0 (OFF) a random positive int value is used
+     * in case of level 2 ({@link DataCollectionLevel#USER_BEHAVIOR}) the value from the session id provider is used
+     * in case of level 1 ({@link DataCollectionLevel#PERFORMANCE}) or 0 ({@link DataCollectionLevel#OFF}) a random positive int value is used
      *
      * @return
      */
     public int getSessionID(int sessionNumber) {
         DataCollectionLevel dataCollectionLevel = beaconConfiguration.get().getDataCollectionLevel();
-        if(dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
+        if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
             return sessionNumber;
         }
         return 1;//the visitor/device id is already random, it is fine to use 1 here
@@ -844,7 +841,7 @@ public class Beacon {
      * @param stringValue The value to add.
      */
     private void addKeyValuePairIfNotNull(StringBuilder builder, String key, String stringValue) {
-        if(stringValue != null && stringValue.length() > 0) {
+        if (stringValue != null) {
             addKeyValuePair(builder, key, stringValue);
         }
     }
@@ -883,7 +880,7 @@ public class Beacon {
      * @param intValue The value to add.
      */
     private void addKeyValuePairIfNotNegative(StringBuilder builder, String key, int intValue) {
-        if(intValue >= 0) {
+        if (intValue >= 0) {
             addKeyValuePair(builder, key, intValue);
         }
     }
