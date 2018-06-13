@@ -1052,4 +1052,46 @@ public class BeaconTest {
         verify(mockConfiguration, times(1)).getDeviceID();
         assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
     }
+
+    @Test
+    public void sessionIDIsIntValue1OnDataCollectionLevel0(){
+        final int SESSION_ID = 1234;
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        //when
+        int sessionID = target.getSessionID(SESSION_ID);
+
+        //then
+        assertThat(sessionID, is(equalTo(1)));
+    }
+
+    @Test
+    public void sessionIDIsIntValue1OnDataCollectionLevel1(){
+        final int SESSION_ID = 1234;
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        //when
+        int sessionID = target.getSessionID(SESSION_ID);
+
+        //then
+        assertThat(sessionID, is(equalTo(1)));
+    }
+
+    @Test
+    public void sessionIDIsValueFromSessionIDProviderOnDataCollectionLevel2(){
+        final int SESSION_ID = 1234;
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        //when
+        int sessionID = target.getSessionID(SESSION_ID);
+
+        //then
+        assertThat(sessionID, is(equalTo(SESSION_ID)));
+    }
 }
