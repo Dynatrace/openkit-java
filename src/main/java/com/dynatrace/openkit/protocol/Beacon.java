@@ -420,6 +420,10 @@ public class Beacon {
             return;
         }
 
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
