@@ -262,6 +262,10 @@ public class Beacon {
             return;
         }
 
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return;
+        }
+
         StringBuilder actionBuilder = new StringBuilder();
 
         buildBasicEventData(actionBuilder, EventType.ACTION, action.getName());
@@ -291,15 +295,21 @@ public class Beacon {
             return;
         }
 
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.SESSION_END, null);
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
 
-        addEventData(session.getEndTime(), eventBuilder);
+        long sessionEndTime = session.getEndTime();
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(sessionEndTime));
+
+        addEventData(sessionEndTime, eventBuilder);
     }
 
     /**
