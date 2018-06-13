@@ -124,7 +124,7 @@ public class Beacon {
 
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
 
-    private Random random = null;
+    private final Random random;
 
     // *** constructors ***
 
@@ -139,6 +139,21 @@ public class Beacon {
      * @param timingProvider Provider for time related methods.
      */
     public Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
+        this(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider, new Random());
+    }
+
+    /**
+     * Constructor additionally taking a Random object, used for testing
+     *
+     * @param logger Logger for logging messages.
+     * @param beaconCache Cache storing beacon related data.
+     * @param configuration OpenKit related configuration.
+     * @param clientIPAddress The client's IP address.
+     * @param threadIDProvider Provider for retrieving thread id.
+     * @param timingProvider Provider for time related methods.
+     * @param random Random that can be mocked for tests
+     */
+    Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider, Random random) {
         this.logger = logger;
         this.beaconCache = beaconCache;
         this.sessionNumber = configuration.createSessionNumber();
@@ -148,7 +163,7 @@ public class Beacon {
         this.threadIDProvider = threadIDProvider;
         this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
 
-        this.random = new Random();
+        this.random = random;
 
         if (InetAddressValidator.isValidIP(clientIPAddress)) {
             this.clientIPAddress = clientIPAddress;
@@ -171,24 +186,6 @@ public class Beacon {
         }
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
-    }
-
-    /**
-     * Constructor additionally taking a Random object, used for testing
-     *
-     * @param logger Logger for logging messages.
-     * @param beaconCache Cache storing beacon related data.
-     * @param configuration OpenKit related configuration.
-     * @param clientIPAddress The client's IP address.
-     * @param threadIDProvider Provider for retrieving thread id.
-     * @param timingProvider Provider for time related methods.
-     * @param random Random that can be mocked for tests
-     */
-    Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider, Random random) {
-        this(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
-        if(random != null) {
-            this.random = random;
-        }
     }
 
     /**

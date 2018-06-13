@@ -1009,7 +1009,7 @@ public class BeaconTest {
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
         verify(mockConfiguration, times(0)).getDeviceID();
-        verify(mockRandom, times(1)).nextLong();
+        verify(mockRandom, times(2)).nextLong();
     }
 
     @Test
@@ -1032,7 +1032,7 @@ public class BeaconTest {
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
         verify(mockConfiguration, times(0)).getDeviceID();
-        verify(mockRandom, times(1)).nextLong();
+        verify(mockRandom, times(2)).nextLong();
     }
 
     @Test
@@ -1056,7 +1056,7 @@ public class BeaconTest {
 
         //then verify that device id is taken from configuration
         verify(mockConfiguration, times(1)).getDeviceID();
-        verify(mockRandom, times(0)).nextLong();
+        verify(mockRandom, times(1)).nextLong();
         assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
     }
 
@@ -1081,8 +1081,8 @@ public class BeaconTest {
         long visitorID = target.getVisitorID(mockConfiguration);
 
         //then verify that device id is taken from configuration
-        verify(mockRandom, times(1)).nextLong();
-        assertThat(visitorID, is(greaterThanOrEqualTo(0L)));
+        verify(mockRandom, times(2)).nextLong();
+        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
     }
 
     @Test
@@ -1106,8 +1106,8 @@ public class BeaconTest {
         long visitorID = target.getVisitorID(mockConfiguration);
 
         //then verify that the id is positive regardless of the 
-        verify(mockRandom, times(1)).nextLong();
-        assertThat(visitorID, is(greaterThanOrEqualTo(0L)));
+        verify(mockRandom, times(2)).nextLong();
+        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
     }
 
     @Test
