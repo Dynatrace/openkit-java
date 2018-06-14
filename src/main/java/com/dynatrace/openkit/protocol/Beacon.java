@@ -745,7 +745,6 @@ public class Beacon {
      * in case of level 2 (USER_BEHAVIOR) the value from the configuration is used
      * in case of level 1 (PERFORMANCE) or 0 (OFF) a random number in the positive Long range is used
      *
-     * @param configuration configuration object
      * @return
      */
     public long getVisitorID() {
