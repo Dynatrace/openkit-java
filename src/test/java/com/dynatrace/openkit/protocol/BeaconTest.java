@@ -1004,7 +1004,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
-        target.getVisitorID();
+        target.getDeviceID();
 
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
@@ -1027,7 +1027,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
-        target.getVisitorID();
+        target.getDeviceID();
 
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
@@ -1052,7 +1052,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
-        long visitorID = target.getVisitorID();
+        long visitorID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
         verify(mockConfiguration, times(1)).getDeviceID();
@@ -1078,7 +1078,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
-        long visitorID = target.getVisitorID();
+        long visitorID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
         verify(mockRandom, times(2)).nextLong();
@@ -1103,7 +1103,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
-        long visitorID = target.getVisitorID();
+        long visitorID = target.getDeviceID();
 
         //then verify that the id is positive regardless of the 
         verify(mockRandom, times(2)).nextLong();
@@ -1118,7 +1118,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionID(SESSION_ID);
+        int sessionID = target.getSessionNumber(SESSION_ID);
 
         //then
         assertThat(sessionID, is(equalTo(1)));
@@ -1132,7 +1132,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionID(SESSION_ID);
+        int sessionID = target.getSessionNumber(SESSION_ID);
 
         //then
         assertThat(sessionID, is(equalTo(1)));
@@ -1146,7 +1146,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionID(SESSION_ID);
+        int sessionID = target.getSessionNumber(SESSION_ID);
 
         //then
         assertThat(sessionID, is(equalTo(SESSION_ID)));

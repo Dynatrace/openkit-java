@@ -119,6 +119,7 @@ public class Beacon {
     private final BeaconCacheImpl beaconCache;
 
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
+    private final BeaconConfiguration DEFAULT_CONFIG = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
 
     private final Random random;
 
@@ -176,8 +177,7 @@ public class Beacon {
         if (configuration.getBeaconConfiguration() != null) {
             beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
         } else {
-            BeaconConfiguration defaultConfig = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
-            beaconConfiguration = new AtomicReference<BeaconConfiguration>(defaultConfig);
+            beaconConfiguration = new AtomicReference<BeaconConfiguration>(DEFAULT_CONFIG);
         }
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
@@ -725,8 +725,8 @@ public class Beacon {
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getVisitorID());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionID(sessionNumber));
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getDeviceID());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionNumber(sessionNumber));
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
@@ -747,7 +747,7 @@ public class Beacon {
      *
      * @return
      */
-    public long getVisitorID() {
+    public long getDeviceID() {
         BeaconConfiguration beaconConfig = beaconConfiguration.get();
         if (configuration != null && beaconConfig != null) {
             DataCollectionLevel dataCollectionLevel = beaconConfig.getDataCollectionLevel();
@@ -767,7 +767,7 @@ public class Beacon {
      *
      * @return
      */
-    public int getSessionID(int sessionNumber) {
+    public int getSessionNumber(int sessionNumber) {
         DataCollectionLevel dataCollectionLevel = beaconConfiguration.get().getDataCollectionLevel();
         if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
             return sessionNumber;
