@@ -1218,7 +1218,7 @@ public class BeaconTest {
         target.endSession(mockSession);
 
         //then
-        //verify action has not been serialized
+        //verify session has not been serialized
         verify(mockSession, times(0)).getEndTime();
         assertThat(target.isEmpty(), is(true));
     }
@@ -1234,7 +1234,7 @@ public class BeaconTest {
         target.endSession(mockSession);
 
         //then
-        //verify action has been serialized
+        //verify session has been serialized
         verify(mockSession, times(1)).getEndTime();
         assertThat(target.isEmpty(), is(false));
     }
@@ -1250,7 +1250,7 @@ public class BeaconTest {
         target.endSession(mockSession);
 
         //then
-        //verify action has been serialized
+        //verify session has been serialized
         verify(mockSession, times(1)).getEndTime();
         assertThat(target.isEmpty(), is(false));
     }
