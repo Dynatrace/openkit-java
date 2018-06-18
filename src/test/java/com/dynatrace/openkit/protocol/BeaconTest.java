@@ -1118,7 +1118,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionNumber(SESSION_ID);
+        int sessionID = target.getSessionNumber();
 
         //then
         assertThat(sessionID, is(equalTo(1)));
@@ -1132,7 +1132,7 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionNumber(SESSION_ID);
+        int sessionID = target.getSessionNumber();
 
         //then
         assertThat(sessionID, is(equalTo(1)));
@@ -1142,13 +1142,20 @@ public class BeaconTest {
     public void sessionIDIsValueFromSessionIDProviderOnDataCollectionLevel2() {
         final int SESSION_ID = 1234;
         //given
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.createSessionNumber()).thenReturn(SESSION_ID);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionNumber(SESSION_ID);
+        int sessionNumber = target.getSessionNumber();
 
         //then
-        assertThat(sessionID, is(equalTo(SESSION_ID)));
+        assertThat(sessionNumber, is(equalTo(SESSION_ID)));
     }
 }
