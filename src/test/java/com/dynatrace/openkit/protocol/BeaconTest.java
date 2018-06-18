@@ -1118,10 +1118,10 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionNumber();
+        int sessionNumber = target.getSessionNumber();
 
         //then
-        assertThat(sessionID, is(equalTo(1)));
+        assertThat(sessionNumber, is(equalTo(1)));
     }
 
     @Test
@@ -1132,10 +1132,10 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
-        int sessionID = target.getSessionNumber();
+        int sessionNumber = target.getSessionNumber();
 
         //then
-        assertThat(sessionID, is(equalTo(1)));
+        assertThat(sessionNumber, is(equalTo(1)));
     }
 
     @Test
