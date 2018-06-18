@@ -21,9 +21,7 @@ import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.*;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -31,6 +29,7 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -119,8 +118,10 @@ public class Beacon {
 
     private final BeaconCacheImpl beaconCache;
 
-    private static final BeaconConfiguration DEFAULT_CONFIGURATION = new BeaconConfiguration();
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
+    private final static BeaconConfiguration DEFAULT_CONFIG = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+
+    private final Random random;
 
     // *** constructors ***
 
@@ -135,6 +136,21 @@ public class Beacon {
      * @param timingProvider Provider for time related methods.
      */
     public Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
+        this(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider, new Random());
+    }
+
+    /**
+     * Constructor additionally taking a Random object, used for testing
+     *
+     * @param logger Logger for logging messages.
+     * @param beaconCache Cache storing beacon related data.
+     * @param configuration OpenKit related configuration.
+     * @param clientIPAddress The client's IP address.
+     * @param threadIDProvider Provider for retrieving thread id.
+     * @param timingProvider Provider for time related methods.
+     * @param random Random that can be mocked for tests
+     */
+    Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider, Random random) {
         this.logger = logger;
         this.beaconCache = beaconCache;
         this.sessionNumber = configuration.createSessionNumber();
@@ -143,6 +159,8 @@ public class Beacon {
         this.configuration = configuration;
         this.threadIDProvider = threadIDProvider;
         this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
+
+        this.random = random;
 
         if (InetAddressValidator.isValidIP(clientIPAddress)) {
             this.clientIPAddress = clientIPAddress;
@@ -156,8 +174,13 @@ public class Beacon {
         // store the current configuration
         this.httpConfiguration = configuration.getHttpClientConfig();
 
+        if (configuration.getBeaconConfiguration() != null) {
+            beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
+        } else {
+            beaconConfiguration = new AtomicReference<BeaconConfiguration>(DEFAULT_CONFIG);
+        }
+
         immutableBasicBeaconData = createImmutableBasicBeaconData();
-        beaconConfiguration = new AtomicReference<BeaconConfiguration>(DEFAULT_CONFIGURATION);
     }
 
     /**
@@ -202,6 +225,7 @@ public class Beacon {
      *
      * <p>
      * Web request tags can be attached as HTTP header for web request tracing.
+     * If data collection level is 0 ({@link DataCollectionLevel#OFF}) an empty tag is returned.
      * </p>
      *
      * @param parentAction The action for which to create a web request tag.
@@ -209,6 +233,9 @@ public class Beacon {
      * @return A web request tracer tag.
      */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
+        if (beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return "";
+        }
         return TAG_PREFIX + "_"
             + ProtocolConstants.PROTOCOL_VERSION + "_"
             + httpConfiguration.getServerID() + "_"
@@ -402,9 +429,7 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
-        if (reason != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        }
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
 
         addEventData(timestamp, eventBuilder);
     }
@@ -434,12 +459,8 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
-        if (reason != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        }
-        if (stacktrace != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
-        }
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
         addEventData(timestamp, eventBuilder);
     }
@@ -459,6 +480,9 @@ public class Beacon {
         if (isCapturingDisabled()) {
             return;
         }
+        if (beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return;
+        }
 
         StringBuilder eventBuilder = new StringBuilder();
 
@@ -470,20 +494,14 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_1, webRequestTracer.getEndTime() - webRequestTracer.getStartTime());
 
-        if (webRequestTracer.getBytesSent() > -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_SENT, webRequestTracer.getBytesSent());
-        }
+        addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_SENT, webRequestTracer.getBytesSent());
+        addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
+        addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
 
-        if (webRequestTracer.getBytesReceived() > -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
-        }
-
-        if (webRequestTracer.getResponseCode() != -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
-        }
 
         addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
+
     /**
      * Add user identification to Beacon.
      *
@@ -496,6 +514,10 @@ public class Beacon {
     public void identifyUser(String userTag) {
 
         if (isCapturingDisabled()) {
+            return;
+        }
+
+        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -581,7 +603,7 @@ public class Beacon {
 
         // append multiplicity
         mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER)
-               .append(createMultiplicityData());
+                                .append(createMultiplicityData());
 
         return mutableBeaconDataBuilder.toString();
     }
@@ -698,30 +720,58 @@ public class Beacon {
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, ProtocolConstants.OPENKIT_VERSION);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, configuration.getApplicationID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, configuration.getApplicationName());
-        if (configuration.getApplicationVersion() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
-        }
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, ProtocolConstants.PLATFORM_TYPE_OPENKIT);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
         // device/visitor ID, session number and IP address
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, configuration.getDeviceID());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, sessionNumber);
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getDeviceID());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionNumber());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
-        if (configuration.getDevice().getOperatingSystem() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice().getOperatingSystem());
-        }
-        if (configuration.getDevice().getManufacturer() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
-                                                                                             .getManufacturer());
-        }
-        if (configuration.getDevice().getModelID() != null) {
-            addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
-        }
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice()
+                                                                                        .getOperatingSystem());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
+                                                                                                  .getManufacturer());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
 
         return basicBeaconBuilder.toString();
+    }
+
+    /**
+     * Get a visitor ID for the current data collection level
+     *
+     * in case of level 2 (USER_BEHAVIOR) the value from the configuration is used
+     * in case of level 1 (PERFORMANCE) or 0 (OFF) a random number in the positive Long range is used
+     *
+     * @return
+     */
+    public long getDeviceID() {
+        BeaconConfiguration beaconConfig = beaconConfiguration.get();
+        if (configuration != null && beaconConfig != null) {
+            DataCollectionLevel dataCollectionLevel = beaconConfig.getDataCollectionLevel();
+            if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
+                return configuration.getDeviceID();
+            }
+        }
+        return random.nextLong() & 0x7fffffffffffffffL; // ensure a positive long
+    }
+
+    /**
+     * Get a session ID for the current data collection level
+     *
+     * in case of level 2 ({@link DataCollectionLevel#USER_BEHAVIOR}) the value from the session id provider is used
+     * in case of level 1 ({@link DataCollectionLevel#PERFORMANCE}) or 0 ({@link DataCollectionLevel#OFF}) a random positive int value is used
+     *
+     * @return
+     */
+    public int getSessionNumber() {
+        DataCollectionLevel dataCollectionLevel = beaconConfiguration.get().getDataCollectionLevel();
+        if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
+            return sessionNumber;
+        }
+        return 1;//the visitor/device id is already random, it is fine to use 1 here
     }
 
     /**
@@ -779,6 +829,22 @@ public class Beacon {
     }
 
     /**
+     * Serialization helper method for adding key/value pairs with string values
+     *
+     * if the string value turns out to be null the key value pair is not added
+     * to the string builder
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param stringValue The value to add.
+     */
+    private void addKeyValuePairIfNotNull(StringBuilder builder, String key, String stringValue) {
+        if (stringValue != null) {
+            addKeyValuePair(builder, key, stringValue);
+        }
+    }
+
+    /**
      * Serialization helper method for adding key/value pairs with long values
      *
      * @param builder The string builder storing serialized data.
@@ -801,6 +867,22 @@ public class Beacon {
         appendKey(builder, key);
         builder.append(intValue);
     }
+
+    /**
+     * Serialization helper method for adding key/value pairs with int values
+     *
+     * the key value pair is only added to the string builder when the int is not negative
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param intValue The value to add.
+     */
+    private void addKeyValuePairIfNotNegative(StringBuilder builder, String key, int intValue) {
+        if (intValue >= 0) {
+            addKeyValuePair(builder, key, intValue);
+        }
+    }
+
 
     /**
      * Serialization helper method for adding key/value pairs with double values
@@ -860,15 +942,6 @@ public class Beacon {
      */
     public boolean isEmpty() {
         return beaconCache.isEmpty(sessionNumber);
-    }
-
-    /**
-     * Returns the session number.
-     *
-     * @return the sessionNumber
-     */
-    public int getSessionNumber() {
-        return sessionNumber;
     }
 
     /**

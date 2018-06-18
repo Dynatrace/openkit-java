@@ -25,11 +25,11 @@ public interface OpenKit extends Closeable {
 
     /**
      * Waits until OpenKit is fully initialized.
-     * <p>
+     *
      * <p>
      * The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      * {@link #shutdown()} method.
-     * <p>
+     *
      * Be aware, if {@link com.dynatrace.openkit.AbstractOpenKitBuilder} is wrongly configured, for example when creating an
      * instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called.
      * </p>

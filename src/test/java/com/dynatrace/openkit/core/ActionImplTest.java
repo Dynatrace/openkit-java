@@ -20,11 +20,13 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +41,10 @@ import java.net.URLEncoder;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyDouble;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -87,9 +92,9 @@ public class ActionImplTest {
         Action obtained = target.reportEvent(null);
 
         // then
-        assertThat(obtained,is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportEvent: eventName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportEvent: eventName must not be null or empty");
         verify(beacon, times(0)).reportEvent(org.mockito.Matchers.any(ActionImpl.class),
             anyString());
     }
@@ -106,9 +111,9 @@ public class ActionImplTest {
         Action obtained = target.reportEvent("");
 
         // then
-        assertThat(obtained,is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportEvent: eventName must not be null or empty"); //
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportEvent: eventName must not be null or empty"); //
         verify(beacon, times(0)).reportEvent(org.mockito.Matchers.any(ActionImpl.class),
             anyString());
     }
@@ -127,11 +132,11 @@ public class ActionImplTest {
 
         // verify that beacon within the action is called properly
         verify(beacon, times(0)).reportValue(org.mockito.Matchers.any(ActionImpl.class), anyString(), anyInt());
-        assertThat(retAction, is(sameInstance((Action)target)));
+        assertThat(retAction, is(sameInstance((Action) target)));
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (int): valueName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (int): valueName must not be null or empty");
     }
 
     @Test
@@ -148,11 +153,11 @@ public class ActionImplTest {
 
         // verify that beacon within the action is called properly
         verify(beacon, times(0)).reportValue(org.mockito.Matchers.any(ActionImpl.class), anyString(), anyInt());
-        assertThat(retAction, is(sameInstance((Action)target)));
+        assertThat(retAction, is(sameInstance((Action) target)));
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (int): valueName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (int): valueName must not be null or empty");
     }
 
     @Test
@@ -189,11 +194,11 @@ public class ActionImplTest {
 
         // verify that beacon within the action is called properly
         verify(beacon, times(0)).reportValue(org.mockito.Matchers.any(ActionImpl.class), anyString(), anyDouble());
-        assertThat(retAction, is(sameInstance((Action)target)));
+        assertThat(retAction, is(sameInstance((Action) target)));
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (double): valueName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (double): valueName must not be null or empty");
     }
 
     @Test
@@ -210,11 +215,11 @@ public class ActionImplTest {
 
         // verify that beacon within the action is called properly
         verify(beacon, times(0)).reportValue(org.mockito.Matchers.any(ActionImpl.class), anyString(), anyDouble());
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (double): valueName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (double): valueName must not be null or empty");
     }
 
     @Test
@@ -230,7 +235,7 @@ public class ActionImplTest {
 
         // verify that beacon within the action is called properly
         verify(beacon, times(1)).reportValue(target, "DoubleValue", 12.3456);
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
     }
 
 
@@ -266,11 +271,11 @@ public class ActionImplTest {
 
         // verify that beacon within the action is called properly
         verify(beacon, times(0)).reportValue(org.mockito.Matchers.any(ActionImpl.class), anyString(), anyString());
-        assertThat(obtained, is(equalTo((Action)target)));
+        assertThat(obtained, is(equalTo((Action) target)));
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (String): valueName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportValue (String): valueName must not be null or empty");
     }
 
     @Test
@@ -331,7 +336,7 @@ public class ActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportError: errorName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportError: errorName must not be null or empty");
     }
 
     @Test
@@ -355,7 +360,7 @@ public class ActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportError: errorName must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] reportError: errorName must not be null or empty");
     }
 
     @Test
@@ -484,7 +489,7 @@ public class ActionImplTest {
         final ActionImpl target = new ActionImpl(logger, beacon, actionName, actions);
 
         // when
-        WebRequestTracer obtained = target.traceWebRequest((String)null);
+        WebRequestTracer obtained = target.traceWebRequest((String) null);
 
         // then
         assertThat(obtained, is(notNullValue()));
@@ -492,7 +497,7 @@ public class ActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url must not be null or empty");
     }
 
     @Test
@@ -514,7 +519,7 @@ public class ActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url must not be null or empty");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (String): url must not be null or empty");
     }
 
     @Test
@@ -558,7 +563,7 @@ public class ActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(
-                "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (URLConnection): connection must not be null");
+            "ActionImpl [sn=17, id=0, name=TestAction, pa=no parent] traceWebRequest (URLConnection): connection must not be null");
     }
 
     @Test
@@ -739,14 +744,14 @@ public class ActionImplTest {
         // create child "1.1"
         final Action child1 = parent.enterAction("1.1");
         assertThat(child1, is(instanceOf(ActionImpl.class)));
-        final ActionImpl child1impl = (ActionImpl)child1;
+        final ActionImpl child1impl = (ActionImpl) child1;
         assertThat(child1impl.getStartSequenceNo(), is(2));
         assertThat(child1impl.getEndSequenceNo(), is(-1));
 
         // create child "1.2"
         final Action child2 = parent.enterAction("1.2");
         assertThat(child2, is(instanceOf(ActionImpl.class)));
-        final ActionImpl child2impl = (ActionImpl)child2;
+        final ActionImpl child2impl = (ActionImpl) child2;
         assertThat(child2impl.getStartSequenceNo(), is(3));
         assertThat(child2impl.getEndSequenceNo(), is(-1));
 
@@ -815,7 +820,7 @@ public class ActionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(true));
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
     }
 
     @Test
@@ -833,7 +838,7 @@ public class ActionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(true));
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
     }
 
     @Test
@@ -851,7 +856,7 @@ public class ActionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(true));
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
     }
 
     @Test
@@ -869,7 +874,7 @@ public class ActionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(true));
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
     }
 
     @Test
@@ -886,7 +891,7 @@ public class ActionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(true));
-        assertThat(obtained, is(sameInstance((Action)target)));
+        assertThat(obtained, is(sameInstance((Action) target)));
     }
 
     @Test
@@ -936,10 +941,10 @@ public class ActionImplTest {
         target.close();
 
         // then
-        assertThat(((ActionImpl)target).getEndTime(), is(equalTo(1234L)));
-        assertThat(((ActionImpl)target).getEndSequenceNo(), is(equalTo(42)));
+        assertThat(((ActionImpl) target).getEndTime(), is(equalTo(1234L)));
+        assertThat(((ActionImpl) target).getEndSequenceNo(), is(equalTo(42)));
 
-        verify(mockBeacon, times(1)).addAction((ActionImpl)target);
+        verify(mockBeacon, times(1)).addAction((ActionImpl) target);
         verify(mockBeacon, times(3)).getCurrentTimestamp();
         verify(mockBeacon, times(2)).createSequenceNumber();
     }
@@ -952,6 +957,8 @@ public class ActionImplTest {
         when(configuration.getApplicationName()).thenReturn("appName");
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
         final String clientIPAddress = "127.0.0.1";
         final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
         final TimingProvider timingProvider = mock(TimingProvider.class);
