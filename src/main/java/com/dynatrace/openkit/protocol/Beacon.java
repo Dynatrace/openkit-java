@@ -262,6 +262,10 @@ public class Beacon {
             return;
         }
 
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return;
+        }
+
         StringBuilder actionBuilder = new StringBuilder();
 
         buildBasicEventData(actionBuilder, EventType.ACTION, action.getName());
@@ -288,6 +292,10 @@ public class Beacon {
     public void endSession(SessionImpl session) {
 
         if (isCapturingDisabled()) {
+            return;
+        }
+
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 
@@ -436,6 +444,10 @@ public class Beacon {
             return;
         }
 
+        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
@@ -464,6 +476,10 @@ public class Beacon {
     public void reportCrash(String errorName, String reason, String stacktrace) {
         // if capture crashes is off -> do nothing
         if (isCapturingDisabled() || !configuration.isCaptureCrashes()) {
+            return;
+        }
+
+        if (beaconConfiguration.get().getCrashReportingLevel() == CrashReportingLevel.OFF) {
             return;
         }
 
