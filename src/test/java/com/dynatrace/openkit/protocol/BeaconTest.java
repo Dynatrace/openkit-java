@@ -1254,4 +1254,52 @@ public class BeaconTest {
         verify(mockSession, times(2)).getEndTime();
         assertThat(target.isEmpty(), is(false));
     }
+
+    @Test
+    public void errorNotReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+
+        //then
+        //verify action has not been serialized
+        verify(mockAction, times(0)).getID();
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void errorReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void errorReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
 }
