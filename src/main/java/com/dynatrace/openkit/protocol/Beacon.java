@@ -463,6 +463,10 @@ public class Beacon {
             return;
         }
 
+        if (beaconConfiguration.get().getCrashReportingLevel() == CrashReportingLevel.OFF) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
