@@ -319,6 +319,10 @@ public class Beacon {
             return;
         }
 
+        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
@@ -341,6 +345,10 @@ public class Beacon {
     public void reportValue(ActionImpl parentAction, String valueName, double value) {
 
         if (isCapturingDisabled()) {
+            return;
+        }
+
+        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -369,6 +377,10 @@ public class Beacon {
             return;
         }
 
+        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
@@ -392,6 +404,10 @@ public class Beacon {
     public void reportEvent(ActionImpl parentAction, String eventName) {
 
         if (isCapturingDisabled()) {
+            return;
+        }
+
+        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
