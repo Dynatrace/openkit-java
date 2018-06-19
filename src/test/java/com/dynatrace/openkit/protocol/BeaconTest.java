@@ -1160,6 +1160,105 @@ public class BeaconTest {
     }
 
     @Test
+    public void actionNotReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.addAction(mockAction);
+
+        //then
+        //verify action has not been serialized
+        verify(mockAction, times(0)).getID();
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void actionReportedForDataCollectionLevel1() {
+
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.addAction(mockAction);
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void actionReportedForDataCollectionLevel2() {
+
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.addAction(mockAction);
+
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void sessionNotReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        //when
+        target.endSession(mockSession);
+
+        //then
+        //verify session has not been serialized
+        verify(mockSession, times(0)).getEndTime();
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void sessionReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        //when
+        target.endSession(mockSession);
+
+        //then
+        //verify session has been serialized
+        verify(mockSession, times(2)).getEndTime();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void sessionReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        //when
+        target.endSession(mockSession);
+
+        //then
+        //verify session has been serialized
+        verify(mockSession, times(2)).getEndTime();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
     public void errorNotReportedForDataCollectionLevel0() {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
