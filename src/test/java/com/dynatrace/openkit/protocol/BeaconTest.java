@@ -1177,7 +1177,6 @@ public class BeaconTest {
 
     @Test
     public void actionReportedForDataCollectionLevel1() {
-
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
@@ -1194,7 +1193,6 @@ public class BeaconTest {
 
     @Test
     public void actionReportedForDataCollectionLevel2() {
-
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
@@ -1202,7 +1200,6 @@ public class BeaconTest {
 
         //when
         target.addAction(mockAction);
-
 
         //then
         //verify action has been serialized
