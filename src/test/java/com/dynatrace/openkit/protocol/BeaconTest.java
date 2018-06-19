@@ -1235,7 +1235,7 @@ public class BeaconTest {
 
         //then
         //verify session has been serialized
-        verify(mockSession, times(1)).getEndTime();
+        verify(mockSession, times(2)).getEndTime();
         assertThat(target.isEmpty(), is(false));
     }
 
@@ -1251,7 +1251,7 @@ public class BeaconTest {
 
         //then
         //verify session has been serialized
-        verify(mockSession, times(1)).getEndTime();
+        verify(mockSession, times(2)).getEndTime();
         assertThat(target.isEmpty(), is(false));
     }
 }

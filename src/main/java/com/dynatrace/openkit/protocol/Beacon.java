@@ -306,10 +306,9 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
 
-        long sessionEndTime = session.getEndTime();
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(sessionEndTime));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
 
-        addEventData(sessionEndTime, eventBuilder);
+        addEventData(session.getEndTime(), eventBuilder);
     }
 
     /**
