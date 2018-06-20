@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;

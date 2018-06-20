@@ -16,6 +16,9 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
+
 /**
  * Configuration for a Beacon.
  *
@@ -28,6 +31,7 @@ public class BeaconConfiguration {
 
     public static final DataCollectionLevel DEFAULT_DATA_COLLECTION_LEVEL = DataCollectionLevel.OFF;
     public static final CrashReportingLevel DEFAULT_CRASH_REPORTING_LEVEL = CrashReportingLevel.OFF;
+    public static final int DEFAULT_MULITPLICITY = 1;
 
     /**
      * Multiplicity as received from the server.
