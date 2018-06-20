@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.*;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
@@ -28,6 +30,7 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Random;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -71,6 +74,9 @@ public class BeaconTest {
         HTTPClientConfiguration mockHTTPClientConfiguration = mock(HTTPClientConfiguration.class);
         when(mockHTTPClientConfiguration.getServerID()).thenReturn(SERVER_ID);
         when(configuration.getHttpClientConfig()).thenReturn(mockHTTPClientConfiguration);
+
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
 
         threadIDProvider = mock(ThreadIDProvider.class);
         when(threadIDProvider.getThreadID()).thenReturn(THREAD_ID);
@@ -726,7 +732,7 @@ public class BeaconTest {
     public void noIntValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         int intValue = 42;
         ActionImpl parentAction = mock(ActionImpl.class);
@@ -743,7 +749,7 @@ public class BeaconTest {
     public void noDoubleValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         double doubleValue = Math.E;
         ActionImpl parentAction = mock(ActionImpl.class);
@@ -760,7 +766,7 @@ public class BeaconTest {
     public void noStringValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         String stringValue = "Write once, debug everywhere";
         ActionImpl parentAction = mock(ActionImpl.class);
@@ -777,7 +783,7 @@ public class BeaconTest {
     public void noEventIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         ActionImpl parentAction = mock(ActionImpl.class);
 
@@ -793,7 +799,7 @@ public class BeaconTest {
     public void noErrorIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         ActionImpl parentAction = mock(ActionImpl.class);
 
@@ -809,7 +815,7 @@ public class BeaconTest {
     public void noCrashIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
@@ -822,7 +828,7 @@ public class BeaconTest {
     public void noWebRequestIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         ActionImpl parentAction = mock(ActionImpl.class);
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
 
@@ -838,12 +844,692 @@ public class BeaconTest {
     public void noUserIdentificationIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0,  DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.identifyUser("jane.doe@acme.com");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void noWebRequestIsReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
+        //when
+        target.addWebRequest(mockAction, mockWebRequestTracer);
+
+        //then
+        verifyZeroInteractions(mockAction);
+        verifyZeroInteractions(mockWebRequestTracer);
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void webRequestIsReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
+
+        //when
+        target.addWebRequest(mockAction, mockWebRequestTracer);
+
+        //then
+        verify(mockAction, times(1)).getID();
+        verify(mockWebRequestTracer, times(1)).getBytesReceived();
+        verify(mockWebRequestTracer, times(1)).getBytesSent();
+        verify(mockWebRequestTracer, times(1)).getResponseCode();
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void webRequestIsReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
+
+        //when
+        target.addWebRequest(mockAction, mockWebRequestTracer);
+
+        //then
+        verify(mockAction, times(1)).getID();
+        verify(mockWebRequestTracer, times(1)).getBytesReceived();
+        verify(mockWebRequestTracer, times(1)).getBytesSent();
+        verify(mockWebRequestTracer, times(1)).getResponseCode();
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void beaconReturnsEmptyTagOnDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        String returnedTag = target.createTag(mockAction, 1);
+
+        //then
+        assertThat(returnedTag.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void beaconReturnsValidTagOnDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        String returnedTag = target.createTag(mockAction, 1);
+
+        //then
+        assertThat(returnedTag.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
+
+    @Test
+    public void beaconReturnsValidTagOnDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        String returnedTag = target.createTag(mockAction, 1);
+
+        //then
+        assertThat(returnedTag.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
+
+    @Test
+    public void cannotIdentifyUserOnDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        //when
+        target.identifyUser("jane@doe.com");
+
+        //then
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void cannotIdentifyUserOnDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        //when
+        target.identifyUser("jane@doe.com");
+
+        //then
+        //verify nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void canIdentifyUserOnDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        //when
+        target.identifyUser("jane@doe.com");
+
+        //then
+        //verify user tag has been serialized
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void visitorIDIsRandomizedOnDataCollectionLevel0() {
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        Random mockRandom = mock(Random.class);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+
+        //when
+        target.getDeviceID();
+
+        // then verify that the device id is not taken from the configuration
+        // this means it must have been generated randomly
+        verify(mockConfiguration, times(0)).getDeviceID();
+        verify(mockRandom, times(2)).nextLong();
+    }
+
+    @Test
+    public void visitorIDIsRandomizedOnDataCollectionLevel1() {
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        Random mockRandom = mock(Random.class);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+
+        //when
+        target.getDeviceID();
+
+        // then verify that the device id is not taken from the configuration
+        // this means it must have been generated randomly
+        verify(mockConfiguration, times(0)).getDeviceID();
+        verify(mockRandom, times(2)).nextLong();
+    }
+
+    @Test
+    public void givenVisitorIDIsUsedOnDataCollectionLevel2() {
+        long TEST_DEVICE_ID = 1338;
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        Random mockRandom = mock(Random.class);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+
+        //when
+        long visitorID = target.getDeviceID();
+
+        //then verify that device id is taken from configuration
+        verify(mockConfiguration, times(2)).getDeviceID();
+        verifyNoMoreInteractions(mockRandom);
+        assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
+    }
+
+    @Test
+    public void randomVisitorIDCannotBeNegativeOnDataCollectionLevel0() {
+        long TEST_DEVICE_ID = 1338;
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        Random mockRandom = mock(Random.class);
+        when(mockRandom.nextLong()).thenReturn(-123456789L);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+
+        //when
+        long visitorID = target.getDeviceID();
+
+        //then verify that device id is taken from configuration
+        verify(mockRandom, times(2)).nextLong();
+        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
+    }
+
+    @Test
+    public void randomVisitorIDCannotBeNegativeOnDataCollectionLevel1() {
+        long TEST_DEVICE_ID = 1338;
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        Random mockRandom = mock(Random.class);
+        when(mockRandom.nextLong()).thenReturn(-123456789L);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+
+        //when
+        long visitorID = target.getDeviceID();
+
+        //then verify that the id is positive regardless of the 
+        verify(mockRandom, times(2)).nextLong();
+        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
+    }
+
+    @Test
+    public void sessionIDIsAlwaysValue1OnDataCollectionLevel0() {
+        final int SESSION_ID = 1234;
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        //when
+        int sessionNumber = target.getSessionNumber();
+
+        //then
+        assertThat(sessionNumber, is(equalTo(1)));
+    }
+
+    @Test
+    public void sessionIDIsAlwaysValue1OnDataCollectionLevel1() {
+        final int SESSION_ID = 1234;
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        //when
+        int sessionNumber = target.getSessionNumber();
+
+        //then
+        assertThat(sessionNumber, is(equalTo(1)));
+    }
+
+    @Test
+    public void sessionIDIsValueFromSessionIDProviderOnDataCollectionLevel2() {
+        final int SESSION_ID = 1234;
+        //given
+        Configuration mockConfiguration = mock(Configuration.class);
+        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        Device testDevice = new Device("OS", "MAN", "MODEL");
+        when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.createSessionNumber()).thenReturn(SESSION_ID);
+        final BeaconConfiguration beaconConfig = mock(BeaconConfiguration.class);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
+
+        //when
+        int sessionNumber = target.getSessionNumber();
+
+        //then
+        assertThat(sessionNumber, is(equalTo(SESSION_ID)));
+    }
+
+    @Test
+    public void reportCrashDoesNotReportOnCrashReportingLevel0() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        //when
+        target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
+
+        //then
+        verify(timingProvider, times(1)).provideTimestampInMilliseconds();
+        assertThat(target.isEmpty(), is(equalTo(true)));
+    }
+
+    @Test
+    public void reportCrashDoesNotReportOnCrashReportingLevel1() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
+
+        //when
+        target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
+
+        //then
+        verify(timingProvider, times(2)).provideTimestampInMilliseconds();
+        assertThat(target.isEmpty(), is(equalTo(false)));
+    }
+
+    @Test
+    public void actionNotReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.addAction(mockAction);
+
+        //then
+        //verify action has not been serialized
+        verify(mockAction, times(0)).getID();
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void actionReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.addAction(mockAction);
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void actionReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.addAction(mockAction);
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void sessionNotReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        //when
+        target.endSession(mockSession);
+
+        //then
+        //verify session has not been serialized
+        verify(mockSession, times(0)).getEndTime();
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void sessionReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        //when
+        target.endSession(mockSession);
+
+        //then
+        //verify session has been serialized
+        verify(mockSession, times(2)).getEndTime();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void sessionReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        //when
+        target.endSession(mockSession);
+
+        //then
+        //verify session has been serialized
+        verify(mockSession, times(2)).getEndTime();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void errorNotReportedForDataCollectionLevel0() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+
+        //then
+        //verify action has not been serialized
+        verify(mockAction, times(0)).getID();
+        assertThat(target.isEmpty(), is(true));
+    }
+
+    @Test
+    public void errorReportedForDataCollectionLevel1() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void errorReportedForDataCollectionLevel2() {
+        //given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        //when
+        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+
+        //then
+        //verify action has been serialized
+        verify(mockAction, times(1)).getID();
+        assertThat(target.isEmpty(), is(false));
+    }
+
+    @Test
+    public void IntValueIsNotReportedForDataCollectionLevel0() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", 123);
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void IntValueIsNotReportedForDataCollectionLevel1() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", 123);
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void IntValueIsReportedForDataCollectionLevel2() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", 123);
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
+
+    @Test
+    public void DoubleValueIsNotReportedForDataCollectionLevel0() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", 2.71);
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void DoubleValueIsNotReportedForDataCollectionLevel1() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", 2.71);
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void DoubleValueIsReportedForDataCollectionLevel2() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", 2.71);
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
+
+    @Test
+    public void StringValueIsNotReportedForDataCollectionLevel0() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", "test data");
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void StringValueIsNotReportedForDataCollectionLevel1() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", "test data");
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void StringValueIsReportedForDataCollectionLevel2() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportValue(mockAction, "test value", "test data");
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
+    }
+
+    @Test
+    public void NamedEventIsNotReportedForDataCollectionLevel0() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportEvent(mockAction, "test event");
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void NamedEventIsNotReportedForDataCollectionLevel1() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportEvent(mockAction, "test event");
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(true));
+        verifyZeroInteractions(mockAction);
+    }
+
+    @Test
+    public void NamedEventIsReportedForDataCollectionLevel2() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
+        ActionImpl mockAction = mock(ActionImpl.class);
+
+        // when
+        target.reportEvent(mockAction, "test event");
+
+        // then ensure nothing has been serialized
+        assertThat(target.isEmpty(), is(false));
+        verify(mockAction, times(1)).getID();
     }
 }

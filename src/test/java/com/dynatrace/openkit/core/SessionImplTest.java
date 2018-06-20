@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.core;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;

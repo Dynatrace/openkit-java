@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core.configuration;
+package com.dynatrace.openkit;
 
-public enum DataCollectionLevel {
+public enum CrashReportingLevel {
     OFF,
-    PERFORMANCE,
-    USER_BEHAVIOR
+    OPT_IN_CRASHES
 }
-

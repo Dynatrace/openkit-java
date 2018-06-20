@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 
@@ -62,6 +63,8 @@ public class OpenKitImplTest {
         when(httpClientConfig.getBaseURL()).thenReturn("http://example.com/");
         when(httpClientConfig.getApplicationID()).thenReturn(APP_ID);
         when(config.getHttpClientConfig()).thenReturn(httpClientConfig);
+        final BeaconConfiguration beaconConfig = mock(BeaconConfiguration.class);
+        when(config.getBeaconConfiguration()).thenReturn(beaconConfig);
     }
 
     @Test
