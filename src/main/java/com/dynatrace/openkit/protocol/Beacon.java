@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,9 @@ import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.*;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -230,18 +232,12 @@ public class Beacon {
      * @return A web request tracer tag.
      */
     public String createTag(ActionImpl parentAction, int sequenceNo) {
-        if (beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
-        return TAG_PREFIX + "_"
-            + ProtocolConstants.PROTOCOL_VERSION + "_"
-            + httpConfiguration.getServerID() + "_"
-            + configuration.getDeviceID() + "_"
-            + sessionNumber + "_"
-            + configuration.getApplicationID() + "_"
-            + parentAction.getID() + "_"
-            + threadIDProvider.getThreadID() + "_"
-            + sequenceNo;
+        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + configuration
+            .getDeviceID() + "_" + sessionNumber + "_" + configuration.getApplicationID() + "_" + parentAction.getID() + "_" + threadIDProvider
+            .getThreadID() + "_" + sequenceNo;
     }
 
     /**
@@ -259,7 +255,7 @@ public class Beacon {
             return;
         }
 
-        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 
@@ -292,7 +288,7 @@ public class Beacon {
             return;
         }
 
-        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 
@@ -324,7 +320,7 @@ public class Beacon {
             return;
         }
 
-        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -353,7 +349,7 @@ public class Beacon {
             return;
         }
 
-        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -382,7 +378,7 @@ public class Beacon {
             return;
         }
 
-        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -412,6 +408,10 @@ public class Beacon {
             return;
         }
 
+        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+            return;
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         long eventTimestamp = buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
@@ -437,7 +437,7 @@ public class Beacon {
             return;
         }
 
-        if(beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 
@@ -472,7 +472,7 @@ public class Beacon {
             return;
         }
 
-        if (beaconConfiguration.get().getCrashReportingLevel() == CrashReportingLevel.OFF) {
+        if (getBeaconConfiguration().getCrashReportingLevel() == CrashReportingLevel.OFF) {
             return;
         }
 
@@ -509,7 +509,7 @@ public class Beacon {
         if (isCapturingDisabled()) {
             return;
         }
-        if (beaconConfiguration.get().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return;
         }
 
@@ -526,14 +526,6 @@ public class Beacon {
         addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_SENT, webRequestTracer.getBytesSent());
         addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
         addKeyValuePairIfNotNegative(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
-
-        if (webRequestTracer.getBytesReceived() > -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_BYTES_RECEIVED, webRequestTracer.getBytesReceived());
-        }
-
-        if (webRequestTracer.getResponseCode() != -1) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_WEBREQUEST_RESPONSECODE, webRequestTracer.getResponseCode());
-        }
 
         addEventData(webRequestTracer.getStartTime(), eventBuilder);
     }
@@ -553,7 +545,7 @@ public class Beacon {
             return;
         }
 
-        if (beaconConfiguration.get().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
             return;
         }
 
@@ -638,8 +630,7 @@ public class Beacon {
         mutableBeaconDataBuilder.append(createTimestampData());
 
         // append multiplicity
-        mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER)
-                                .append(createMultiplicityData());
+        mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER).append(createMultiplicityData());
 
         return mutableBeaconDataBuilder.toString();
     }
@@ -784,7 +775,7 @@ public class Beacon {
      * @return
      */
     public long getDeviceID() {
-        BeaconConfiguration beaconConfig = beaconConfiguration.get();
+        BeaconConfiguration beaconConfig = getBeaconConfiguration();
         if (configuration != null && beaconConfig != null) {
             DataCollectionLevel dataCollectionLevel = beaconConfig.getDataCollectionLevel();
             if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
@@ -803,7 +794,7 @@ public class Beacon {
      * @return
      */
     public int getSessionNumber() {
-        DataCollectionLevel dataCollectionLevel = beaconConfiguration.get().getDataCollectionLevel();
+        DataCollectionLevel dataCollectionLevel = getBeaconConfiguration().getDataCollectionLevel();
         if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
             return sessionNumber;
         }
@@ -981,15 +972,6 @@ public class Beacon {
     }
 
     /**
-     * Returns the session number.
-     *
-     * @return the sessionNumber
-     */
-    public int getSessionNumber() {
-        return sessionNumber;
-    }
-
-    /**
      * Sets the Beacon configuration.
      *
      * @param beaconConfiguration The new beacon configuration to set.
@@ -998,6 +980,14 @@ public class Beacon {
         if (beaconConfiguration != null) {
             this.beaconConfiguration.set(beaconConfiguration);
         }
+    }
+
+    /**
+     * Get the Beacon configuration.
+     * @return Currently set beacon configuration.
+     */
+    public BeaconConfiguration getBeaconConfiguration() {
+        return beaconConfiguration.get();
     }
 
     /**
@@ -1011,7 +1001,7 @@ public class Beacon {
      * @return {@code true} if capturing is allowed, {@code false} otherwise.
      */
     boolean isCapturingDisabled() {
-        return !beaconConfiguration.get().isCapturingAllowed();
+        return !getBeaconConfiguration().isCapturingAllowed();
     }
 
     /**
@@ -1020,6 +1010,6 @@ public class Beacon {
      * @return Multiplicity received from the server.
      */
     int getMultiplicity() {
-        return beaconConfiguration.get().getMultiplicity();
+        return getBeaconConfiguration().getMultiplicity();
     }
 }
