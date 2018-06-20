@@ -24,8 +24,6 @@ import com.dynatrace.openkit.core.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
-import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 

@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.*;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
@@ -998,10 +1000,10 @@ public class BeaconTest {
         when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         target.getDeviceID();
@@ -1021,10 +1023,10 @@ public class BeaconTest {
         when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(mockConfiguration.getDevice()).thenReturn(testDevice);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
         target.getDeviceID();
@@ -1046,17 +1048,17 @@ public class BeaconTest {
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(mockConfiguration.getDevice()).thenReturn(testDevice);
         when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
         long visitorID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
-        verify(mockConfiguration, times(1)).getDeviceID();
-        verify(mockRandom, times(1)).nextLong();
+        verify(mockConfiguration, times(2)).getDeviceID();
+        verifyNoMoreInteractions(mockRandom);
         assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
     }
 
@@ -1071,11 +1073,11 @@ public class BeaconTest {
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(mockConfiguration.getDevice()).thenReturn(testDevice);
         when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         when(mockRandom.nextLong()).thenReturn(-123456789L);
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         long visitorID = target.getDeviceID();
@@ -1096,11 +1098,11 @@ public class BeaconTest {
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(mockConfiguration.getDevice()).thenReturn(testDevice);
         when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         when(mockRandom.nextLong()).thenReturn(-123456789L);
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
         long visitorID = target.getDeviceID();
@@ -1149,8 +1151,10 @@ public class BeaconTest {
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(mockConfiguration.getDevice()).thenReturn(testDevice);
         when(mockConfiguration.createSessionNumber()).thenReturn(SESSION_ID);
+        final BeaconConfiguration beaconConfig = mock(BeaconConfiguration.class);
+        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
         int sessionNumber = target.getSessionNumber();

@@ -63,7 +63,7 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
         BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxRecordAge(),
             getBeaconCacheLowerMemoryBoundary(),
             getBeaconCacheUpperMemoryBoundary());
-        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1,
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(BeaconConfiguration.DEFAULT_MULITPLICITY,
             getDataCollectionLevel(),
             getCrashReportLevel());
         return new Configuration(

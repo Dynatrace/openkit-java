@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.test;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.core.configuration.*;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;

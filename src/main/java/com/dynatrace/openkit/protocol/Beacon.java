@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.ActionImpl;
 import com.dynatrace.openkit.core.SessionImpl;
@@ -119,7 +121,6 @@ public class Beacon {
     private final BeaconCacheImpl beaconCache;
 
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
-    private final static BeaconConfiguration DEFAULT_CONFIG = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
 
     private final Random random;
 
@@ -174,11 +175,7 @@ public class Beacon {
         // store the current configuration
         this.httpConfiguration = configuration.getHttpClientConfig();
 
-        if (configuration.getBeaconConfiguration() != null) {
-            beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
-        } else {
-            beaconConfiguration = new AtomicReference<BeaconConfiguration>(DEFAULT_CONFIG);
-        }
+        beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
     }
