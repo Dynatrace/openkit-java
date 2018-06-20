@@ -17,34 +17,49 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.CrashReportingLevel;
+import com.dynatrace.openkit.core.configuration.DataCollectionLevel;
+import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
+
 public class BeaconSendingCaptureOnStateTest {
 
     private BeaconSendingContext mockContext;
-    private SessionImpl mockSession1Open;
-    private SessionImpl mockSession2Open;
-    private SessionImpl mockSession3Finished;
-    private SessionImpl mockSession4Finished;
+    private SessionWrapper mockSession1Open;
+    private SessionWrapper mockSession2Open;
+    private SessionWrapper mockSession3Finished;
+    private SessionWrapper mockSession4Finished;
+    private SessionWrapper mockSession5New;
+    private SessionWrapper mockSession6New;
 
     @Before
     public void setUp() {
-        mockSession1Open = mock(SessionImpl.class);
-        mockSession2Open = mock(SessionImpl.class);
-        mockSession3Finished = mock(SessionImpl.class);
-        mockSession4Finished = mock(SessionImpl.class);
+        mockSession1Open = mock(SessionWrapper.class);
+        mockSession2Open = mock(SessionWrapper.class);
+        mockSession3Finished = mock(SessionWrapper.class);
+        mockSession4Finished = mock(SessionWrapper.class);
+        mockSession5New = mock(SessionWrapper.class);
+        mockSession6New = mock(SessionWrapper.class);
         when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 200));
         when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 404));
+        when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
 
         HTTPClientProvider mockHTTPClientProvider = mock(HTTPClientProvider.class);
 
@@ -52,10 +67,9 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.getLastTimeSyncTime()).thenReturn(0L);
         when(mockContext.getCurrentTimestamp()).thenReturn(42L);
-        when(mockContext.getAllOpenSessions()).thenReturn(new SessionImpl[]{mockSession1Open, mockSession2Open});
-        when(mockContext.getNextFinishedSession()).thenReturn(mockSession3Finished)
-                                                  .thenReturn(mockSession4Finished)
-                                                  .thenReturn(null);
+        when(mockContext.getAllNewSessions()).thenReturn(Collections.<SessionWrapper>emptyList());
+        when(mockContext.getAllOpenAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession1Open, mockSession2Open));
+        when(mockContext.getAllFinishedAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession3Finished, mockSession4Finished));
         when(mockContext.getHTTPClientProvider()).thenReturn(mockHTTPClientProvider);
     }
 
@@ -76,6 +90,15 @@ public class BeaconSendingCaptureOnStateTest {
         AbstractBeaconSendingState terminalState = target.getShutdownState();
         //verify that terminal state is BeaconSendingFlushSessions
         assertThat(terminalState, is(instanceOf(BeaconSendingFlushSessionsState.class)));
+    }
+
+    @Test
+    public void toStringReturnsStateName() {
+        //given
+        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
+
+        // then
+        assertThat(target.toString(), is(equalTo("CaptureOn")));
     }
 
     @Test
@@ -114,6 +137,87 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
+    public void newSessionRequestsAreMadeForAllNewSessions() throws InterruptedException {
+
+        // given
+        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
+
+        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+
+        HTTPClient mockClient = mock(HTTPClient.class);
+        when(mockContext.getHTTPClient()).thenReturn(mockClient);
+        when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
+        when(mockClient.sendNewSessionRequest())
+            .thenReturn(new StatusResponse("mp=5", 200)) // first response valid
+            .thenReturn(null); // second response invalid
+        when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
+        when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
+        when(mockSession6New.canSendNewSessionRequest()).thenReturn(true);
+        when(mockSession6New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
+
+        ArgumentCaptor<BeaconConfiguration> beaconConfigurationArgumentCaptor = ArgumentCaptor.forClass(BeaconConfiguration.class);
+
+        // when
+        target.doExecute(mockContext);
+
+        // verify for both new sessions a new session request has been made
+        verify(mockClient, times(2)).sendNewSessionRequest();
+
+        // verify first has been updated, second decreased
+        verify(mockSession5New, times(1)).getBeaconConfiguration();
+        verify(mockSession5New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(5)));
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getDataCollectionLevel(), is(equalTo(defaultConfiguration.getDataCollectionLevel())));
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getCrashReportingLevel(), is(equalTo(defaultConfiguration.getCrashReportingLevel())));
+
+        // verify for beacon 6 only the number of tries was decreased
+        verify(mockSession6New, times(0)).getBeaconConfiguration();
+        verify(mockSession6New, times(1)).decreaseNumNewSessionRequests();
+    }
+
+    @Test
+    public void multiplicityIsSetToZeroIfNoFurtherNewSessionRequestsAreAllowed() throws InterruptedException {
+
+        // given
+        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
+
+        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+
+        HTTPClient mockClient = mock(HTTPClient.class);
+        when(mockContext.getHTTPClient()).thenReturn(mockClient);
+        when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
+        when(mockClient.sendNewSessionRequest())
+            .thenReturn(new StatusResponse("mp=5", 200)) // first response valid
+            .thenReturn(null); // second response invalid
+        when(mockSession5New.canSendNewSessionRequest()).thenReturn(false);
+        when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
+        when(mockSession6New.canSendNewSessionRequest()).thenReturn(false);
+        when(mockSession6New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
+
+        ArgumentCaptor<BeaconConfiguration> beaconConfigurationArgumentCaptor = ArgumentCaptor.forClass(BeaconConfiguration.class);
+
+        // when
+        target.doExecute(mockContext);
+
+        // verify for no session a new session request has been made
+        verify(mockClient, times(0)).sendNewSessionRequest();
+
+        // verify bot sessions are updated
+        verify(mockSession5New, times(1)).getBeaconConfiguration();
+        verify(mockSession5New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(0)));
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getDataCollectionLevel(), is(equalTo(defaultConfiguration.getDataCollectionLevel())));
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getCrashReportingLevel(), is(equalTo(defaultConfiguration.getCrashReportingLevel())));
+
+        // verify for beacon 6 only the number of tries was decreased
+        verify(mockSession6New, times(1)).getBeaconConfiguration();
+        verify(mockSession6New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getMultiplicity(), is(equalTo(0)));
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getDataCollectionLevel(), is(equalTo(defaultConfiguration.getDataCollectionLevel())));
+        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getCrashReportingLevel(), is(equalTo(defaultConfiguration.getCrashReportingLevel())));
+    }
+
+    @Test
     public void aBeaconSendingCaptureOnStateSendsFinishedSessions() throws InterruptedException {
 
         //given
@@ -121,16 +225,44 @@ public class BeaconSendingCaptureOnStateTest {
 
         when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
         when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
+        when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
 
         //when calling execute
         target.doExecute(mockContext);
 
         verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
         verify(mockSession4Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+
+        // also verify that the session are removed
+        verify(mockContext, times(1)).removeSession(mockSession3Finished);
+        verify(mockContext, times(1)).removeSession(mockSession4Finished);
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStatePushesBackFinishedSessionIfSendWasUnsuccessful() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateClearsFinishedSessionsIfSendingIsNotAllowed() throws InterruptedException {
+
+        //given
+        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
+
+        when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
+        when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
+        when(mockSession3Finished.isDataSendingAllowed()).thenReturn(false);
+        when(mockSession4Finished.isDataSendingAllowed()).thenReturn(false);
+
+        //when calling execute
+        target.doExecute(mockContext);
+
+        verify(mockSession3Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession4Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+
+        // also verify that the session are removed
+        verify(mockContext, times(1)).removeSession(mockSession3Finished);
+        verify(mockContext, times(1)).removeSession(mockSession4Finished);
+    }
+
+    @Test
+    public void aBeaconSendingCaptureOnStateDoesNotRemoveFinishedSessionIfSendWasUnsuccessful() throws InterruptedException {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -138,6 +270,8 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(null);
         when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
         when(mockSession3Finished.isEmpty()).thenReturn(false);
+        when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
 
         //when calling execute
         target.doExecute(mockContext);
@@ -145,12 +279,12 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
         verify(mockSession4Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
 
-        verify(mockContext, times(1)).getNextFinishedSession();
-        verify(mockContext, times(1)).pushBackFinishedSession(mockSession3Finished);
+        verify(mockContext, times(1)).getAllFinishedAndConfiguredSessions();
+        verify(mockContext, times(0)).removeSession(any(SessionWrapper.class));
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaoonIsEmtpy() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaconIsEmtpy() throws InterruptedException {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -158,6 +292,8 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
         when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
         when(mockSession3Finished.isEmpty()).thenReturn(true);
+        when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
 
         //when calling execute
         target.doExecute(mockContext);
@@ -167,20 +303,40 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockSession3Finished, times(1)).clearCapturedData();
         verify(mockSession4Finished, times(1)).clearCapturedData();
 
-        verify(mockContext, times(3)).getNextFinishedSession();
-        verify(mockContext, times(0)).pushBackFinishedSession(any(SessionImpl.class));
+        verify(mockContext, times(1)).getAllFinishedAndConfiguredSessions();
+        verify(mockContext, times(1)).removeSession(mockSession3Finished);
+        verify(mockContext, times(1)).removeSession(mockSession4Finished);
     }
 
     @Test
     public void aBeaconSendingCaptureOnStateSendsOpenSessionsIfNotExpired() throws InterruptedException {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
+        when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession2Open.isDataSendingAllowed()).thenReturn(true);
 
         //when calling execute
         target.doExecute(mockContext);
 
         verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
         verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
+    }
+
+    @Test
+    public void aBeaconSendingCaptureOnStateClearsOpenSessionDataIfSendingIsNotAllowed() throws InterruptedException {
+        //given
+        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
+        when(mockSession1Open.isDataSendingAllowed()).thenReturn(false);
+        when(mockSession2Open.isDataSendingAllowed()).thenReturn(false);
+
+        //when calling execute
+        target.doExecute(mockContext);
+
+        verify(mockSession1Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession2Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(1)).clearCapturedData();
+        verify(mockSession2Open, times(1)).clearCapturedData();
         verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
     }
 

@@ -16,8 +16,10 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.StatusResponse;
+
+import java.util.List;
 
 /**
  * The sending state, when init is completed and capturing is turned on.
@@ -54,6 +56,9 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
         context.sleep();
 
+        // send new session request for all sessions that are new
+        sendNewSessionRequests(context);
+
         statusResponse = null;
 
         // send all finished sessions (this method may set this.statusResponse)
@@ -71,6 +76,33 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         return new BeaconSendingFlushSessionsState();
     }
 
+    private void sendNewSessionRequests(BeaconSendingContext context) {
+
+        List<SessionWrapper> newSessions = context.getAllNewSessions();
+
+        for (SessionWrapper session : newSessions) {
+            if (!session.canSendNewSessionRequest()) {
+                // already exceeded the maximum number of session requests, disable any further data collecting
+                BeaconConfiguration currentConfiguration = session.getBeaconConfiguration();
+                BeaconConfiguration newConfiguration = new BeaconConfiguration(0,
+                    currentConfiguration.getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
+                session.updateBeaconConfiguration(newConfiguration);
+                continue;
+            }
+
+            StatusResponse response = context.getHTTPClient().sendNewSessionRequest();
+            if (response != null) {
+                BeaconConfiguration currentConfiguration = session.getBeaconConfiguration();
+                BeaconConfiguration newConfiguration = new BeaconConfiguration(response.getMultiplicity(),
+                    currentConfiguration.getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
+                session.updateBeaconConfiguration(newConfiguration);
+            } else {
+                // did not retrieve any response from server, maybe the cluster is down?
+                session.decreaseNumNewSessionRequests();
+            }
+        }
+    }
+
     /**
      * Send all sessions which have been finished previously.
      *
@@ -79,22 +111,22 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
     private void sendFinishedSessions(BeaconSendingContext context) {
 
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
-        SessionImpl finishedSession = context.getNextFinishedSession();
-        while (finishedSession != null) {
-            statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
-            if (statusResponse == null) {
-                // something went wrong,
-                if (!finishedSession.isEmpty()) {
-                    // well there is more data to send, and we could not do it (now)
-                    // just push it back
-                    context.pushBackFinishedSession(finishedSession);
-                    break; //  sending did not work, break out for now and retry it later
+        List<SessionWrapper> finishedSessions = context.getAllFinishedAndConfiguredSessions();
+
+        for (SessionWrapper finishedSession : finishedSessions) {
+            if (finishedSession.isDataSendingAllowed()) {
+                statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
+                if (statusResponse == null) {
+                    // something went wrong,
+                    if (!finishedSession.isEmpty()) {
+                        break; //  sending did not work, break out for now and retry it later
+                    }
                 }
             }
 
-            // session was sent - so remove it from beacon cache
+            // session was sent/is not allowed to be sent - so remove it from beacon cache
+            context.removeSession(finishedSession); // remove the finished session from the cache
             finishedSession.clearCapturedData();
-            finishedSession = context.getNextFinishedSession();
         }
     }
 
@@ -110,9 +142,13 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             return; // send interval to send open sessions has not expired yet
         }
 
-        SessionImpl[] openSessions = context.getAllOpenSessions();
-        for (SessionImpl session : openSessions) {
-            statusResponse = session.sendBeacon(context.getHTTPClientProvider());
+        List<SessionWrapper> openSessions = context.getAllOpenAndConfiguredSessions();
+        for (SessionWrapper session : openSessions) {
+            if (session.isDataSendingAllowed()) {
+                statusResponse = session.sendBeacon(context.getHTTPClientProvider());
+            } else {
+                session.clearCapturedData();
+            }
         }
 
         context.setLastOpenSessionBeaconSendTime(currentTimestamp);

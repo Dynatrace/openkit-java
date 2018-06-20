@@ -20,6 +20,7 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -178,6 +179,20 @@ public class SessionImpl implements Session {
      */
     boolean isSessionEnded() {
         return getEndTime() != -1L;
+    }
+
+    /**
+     * Set the {@link BeaconConfiguration}
+     */
+    public void setBeaconConfiguration(BeaconConfiguration beaconConfiguration) {
+        beacon.setBeaconConfiguration(beaconConfiguration);
+    }
+
+    /**
+     * Get the {@link BeaconConfiguration}
+     */
+    public BeaconConfiguration getBeaconConfiguration() {
+        return beacon.getBeaconConfiguration();
     }
 
     @Override

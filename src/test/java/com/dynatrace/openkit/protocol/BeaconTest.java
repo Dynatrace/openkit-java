@@ -61,6 +61,12 @@ public class BeaconTest {
         when(configuration.isCaptureErrors()).thenReturn(true);
         when(configuration.isCaptureCrashes()).thenReturn(true);
         when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB
+        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
+        when(mockBeaconConfiguration.getMultiplicity()).thenReturn(1);
+        when(mockBeaconConfiguration.getDataCollectionLevel()).thenReturn(DataCollectionLevel.USER_BEHAVIOR);
+        when(mockBeaconConfiguration.getCrashReportingLevel()).thenReturn(CrashReportingLevel.OPT_IN_CRASHES);
+        when(mockBeaconConfiguration.isCapturingAllowed()).thenReturn(true);
+        when(configuration.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
 
         HTTPClientConfiguration mockHTTPClientConfiguration = mock(HTTPClientConfiguration.class);
         when(mockHTTPClientConfiguration.getServerID()).thenReturn(SERVER_ID);

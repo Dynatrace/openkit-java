@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -24,6 +23,9 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -31,17 +33,21 @@ import static org.mockito.Mockito.*;
 
 public class BeaconSendingFlushSessionsStateTest {
 
+
     private BeaconSendingContext mockContext;
-    private SessionImpl mockSession1Open;
-    private SessionImpl mockSession2Open;
-    private SessionImpl mockSession3Closed;
+    private SessionWrapper mockSession1Open;
+    private SessionWrapper mockSession2Open;
+    private SessionWrapper mockSession3Closed;
 
     @Before
     public void setUp() {
 
-        mockSession1Open = mock(SessionImpl.class);
-        mockSession2Open = mock(SessionImpl.class);
-        mockSession3Closed = mock(SessionImpl.class);
+        mockSession1Open = mock(SessionWrapper.class);
+        mockSession2Open = mock(SessionWrapper.class);
+        mockSession3Closed = mock(SessionWrapper.class);
+        when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession2Open.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession3Closed.isDataSendingAllowed()).thenReturn(true);
 
         StatusResponse mockResponse = mock(StatusResponse.class);
 
@@ -50,11 +56,19 @@ public class BeaconSendingFlushSessionsStateTest {
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.getHTTPClient()).thenReturn(mockHttpClient);
-        when(mockContext.getAllOpenSessions()).thenReturn(new SessionImpl[]{mockSession1Open, mockSession2Open});
-        when(mockContext.getNextFinishedSession()).thenReturn(mockSession3Closed)
-                                                  .thenReturn(mockSession2Open)
-                                                  .thenReturn(mockSession1Open)
-                                                  .thenReturn(null);
+        when(mockContext.getAllOpenAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession1Open, mockSession2Open));
+        when(mockContext.getAllFinishedAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession3Closed,
+            mockSession2Open, mockSession1Open));
+    }
+
+    @Test
+    public void toStringReturnsTheStateName() {
+
+        // given
+        BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
+
+        // then
+        assertThat(target.toString(), is(equalTo("FlushSessions")));
     }
 
     @Test
@@ -118,4 +132,23 @@ public class BeaconSendingFlushSessionsStateTest {
         verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
     }
 
+    @Test
+    public void aBeaconSendingFlushSessionStateDoesNotSendIfSendingIsNotAllowed() {
+        // given
+        BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
+        when(mockSession1Open.isDataSendingAllowed()).thenReturn(false);
+        when(mockSession2Open.isDataSendingAllowed()).thenReturn(false);
+        when(mockSession3Closed.isDataSendingAllowed()).thenReturn(false);
+
+        // when
+        target.doExecute(mockContext);
+
+        // verify that beacons are not sent, but cleared
+        verify(mockSession1Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession2Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Closed, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(1)).clearCapturedData();
+        verify(mockSession2Open, times(1)).clearCapturedData();
+        verify(mockSession3Closed, times(1)).clearCapturedData();
+    }
 }

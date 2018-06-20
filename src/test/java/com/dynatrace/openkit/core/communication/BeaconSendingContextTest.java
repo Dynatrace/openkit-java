@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -25,8 +26,14 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -243,6 +250,21 @@ public class BeaconSendingContextTest {
     }
 
     @Test
+    public void initializeTimeSyncDelegatesToTimingProvider() {
+
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
+            timingProvider);
+
+        // when
+        target.initializeTimeSync(1L, true);
+
+        // then
+        verify(timingProvider).initialize(1L, true);
+        verifyNoMoreInteractions(timingProvider);
+    }
+
+    @Test
     public void timeSyncIsNotSupportedIfDisabled() {
 
         // given
@@ -429,12 +451,13 @@ public class BeaconSendingContextTest {
                 timingProvider);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(emptyArray()));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
+        assertThat(target.getAllNewSessions(), is(empty()));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
     }
 
     @Test
-    public void startingASessionAddsTheSessionToOpenSessions() {
+    public void whenStartingASessionTheSessionIsConsideredAsNew() {
 
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
@@ -446,98 +469,17 @@ public class BeaconSendingContextTest {
         target.startSession(mockSessionOne);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionOne})));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
 
         // when starting second sessions
         target.startSession(mockSessionTwo);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionOne, mockSessionTwo})));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
-    }
-
-    @Test
-    public void finishingASessionMovesSessionToFinishedSessions() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-        SessionImpl mockSessionOne = mock(SessionImpl.class);
-        SessionImpl mockSessionTwo = mock(SessionImpl.class);
-
-        target.startSession(mockSessionOne);
-        target.startSession(mockSessionTwo);
-
-        // when finishing the first session
-        target.finishSession(mockSessionOne);
-
-        // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo})));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionOne})));
-
-        // and when finishing the second session
-        target.finishSession(mockSessionTwo);
-
-        // then
-        assertThat(target.getAllOpenSessions(), is(emptyArray()));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionOne, mockSessionTwo})));
-    }
-
-    @Test
-    public void finishingASessionThatHasNotBeenStartedBeforeIsNotAddedToFinishedSessions() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-        SessionImpl mockSession = mock(SessionImpl.class);
-
-        // when the session is not started, but immediately finished
-        target.finishSession(mockSession);
-
-        // then
-        assertThat(target.getAllOpenSessions(), is(emptyArray()));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
-    }
-
-    @Test
-    public void getNextFinishedSessionGetsAndRemovesSession() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-        SessionImpl mockSessionOne = mock(SessionImpl.class);
-        SessionImpl mockSessionTwo = mock(SessionImpl.class);
-
-        target.startSession(mockSessionOne);
-        target.finishSession(mockSessionOne);
-        target.startSession(mockSessionTwo);
-        target.finishSession(mockSessionTwo);
-
-        // when retrieving the next finished session
-        SessionImpl obtained = target.getNextFinishedSession();
-
-        // then
-        assertThat(obtained, is(sameInstance(mockSessionOne)));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo})));
-
-        // and when retrieving the next finished Session
-        obtained = target.getNextFinishedSession();
-
-        // then
-        assertThat(obtained, is(sameInstance(mockSessionTwo)));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
-    }
-
-    @Test
-    public void getNextFinishedSessionReturnsNullIfThereAreNoFinishedSessions() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-
-        // when, then
-        assertThat(target.getNextFinishedSession(), is(nullValue()));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne, mockSessionTwo));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
     }
 
     @Test
@@ -545,7 +487,7 @@ public class BeaconSendingContextTest {
 
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
+            timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
         SessionImpl mockSessionThree = mock(SessionImpl.class);
@@ -562,8 +504,9 @@ public class BeaconSendingContextTest {
         target.disableCapture();
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo, mockSessionThree})));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionTwo, mockSessionThree));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
 
         verify(configuration, times(1)).disableCapture();
         verify(mockSessionOne, times(1)).clearCapturedData();
@@ -578,7 +521,7 @@ public class BeaconSendingContextTest {
 
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
+            timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
 
@@ -594,8 +537,9 @@ public class BeaconSendingContextTest {
         target.handleStatusResponse(mockStatusResponse);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo})));
-        assertThat(target.getAllFinishedSessions(), is(equalTo(new SessionImpl[]{mockSessionOne})));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne, mockSessionTwo));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
 
         verify(configuration, times(1)).updateSettings(mockStatusResponse);
         verify(configuration, times(1)).isCapture();
@@ -608,7 +552,7 @@ public class BeaconSendingContextTest {
 
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
+            timingProvider);
         SessionImpl mockSessionOne = mock(SessionImpl.class);
         SessionImpl mockSessionTwo = mock(SessionImpl.class);
         SessionImpl mockSessionThree = mock(SessionImpl.class);
@@ -629,8 +573,9 @@ public class BeaconSendingContextTest {
         target.handleStatusResponse(mockStatusResponse);
 
         // then
-        assertThat(target.getAllOpenSessions(), is(equalTo(new SessionImpl[]{mockSessionTwo, mockSessionThree})));
-        assertThat(target.getAllFinishedSessions(), is(emptyArray()));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionTwo, mockSessionThree));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
 
         verify(configuration, times(1)).updateSettings(mockStatusResponse);
         verify(configuration, times(1)).isCapture();
@@ -647,7 +592,7 @@ public class BeaconSendingContextTest {
     public void isTimeSyncedReturnsTrueIfSyncWasNeverPerformed() {
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
+            timingProvider);
         when(timingProvider.isTimeSyncSupported()).thenReturn(true);
 
         assertThat(target.isTimeSynced(), is(false));
@@ -657,7 +602,7 @@ public class BeaconSendingContextTest {
     public void isTimeSyncedReturnsTrueIfSyncIsNotSupported() {
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
+            timingProvider);
 
         // when
         target.disableTimeSyncSupport();
@@ -670,12 +615,138 @@ public class BeaconSendingContextTest {
     public void timingProviderIsCalledOnTimeSyncInit() {
         // given
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
+            timingProvider);
 
         // when
         target.initializeTimeSync(1234L, true);
 
         // then
         verify(timingProvider, times(1)).initialize(1234L, true);
+    }
+
+    @Test
+    public void finishingANewSessionStillLeavesItNew() {
+
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
+            timingProvider);
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        // when starting the session
+        target.startSession(mockSession);
+
+        // then it's in the list of new ones
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSession));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
+
+        // and when finishing the session
+        target.finishSession(mockSession);
+
+        // then it's in the list of new ones
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSession));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
+    }
+
+    @Test
+    public void finishingASessionThatHasNotBeenStartedBeforeIsNotAddedToInternalList() {
+
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
+            timingProvider);
+        SessionImpl mockSession = mock(SessionImpl.class);
+
+        // when the session is not started, but immediately finished
+        target.finishSession(mockSession);
+
+        // then
+        assertThat(target.getAllNewSessions(), is(empty()));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
+    }
+
+    @Test
+    public void afterASessionHasBeenConfiguredItsOpenAndConfigured() {
+
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
+            timingProvider);
+        SessionImpl mockSessionOne = mock(SessionImpl.class);
+        SessionImpl mockSessionTwo = mock(SessionImpl.class);
+
+        // when both session are added
+        target.startSession(mockSessionOne);
+        target.startSession(mockSessionTwo);
+
+        // and configuring the first one
+        target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));
+
+        // then
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne));
+        assertThat(getAllOpenAndConfiguredSessions(target), containsInAnyOrder(mockSessionTwo));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
+
+        // and when configuring the second open session
+        target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));
+
+        // then
+        assertThat(target.getAllNewSessions(), is(empty()));
+        assertThat(getAllOpenAndConfiguredSessions(target), containsInAnyOrder(mockSessionOne, mockSessionTwo));
+        assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
+    }
+
+    @Test
+    public void afterAFinishedSessionHasBeenConfiguredItsFinishedAndConfigured() {
+
+        // given
+        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
+            timingProvider);
+        SessionImpl mockSessionOne = mock(SessionImpl.class);
+        SessionImpl mockSessionTwo = mock(SessionImpl.class);
+
+        // when both session are started and finished
+        target.startSession(mockSessionOne);
+        target.startSession(mockSessionTwo);
+        target.finishSession(mockSessionOne);
+        target.finishSession(mockSessionTwo);
+
+        // and configuring the first one
+        target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));
+
+        // then
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(getAllFinishedAndConfiguredSessions(target), containsInAnyOrder(mockSessionTwo));
+
+        // and when configuring the second open session
+        target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));
+
+        // then
+        assertThat(target.getAllNewSessions(), is(empty()));
+        assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
+        assertThat(getAllFinishedAndConfiguredSessions(target), containsInAnyOrder(mockSessionOne, mockSessionTwo));
+    }
+
+
+    private static List<SessionImpl> getAllNewSessions(BeaconSendingContext target) {
+        return extractSessionImpl(target.getAllNewSessions());
+    }
+
+    private static List<SessionImpl> getAllOpenAndConfiguredSessions(BeaconSendingContext target) {
+        return extractSessionImpl(target.getAllOpenAndConfiguredSessions());
+    }
+
+    private static List<SessionImpl> getAllFinishedAndConfiguredSessions(BeaconSendingContext target) {
+        return extractSessionImpl(target.getAllFinishedAndConfiguredSessions());
+    }
+
+    private static List<SessionImpl> extractSessionImpl(List<SessionWrapper> obtained) {
+        List<SessionImpl> result = new ArrayList<SessionImpl>(obtained.size());
+        for (SessionWrapper wrapper : obtained) {
+            result.add(wrapper.getSession());
+        }
+
+        return result;
     }
 }

@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -24,7 +25,11 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,14 +50,10 @@ public class BeaconSendingContext {
     private final TimingProvider timingProvider;
 
     /**
-     * container storing all open sessions
+     * container storing all sessions
      */
-    private final LinkedBlockingQueue<SessionImpl> openSessions = new LinkedBlockingQueue<SessionImpl>();
+    private final LinkedBlockingDeque<SessionWrapper> sessions = new LinkedBlockingDeque<SessionWrapper>();
 
-    /**
-     * container storing all finished sessions
-     */
-    private final LinkedBlockingQueue<SessionImpl> finishedSessions = new LinkedBlockingQueue<SessionImpl>();
     /**
      * boolean indicating whether shutdown was requested or not
      */
@@ -401,53 +402,16 @@ public class BeaconSendingContext {
      * Clear captured data from all sessions.
      */
     private void clearAllSessionData() {
-        // clear captured data from finished sessions
-        for (SessionImpl session : finishedSessions) {
-            session.clearCapturedData();
+
+        // iterate over the elements
+        Iterator<SessionWrapper> iterator = sessions.iterator();
+        while (iterator.hasNext()) {
+            SessionWrapper wrapper = iterator.next();
+            wrapper.clearCapturedData();
+            if (wrapper.isSessionFinished()) {
+                iterator.remove();
+            }
         }
-        finishedSessions.clear(); // clear finished sessions also
-
-        // clear captured data from open sessions
-        for (SessionImpl session : openSessions) {
-            session.clearCapturedData();
-        }
-    }
-
-    /**
-     * Gets the next finished session from the list of all finished sessions.
-     * <p>
-     * <p>
-     * This call also removes the session from the underlying data structure.
-     * If there are no finished sessions any more, this method returns null.
-     * </p>
-     *
-     * @return A finished session or {@code null} if there is no finished session.
-     */
-    SessionImpl getNextFinishedSession() {
-        return finishedSessions.poll();
-    }
-
-    /**
-     * Gets all open sessions.
-     * <p>
-     * <p>
-     * This returns a shallow copy of all open sessions.
-     * </p>
-     */
-    SessionImpl[] getAllOpenSessions() {
-        return openSessions.toArray(new SessionImpl[0]);
-    }
-
-    /**
-     * Gets all finished sessions.
-     * <p>
-     * <p>
-     * This returns a shallow copy of all finished sessions and is intended only
-     * for testing purposes.
-     * </p>
-     */
-    SessionImpl[] getAllFinishedSessions() {
-        return finishedSessions.toArray(new SessionImpl[0]);
     }
 
     /**
@@ -466,33 +430,74 @@ public class BeaconSendingContext {
 
     /**
      * Start a new session.
+     *
      * <p>
-     * <p>
-     * This add the {@code session} to the internal container of open sessions.
+     * This add the {@code session} to the internal container of sessions.
      * </p>
      *
      * @param session The new session to start.
      */
     public void startSession(SessionImpl session) {
-        openSessions.add(session);
+        sessions.addFirst(new SessionWrapper(session));
     }
 
     /**
-     * Push back a finished session, that was previously retrieved via {@link #getNextFinishedSession()}.
+     * Get all sessions that are considered new.
      *
      * <p>
-     * This method will not check for duplicate entries, so be careful what's pushed back.
+     *     The returned list is a snapshot and might change during traversal.
      * </p>
      *
-     * @param session The session to push back to the list of finished ones.
+     * @return A list of new sessions.
      */
-    public void pushBackFinishedSession(SessionImpl session) {
-        finishedSessions.add(session);
+    List<SessionWrapper> getAllNewSessions() {
+
+        List<SessionWrapper> newSessions = new LinkedList<SessionWrapper>();
+
+        for (SessionWrapper sessionWrapper : sessions) {
+            if (!sessionWrapper.isBeaconConfigurationSet()) {
+                newSessions.add(sessionWrapper);
+            }
+        }
+
+        return newSessions;
+    }
+
+    /**
+     * Get a list of all sessions that have been configured and are currently open.
+     */
+    List<SessionWrapper> getAllOpenAndConfiguredSessions() {
+
+        List<SessionWrapper> openSessions = new LinkedList<SessionWrapper>();
+
+        for (SessionWrapper sessionWrapper : sessions) {
+            if (sessionWrapper.isBeaconConfigurationSet() && !sessionWrapper.isSessionFinished()) {
+                openSessions.add(sessionWrapper);
+            }
+        }
+
+        return openSessions;
+    }
+
+    /**
+     * Get a list of all sessions that have been configured and are currently finished.
+     */
+    List<SessionWrapper> getAllFinishedAndConfiguredSessions() {
+
+        List<SessionWrapper> finishedSessions = new LinkedList<SessionWrapper>();
+
+        for (SessionWrapper sessionWrapper : sessions) {
+            if (sessionWrapper.isBeaconConfigurationSet() && sessionWrapper.isSessionFinished()) {
+                finishedSessions.add(sessionWrapper);
+            }
+        }
+
+        return finishedSessions;
     }
 
     /**
      * Finish a session which has been started previously using {@link #startSession(SessionImpl)}.
-     * <p>
+     *
      * <p>
      * If the session cannot be found in the container storing all open sessions, the parameter is ignored,
      * otherwise it's removed from the container storing open sessions and added to the finished session container.
@@ -501,8 +506,36 @@ public class BeaconSendingContext {
      * @param session The session to finish.
      */
     public void finishSession(SessionImpl session) {
-        if (openSessions.remove(session)) {
-            finishedSessions.add(session);
+
+        SessionWrapper sessionWrapper = findSessionWrapper(session);
+        if (sessionWrapper != null) {
+            sessionWrapper.finishSession();
         }
+    }
+
+    /**
+     * Search and find {@link SessionWrapper} for given {@link SessionImpl}.
+     *
+     * @param session The session for which to search for appropriate wrapper.
+     * @return Appropriate wrapper or {@code null} if not found.
+     */
+    private SessionWrapper findSessionWrapper(SessionImpl session) {
+
+        for (SessionWrapper sessionWrapper : sessions) {
+            if (sessionWrapper.getSession().equals(session)) {
+                return sessionWrapper;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Remove {@link SessionWrapper} from list of all wrappers.
+     *
+     * @param sessionWrapper The wrapper to remove.
+     */
+    boolean removeSession(SessionWrapper sessionWrapper) {
+        return sessions.remove(sessionWrapper);
     }
 }
