@@ -5,6 +5,8 @@ import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Wrapper around the {@link SessionImpl} which holds additional data
  * required only in the communication package, therefore leave it package internal.
@@ -17,11 +19,10 @@ class SessionWrapper {
      * The wrapped {@link SessionImpl}.
      */
     private final SessionImpl session;
-    private final Object lockObject = new Object();
 
     private int numNewSessionRequestsLeft = MAX_BEACON_CONFIGURATION;
-    private boolean beaconConfigurationSet = false;
-    private boolean sessionFinished = false;
+    private final AtomicBoolean beaconConfigurationSet = new AtomicBoolean(false);
+    private final AtomicBoolean sessionFinished = new AtomicBoolean(false);
 
     /**
      * Constructor taking the wrapped {@link SessionImpl}.
@@ -42,9 +43,7 @@ class SessionWrapper {
      */
     void updateBeaconConfiguration(BeaconConfiguration beaconConfiguration) {
         session.setBeaconConfiguration(beaconConfiguration);
-        synchronized (lockObject) {
-            beaconConfigurationSet = true;
-        }
+        beaconConfigurationSet.set(true);
     }
 
     /**
@@ -54,9 +53,7 @@ class SessionWrapper {
      * @return
      */
     boolean isBeaconConfigurationSet() {
-        synchronized (lockObject) {
-            return beaconConfigurationSet;
-        }
+        return beaconConfigurationSet.get();
     }
 
     /**
@@ -75,9 +72,7 @@ class SessionWrapper {
      * </p>
      */
     void finishSession() {
-        synchronized (lockObject) {
-            sessionFinished = true;
-        }
+        sessionFinished.set(true);
     }
 
     /**
@@ -85,9 +80,7 @@ class SessionWrapper {
      * @return {@code true} if this session has been finished, {@code false} otherwise.
      */
     boolean isSessionFinished() {
-        synchronized (lockObject) {
-            return sessionFinished;
-        }
+        return sessionFinished.get();
     }
 
     /**
