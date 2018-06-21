@@ -43,13 +43,13 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void aDefaultConstructedConfiguration() {
+    public void aDefaultConstructedConfigurationIsUsingDefaultDataCollectionLevel() {
         // given
         TestConfiguration target = new TestConfiguration();
 
         // then
-        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(), is(DataCollectionLevel.USER_BEHAVIOR));
-        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(CrashReportingLevel.OPT_IN_CRASHES));
+        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(), is(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
+        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL.OPT_IN_CRASHES));
     }
 
     @Test
