@@ -52,6 +52,8 @@ public class Beacon {
     private static final String BEACON_KEY_SESSION_NUMBER = "sn";
     private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
     private static final String BEACON_KEY_MULTIPLICITY = "mp";
+    private static final String BEACON_KEY_DATA_COLLECTION_LEVEL = "dl";
+    private static final String BEACON_KEY_CRASH_REPORTING_LEVEL = "cl";
 
     // device data constants
     private static final String BEACON_KEY_DEVICE_OS = "os";
@@ -764,6 +766,10 @@ public class Beacon {
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
                                                                                                   .getManufacturer());
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
+
+        BeaconConfiguration beaconConfig = beaconConfiguration.get();
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DATA_COLLECTION_LEVEL, beaconConfig.getDataCollectionLevel().getIntValue());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CRASH_REPORTING_LEVEL, beaconConfig.getCrashReportingLevel().getIntValue());
 
         return basicBeaconBuilder.toString();
     }

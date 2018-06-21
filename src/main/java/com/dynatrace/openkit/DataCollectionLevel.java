@@ -17,8 +17,18 @@
 package com.dynatrace.openkit;
 
 public enum DataCollectionLevel {
-    OFF,
-    PERFORMANCE,
-    USER_BEHAVIOR
+    OFF(0),
+    PERFORMANCE(1),
+    USER_BEHAVIOR(2);
+
+    private int intValue;
+
+    DataCollectionLevel(int intValue){
+        this.intValue = intValue;
+    }
+
+    public int getIntValue() {
+        return intValue;
+    }
 }
 
