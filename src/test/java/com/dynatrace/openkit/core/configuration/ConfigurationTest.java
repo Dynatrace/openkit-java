@@ -43,6 +43,16 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void aDefaultConstructedConfiguration() {
+        // given
+        TestConfiguration target = new TestConfiguration();
+
+        // then
+        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(), is(DataCollectionLevel.USER_BEHAVIOR));
+        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(CrashReportingLevel.OPT_IN_CRASHES));
+    }
+
+    @Test
     public void enableAndDisableCapturing() {
 
         // given
@@ -165,7 +175,7 @@ public class ConfigurationTest {
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
             this(openKitType, applicationName, applicationID, deviceID, endpointURL,
                 new BeaconCacheConfiguration(-1, -1, -1),
-                new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
+                new BeaconConfiguration());
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
