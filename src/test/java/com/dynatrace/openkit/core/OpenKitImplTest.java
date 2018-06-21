@@ -63,8 +63,11 @@ public class OpenKitImplTest {
         when(httpClientConfig.getBaseURL()).thenReturn("http://example.com/");
         when(httpClientConfig.getApplicationID()).thenReturn(APP_ID);
         when(config.getHttpClientConfig()).thenReturn(httpClientConfig);
-        final BeaconConfiguration beaconConfig = new BeaconConfiguration();
-        when(config.getBeaconConfiguration()).thenReturn(beaconConfig);
+        final BeaconConfiguration beaconConfigMock = mock(BeaconConfiguration.class);
+        when(beaconConfigMock.getDataCollectionLevel()).thenReturn(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL);
+        when(beaconConfigMock.getCrashReportingLevel()).thenReturn(BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        when(beaconConfigMock.getMultiplicity()).thenReturn(BeaconConfiguration.DEFAULT_MULITPLICITY);
+        when(config.getBeaconConfiguration()).thenReturn(beaconConfigMock);
     }
 
     @Test

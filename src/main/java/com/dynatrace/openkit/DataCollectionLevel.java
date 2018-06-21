@@ -21,7 +21,7 @@ public enum DataCollectionLevel {
     PERFORMANCE(1),
     USER_BEHAVIOR(2);
 
-    private int intValue;
+    private final int intValue;
 
     DataCollectionLevel(int intValue){
         this.intValue = intValue;

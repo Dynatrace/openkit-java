@@ -20,7 +20,7 @@ public enum CrashReportingLevel {
     OFF(0),
     OPT_IN_CRASHES(1);
 
-    private int intValue;
+    private final int intValue;
 
     CrashReportingLevel(int intValue) {
         this.intValue = intValue;
