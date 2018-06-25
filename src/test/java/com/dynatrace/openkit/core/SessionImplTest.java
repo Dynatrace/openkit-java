@@ -83,7 +83,6 @@ public class SessionImplTest {
         // verify default values
         assertThat(session, notNullValue());
         assertThat(session.getEndTime(), is(-1L));
-        assertThat(session.isEmpty(), is(true));
     }
 
     @Test
@@ -117,17 +116,59 @@ public class SessionImplTest {
     }
 
     @Test
-    public void enterNotClosedAction() {
+    public void enterNotClosedActionWhenBeaconConfigurationDisablesReporting() {
         // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        final BeaconCacheImpl beaconCache = new BeaconCacheImpl(logger);
+        final Configuration configuration = mock(Configuration.class);
+        when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationName()).thenReturn(APP_NAME);
+        when(configuration.getDevice()).thenReturn(new Device("", "", ""));
+        when(configuration.isCapture()).thenReturn(true);
+        when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB=default size
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(0, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
+        final String clientIPAddress = "127.0.0.1";
+        final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
+        final TimingProvider timingProvider = mock(TimingProvider.class);
+        final Beacon beaconWithDisabledReporting = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
+
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beaconWithDisabledReporting);
 
         // add/enter one action
         final RootAction rootAction = session.enterAction("Some action");
         assertThat(rootAction, notNullValue());
 
-        // verify that (because the actions is still active) it is not in the beacon cache (thus the cache is empty)
+        // verify that the beacon cache is empty due to session start event and disabled capturing
         assertThat(session.isEmpty(), is(true));
     }
+
+    @Test
+    public void enterNotClosedActionWhenBeaconConfigurationEnablesReporting() {
+        // create test environment
+        final BeaconCacheImpl beaconCache = new BeaconCacheImpl(logger);
+        final Configuration configuration = mock(Configuration.class);
+        when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationName()).thenReturn(APP_NAME);
+        when(configuration.getDevice()).thenReturn(new Device("", "", ""));
+        when(configuration.isCapture()).thenReturn(true);
+        when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB=default size
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
+        final String clientIPAddress = "127.0.0.1";
+        final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
+        final TimingProvider timingProvider = mock(TimingProvider.class);
+        final Beacon beaconWithEnabledReporting = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
+
+        final SessionImpl session = new SessionImpl(logger, beaconSender, beaconWithEnabledReporting);
+
+        // add/enter one action
+        final RootAction rootAction = session.enterAction("Some action");
+        assertThat(rootAction, notNullValue());
+
+        // verify that the beacon cache is not empty due to session start event and enabled capturing
+        assertThat(session.isEmpty(), is(false));
+    }
+
 
     @Test
     public void enterSingleAction() {
@@ -186,8 +227,9 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
-        verifyZeroInteractions(beacon);
+        verify(beacon, times(1)).startSession(session);
         verify(beacon, times(0)).identifyUser(anyString());
+        verifyNoMoreInteractions(beacon);
     }
 
     @Test
@@ -201,9 +243,10 @@ public class SessionImplTest {
 
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(beacon, times(1)).startSession(session);
         verify(beacon, times(1)).getSessionNumber();
-        verifyZeroInteractions(beacon);
         verify(beacon, times(0)).identifyUser(anyString());
+        verifyNoMoreInteractions(beacon);
     }
 
     @Test
@@ -270,6 +313,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
+        verify(beacon, times(1)).startSession(session);
         verifyZeroInteractions(beacon, beacon);
     }
 
@@ -285,6 +329,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
+        verify(beacon, times(1)).startSession(session);
         verifyZeroInteractions(beacon, beacon);
     }
 
