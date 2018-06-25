@@ -53,6 +53,7 @@ public class SessionImpl implements Session {
         this.beacon = beacon;
 
         beaconSender.startSession(this);
+        beacon.startSession(this);
     }
 
     // *** Session interface methods ***
