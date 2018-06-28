@@ -28,11 +28,11 @@ public class TestHTTPClient extends HTTPClient {
 
     public class Request {
 
-        private RequestType requestType;
-        private String url;
-        private String clientIPAddress;
-        private String decodedData;
-        private String method;
+        private final RequestType requestType;
+        private final String url;
+        private final String clientIPAddress;
+        private final String decodedData;
+        private final String method;
 
         public Request(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
             this.requestType = requestType;
@@ -73,8 +73,8 @@ public class TestHTTPClient extends HTTPClient {
 
     }
 
-    private boolean remoteTest;
-    private ArrayList<Request> sentRequests = new ArrayList<Request>();
+    private final boolean remoteTest;
+    private final ArrayList<Request> sentRequests = new ArrayList<Request>();
 
     private String rawStatusResponse = null;
     private StatusResponse statusResponse = null;
@@ -113,6 +113,10 @@ public class TestHTTPClient extends HTTPClient {
                     rawResponse = rawTimeSyncResponse;
                     response = timeSyncResponse;
                     break;
+            case NEW_SESSION:
+                rawResponse = rawTimeSyncResponse;
+                response = timeSyncResponse;
+                break;
             }
 
             System.out.println("Local HTTP Response: " + rawResponse);
