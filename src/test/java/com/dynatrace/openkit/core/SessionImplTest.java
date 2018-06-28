@@ -21,13 +21,16 @@ import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.*;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,6 +47,7 @@ import static org.mockito.Mockito.*;
 /**
  * Tests the session implementation having some knowledge of the internals of beacon and beacon cache.
  */
+@SuppressWarnings("resource")
 public class SessionImplTest {
 
     private static final String APP_ID = "appID";
