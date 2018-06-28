@@ -279,6 +279,23 @@ public class Beacon {
         addActionData(action.getStartTime(), actionBuilder);
     }
 
+    public void startSession(SessionImpl session) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
+        StringBuilder eventBuilder = new StringBuilder();
+
+        buildBasicEventData(eventBuilder, EventType.SESSION_START, null);
+
+        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
+        addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
+
+        addEventData(session.getEndTime(), eventBuilder);
+    }
+
     /**
      * Add {@link SessionImpl} to Beacon when session is ended.
      *

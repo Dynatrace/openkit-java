@@ -83,7 +83,6 @@ public class SessionImplTest {
         // verify default values
         assertThat(session, notNullValue());
         assertThat(session.getEndTime(), is(-1L));
-        assertThat(session.isEmpty(), is(true));
     }
 
     @Test
@@ -114,19 +113,6 @@ public class SessionImplTest {
 
         // ensure that some log message has been written
         verify(logger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
-    }
-
-    @Test
-    public void enterNotClosedAction() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-
-        // add/enter one action
-        final RootAction rootAction = session.enterAction("Some action");
-        assertThat(rootAction, notNullValue());
-
-        // verify that (because the actions is still active) it is not in the beacon cache (thus the cache is empty)
-        assertThat(session.isEmpty(), is(true));
     }
 
     @Test
@@ -186,8 +172,9 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
-        verifyZeroInteractions(beacon);
+        verify(beacon, times(1)).startSession(session);
         verify(beacon, times(0)).identifyUser(anyString());
+        verifyNoMoreInteractions(beacon);
     }
 
     @Test
@@ -201,9 +188,10 @@ public class SessionImplTest {
 
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(beacon, times(1)).startSession(session);
         verify(beacon, times(1)).getSessionNumber();
-        verifyZeroInteractions(beacon);
         verify(beacon, times(0)).identifyUser(anyString());
+        verifyNoMoreInteractions(beacon);
     }
 
     @Test
@@ -270,6 +258,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
+        verify(beacon, times(1)).startSession(session);
         verifyZeroInteractions(beacon, beacon);
     }
 
@@ -285,6 +274,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
+        verify(beacon, times(1)).startSession(session);
         verifyZeroInteractions(beacon, beacon);
     }
 
