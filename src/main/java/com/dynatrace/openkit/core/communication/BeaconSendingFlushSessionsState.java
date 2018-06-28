@@ -48,6 +48,8 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         while (finishedSession != null) {
             finishedSession.sendBeacon(context.getHTTPClientProvider());
             finishedSession.clearCapturedData();
+            finishedSession.close(); // The session is already closed/ended at this point. This call avoids a static code warning.
+
             finishedSession = context.getNextFinishedSession();
         }
 
