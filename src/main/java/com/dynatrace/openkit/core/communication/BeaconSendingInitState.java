@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Initial state for beacon sending.
- * <p>
+ *
  * <p>
  * The initial state is used to retrieve the configuration from the server and update the configuration.
  * </p>
- * <p>
+ *
  * <p>
  * Transition to:
  * <ul>

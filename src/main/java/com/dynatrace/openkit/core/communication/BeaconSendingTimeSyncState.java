@@ -25,11 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The state responsible for the time sync
- * <p>
+ *
  * <p>
  * In this state a time sync is performed.
  * </p>
- * <p>
+ *
  * <p>
  * Transition to:
  * <ul>

@@ -48,7 +48,7 @@ public class Configuration {
     private final AtomicBoolean captureErrors;                   // capture errors on/off; can be written/read by different threads -> atomic
     private final AtomicBoolean captureCrashes;                  // capture crashes on/off; can be written/read by different threads -> atomic
     private HTTPClientConfiguration httpClientConfiguration;     // the current http client configuration
-    private BeaconConfiguration beaconConfiguration;             // data collection levels
+    private final BeaconConfiguration beaconConfiguration;             // data collection levels
 
     // application and device settings
     private final String applicationVersion;

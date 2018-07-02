@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * State where no data is captured. Periodically issues a status request to check if capturing shall be re-enabled.
  * The check interval is defined in {@link BeaconSendingCaptureOffState#INITIAL_RETRY_SLEEP_TIME_MILLISECONDS}.
- * <p>
+ *
  * <p>
  * Transition to:
  * <ul>

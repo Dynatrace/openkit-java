@@ -16,7 +16,9 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+
+import java.util.List;
 
 /**
  * In this state open sessions are finished. After that all sessions are sent to the server.
@@ -37,20 +39,31 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) {
 
+        // first get all sessions that do not have any multiplicity set
+        List<SessionWrapper> newSessions = context.getAllNewSessions();
+        for (SessionWrapper newSession : newSessions) {
+            // just turn on the multiplicity and send all remaining data
+            BeaconConfiguration currentConfiguration = newSession.getSession().getBeaconConfiguration();
+            newSession.updateBeaconConfiguration(new BeaconConfiguration(1,
+                currentConfiguration.getDataCollectionLevel(),
+                currentConfiguration.getCrashReportingLevel()));
+        }
+
         // end open sessions -> will be flushed afterwards
-        SessionImpl[] openSessions = context.getAllOpenSessions();
-        for (SessionImpl openSession : openSessions) {
+        List<SessionWrapper> openSessions = context.getAllOpenAndConfiguredSessions();
+        for (SessionWrapper openSession : openSessions) {
             openSession.end();
         }
 
         // flush already finished (and previously ended) sessions
-        SessionImpl finishedSession = context.getNextFinishedSession();
-        while (finishedSession != null) {
-            finishedSession.sendBeacon(context.getHTTPClientProvider());
+        List<SessionWrapper> finishedSessions = context.getAllFinishedAndConfiguredSessions();
+        for (SessionWrapper finishedSession : finishedSessions) {
+            if (finishedSession.isDataSendingAllowed()) {
+                finishedSession.sendBeacon(context.getHTTPClientProvider());
+            }
             finishedSession.clearCapturedData();
-            finishedSession.close(); // The session is already closed/ended at this point. This call avoids a static code warning.
-
-            finishedSession = context.getNextFinishedSession();
+            finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
+            context.removeSession(finishedSession);
         }
 
         // make last state transition to terminal state

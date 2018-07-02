@@ -27,6 +27,7 @@ import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -958,8 +959,12 @@ public class ActionImplTest {
         when(configuration.getApplicationName()).thenReturn("appName");
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
-        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
-        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
+        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
+        when(mockBeaconConfiguration.getMultiplicity()).thenReturn(1);
+        when(mockBeaconConfiguration.getDataCollectionLevel()).thenReturn(DataCollectionLevel.USER_BEHAVIOR);
+        when(mockBeaconConfiguration.getCrashReportingLevel()).thenReturn(CrashReportingLevel.OPT_IN_CRASHES);
+        when(mockBeaconConfiguration.isCapturingAllowed()).thenReturn(true);
+        when(configuration.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
         final String clientIPAddress = "127.0.0.1";
         final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
         final TimingProvider timingProvider = mock(TimingProvider.class);

@@ -70,8 +70,12 @@ public class SessionImplTest {
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
         when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB=default size
-        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
-        when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
+        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
+        when(mockBeaconConfiguration.getMultiplicity()).thenReturn(1);
+        when(mockBeaconConfiguration.getDataCollectionLevel()).thenReturn(DataCollectionLevel.USER_BEHAVIOR);
+        when(mockBeaconConfiguration.getCrashReportingLevel()).thenReturn(CrashReportingLevel.OPT_IN_CRASHES);
+        when(mockBeaconConfiguration.isCapturingAllowed()).thenReturn(true);
+        when(configuration.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
         final String clientIPAddress = "127.0.0.1";
         final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
         final TimingProvider timingProvider = mock(TimingProvider.class);
