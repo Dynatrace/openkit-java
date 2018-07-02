@@ -679,8 +679,8 @@ public class BeaconSendingContextTest {
         target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));
 
         // then
-        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne));
-        assertThat(getAllOpenAndConfiguredSessions(target), containsInAnyOrder(mockSessionTwo));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionTwo));
+        assertThat(getAllOpenAndConfiguredSessions(target), containsInAnyOrder(mockSessionOne));
         assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
 
         // and when configuring the second open session
@@ -711,9 +711,9 @@ public class BeaconSendingContextTest {
         target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));
 
         // then
-        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionOne));
+        assertThat(getAllNewSessions(target), containsInAnyOrder(mockSessionTwo));
         assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
-        assertThat(getAllFinishedAndConfiguredSessions(target), containsInAnyOrder(mockSessionTwo));
+        assertThat(getAllFinishedAndConfiguredSessions(target), containsInAnyOrder(mockSessionOne));
 
         // and when configuring the second open session
         target.getAllNewSessions().get(0).updateBeaconConfiguration(mock(BeaconConfiguration.class));

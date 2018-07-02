@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * In this state a time sync is performed.
  * </p>
- * 
+ *
  * <p>
  * Transition to:
  * <ul>
