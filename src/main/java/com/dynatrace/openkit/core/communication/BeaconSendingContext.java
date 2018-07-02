@@ -17,7 +17,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -29,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,7 +50,7 @@ public class BeaconSendingContext {
     /**
      * container storing all sessions
      */
-    private final LinkedBlockingDeque<SessionWrapper> sessions = new LinkedBlockingDeque<SessionWrapper>();
+    private final LinkedBlockingQueue<SessionWrapper> sessions = new LinkedBlockingQueue<SessionWrapper>();
 
     /**
      * boolean indicating whether shutdown was requested or not
@@ -95,7 +93,7 @@ public class BeaconSendingContext {
      * Constructor.
      *
      * <p>
-     * The state is initialized to {@link BeaconSendingInitState},
+     *     The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
     public BeaconSendingContext(Logger logger, Configuration configuration,
@@ -108,7 +106,7 @@ public class BeaconSendingContext {
      * Constructor.
      *
      * <p>
-     * The initial state is provided. This constructor is intended for unit testing.
+     *     The initial state is provided. This constructor is intended for unit testing.
      * </p>
      */
     public BeaconSendingContext(Logger logger, Configuration configuration, HTTPClientProvider httpClientProvider,
@@ -154,7 +152,7 @@ public class BeaconSendingContext {
      * Wait until OpenKit has been fully initialized.
      *
      * <p>
-     * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
      * @return {@code true} OpenKit is fully initialized, {@code false} OpenKit init got interrupted.
@@ -173,7 +171,7 @@ public class BeaconSendingContext {
      * Wait until OpenKit has been fully initialized or timeout expired.
      *
      * <p>
-     * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
      * @param timeoutMillis
@@ -216,7 +214,7 @@ public class BeaconSendingContext {
      *
      * @return {@code true} if capturing is turned on, {@code false} otherwise.
      */
-    public boolean isCaptureOn() {
+    boolean isCaptureOn() {
         return configuration.isCapture();
     }
 
@@ -242,7 +240,7 @@ public class BeaconSendingContext {
     /**
      * Disables the time sync
      */
-    public void disableTimeSyncSupport() {
+    void disableTimeSyncSupport() {
         timeSyncSupported = false;
     }
 
@@ -278,7 +276,7 @@ public class BeaconSendingContext {
      *
      * @return the nextState
      */
-    public AbstractBeaconSendingState getNextState() {
+    AbstractBeaconSendingState getNextState() {
         return nextState;
     }
 
@@ -286,7 +284,7 @@ public class BeaconSendingContext {
      * Complete OpenKit initialization.
      *
      * <p>
-     * This will wake up every caller waiting in the {@link #waitForInit()} method.
+     *     This will wake up every caller waiting in the {@link #waitForInit()} method.
      * </p>
      *
      * @param success {@code true} if OpenKit was successfully initialized, {@code false} if it was interrupted.
@@ -432,13 +430,13 @@ public class BeaconSendingContext {
      * Start a new session.
      *
      * <p>
-     * This add the {@code session} to the internal container of sessions.
+     *     This add the {@code session} to the internal container of sessions.
      * </p>
      *
      * @param session The new session to start.
      */
     public void startSession(SessionImpl session) {
-        sessions.addFirst(new SessionWrapper(session));
+        sessions.add(new SessionWrapper(session));
     }
 
     /**
@@ -497,11 +495,6 @@ public class BeaconSendingContext {
 
     /**
      * Finish a session which has been started previously using {@link #startSession(SessionImpl)}.
-     *
-     * <p>
-     * If the session cannot be found in the container storing all open sessions, the parameter is ignored,
-     * otherwise it's removed from the container storing open sessions and added to the finished session container.
-     * </p>
      *
      * @param session The session to finish.
      */

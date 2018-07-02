@@ -484,12 +484,8 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
-        if (reason != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        }
-        if (stacktrace != null) {
-            addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
-        }
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
 
         addEventData(timestamp, eventBuilder);
     }

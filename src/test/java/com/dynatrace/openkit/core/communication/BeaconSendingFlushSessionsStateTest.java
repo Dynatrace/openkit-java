@@ -107,6 +107,7 @@ public class BeaconSendingFlushSessionsStateTest {
 
     @Test
     public void aBeaconSendingFlushSessionsClosesOpenSessions() {
+
         // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
@@ -120,6 +121,7 @@ public class BeaconSendingFlushSessionsStateTest {
 
     @Test
     public void aBeaconSendingFlushSessionStateSendsAllOpenAndClosedBeacons() {
+
         // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
 
@@ -134,6 +136,7 @@ public class BeaconSendingFlushSessionsStateTest {
 
     @Test
     public void aBeaconSendingFlushSessionStateDoesNotSendIfSendingIsNotAllowed() {
+
         // given
         BeaconSendingFlushSessionsState target = new BeaconSendingFlushSessionsState();
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(false);

@@ -21,14 +21,15 @@ import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.*;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -471,7 +472,7 @@ public class SessionImplTest {
     public void aSessionIsEndedIfEndIsCalled() {
 
         // given
-        SessionImpl session = new SessionImpl(logger, beaconSender,  beacon);
+        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
 
         // when end is called
         session.end();
@@ -537,6 +538,6 @@ public class SessionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(false));
-        verify(beaconSender, times(1)).finishSession((SessionImpl)target);
+        verify(beaconSender, times(1)).finishSession((SessionImpl) target);
     }
 }
