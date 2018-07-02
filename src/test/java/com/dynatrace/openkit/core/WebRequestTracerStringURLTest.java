@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.protocol.Beacon;
+
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -25,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
+@SuppressWarnings("resource")
 public class WebRequestTracerStringURLTest {
 
     @Test

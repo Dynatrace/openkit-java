@@ -19,9 +19,13 @@ package com.dynatrace.openkit.test;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.core.Device;
-import com.dynatrace.openkit.core.configuration.*;
+import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.OpenKitType;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -42,8 +46,8 @@ public class ConfigurationTest {
     }
 
     private Configuration getDynatraceConfig(String tenantURL) {
-        return new Configuration(OpenKitType.DYNATRACE, "", "", 17, tenantURL,
-            new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), "",
+        return new Configuration(OpenKitType.DYNATRACE, applicationName, "", 17, tenantURL,
+                new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), applicationVersion,
             new BeaconCacheConfiguration(-1, -1, -1),
             new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
     }

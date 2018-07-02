@@ -20,7 +20,6 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
-import java.net.URL;
 import java.util.regex.Pattern;
 
 /**

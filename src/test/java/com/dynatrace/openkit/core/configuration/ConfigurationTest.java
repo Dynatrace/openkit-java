@@ -17,11 +17,11 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
+
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +49,7 @@ public class ConfigurationTest {
 
         // then
         assertThat(target.getBeaconConfiguration().getDataCollectionLevel(), is(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
-        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL.OPT_IN_CRASHES));
+        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(CrashReportingLevel.OPT_IN_CRASHES));
     }
 
     @Test

@@ -50,6 +50,7 @@ import static org.mockito.Mockito.*;
 /**
  * Tests the action having some knowledge of the internals of action, rootaction and beacon.
  */
+@SuppressWarnings("resource")
 public class ActionImplTest {
 
     private Logger logger;
@@ -934,7 +935,7 @@ public class ActionImplTest {
         when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
-        SynchronizedQueue queue = new SynchronizedQueue<Action>();
+        SynchronizedQueue<Action> queue = new SynchronizedQueue<Action>();
         Closeable target = new ActionImpl(logger, mockBeacon, actionName, queue);
 
         // when

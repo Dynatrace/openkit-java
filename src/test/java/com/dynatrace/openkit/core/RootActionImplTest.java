@@ -31,6 +31,7 @@ import static org.mockito.Mockito.*;
 /**
  * Tests the root action having some knowledge of the internals of the underlying actions.
  */
+@SuppressWarnings("resource")
 public class RootActionImplTest {
 
     private Logger logger;
