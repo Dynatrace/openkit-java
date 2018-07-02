@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -45,6 +46,9 @@ public class BeaconSendingFlushSessionsStateTest {
         mockSession1Open = mock(SessionWrapper.class);
         mockSession2Open = mock(SessionWrapper.class);
         mockSession3Closed = mock(SessionWrapper.class);
+        when(mockSession1Open.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession2Open.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession3Closed.getSession()).thenReturn(mock(SessionImpl.class));
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession2Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession3Closed.isDataSendingAllowed()).thenReturn(true);

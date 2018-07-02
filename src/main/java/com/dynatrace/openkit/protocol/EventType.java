@@ -25,6 +25,7 @@ public enum EventType {
     VALUE_INT,                // captured int
     VALUE_DOUBLE,            // captured double
     NAMED_EVENT,            // named event
+    SESSION_START,          // session start
     SESSION_END,            // session end
     WEBREQUEST,                // tagged web request
     ERROR,                    // error
@@ -43,6 +44,8 @@ public enum EventType {
                 return 13;
             case NAMED_EVENT:
                 return 10;
+            case SESSION_START:
+                return 18;
             case SESSION_END:
                 return 19;
             case WEBREQUEST:

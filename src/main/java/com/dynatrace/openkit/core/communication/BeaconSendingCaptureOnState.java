@@ -127,6 +127,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             // session was sent/is not allowed to be sent - so remove it from beacon cache
             context.removeSession(finishedSession); // remove the finished session from the cache
             finishedSession.clearCapturedData();
+            finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
         }
     }
 

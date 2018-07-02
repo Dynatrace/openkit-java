@@ -17,11 +17,11 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.core.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
+
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +40,16 @@ public class ConfigurationTest {
 
         // then
         assertThat(target.isCapture(), is(true));
+    }
+
+    @Test
+    public void aDefaultConstructedConfigurationIsUsingDefaultDataCollectionLevel() {
+        // given
+        TestConfiguration target = new TestConfiguration();
+
+        // then
+        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(), is(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
+        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(CrashReportingLevel.OPT_IN_CRASHES));
     }
 
     @Test
@@ -165,7 +175,7 @@ public class ConfigurationTest {
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
             this(openKitType, applicationName, applicationID, deviceID, endpointURL,
                 new BeaconCacheConfiguration(-1, -1, -1),
-                new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
+                new BeaconConfiguration());
         }
 
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {

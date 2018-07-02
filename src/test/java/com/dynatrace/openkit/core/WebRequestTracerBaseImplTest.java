@@ -32,6 +32,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("resource")
 public class WebRequestTracerBaseImplTest {
 
     private Logger logger;

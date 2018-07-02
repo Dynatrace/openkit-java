@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * In this state open sessions are finished. After that all sessions are sent to the server.
- *
+ * <p>
  * <p>
  * Transition to:
  * <ul>
@@ -62,6 +62,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
                 finishedSession.sendBeacon(context.getHTTPClientProvider());
             }
             finishedSession.clearCapturedData();
+            finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
             context.removeSession(finishedSession);
         }
 

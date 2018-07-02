@@ -54,6 +54,8 @@ public class Beacon {
     private static final String BEACON_KEY_SESSION_NUMBER = "sn";
     private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
     private static final String BEACON_KEY_MULTIPLICITY = "mp";
+    private static final String BEACON_KEY_DATA_COLLECTION_LEVEL = "dl";
+    private static final String BEACON_KEY_CRASH_REPORTING_LEVEL = "cl";
 
     // device data constants
     private static final String BEACON_KEY_DEVICE_OS = "os";
@@ -271,6 +273,23 @@ public class Beacon {
         addKeyValuePair(actionBuilder, BEACON_KEY_TIME_1, action.getEndTime() - action.getStartTime());
 
         addActionData(action.getStartTime(), actionBuilder);
+    }
+
+    public void startSession(SessionImpl session) {
+
+        if (isCapturingDisabled()) {
+            return;
+        }
+
+        StringBuilder eventBuilder = new StringBuilder();
+
+        buildBasicEventData(eventBuilder, EventType.SESSION_START, null);
+
+        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
+        addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
+
+        addEventData(session.getEndTime(), eventBuilder);
     }
 
     /**
@@ -758,6 +777,10 @@ public class Beacon {
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
                                                                                                   .getManufacturer());
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
+
+        BeaconConfiguration beaconConfig = beaconConfiguration.get();
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DATA_COLLECTION_LEVEL, beaconConfig.getDataCollectionLevel().getIntValue());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CRASH_REPORTING_LEVEL, beaconConfig.getCrashReportingLevel().getIntValue());
 
         return basicBeaconBuilder.toString();
     }

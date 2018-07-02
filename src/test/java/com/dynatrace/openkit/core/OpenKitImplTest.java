@@ -22,10 +22,7 @@ import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
@@ -41,6 +38,7 @@ import static org.mockito.Mockito.when;
 /**
  * Tests the {@link OpenKitImpl} implementation having some knowledge of the sessions.
  */
+@SuppressWarnings("resource")
 public class OpenKitImplTest {
 
     private static final String APP_ID = "appID";
@@ -63,8 +61,11 @@ public class OpenKitImplTest {
         when(httpClientConfig.getBaseURL()).thenReturn("http://example.com/");
         when(httpClientConfig.getApplicationID()).thenReturn(APP_ID);
         when(config.getHttpClientConfig()).thenReturn(httpClientConfig);
-        final BeaconConfiguration beaconConfig = mock(BeaconConfiguration.class);
-        when(config.getBeaconConfiguration()).thenReturn(beaconConfig);
+        final BeaconConfiguration beaconConfigMock = mock(BeaconConfiguration.class);
+        when(beaconConfigMock.getDataCollectionLevel()).thenReturn(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL);
+        when(beaconConfigMock.getCrashReportingLevel()).thenReturn(BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        when(beaconConfigMock.getMultiplicity()).thenReturn(BeaconConfiguration.DEFAULT_MULITPLICITY);
+        when(config.getBeaconConfiguration()).thenReturn(beaconConfigMock);
     }
 
     @Test
@@ -86,7 +87,7 @@ public class OpenKitImplTest {
         openKit.shutdown();
         assertThat(openKit.isInitialized(), is(false));
     }
-    
+
     @Test(timeout = 3000)
     public void waitForInitCompletionWithZeroTimeout() {
         // create test environment

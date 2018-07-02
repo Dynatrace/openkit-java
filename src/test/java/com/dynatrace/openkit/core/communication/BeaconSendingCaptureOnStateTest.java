@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
+import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
@@ -56,6 +57,12 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 200));
         when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 404));
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
+        when(mockSession1Open.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession2Open.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession3Finished.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession4Finished.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession5New.getSession()).thenReturn(mock(SessionImpl.class));
+        when(mockSession6New.getSession()).thenReturn(mock(SessionImpl.class));
 
         HTTPClientProvider mockHTTPClientProvider = mock(HTTPClientProvider.class);
 

@@ -29,8 +29,8 @@ import com.dynatrace.openkit.DataCollectionLevel;
  */
 public class BeaconConfiguration {
 
-    public static final DataCollectionLevel DEFAULT_DATA_COLLECTION_LEVEL = DataCollectionLevel.OFF;
-    public static final CrashReportingLevel DEFAULT_CRASH_REPORTING_LEVEL = CrashReportingLevel.OFF;
+    public static final DataCollectionLevel DEFAULT_DATA_COLLECTION_LEVEL = DataCollectionLevel.USER_BEHAVIOR;
+    public static final CrashReportingLevel DEFAULT_CRASH_REPORTING_LEVEL = CrashReportingLevel.OPT_IN_CRASHES;
     public static final int DEFAULT_MULITPLICITY = 1;
 
     /**
