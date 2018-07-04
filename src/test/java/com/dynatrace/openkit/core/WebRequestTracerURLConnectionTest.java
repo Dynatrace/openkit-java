@@ -44,17 +44,17 @@ public class WebRequestTracerURLConnectionTest {
         // create test environment
         Logger logger = mock(Logger.class);
         final Beacon beacon = mock(Beacon.class);
-        final ActionImpl action = mock(ActionImpl.class);
+        final int parentActionId = 1;
         final URLConnection urlConnection = mock(URLConnection.class);
 
         // test the constructor call
-        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, action,
+        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, parentActionId,
                 urlConnection);
         assertThat(conn, notNullValue());
 
         // verify the correct methods being called
         verify(beacon, times(1)).createSequenceNumber();
-        verify(beacon, times(1)).createTag(eq(action), eq(0));
+        verify(beacon, times(1)).createTag(eq(parentActionId), eq(0));
     }
 
     @Test
@@ -63,8 +63,8 @@ public class WebRequestTracerURLConnectionTest {
         Logger logger = mock(Logger.class);
         final Beacon beacon = mock(Beacon.class);
         final String tag = "Some tag";
-        when(beacon.createTag(isA(ActionImpl.class), anyInt())).thenReturn(tag);
-        final ActionImpl action = mock(ActionImpl.class);
+        when(beacon.createTag(anyInt(), anyInt())).thenReturn(tag);
+        final int parentActionId = 1;
         final URLConnection urlConnection = new URL("http://example.com").openConnection();
 
         // Check that the tag is not yet set
@@ -72,7 +72,7 @@ public class WebRequestTracerURLConnectionTest {
         assertThat(existingTag, is(nullValue()));
 
         // test the constructor call
-        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, action,
+        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, parentActionId,
                 urlConnection);
         assertThat(conn, notNullValue());
 

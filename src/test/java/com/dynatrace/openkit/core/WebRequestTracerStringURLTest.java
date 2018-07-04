@@ -74,7 +74,7 @@ public class WebRequestTracerStringURLTest {
 
         // given
         WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class),
-            mock(Beacon.class), mock(ActionImpl.class), "a1337://foo");
+            mock(Beacon.class), 0, "a1337://foo");
 
         // then
         assertThat(target.getURL(), is(equalTo("a1337://foo")));
@@ -84,7 +84,7 @@ public class WebRequestTracerStringURLTest {
     public void ifURLIsInvalidTheDefaultValueIsUsed() {
         // given
         WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class),
-            mock(Beacon.class), mock(ActionImpl.class), "foobar");
+            mock(Beacon.class), 0, "foobar");
 
         // then
         assertThat(target.getURL(), is(equalTo("<unknown>")));

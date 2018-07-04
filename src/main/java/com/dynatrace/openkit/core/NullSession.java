@@ -16,9 +16,12 @@
 
 package com.dynatrace.openkit.core;
 
+import java.net.URLConnection;
+
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.api.WebRequestTracer;
 
 /**
  * This class is returned as Session by {@link OpenKit#createSession(String)} when the {@link OpenKit#shutdown()}
@@ -26,6 +29,7 @@ import com.dynatrace.openkit.api.Session;
  */
 public class NullSession implements Session {
 
+	private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
     private static final RootAction NULL_ROOT_ACTION = new NullRootAction();
 
     @Override
@@ -48,7 +52,17 @@ public class NullSession implements Session {
         // intentionally left empty, due to NullObject pattern
     }
 
-    @Override
+	@Override
+	public WebRequestTracer traceWebRequest(URLConnection connection) {
+		return NULL_WEB_REQUEST_TRACER;
+	}
+
+	@Override
+	public WebRequestTracer traceWebRequest(String url) {
+		return NULL_WEB_REQUEST_TRACER;
+	}
+
+	@Override
     public void close() {
         end();
     }

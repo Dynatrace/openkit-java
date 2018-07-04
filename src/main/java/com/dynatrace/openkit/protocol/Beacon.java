@@ -229,16 +229,17 @@ public class Beacon {
      * If data collection level is 0 ({@link DataCollectionLevel#OFF}) an empty tag is returned.
      * </p>
      *
-     * @param parentAction The action for which to create a web request tag.
+     * @param parentActionId The id of the action for which to create a web request tag. 0 if no parent action exists
      * @param sequenceNo Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
      * @return A web request tracer tag.
      */
-    public String createTag(ActionImpl parentAction, int sequenceNo) {
+    public String createTag(int parentActionId, int sequenceNo) {
         if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
+
         return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + configuration
-            .getDeviceID() + "_" + sessionNumber + "_" + configuration.getApplicationID() + "_" + parentAction.getID() + "_" + threadIDProvider
+            .getDeviceID() + "_" + sessionNumber + "_" + configuration.getApplicationID() + "_" + parentActionId + "_" + threadIDProvider
             .getThreadID() + "_" + sequenceNo;
     }
 
@@ -516,10 +517,10 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
+     * @param parentActionId The id of the parent {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
      * @param webRequestTracer Web request tracer to serialize.
      */
-    public void addWebRequest(ActionImpl parentAction, WebRequestTracerBaseImpl webRequestTracer) {
+    public void addWebRequest(int parentActionId, WebRequestTracerBaseImpl webRequestTracer) {
 
         if (isCapturingDisabled()) {
             return;
@@ -532,7 +533,7 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.WEBREQUEST, webRequestTracer.getURL());
 
-        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
+        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentActionId);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTracer.getStartSequenceNo());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(webRequestTracer.getStartTime()));
         addKeyValuePair(eventBuilder, BEACON_KEY_END_SEQUENCE_NUMBER, webRequestTracer.getEndSequenceNo());

@@ -31,8 +31,8 @@ public class WebRequestTracerURLConnection extends WebRequestTracerBaseImpl {
     // *** constructors ***
 
     // creates web request tag with a URLConnection
-    public WebRequestTracerURLConnection(Logger logger, Beacon beacon, ActionImpl action, URLConnection connection) {
-        super(logger, beacon, action);
+    public WebRequestTracerURLConnection(Logger logger, Beacon beacon, int parentActionId, URLConnection connection) {
+        super(logger, beacon, parentActionId);
 
         // only set tag header and URL if connection is not null
         if (connection != null) {

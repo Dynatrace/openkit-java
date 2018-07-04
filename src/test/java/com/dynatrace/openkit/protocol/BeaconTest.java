@@ -165,12 +165,11 @@ public class BeaconTest {
     public void createWebRequestTag() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
+        int parentActionId = ACTION_ID;
 
         // when
         int sequenceNo = 42;
-        String tag = beacon.createTag(action, sequenceNo);
+        String tag = beacon.createTag(parentActionId, sequenceNo);
 
         // then
         assertThat(tag, is(equalTo("MT_3_" + SERVER_ID + "_" + DEVICE_ID + "_0_" + APP_ID + "_" + ACTION_ID + "_" + THREAD_ID + "_" + sequenceNo)));
@@ -402,15 +401,14 @@ public class BeaconTest {
     public void addWebRequest() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
+		int parentActionId = ACTION_ID;
         WebRequestTracerURLConnection webRequestTracer = mock(WebRequestTracerURLConnection.class);
         when(webRequestTracer.getBytesSent()).thenReturn(13);
         when(webRequestTracer.getBytesReceived()).thenReturn(14);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         // when
-        beacon.addWebRequest(action, webRequestTracer);
+        beacon.addWebRequest(parentActionId, webRequestTracer);
         String[] events = beacon.getEvents();
 
         // then
@@ -451,8 +449,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
         int bytesSent = 12321;
 
         // when
@@ -471,8 +469,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
         int bytesSent = 0;
 
         // when
@@ -491,8 +489,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
 
         // when
         webRequest.start().setBytesSent(-5).stop(); // stop will add the web request to the beacon
@@ -507,8 +505,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
         int bytesReceived = 12321;
 
         // when
@@ -527,8 +525,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
         int bytesReceived = 0;
 
         // when
@@ -547,8 +545,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
 
         // when
         webRequest.start().setBytesReceived(-1).stop(); // stop will add the web request to the beacon
@@ -563,8 +561,8 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, rootAction, testURL);
+        int parentActionId = 0;
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, parentActionId, testURL);
         int bytesReceived = 12321;
         int bytesSent = 123;
 
@@ -833,15 +831,14 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
-        ActionImpl parentAction = mock(ActionImpl.class);
+        int parentActionId = 1;
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
 
         // when
-        target.addWebRequest(parentAction, webRequestTracer);
+        target.addWebRequest(parentActionId, webRequestTracer);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(parentAction, webRequestTracer);
     }
 
     @Test
@@ -862,13 +859,12 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
+        int parentActionId = 1;
         WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
         //when
-        target.addWebRequest(mockAction, mockWebRequestTracer);
+        target.addWebRequest(parentActionId, mockWebRequestTracer);
 
         //then
-        verifyZeroInteractions(mockAction);
         verifyZeroInteractions(mockWebRequestTracer);
         //verify nothing has been serialized
         assertThat(target.isEmpty(), is(true));
@@ -883,7 +879,7 @@ public class BeaconTest {
         WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
 
         //when
-        target.addWebRequest(mockAction, mockWebRequestTracer);
+        target.addWebRequest(mockAction.getID(), mockWebRequestTracer);
 
         //then
         verify(mockAction, times(1)).getID();
@@ -903,7 +899,7 @@ public class BeaconTest {
         WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
 
         //when
-        target.addWebRequest(mockAction, mockWebRequestTracer);
+        target.addWebRequest(mockAction.getID(), mockWebRequestTracer);
 
         //then
         verify(mockAction, times(1)).getID();
@@ -922,11 +918,10 @@ public class BeaconTest {
         ActionImpl mockAction = mock(ActionImpl.class);
 
         //when
-        String returnedTag = target.createTag(mockAction, 1);
+        String returnedTag = target.createTag(mockAction.getID(), 1);
 
         //then
         assertThat(returnedTag.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -934,14 +929,13 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
+        int parentActionId = 0;
 
         //when
-        String returnedTag = target.createTag(mockAction, 1);
+        String returnedTag = target.createTag(parentActionId, 1);
 
         //then
         assertThat(returnedTag.isEmpty(), is(false));
-        verify(mockAction, times(1)).getID();
     }
 
     @Test
@@ -952,7 +946,7 @@ public class BeaconTest {
         ActionImpl mockAction = mock(ActionImpl.class);
 
         //when
-        String returnedTag = target.createTag(mockAction, 1);
+        String returnedTag = target.createTag(mockAction.getID(), 1);
 
         //then
         assertThat(returnedTag.isEmpty(), is(false));
