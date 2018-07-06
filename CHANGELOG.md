@@ -11,6 +11,8 @@
   - WebRequestTracer
 - Build support on Jenkins CI server
 - coveralls.io Coverage integration
+- Server overload prevention
+- GDPR compliance
 
 ### Changed
 - BeaconSender's thread name is now correct
