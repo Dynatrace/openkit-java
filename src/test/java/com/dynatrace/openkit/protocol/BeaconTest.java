@@ -1188,6 +1188,20 @@ public class BeaconTest {
     public void reportCrashDoesNotReportOnCrashReportingLevel1() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_OUT_CRASHES));
+
+        //when
+        target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
+
+        //then
+        verify(timingProvider, times(1)).provideTimestampInMilliseconds();
+        assertThat(target.isEmpty(), is(equalTo(true)));
+    }
+
+    @Test
+    public void reportCrashDoes2ReportOnCrashReportingLevel2() {
+        // given
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
 
         //when

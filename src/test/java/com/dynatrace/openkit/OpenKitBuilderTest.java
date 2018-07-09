@@ -32,25 +32,25 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 public class OpenKitBuilderTest {
-    private static final String endpoint = "https://localhost:12345";
-    private static final String appID = "asdf123";
-    private static final String appName = "myName";
-    private static final long deviceID = 1234L;
-    private static final String appVersion = "1.2.3.4";
-    private static final String os = "custom OS";
-    private static final String manufacturer = "custom manufacturer";
-    private static final String modelID = "custom model id";
-    private static final DataCollectionLevel dataCollectionLevel = DataCollectionLevel.PERFORMANCE;
-    private static final CrashReportingLevel crashReportingLevel = CrashReportingLevel.OPT_IN_CRASHES;
+    private static final String ENDPOINT = "https://localhost:12345";
+    private static final String APP_ID = "asdf123";
+    private static final String APP_NAME = "myName";
+    private static final long DEVICE_ID = 1234L;
+    private static final String APP_VERSION = "1.2.3.4";
+    private static final String OPERATING_SYSTEM = "custom OS";
+    private static final String MANUFACTURER = "custom manufacturer";
+    private static final String MODEL_ID = "custom model id";
+    private static final DataCollectionLevel DATA_COLLECTION_LEVEL = DataCollectionLevel.PERFORMANCE;
+    private static final CrashReportingLevel CRASH_REPORTING_LEVEL = CrashReportingLevel.OPT_IN_CRASHES;
 
     @Test
     public void defaultsAreSetForAppMon() {
-        verifyDefaultsAreSet(new AppMonOpenKitBuilder(endpoint, appID, deviceID).buildConfiguration());
+        verifyDefaultsAreSet(new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).buildConfiguration());
     }
 
     @Test
     public void defaultsAreSetForDynatrace() {
-        verifyDefaultsAreSet(new DynatraceOpenKitBuilder(endpoint, appName, deviceID).buildConfiguration());
+        verifyDefaultsAreSet(new DynatraceOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration());
     }
 
     private void verifyDefaultsAreSet(Configuration configuration) {
@@ -76,9 +76,9 @@ public class OpenKitBuilderTest {
 
     @Test
     public void applicationNameIsSetCorrectlyForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID).buildConfiguration();
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration();
 
-        assertThat(target.getApplicationName(), is(equalTo(appName)));
+        assertThat(target.getApplicationName(), is(equalTo(APP_NAME)));
         assertThat(target.getApplicationName(), is(equalTo(target.getApplicationID())));
     }
 
@@ -86,7 +86,7 @@ public class OpenKitBuilderTest {
     public void canOverrideTrustManagerForAppMon() {
         SSLTrustManager trustManager = mock(SSLTrustManager.class);
 
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID)
             .withTrustManager(trustManager)
             .buildConfiguration();
 
@@ -97,7 +97,7 @@ public class OpenKitBuilderTest {
     public void canOverrideTrustManagerForDynatrace() {
         SSLTrustManager trustManager = mock(SSLTrustManager.class);
 
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
             .withTrustManager(trustManager)
             .buildConfiguration();
 
@@ -106,83 +106,83 @@ public class OpenKitBuilderTest {
 
     @Test
     public void canSetApplicationVersionForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
-            .withApplicationVersion(appVersion)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID)
+            .withApplicationVersion(APP_VERSION)
             .buildConfiguration();
 
-        assertThat(target.getApplicationVersion(), is(equalTo(appVersion)));
+        assertThat(target.getApplicationVersion(), is(equalTo(APP_VERSION)));
     }
 
     @Test
     public void canSetApplicationVersionForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withApplicationVersion(appVersion)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withApplicationVersion(APP_VERSION)
             .buildConfiguration();
 
-        assertThat(target.getApplicationVersion(), is(equalTo(appVersion)));
+        assertThat(target.getApplicationVersion(), is(equalTo(APP_VERSION)));
     }
 
     @Test
     public void canSetOperatingSystemForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
-            .withOperatingSystem(os)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID)
+            .withOperatingSystem(OPERATING_SYSTEM)
             .buildConfiguration();
 
-        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(os)));
+        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(OPERATING_SYSTEM)));
     }
 
     @Test
     public void canSetOperatingSystemForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withOperatingSystem(os)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withOperatingSystem(OPERATING_SYSTEM)
             .buildConfiguration();
 
-        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(os)));
+        assertThat(target.getDevice().getOperatingSystem(), is(equalTo(OPERATING_SYSTEM)));
     }
 
     @Test
     public void canSetManufacturerForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
-            .withManufacturer(manufacturer)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID)
+            .withManufacturer(MANUFACTURER)
             .buildConfiguration();
 
-        assertThat(target.getDevice().getManufacturer(), is(equalTo(manufacturer)));
+        assertThat(target.getDevice().getManufacturer(), is(equalTo(MANUFACTURER)));
     }
 
     @Test
     public void canSetManufactureForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withManufacturer(manufacturer)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withManufacturer(MANUFACTURER)
             .buildConfiguration();
 
-        assertThat(target.getDevice().getManufacturer(), is(equalTo(manufacturer)));
+        assertThat(target.getDevice().getManufacturer(), is(equalTo(MANUFACTURER)));
     }
 
     @Test
     public void canSetModelIDForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appName, deviceID)
-            .withModelID(modelID)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID)
+            .withModelID(MODEL_ID)
             .buildConfiguration();
 
-        assertThat(target.getDevice().getModelID(), is(equalTo(modelID)));
+        assertThat(target.getDevice().getModelID(), is(equalTo(MODEL_ID)));
     }
 
     @Test
     public void canSetModelIDForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withModelID(modelID)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withModelID(MODEL_ID)
             .buildConfiguration();
 
-        assertThat(target.getDevice().getModelID(), is(equalTo(modelID)));
+        assertThat(target.getDevice().getModelID(), is(equalTo(MODEL_ID)));
     }
 
     @Test
     public void canSetAppNameForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withApplicationName(appName)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withApplicationName(APP_NAME)
             .buildConfiguration();
 
-        assertThat(target.getApplicationName(), is(equalTo(appName)));
+        assertThat(target.getApplicationName(), is(equalTo(APP_NAME)));
     }
 
     @Test
@@ -191,7 +191,7 @@ public class OpenKitBuilderTest {
         Logger logger = mock(Logger.class);
 
         // when
-        Logger target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID).withLogger(logger).getLogger();
+        Logger target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).withLogger(logger).getLogger();
 
         // then
         assertThat(target, is(sameInstance(logger)));
@@ -200,7 +200,7 @@ public class OpenKitBuilderTest {
     @Test
     public void defaultLoggerIsUsedByDefault() {
         // when
-        Logger target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID).getLogger();
+        Logger target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).getLogger();
 
         // then
         assertThat(target, is(instanceOf(DefaultLogger.class)));
@@ -211,7 +211,7 @@ public class OpenKitBuilderTest {
     @Test
     public void verboseIsUsedInDefaultLogger() {
         // when
-        Logger target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID).enableVerbose().getLogger();
+        Logger target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).enableVerbose().getLogger();
 
         // then
         assertThat(target, is(instanceOf(DefaultLogger.class)));
@@ -223,7 +223,7 @@ public class OpenKitBuilderTest {
     public void canSetCustomMaxBeaconRecordAgeForDynatrace() {
 
         // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID);
+        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID);
         final long maxRecordAge = 123456L;
 
         // when
@@ -239,7 +239,7 @@ public class OpenKitBuilderTest {
     public void canSetCustomMaxBeaconRecordAgeForAppMon() {
 
         // given
-        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(endpoint, appID, deviceID);
+        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID);
         final long maxRecordAge = 123456L;
 
         // when
@@ -255,7 +255,7 @@ public class OpenKitBuilderTest {
     public void canSetBeaconCacheLowerMemoryBoundaryForDynatrace() {
 
         // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID);
+        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID);
         final long lowerMemoryBoundary = 42L * 1024L;
 
         // when
@@ -271,7 +271,7 @@ public class OpenKitBuilderTest {
     public void canSetBeaconCacheLowerMemoryBoundaryForAppMon() {
 
         // given
-        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(endpoint, appID, deviceID);
+        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID);
         final long lowerMemoryBoundary = 42L * 1024L;
 
         // when
@@ -287,7 +287,7 @@ public class OpenKitBuilderTest {
     public void canSetBeaconCacheUpperMemoryBoundaryForDynatrace() {
 
         // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID);
+        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID);
         final long upperMemoryBoundary = 42L * 1024L;
 
         // when
@@ -303,7 +303,7 @@ public class OpenKitBuilderTest {
     public void canSetBeaconCacheUpperMemoryBoundaryForAppMon() {
 
         // given
-        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(endpoint, appID, deviceID);
+        AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID);
         final long upperMemoryBoundary = 42L * 1024L;
 
         // when
@@ -317,42 +317,42 @@ public class OpenKitBuilderTest {
 
     @Test
     public void canSetDataCollectionLevelForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appID, deviceID)
-            .withDataCollectionLevel(dataCollectionLevel)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withDataCollectionLevel(DATA_COLLECTION_LEVEL)
             .buildConfiguration();
 
         assertThat(target.getBeaconConfiguration().getDataCollectionLevel(),
-            is(equalTo(dataCollectionLevel)));
+            is(equalTo(DATA_COLLECTION_LEVEL)));
     }
 
     @Test
     public void canSetDataCollectionLevelForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withDataCollectionLevel(dataCollectionLevel)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withDataCollectionLevel(DATA_COLLECTION_LEVEL)
             .buildConfiguration();
 
         assertThat(target.getBeaconConfiguration().getDataCollectionLevel(),
-            is(equalTo(dataCollectionLevel)));
+            is(equalTo(DATA_COLLECTION_LEVEL)));
     }
 
     @Test
     public void canSetCrashReportingLevelForAppMon() {
-        Configuration target = new AppMonOpenKitBuilder(endpoint, appID, deviceID)
-            .withCrashReportingLevel(crashReportingLevel)
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withCrashReportingLevel(CRASH_REPORTING_LEVEL)
             .buildConfiguration();
 
         assertThat(target.getBeaconConfiguration().getCrashReportingLevel(),
-            is(equalTo(crashReportingLevel)));
+            is(equalTo(CRASH_REPORTING_LEVEL)));
     }
 
     @Test
     public void canSetCrashReportingLevelForDynatrace() {
-        Configuration target = new DynatraceOpenKitBuilder(endpoint, appID, deviceID)
-            .withCrashReportingLevel(crashReportingLevel)
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withCrashReportingLevel(CRASH_REPORTING_LEVEL)
             .buildConfiguration();
 
         assertThat(target.getBeaconConfiguration().getCrashReportingLevel(),
-            is(equalTo(crashReportingLevel)));
+            is(equalTo(CRASH_REPORTING_LEVEL)));
     }
 
 }

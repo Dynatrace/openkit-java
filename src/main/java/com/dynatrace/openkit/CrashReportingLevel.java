@@ -18,7 +18,8 @@ package com.dynatrace.openkit;
 
 public enum CrashReportingLevel {
     OFF(0),
-    OPT_IN_CRASHES(1);
+    OPT_OUT_CRASHES(1),
+    OPT_IN_CRASHES(2);
 
     private final int intValue;
 

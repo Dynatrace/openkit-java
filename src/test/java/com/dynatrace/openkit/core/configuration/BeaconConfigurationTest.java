@@ -44,6 +44,8 @@ public class BeaconConfigurationTest {
         // then
         assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF).getCrashReportingLevel(),
             is(CrashReportingLevel.OFF));
+        assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_OUT_CRASHES).getCrashReportingLevel(),
+            is(CrashReportingLevel.OPT_OUT_CRASHES));
         assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES).getCrashReportingLevel(),
             is(CrashReportingLevel.OPT_IN_CRASHES));
     }
