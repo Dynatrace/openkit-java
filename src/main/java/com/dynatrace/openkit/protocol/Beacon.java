@@ -491,7 +491,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getCrashReportingLevel() == CrashReportingLevel.OFF) {
+        if (getBeaconConfiguration().getCrashReportingLevel() != CrashReportingLevel.OPT_IN_CRASHES) {
             return;
         }
 
