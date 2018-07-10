@@ -50,7 +50,10 @@ test {
 
 jar {
     baseName = 'openkit'
-    //classifier = 'java' + target
+    if (System.getenv('TRAVIS') != null) {
+        classifier = 'java' + target
+    }
+
     manifest {
       attributes 'Specification-Title': 'Dynatrace OpenKit SDK for Java',
 				'Specification-Version': version,
