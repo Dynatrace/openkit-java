@@ -1199,7 +1199,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportCrashDoes2ReportOnCrashReportingLevel2() {
+    public void reportCrashDoesReportOnCrashReportingLevel2() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
