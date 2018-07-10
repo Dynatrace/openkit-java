@@ -35,7 +35,7 @@ public class OpenKitConstants {
     public static final String WEBREQUEST_TAG_HEADER = "X-dynaTrace";
 
     // default values used in configuration
-    public static final String DEFAULT_APPLICATION_VERSION = "1.0.1";
+    public static final String DEFAULT_APPLICATION_VERSION = "1.1.0";
     public static final String DEFAULT_OPERATING_SYSTEM = "OpenKit " + DEFAULT_APPLICATION_VERSION;
     public static final String DEFAULT_MANUFACTURER = "Dynatrace";
     public static final String DEFAULT_MODEL_ID = "OpenKitDevice";
