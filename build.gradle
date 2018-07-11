@@ -12,7 +12,7 @@ buildscript {
 }
 
 group 'com.dynatrace.openkit'
-version '1.0.2-SNAPSHOT'
+version '1.2.0-SNAPSHOT'
 
 def buildNumber = System.getenv()['BUILD_NUMBER']
 if (version.endsWith('-SNAPSHOT') && buildNumber != null) {
