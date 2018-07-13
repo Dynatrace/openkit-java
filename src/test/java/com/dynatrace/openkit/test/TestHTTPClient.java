@@ -23,6 +23,8 @@ import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class TestHTTPClient extends HTTPClient {
 
@@ -132,14 +134,14 @@ public class TestHTTPClient extends HTTPClient {
         return sentRequests;
     }
 
-    public void setStatusResponse(String response, int responseCode) {
+    public void setStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         this.rawStatusResponse = response;
-        this.statusResponse = new StatusResponse(response, responseCode);
+        this.statusResponse = new StatusResponse(response, responseCode, headers);
     }
 
-    public void setTimeSyncResponse(String response, int responseCode) {
+    public void setTimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
         this.rawTimeSyncResponse = response;
-        this.timeSyncResponse = new TimeSyncResponse(response, responseCode);
+        this.timeSyncResponse = new TimeSyncResponse(response, responseCode, headers);
     }
 
 }

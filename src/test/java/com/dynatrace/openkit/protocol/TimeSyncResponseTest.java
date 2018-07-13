@@ -20,8 +20,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 public class TimeSyncResponseTest {
@@ -32,13 +38,13 @@ public class TimeSyncResponseTest {
     @Test
     public void passingNullResponseStringDoesNotThrow() {
         // then
-        new TimeSyncResponse(null, 200);
+        new TimeSyncResponse(null, 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
     public void theDefaultRequestReceiveTimeIsMinusOne() {
         // given
-        TimeSyncResponse target = new TimeSyncResponse("", 200);
+        TimeSyncResponse target = new TimeSyncResponse("", 200, Collections.<String, List<String>>emptyMap());
 
         // then
         assertThat(target.getRequestReceiveTime(), is(equalTo(-1L)));
@@ -47,7 +53,7 @@ public class TimeSyncResponseTest {
     @Test
     public void theDefaultResponseSendTimeIsMinusOne() {
         // given
-        TimeSyncResponse target = new TimeSyncResponse("", 200);
+        TimeSyncResponse target = new TimeSyncResponse("", 200, Collections.<String, List<String>>emptyMap());
 
         // then
         assertThat(target.getResponseSendTime(), is(equalTo(-1L)));
@@ -62,7 +68,7 @@ public class TimeSyncResponseTest {
         String responseString = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=100" + "&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME;
 
         // when, then
-        new StatusResponse(responseString, 200);
+        new StatusResponse(responseString, 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
@@ -74,13 +80,13 @@ public class TimeSyncResponseTest {
         String responseString = TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "&100";
 
         // when, then
-        new StatusResponse(responseString, 200);
+        new StatusResponse(responseString, 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
     public void responseSendTimeIsParsed() {
         // given
-        TimeSyncResponse target = new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=100", 200);
+        TimeSyncResponse target = new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=100", 200, Collections.<String, List<String>>emptyMap());
 
         // then
         assertThat(target.getResponseSendTime(), is(equalTo(100L)));
@@ -92,7 +98,7 @@ public class TimeSyncResponseTest {
         expectedException.expect(NumberFormatException.class);
 
         // when, then
-        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=", 200);
+        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=", 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
@@ -101,7 +107,7 @@ public class TimeSyncResponseTest {
         expectedException.expect(NumberFormatException.class);
 
         // when, then
-        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=a", 200);
+        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=a", 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
@@ -110,13 +116,13 @@ public class TimeSyncResponseTest {
         expectedException.expect(NumberFormatException.class);
 
         // when parsing 2^63, then
-        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=9223372036854775808", 200);
+        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=9223372036854775808", 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
     public void requestReceiveTimeIsParsed() {
         // given
-        TimeSyncResponse target = new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=100", 200);
+        TimeSyncResponse target = new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=100", 200, Collections.<String, List<String>>emptyMap());
 
         // then
         assertThat(target.getRequestReceiveTime(), is(equalTo(100L)));
@@ -128,7 +134,7 @@ public class TimeSyncResponseTest {
         expectedException.expect(NumberFormatException.class);
 
         // when, then
-        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=", 200);
+        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=", 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
@@ -137,7 +143,7 @@ public class TimeSyncResponseTest {
         expectedException.expect(NumberFormatException.class);
 
         // when, then
-        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=a", 200);
+        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=a", 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
@@ -146,12 +152,24 @@ public class TimeSyncResponseTest {
         expectedException.expect(NumberFormatException.class);
 
         // when parsing 2^63, then
-        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=9223372036854775808", 200);
+        new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=9223372036854775808", 200, Collections.<String, List<String>>emptyMap());
     }
 
     @Test
     public void responseCodeIsSet() {
         // given
-        assertThat(new StatusResponse("key=value", 418).getResponseCode(), is(equalTo(418)));
+        assertThat(new StatusResponse("key=value", 418, Collections.<String, List<String>>emptyMap()).getResponseCode(), is(equalTo(418)));
+    }
+
+    @Test
+    public void headersAreSet() {
+        // given
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        headers.put("X-Foo", Collections.singletonList("X-BAR"));
+        headers.put("X-YZ", Collections.<String>emptyList());
+
+        // then
+        assertThat(new StatusResponse("", 418, headers).getHeaders(),
+            is(sameInstance(headers)));
     }
 }

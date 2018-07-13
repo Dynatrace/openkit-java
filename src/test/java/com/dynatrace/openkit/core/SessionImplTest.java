@@ -36,6 +36,8 @@ import org.junit.Test;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -406,7 +408,7 @@ public class SessionImplTest {
 
         // mock a valid status response via the HTTPClient to be sure the beacon cache is empty
         final HTTPClient httpClient = mock(HTTPClient.class);
-        final StatusResponse statusResponse = new StatusResponse("", 200);
+        final StatusResponse statusResponse = new StatusResponse("", 200, Collections.<String, List<String>>emptyMap());
         when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class))).thenReturn(statusResponse);
         final HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
         when(clientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);

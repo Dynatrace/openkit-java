@@ -33,6 +33,8 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import static org.hamcrest.Matchers.*;
@@ -641,7 +643,7 @@ public class BeaconTest {
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 200;
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse("", responseCode));
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap()));
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
@@ -662,7 +664,7 @@ public class BeaconTest {
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 418;
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse("", responseCode));
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap()));
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)

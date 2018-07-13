@@ -24,6 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyBoolean;
@@ -233,24 +236,24 @@ public class BeaconSendingTimeSyncStateTest {
         when(httpClient.sendTimeSyncRequest())
             // first time sync request (1 retry)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
+            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
             // second time sync request (2 retries)
             .thenReturn(null)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
+            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
             // third time sync request (3 retries)
             .thenReturn(null)
             .thenReturn(null)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
+            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
             // fourth time sync request (4 retries)
             .thenReturn(null)
             .thenReturn(null)
             .thenReturn(null)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
+            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
             // fifth time sync request (0 retries)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
 
         when(stateContext.getCurrentTimestamp())
             .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
@@ -306,11 +309,11 @@ public class BeaconSendingTimeSyncStateTest {
     public void successfulTimeSyncInitializesTimeProvider() {
 
         // given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
 
         when(stateContext.getCurrentTimestamp())
             .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
@@ -340,11 +343,11 @@ public class BeaconSendingTimeSyncStateTest {
     public void successfulTimeSyncSetSuccessfulInitCompletionInContextWhenItIsInitialTimeSync() {
 
         // given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
 
         when(stateContext.getCurrentTimestamp())
             .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
@@ -374,7 +377,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncSupportIsDisabledIfBothTimeStampsInTimeSyncResponseAreNegative() {
 
         //given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-2", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-2", 200, Collections.<String, List<String>>emptyMap()));
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -389,7 +392,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncSupportIsDisabledIfFirstTimeStampInTimeSyncResponseIsNegative() {
 
         //given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()));
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -404,7 +407,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncSupportIsDisabledIfSecondTimeStampInTimeSyncResponseIsNegative() {
 
         //given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1", 200, Collections.<String, List<String>>emptyMap()));
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -453,11 +456,11 @@ public class BeaconSendingTimeSyncStateTest {
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
         when(stateContext.isCaptureOn()).thenReturn(true);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
         when(stateContext.getCurrentTimestamp())
             .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
             .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
@@ -482,11 +485,11 @@ public class BeaconSendingTimeSyncStateTest {
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
         when(stateContext.isCaptureOn()).thenReturn(false);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
         when(stateContext.getCurrentTimestamp())
             .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
             .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4

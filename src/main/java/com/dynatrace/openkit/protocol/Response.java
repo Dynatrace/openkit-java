@@ -16,9 +16,7 @@
 
 package com.dynatrace.openkit.protocol;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Abstract base class for a response to one of the 3 request types (status check, beacon send, time sync).
@@ -36,17 +34,23 @@ public abstract class Response {
     }
 
     private final int responseCode;
+    private final Map<String, List<String>> headers;
 
     // *** constructors ***
 
-    Response(int responseCode) {
+    Response(int responseCode, Map<String, List<String>> headers) {
         this.responseCode = responseCode;
+        this.headers = headers;
     }
 
     // *** getter methods ***
 
     public int getResponseCode() {
         return responseCode;
+    }
+
+    public Map<String, List<String>> getHeaders() {
+        return headers;
     }
 
     static List<KeyValuePair> parseResponseKeyValuePair(String response) {

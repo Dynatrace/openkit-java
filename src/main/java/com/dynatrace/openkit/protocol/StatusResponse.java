@@ -16,7 +16,9 @@
 
 package com.dynatrace.openkit.protocol;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implements a status response which is sent for the request types status check and beacon send.
@@ -45,8 +47,8 @@ public class StatusResponse extends Response {
 
     // *** constructors ***
 
-    public StatusResponse(String response, int responseCode) {
-        super(responseCode);
+    public StatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
+        super(responseCode, headers);
         parseResponse(response);
     }
 
