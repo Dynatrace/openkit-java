@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.protocol;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
