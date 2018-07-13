@@ -29,6 +29,8 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -208,7 +210,8 @@ public class HTTPClient {
                 try {
                     Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException e) {
-                    // TODO thomas.grassauer@dynatrace.com - check exception handling
+                    Thread.currentThread().interrupt();
+                    return null;
                 }
             }
         }
@@ -245,12 +248,12 @@ public class HTTPClient {
 
             // create typed response based on request type and response content
             if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
-                return parseTimeSyncResponse(response, responseCode);
+                return parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
             }
             else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
                 || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
                 || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
-                return parseStatusResponse(response, responseCode);
+                return parseStatusResponse(response, responseCode, connection.getHeaderFields());
             }
             else {
                 logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
@@ -259,12 +262,12 @@ public class HTTPClient {
         }
     }
 
-    private Response parseTimeSyncResponse(String response, int responseCode) {
+    private Response parseTimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isTimeSyncResponse(response))
         {
             try
             {
-                return new TimeSyncResponse(response, responseCode);
+                return new TimeSyncResponse(response, responseCode, headers);
             }
             catch(Exception e)
             {
@@ -278,12 +281,12 @@ public class HTTPClient {
         return null;
     }
 
-    private Response parseStatusResponse(String response, int responseCode) {
+    private Response parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isStatusResponse(response) && !isTimeSyncResponse(response))
         {
             try
             {
-                return new StatusResponse(response, responseCode);
+                return new StatusResponse(response, responseCode, headers);
             }
             catch (Exception e)
             {
@@ -349,13 +352,8 @@ public class HTTPClient {
 
     // build URL used for time sync requests
     private static String buildTimeSyncURL(String baseURL) {
-        StringBuilder timeSyncURLBuilder = new StringBuilder();
 
-        timeSyncURLBuilder.append(baseURL);
-        timeSyncURLBuilder.append('?');
-        timeSyncURLBuilder.append(REQUEST_TYPE_TIMESYNC);
-
-        return timeSyncURLBuilder.toString();
+        return baseURL + '?' + REQUEST_TYPE_TIMESYNC;
     }
 
     // helper method for appending query parameters

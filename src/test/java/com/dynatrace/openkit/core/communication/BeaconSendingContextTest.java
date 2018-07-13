@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -52,7 +53,7 @@ public class BeaconSendingContextTest {
         when(logger.isDebugEnabled()).thenReturn(true);
         configuration = mock(Configuration.class);
         final HTTPClient httpClient = mock(HTTPClient.class);
-        final StatusResponse statusResponse = new StatusResponse("", 200);
+        final StatusResponse statusResponse = new StatusResponse("", 200, Collections.<String, List<String>>emptyMap());
         when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class))).thenReturn(statusResponse);
         httpClientProvider = mock(HTTPClientProvider.class);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);

@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.protocol;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implements a time sync response which is sent for time sync requests.
@@ -33,8 +34,8 @@ public class TimeSyncResponse extends Response {
 
     // *** constructors ***
 
-    public TimeSyncResponse(String response, int responseCode) {
-        super(responseCode);
+    public TimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
+        super(responseCode, headers);
         parseResponse(response);
     }
 

@@ -29,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -54,8 +55,8 @@ public class BeaconSendingCaptureOnStateTest {
         mockSession4Finished = mock(SessionWrapper.class);
         mockSession5New = mock(SessionWrapper.class);
         mockSession6New = mock(SessionWrapper.class);
-        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 200));
-        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 404));
+        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 200, Collections.<String, List<String>>emptyMap()));
+        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 404, Collections.<String, List<String>>emptyMap()));
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession1Open.getSession()).thenReturn(mock(SessionImpl.class));
         when(mockSession2Open.getSession()).thenReturn(mock(SessionImpl.class));
@@ -151,7 +152,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
-            .thenReturn(new StatusResponse("mp=5", 200)) // first response valid
+            .thenReturn(new StatusResponse("mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(null); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
         when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
@@ -190,7 +191,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
-            .thenReturn(new StatusResponse("mp=5", 200)) // first response valid
+            .thenReturn(new StatusResponse("mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(null); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(false);
         when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
