@@ -1,6 +1,7 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.0.1...HEAD)
+## 1.1.0 [Release date: 2018-07-20]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.1.0)
 
 ### Added
 - Extend OpenKit objects from java.io.Closeable to add try-with-resources statement compatibility  
