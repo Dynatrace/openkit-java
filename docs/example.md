@@ -61,6 +61,8 @@ customize OpenKit. This includes device specific information like operating syst
 | `withBeaconCacheMaxRecordAge`  | sets the maximum age of an entry in the beacon cache in milliseconds | 1 h 45 min |
 | `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes  | 100 MB |
 | `withBeaconCacheUpperMemoryBoundary`  |  sets the upper memory boundary of the beacon cache in bytes | 80 MB |
+| `withDataCollectionLevel` | sets the data collection level (enum DataCollectionLevel) | USER_BEHAVIOR |
+| `withCrashReportingLevel` | sets the crash reporting level (enum CrashReportingLevel) | OPT_IN_CRASHES |
 | `enableVerbose`  | enables extended log output for OpenKit if the default logger is used  | `false` |
 
 :grey_exclamation: Please refer to the the JavaDoc for more information regarding possible configuration values.
