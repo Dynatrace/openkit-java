@@ -76,9 +76,7 @@ also provided. For detailed code samples have a look into [example.md](docs/exam
 
 ### OpenKit
 
-An `OpenKit` instance is responsible for getting and setting application relevant information, e.g.
-the application's version and device specific information.  
-Furthermore the `OpenKit` is responsible for creating user sessions (see `Session`).
+The `OpenKit` is responsible for creating user sessions (see `Session`).
   
 Although it would be possible to have multiple `OpenKit` instances connected to the same endpoint
 (Dynatrace/AppMon) within one process, there should be one unique instance. `OpenKit` is designed to be
@@ -86,13 +84,6 @@ thread safe and therefore the instance can be shared among threads.
 
 On application shutdown, `shutdown()` needs to be called on the OpenKit instance.
 
-### Device
-
-A `Device` instance, which can be retrieved from an `OpenKit` instance, contains methods
-for setting device specific information. It's not mandatory for the application developer to
-provide this information, reasonable default values exist.  
-However when the application is run on multiple different devices it might be quite handy
-to know details about the used device (e.g device identifier, device manufacturer, operating system).
 
 ### Session
 
@@ -134,6 +125,14 @@ Crashes are used to report (unhandled) exceptions on a `Session`.
 OpenKit enables you to tag sessions with unique user tags. The user tag is a String 
 that allows to uniquely identify a single user.
 
+
+### GDPR Compliance
+
+When creating an `OpenKit` instance, it is also possible to set the GDPR compliant mode
+where you can specify which data is collected.
+For detailed description and samples refer to [example.md](docs/example.md).
+Getting user consent must be handled within the application itself.
+
 ## Example
 
 This small example provides a rough overview how OpenKit can be used.  
@@ -142,7 +141,7 @@ Detailed explanation is available in [example.md](docs/example.md).
 ```java
 String applicationName = "My OpenKit application";
 String applicationID = "application-id";
-long deviceID = 42;
+long deviceID = getDeviceIdentifier();
 String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
 
 OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
