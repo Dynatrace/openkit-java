@@ -1554,14 +1554,12 @@ public class BeaconTest {
     public void sessionStartIsReported() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        SessionImpl sessionMock = mock(SessionImpl.class);
 
         // when
-        target.startSession(sessionMock);
+        target.startSession();
 
         // then ensure session start has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(sessionMock, times(2)).getEndTime();
     }
 
     @Test
@@ -1569,14 +1567,12 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
-        SessionImpl sessionMock = mock(SessionImpl.class);
 
         // when
-        target.startSession(sessionMock);
+        target.startSession();
 
         // then ensure session start has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(sessionMock, times(2)).getEndTime();
     }
 
     @Test
@@ -1584,14 +1580,12 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OPT_IN_CRASHES));
-        SessionImpl sessionMock = mock(SessionImpl.class);
 
         // when
-        target.startSession(sessionMock);
+        target.startSession();
 
         // then ensure session start has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(sessionMock, times(2)).getEndTime();
     }
 
     @Test
@@ -1599,14 +1593,12 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
-        SessionImpl sessionMock = mock(SessionImpl.class);
 
         // when
-        target.startSession(sessionMock);
+        target.startSession();
 
         // then ensure session start has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(sessionMock, times(2)).getEndTime();
     }
 
     @Test
@@ -1614,13 +1606,11 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
-        SessionImpl sessionMock = mock(SessionImpl.class);
 
         // when
-        target.startSession(sessionMock);
+        target.startSession();
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(sessionMock);
     }
 }

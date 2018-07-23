@@ -275,7 +275,7 @@ public class Beacon {
         addActionData(action.getStartTime(), actionBuilder);
     }
 
-    public void startSession(SessionImpl session) {
+    public void startSession() {
 
         if (isCapturingDisabled()) {
             return;
