@@ -275,6 +275,13 @@ public class Beacon {
         addActionData(action.getStartTime(), actionBuilder);
     }
 
+    /**
+     * Add start session event to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     */
     public void startSession() {
 
         if (isCapturingDisabled()) {
