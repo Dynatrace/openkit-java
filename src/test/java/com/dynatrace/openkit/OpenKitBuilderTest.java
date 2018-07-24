@@ -94,6 +94,16 @@ public class OpenKitBuilderTest {
     }
 
     @Test
+    public void cannotSetANullTrustManagerForAppMon() {
+
+        Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID)
+            .withTrustManager(null)
+            .buildConfiguration();
+
+        assertThat(target.getHttpClientConfig().getSSLTrustManager(), is(instanceOf(SSLStrictTrustManager.class)));
+    }
+
+    @Test
     public void canOverrideTrustManagerForDynatrace() {
         SSLTrustManager trustManager = mock(SSLTrustManager.class);
 
@@ -102,6 +112,16 @@ public class OpenKitBuilderTest {
             .buildConfiguration();
 
         assertThat(target.getHttpClientConfig().getSSLTrustManager(), is(sameInstance(trustManager)));
+    }
+
+    @Test
+    public void cannotSetANullTrustManagerForDynatrace() {
+
+        Configuration target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID)
+            .withTrustManager(null)
+            .buildConfiguration();
+
+        assertThat(target.getHttpClientConfig().getSSLTrustManager(), is(instanceOf(SSLStrictTrustManager.class)));
     }
 
     @Test
