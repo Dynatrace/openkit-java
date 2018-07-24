@@ -101,13 +101,15 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the trust manager. Overrides the default trust manager which is {@code SSLStrictTrustmanager} by default-
+     * Sets the trust manager if it's not {@code null}, overriding the default{@link SSLStrictTrustManager}.
      *
      * @param trustManager trust manager implementation
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withTrustManager(SSLTrustManager trustManager) {
-        this.trustManager = trustManager;
+        if (trustManager != null) {
+            this.trustManager = trustManager;
+        }
         return this;
     }
 
