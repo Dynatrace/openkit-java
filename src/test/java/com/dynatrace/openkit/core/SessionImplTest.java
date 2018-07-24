@@ -180,7 +180,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(1)).startSession(session);
+        verify(beacon, times(1)).startSession();
         verify(beacon, times(0)).identifyUser(anyString());
         verifyNoMoreInteractions(beacon);
     }
@@ -196,7 +196,7 @@ public class SessionImplTest {
 
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
-        verify(beacon, times(1)).startSession(session);
+        verify(beacon, times(1)).startSession();
         verify(beacon, times(1)).getSessionNumber();
         verify(beacon, times(0)).identifyUser(anyString());
         verifyNoMoreInteractions(beacon);
@@ -266,7 +266,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(1)).startSession(session);
+        verify(beacon, times(1)).startSession();
         verifyZeroInteractions(beacon, beacon);
     }
 
@@ -282,7 +282,7 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(1)).startSession(session);
+        verify(beacon, times(1)).startSession();
         verifyZeroInteractions(beacon, beacon);
     }
 
