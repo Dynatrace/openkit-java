@@ -275,7 +275,14 @@ public class Beacon {
         addActionData(action.getStartTime(), actionBuilder);
     }
 
-    public void startSession(SessionImpl session) {
+    /**
+     * Add start session event to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     */
+    public void startSession() {
 
         if (isCapturingDisabled()) {
             return;
@@ -287,9 +294,9 @@ public class Beacon {
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, 0L);
 
-        addEventData(session.getEndTime(), eventBuilder);
+        addEventData(sessionStartTime, eventBuilder);
     }
 
     /**
