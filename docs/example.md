@@ -292,7 +292,7 @@ URLConnection urlConnection = url.openConnection();
 
 // create the WebRequestTracer
 WebRequestTracer webRequestTracer = action.traceWebRequest(urlConnection);
-webRequestTracer.startTiming();
+webRequestTracer.start();
 
 // consume data
 BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
@@ -304,7 +304,7 @@ in.close();
 
 // stop web request tracing when done
 webRequestTracer.setResponseCode(200); // would use the HTTP response code normally.
-webRequestTracer.stopTiming();
+webRequestTracer.stop();
 ```
 
 If a third party lib is used for HTTP requests, the developer has the possibility to use an overloaded
