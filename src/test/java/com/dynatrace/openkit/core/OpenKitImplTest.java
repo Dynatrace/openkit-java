@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
@@ -130,6 +131,7 @@ public class OpenKitImplTest {
      * Asynchronously invokes the OpenKit initialization, let it run in a blocking wait and then trigger the shutdown.
      */
     @Test
+    @Ignore("Check this test, since it's not a unit test")
     public void canShutdownWhileWaitingToInitialize() throws InterruptedException {
         // create test environment
         final OpenKitImpl openKit = new OpenKitImpl(logger, config);
