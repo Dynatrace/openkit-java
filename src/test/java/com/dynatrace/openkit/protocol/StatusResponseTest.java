@@ -493,21 +493,21 @@ public class StatusResponseTest {
 
     @Test
     public void isErroneousResponseGivesTrueForErrorCodeEqualTo400() {
-        // when parsing 2^31, then
+        // when, then
         assertThat(new StatusResponse("", 400, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
             is(true));
     }
 
     @Test
     public void isErroneousResponseGivesTrueForErrorCodeGreaterThan400() {
-        // when parsing 2^31, then
+        // when, then
         assertThat(new StatusResponse("", 401, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
             is(true));
     }
 
     @Test
     public void isErroneousResponseGivesFalseForErrorCodeLessThan400() {
-        // when parsing 2^31, then
+        // when, then
         assertThat(new StatusResponse("", 399, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
             is(false));
     }
