@@ -112,7 +112,7 @@ public class HTTPClientTest {
 
         // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
         assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+        assertThat(response.getResponseCode(), is(equalTo(411)));
     }
 
     @Test
@@ -155,7 +155,7 @@ public class HTTPClientTest {
 
         // then (verify that for error responses unknown error is returned)
         assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+        assertThat(response.getResponseCode(), is(equalTo(418)));
     }
 
     @Test
@@ -189,7 +189,7 @@ public class HTTPClientTest {
 
         // then (verify that for error responses unknown error is returned)
         assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+        assertThat(response.getResponseCode(), is(equalTo(418)));
     }
 
     @Test

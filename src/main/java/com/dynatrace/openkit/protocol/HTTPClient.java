@@ -248,12 +248,16 @@ public class HTTPClient {
 
         // create typed response based on request type and response content
         if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
-            return parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
+            return responseCode >= 400
+                ? new TimeSyncResponse("", responseCode, Collections.<String, List<String>>emptyMap())
+                : parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
         }
         else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
-            return parseStatusResponse(response, responseCode, connection.getHeaderFields());
+            return responseCode >= 400
+                ? new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap())
+                : parseStatusResponse(response, responseCode, connection.getHeaderFields());
         }
         else {
             logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
