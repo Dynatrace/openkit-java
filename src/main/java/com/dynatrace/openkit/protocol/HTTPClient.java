@@ -113,21 +113,33 @@ public class HTTPClient {
 
     // sends a status check request and returns a status response
     public StatusResponse sendStatusRequest() {
-        return (StatusResponse) sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+        Response response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+        return response == null
+            ? ERROR_STATUS_RESPONSE
+            : (StatusResponse)response;
     }
 
     public StatusResponse sendNewSessionRequest() {
-        return (StatusResponse) sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
+        Response response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
+        return response == null
+            ? ERROR_STATUS_RESPONSE
+            : (StatusResponse)response;
     }
 
     // sends a beacon send request and returns a status response
     public StatusResponse sendBeaconRequest(String clientIPAddress, byte[] data) {
-        return (StatusResponse) sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
+        Response response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
+        return response == null
+            ? ERROR_STATUS_RESPONSE
+            : (StatusResponse)response;
     }
 
     // sends a time sync request and returns a time sync response
     public TimeSyncResponse sendTimeSyncRequest() {
-        return (TimeSyncResponse) sendRequest(RequestType.TIMESYNC, timeSyncURL, null, null, "GET");
+        Response response = sendRequest(RequestType.TIMESYNC, timeSyncURL, null, null, "GET");
+        return response == null
+            ? ERROR_TIME_SYNC_RESPONSE
+            : (TimeSyncResponse)response;
     }
 
     // *** protected methods ***

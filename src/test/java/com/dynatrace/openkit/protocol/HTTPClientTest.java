@@ -19,20 +19,19 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.util.zip.GZIPInputStream;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class HTTPClientTest {
 
@@ -395,5 +394,61 @@ public class HTTPClientTest {
         // then
         assertThat(response, is(notNullValue()));
         assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendStatusRequestDoesNotReturnNull() {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        StatusResponse obtained = target.sendStatusRequest();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendNewSessionRequestDoesNotReturnNull() {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        StatusResponse obtained = target.sendNewSessionRequest();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendBeaconRequestDoesNotReturnNull() throws UnsupportedEncodingException {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        StatusResponse obtained = target.sendBeaconRequest("127.0.0.1", "".getBytes(CHARSET));
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendTimeSyncRequestDoesNotReturnNull() {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        TimeSyncResponse obtained = target.sendTimeSyncRequest();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 }
