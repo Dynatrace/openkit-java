@@ -16,7 +16,10 @@
 
 package com.dynatrace.openkit.protocol;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Abstract base class for a response to one of the 3 request types (status check, beacon send, time sync).
@@ -33,6 +36,11 @@ public abstract class Response {
         }
     }
 
+    /**
+     * Bad request is error code 400 in the HTTP protocol.
+     */
+    private static final int HTTP_BAD_REQUEST = 400;
+
     private final int responseCode;
     private final Map<String, List<String>> headers;
 
@@ -44,6 +52,10 @@ public abstract class Response {
     }
 
     // *** getter methods ***
+
+    public boolean isErroneousResponse() {
+        return getResponseCode() >= HTTP_BAD_REQUEST;
+    }
 
     public int getResponseCode() {
         return responseCode;

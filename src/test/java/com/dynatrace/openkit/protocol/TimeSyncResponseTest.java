@@ -156,6 +156,27 @@ public class TimeSyncResponseTest {
     }
 
     @Test
+    public void isErroneousResponseGivesTrueForErrorCodeEqualTo400() {
+        // when parsing 2^31, then
+        assertThat(new StatusResponse("", 400, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
+            is(true));
+    }
+
+    @Test
+    public void isErroneousResponseGivesTrueForErrorCodeGreaterThan400() {
+        // when parsing 2^31, then
+        assertThat(new StatusResponse("", 401, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
+            is(true));
+    }
+
+    @Test
+    public void isErroneousResponseGivesFalseForErrorCodeLessThan400() {
+        // when parsing 2^31, then
+        assertThat(new StatusResponse("", 399, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
+            is(false));
+    }
+
+    @Test
     public void responseCodeIsSet() {
         // given
         assertThat(new StatusResponse("key=value", 418, Collections.<String, List<String>>emptyMap()).getResponseCode(), is(equalTo(418)));
