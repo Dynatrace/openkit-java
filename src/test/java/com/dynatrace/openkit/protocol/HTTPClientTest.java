@@ -19,20 +19,19 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.util.zip.GZIPInputStream;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class HTTPClientTest {
 
@@ -73,7 +72,7 @@ public class HTTPClientTest {
         Response response = client.sendRequest(null, "", null, null, null);
 
         // then
-        assertThat(response, nullValue());
+        assertThat(response, is(nullValue()));
     }
 
     @Test
@@ -86,7 +85,8 @@ public class HTTPClientTest {
         Response response = client.sendStatusRequest();
 
         // then
-        assertThat(response, nullValue());
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
@@ -97,8 +97,9 @@ public class HTTPClientTest {
         // when
         StatusResponse response = client.sendStatusRequest();
 
-        // then (we use a URL not understanding the beacon protocol, thus null is expected)
-        assertThat(response, nullValue());
+        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
@@ -109,20 +110,22 @@ public class HTTPClientTest {
         // when
         StatusResponse response = client.sendBeaconRequest("127.0.0.1", null);
 
-        // then (we use a URL not understanding the beacon protocol, thus null is expected)
-        assertThat(response, nullValue());
+        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(411)));
     }
 
     @Test
-    public void sendTimesyncRequestToSomeValidUrl() {
+    public void sendTimeSyncRequestToSomeValidUrl() {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
 
         // when
         TimeSyncResponse response = client.sendTimeSyncRequest();
 
-        // then (we use a URL not understanding the beacon protocol, thus null is expected)
-        assertThat(response, nullValue());
+        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
@@ -133,8 +136,9 @@ public class HTTPClientTest {
         // when
         StatusResponse response = client.sendNewSessionRequest();
 
-        // then (we use a URL not understanding the beacon protocol, thus null is expected)
-        assertThat(response, nullValue());
+        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
@@ -149,8 +153,9 @@ public class HTTPClientTest {
         // when
         Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
 
-        // then (verify that for error responses null is returned)
-        assertThat(response, nullValue());
+        // then (verify that for error responses unknown error is returned)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(418)));
     }
 
     @Test
@@ -182,8 +187,9 @@ public class HTTPClientTest {
         // when
         Response response = client.sendRequest(RequestType.NEW_SESSION, connection, null, null, "GET");
 
-        // then (verify that for error responses null is returned)
-        assertThat(response, nullValue());
+        // then (verify that for error responses unknown error is returned)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(418)));
     }
 
     @Test
@@ -258,7 +264,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void sendTimesyncRequestAndReadStatusResponse() throws IOException {
+    public void sendTimeSyncRequestAndReadStatusResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -274,7 +280,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void sendTimesyncRequestWithHttps() throws IOException {
+    public void sendTimeSyncRequestWithHttps() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpsURLConnection.class);
@@ -293,7 +299,7 @@ public class HTTPClientTest {
      * Tests the retry mechanism in the send method (method eventually shall succeed),
      */
     @Test
-    public void sendRequestWithRetrySucces() throws IOException {
+    public void sendRequestWithRetrySuccess() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -333,11 +339,12 @@ public class HTTPClientTest {
         Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
 
         // then
-        assertThat(response, nullValue());
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
-    public void sendTimesyncRequestWithMobileResponse() throws IOException {
+    public void sendTimeSyncRequestWithMobileResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpsURLConnection.class);
@@ -348,8 +355,9 @@ public class HTTPClientTest {
         // when
         Response response = client.sendRequest(RequestType.TIMESYNC, connection, null, null, "GET");
 
-        // then (verify null response)
-        assertThat(response, is(nullValue()));
+        // then (verify unknown error response)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
@@ -364,8 +372,9 @@ public class HTTPClientTest {
         // when
         Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
 
-        // then (verify null response)
-        assertThat(response, is(nullValue()));
+        // then (verify unknown error response)
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
@@ -383,6 +392,63 @@ public class HTTPClientTest {
         Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
 
         // then
-        assertThat(response, nullValue());
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendStatusRequestDoesNotReturnNull() {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        StatusResponse obtained = target.sendStatusRequest();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendNewSessionRequestDoesNotReturnNull() {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        StatusResponse obtained = target.sendNewSessionRequest();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendBeaconRequestDoesNotReturnNull() throws UnsupportedEncodingException {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        StatusResponse obtained = target.sendBeaconRequest("127.0.0.1", "".getBytes(CHARSET));
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendTimeSyncRequestDoesNotReturnNull() {
+        // given
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
+
+        // when
+        TimeSyncResponse obtained = target.sendTimeSyncRequest();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 }

@@ -29,6 +29,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -64,6 +65,9 @@ public class HTTPClient {
         }
 
     }
+
+    private static final StatusResponse ERROR_STATUS_RESPONSE = new StatusResponse("", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
+    private static final TimeSyncResponse ERROR_TIME_SYNC_RESPONSE = new TimeSyncResponse("", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
 
     // request type constants
     private static final String REQUEST_TYPE_MOBILE = "type=m";
@@ -109,21 +113,33 @@ public class HTTPClient {
 
     // sends a status check request and returns a status response
     public StatusResponse sendStatusRequest() {
-        return (StatusResponse) sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+        Response response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+        return response == null
+            ? ERROR_STATUS_RESPONSE
+            : (StatusResponse)response;
     }
 
     public StatusResponse sendNewSessionRequest() {
-        return (StatusResponse) sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
+        Response response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
+        return response == null
+            ? ERROR_STATUS_RESPONSE
+            : (StatusResponse)response;
     }
 
     // sends a beacon send request and returns a status response
     public StatusResponse sendBeaconRequest(String clientIPAddress, byte[] data) {
-        return (StatusResponse) sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
+        Response response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
+        return response == null
+            ? ERROR_STATUS_RESPONSE
+            : (StatusResponse)response;
     }
 
     // sends a time sync request and returns a time sync response
     public TimeSyncResponse sendTimeSyncRequest() {
-        return (TimeSyncResponse) sendRequest(RequestType.TIMESYNC, timeSyncURL, null, null, "GET");
+        Response response = sendRequest(RequestType.TIMESYNC, timeSyncURL, null, null, "GET");
+        return response == null
+            ? ERROR_TIME_SYNC_RESPONSE
+            : (TimeSyncResponse)response;
     }
 
     // *** protected methods ***
@@ -141,7 +157,7 @@ public class HTTPClient {
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + " sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
-        return null;
+        return unknownErrorResponse(requestType);
     }
 
     // *** private methods ***
@@ -154,7 +170,7 @@ public class HTTPClient {
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + "sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
-        return null;
+        return unknownErrorResponse(requestType);
     }
 
     // generic internal request send
@@ -211,7 +227,7 @@ public class HTTPClient {
                     Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    return null;
+                    return unknownErrorResponse(requestType);
                 }
             }
         }
@@ -221,83 +237,64 @@ public class HTTPClient {
         // get response code
         int responseCode = connection.getResponseCode();
 
-        // check response code
-        if (responseCode >= 400) {
-            // process error
+        String response = responseCode >= 400
+            ? readResponse(connection.getErrorStream()) // error stream is closed in readResponse
+            : readResponse(connection.getInputStream()); // input stream is closed in readResponse
 
-            // read error response
-            String response = readResponse(connection.getErrorStream()); // input stream is closed in readResponse
+        if (logger.isDebugEnabled()) {
+            logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
+            logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response Code: " + responseCode);
+        }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
-                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response Code: " + responseCode);
-            }
-
-            // return null if error occurred
-            return null;
-
-        } else {
-            // process status response
-
-            // reading HTTP response
-            String response = readResponse(connection.getInputStream()); // input stream is closed in readResponse
-            if (logger.isDebugEnabled()) {
-                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
-                logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response Code: " + responseCode);
-            }
-
-            // create typed response based on request type and response content
-            if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
-                return parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
-            }
-            else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
-                || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
-                || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
-                return parseStatusResponse(response, responseCode, connection.getHeaderFields());
-            }
-            else {
-                logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
-                return null;
-            }
+        // create typed response based on request type and response content
+        if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
+            return responseCode >= 400
+                ? new TimeSyncResponse("", responseCode, Collections.<String, List<String>>emptyMap())
+                : parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
+        }
+        else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
+            || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
+            || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
+            return responseCode >= 400
+                ? new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap())
+                : parseStatusResponse(response, responseCode, connection.getHeaderFields());
+        }
+        else {
+            logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
+            return unknownErrorResponse(requestType);
         }
     }
 
     private Response parseTimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
-        if (isTimeSyncResponse(response))
-        {
-            try
-            {
+        if (isTimeSyncResponse(response)) {
+            try {
                 return new TimeSyncResponse(response, responseCode, headers);
             }
-            catch(Exception e)
-            {
+            catch(Exception e) {
                 logger.error(getClass().getSimpleName() + " parseTimeSyncResponse() - Failed to parse TimeSyncResponse", e);
-                return null;
+                return ERROR_TIME_SYNC_RESPONSE;
             }
         }
 
         // invalid/unexpected response
         logger.warning(getClass().getSimpleName() + " parseTimeSyncResponse() - The HTTPResponse \"" + response + "\" is not a valid time sync response");
-        return null;
+        return ERROR_TIME_SYNC_RESPONSE;
     }
 
     private Response parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
-        if (isStatusResponse(response) && !isTimeSyncResponse(response))
-        {
-            try
-            {
+        if (isStatusResponse(response) && !isTimeSyncResponse(response)) {
+            try {
                 return new StatusResponse(response, responseCode, headers);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
-                return null;
+                return ERROR_STATUS_RESPONSE;
             }
         }
 
         // invalid/unexpected response
         logger.warning(getClass().getSimpleName() + " parseStatusResponse() - The HTTPResponse \"" + response + "\" is not a valid status response");
-        return null;
+        return ERROR_STATUS_RESPONSE;
     }
 
     private static  boolean isStatusResponse(String response) {
@@ -404,4 +401,22 @@ public class HTTPClient {
         return responseBuilder.toString();
     }
 
+    private static Response unknownErrorResponse(RequestType requestType) {
+
+        if (requestType == null) {
+            return null;
+        }
+
+        switch (requestType) {
+            case STATUS:
+            case BEACON: // fallthrough
+            case NEW_SESSION: // fallthrough
+                return ERROR_STATUS_RESPONSE;
+            case TIMESYNC:
+                return ERROR_TIME_SYNC_RESPONSE;
+            default:
+                // should not be reached
+                return null;
+        }
+    }
 }
