@@ -18,7 +18,9 @@ package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.*;
 
@@ -29,6 +31,9 @@ import static org.mockito.Mockito.mock;
 public class ResponseTest {
 
     private Logger mockLogger;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -163,6 +168,17 @@ public class ResponseTest {
         assertThat(obtained.size(), is(equalTo(1)));
         assertThat(obtained.get(0).key, is(equalTo("key")));
         assertThat(obtained.get(0).value, is(equalTo("value")));
+    }
+
+    @Test
+    public void parseResponseKeyThrowsExceptionIfNoKeyValuePairIsParsed() {
+
+        // given
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Invalid response; even number of tokens expected.");
+
+        // when, then
+        Response.parseResponseKeyValuePair("key_value");
     }
 
     /**

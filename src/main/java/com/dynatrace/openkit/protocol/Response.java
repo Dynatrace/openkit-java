@@ -44,7 +44,7 @@ public abstract class Response {
     private static final int HTTP_BAD_REQUEST = 400;
 
     /**
-     * Key int the HTTP response headers for Retry-After
+     * Key in the HTTP response headers for Retry-After
      */
     static final String RESPONSE_KEY_RETRY_AFTER = "retry-after";
     /**
