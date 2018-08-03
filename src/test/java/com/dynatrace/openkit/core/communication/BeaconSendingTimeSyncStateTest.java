@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,10 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.TimingProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -35,6 +35,7 @@ import static org.mockito.Mockito.*;
 
 public class BeaconSendingTimeSyncStateTest {
 
+    private Logger mockLogger;
     private HTTPClient httpClient;
     private BeaconSendingContext stateContext;
     private TimingProvider timingProvider;
@@ -42,6 +43,7 @@ public class BeaconSendingTimeSyncStateTest {
     @Before
     public void setUp() {
 
+        mockLogger = mock(Logger.class);
         httpClient = mock(HTTPClient.class);
         stateContext = mock(BeaconSendingContext.class);
         timingProvider = mock(TimingProvider.class);
@@ -236,42 +238,56 @@ public class BeaconSendingTimeSyncStateTest {
         when(httpClient.sendTimeSyncRequest())
             // first time sync request (1 retry)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+            .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
             // second time sync request (2 retries)
             .thenReturn(null)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+            .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
             // third time sync request (3 retries)
             .thenReturn(null)
             .thenReturn(null)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+            .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
             // fourth time sync request (4 retries)
             .thenReturn(null)
             .thenReturn(null)
             .thenReturn(null)
             .thenReturn(null)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+            .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
             // fifth time sync request (0 retries)
-            .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
+            .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
 
-        when(stateContext.getCurrentTimestamp())
-            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
-            .thenReturn(66L); // time set as last time sync time
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+                                                .thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(54L)
+                                                .thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+                                                .thenReturn(66L); // time set as last time sync time
 
         InOrder inOrder = inOrder(stateContext);
 
@@ -309,19 +325,23 @@ public class BeaconSendingTimeSyncStateTest {
     public void successfulTimeSyncInitializesTimeProvider() {
 
         // given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
 
-        when(stateContext.getCurrentTimestamp())
-            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
-            .thenReturn(66L); // time set as last time sync time
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(54L)
+                                                .thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+                                                .thenReturn(66L); // time set as last time sync time
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
@@ -343,19 +363,23 @@ public class BeaconSendingTimeSyncStateTest {
     public void successfulTimeSyncSetSuccessfulInitCompletionInContextWhenItIsInitialTimeSync() {
 
         // given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
 
-        when(stateContext.getCurrentTimestamp())
-            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
-            .thenReturn(66L); // time set as last time sync time
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(54L)
+                                                .thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+                                                .thenReturn(66L); // time set as last time sync time
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -377,7 +401,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncSupportIsDisabledIfBothTimeStampsInTimeSyncResponseAreNegative() {
 
         //given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-2", 200, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-2", 200, Collections.<String, List<String>>emptyMap()));
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -392,7 +416,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncSupportIsDisabledIfFirstTimeStampInTimeSyncResponseIsNegative() {
 
         //given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=-1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()));
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -407,7 +431,7 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncSupportIsDisabledIfSecondTimeStampInTimeSyncResponseIsNegative() {
 
         //given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1", 200, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=1&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=-1", 200, Collections.<String, List<String>>emptyMap()));
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -456,18 +480,22 @@ public class BeaconSendingTimeSyncStateTest {
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
         when(stateContext.isCaptureOn()).thenReturn(true);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
-        when(stateContext.getCurrentTimestamp())
-            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
-            .thenReturn(66L); // time set as last time sync time
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(54L)
+                                                .thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+                                                .thenReturn(66L); // time set as last time sync time
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
@@ -485,18 +513,22 @@ public class BeaconSendingTimeSyncStateTest {
         // given
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
         when(stateContext.isCaptureOn()).thenReturn(false);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
-                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
-        when(stateContext.getCurrentTimestamp())
-            .thenReturn(2L).thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
-            .thenReturn(10L).thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
-            .thenReturn(32L).thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
-            .thenReturn(44L).thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
-            .thenReturn(54L).thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
-            .thenReturn(66L); // time set as last time sync time
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
+                                              .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = 1
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = 4
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = 3
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = 1
+                                                .thenReturn(54L)
+                                                .thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+                                                .thenReturn(66L); // time set as last time sync time
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
@@ -515,13 +547,17 @@ public class BeaconSendingTimeSyncStateTest {
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
         when(stateContext.isCaptureOn()).thenReturn(true);
         when(httpClient.sendTimeSyncRequest()).thenReturn(null);
-        when(stateContext.getCurrentTimestamp())
-            .thenReturn(2L).thenReturn(8L)
-            .thenReturn(10L).thenReturn(23L)
-            .thenReturn(32L).thenReturn(42L)
-            .thenReturn(44L).thenReturn(52L)
-            .thenReturn(54L).thenReturn(62L)
-            .thenReturn(66L);
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L)
+                                                .thenReturn(10L)
+                                                .thenReturn(23L)
+                                                .thenReturn(32L)
+                                                .thenReturn(42L)
+                                                .thenReturn(44L)
+                                                .thenReturn(52L)
+                                                .thenReturn(54L)
+                                                .thenReturn(62L)
+                                                .thenReturn(66L);
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 

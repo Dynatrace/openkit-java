@@ -66,9 +66,6 @@ public class HTTPClient {
 
     }
 
-    private static final StatusResponse ERROR_STATUS_RESPONSE = new StatusResponse("", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
-    private static final TimeSyncResponse ERROR_TIME_SYNC_RESPONSE = new TimeSyncResponse("", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
-
     // request type constants
     private static final String REQUEST_TYPE_MOBILE = "type=m";
     private static final String REQUEST_TYPE_TIMESYNC = "type=mts";
@@ -115,14 +112,14 @@ public class HTTPClient {
     public StatusResponse sendStatusRequest() {
         Response response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
         return response == null
-            ? ERROR_STATUS_RESPONSE
+            ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
             : (StatusResponse)response;
     }
 
     public StatusResponse sendNewSessionRequest() {
         Response response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
         return response == null
-            ? ERROR_STATUS_RESPONSE
+            ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
             : (StatusResponse)response;
     }
 
@@ -130,7 +127,7 @@ public class HTTPClient {
     public StatusResponse sendBeaconRequest(String clientIPAddress, byte[] data) {
         Response response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
         return response == null
-            ? ERROR_STATUS_RESPONSE
+            ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
             : (StatusResponse)response;
     }
 
@@ -138,7 +135,7 @@ public class HTTPClient {
     public TimeSyncResponse sendTimeSyncRequest() {
         Response response = sendRequest(RequestType.TIMESYNC, timeSyncURL, null, null, "GET");
         return response == null
-            ? ERROR_TIME_SYNC_RESPONSE
+            ? new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
             : (TimeSyncResponse)response;
     }
 
@@ -249,14 +246,14 @@ public class HTTPClient {
         // create typed response based on request type and response content
         if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
             return responseCode >= 400
-                ? new TimeSyncResponse("", responseCode, Collections.<String, List<String>>emptyMap())
+                ? new TimeSyncResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap())
                 : parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
         }
         else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
             return responseCode >= 400
-                ? new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap())
+                ? new StatusResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap())
                 : parseStatusResponse(response, responseCode, connection.getHeaderFields());
         }
         else {
@@ -268,33 +265,33 @@ public class HTTPClient {
     private Response parseTimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isTimeSyncResponse(response)) {
             try {
-                return new TimeSyncResponse(response, responseCode, headers);
+                return new TimeSyncResponse(logger, response, responseCode, headers);
             }
             catch(Exception e) {
                 logger.error(getClass().getSimpleName() + " parseTimeSyncResponse() - Failed to parse TimeSyncResponse", e);
-                return ERROR_TIME_SYNC_RESPONSE;
+                return new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
             }
         }
 
         // invalid/unexpected response
         logger.warning(getClass().getSimpleName() + " parseTimeSyncResponse() - The HTTPResponse \"" + response + "\" is not a valid time sync response");
-        return ERROR_TIME_SYNC_RESPONSE;
+        return new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
     }
 
     private Response parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isStatusResponse(response) && !isTimeSyncResponse(response)) {
             try {
-                return new StatusResponse(response, responseCode, headers);
+                return new StatusResponse(logger, response, responseCode, headers);
             }
             catch (Exception e) {
                 logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
-                return ERROR_STATUS_RESPONSE;
+                return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
             }
         }
 
         // invalid/unexpected response
         logger.warning(getClass().getSimpleName() + " parseStatusResponse() - The HTTPResponse \"" + response + "\" is not a valid status response");
-        return ERROR_STATUS_RESPONSE;
+        return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
     }
 
     private static  boolean isStatusResponse(String response) {
@@ -401,7 +398,7 @@ public class HTTPClient {
         return responseBuilder.toString();
     }
 
-    private static Response unknownErrorResponse(RequestType requestType) {
+    private  Response unknownErrorResponse(RequestType requestType) {
 
         if (requestType == null) {
             return null;
@@ -411,9 +408,9 @@ public class HTTPClient {
             case STATUS:
             case BEACON: // fallthrough
             case NEW_SESSION: // fallthrough
-                return ERROR_STATUS_RESPONSE;
+                return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
             case TIMESYNC:
-                return ERROR_TIME_SYNC_RESPONSE;
+                return new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
             default:
                 // should not be reached
                 return null;

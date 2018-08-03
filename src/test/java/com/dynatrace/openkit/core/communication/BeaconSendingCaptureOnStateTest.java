@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
+import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.SessionImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
@@ -55,8 +56,8 @@ public class BeaconSendingCaptureOnStateTest {
         mockSession4Finished = mock(SessionWrapper.class);
         mockSession5New = mock(SessionWrapper.class);
         mockSession6New = mock(SessionWrapper.class);
-        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 200, Collections.<String, List<String>>emptyMap()));
-        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse("", 404, Collections.<String, List<String>>emptyMap()));
+        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse(mock(Logger.class), "", 200, Collections.<String, List<String>>emptyMap()));
+        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse(mock(Logger.class), "", 404, Collections.<String, List<String>>emptyMap()));
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession1Open.getSession()).thenReturn(mock(SessionImpl.class));
         when(mockSession2Open.getSession()).thenReturn(mock(SessionImpl.class));
@@ -152,7 +153,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
-            .thenReturn(new StatusResponse("mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
+            .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(null); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
         when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
@@ -191,7 +192,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
-            .thenReturn(new StatusResponse("mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
+            .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(null); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(false);
         when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
