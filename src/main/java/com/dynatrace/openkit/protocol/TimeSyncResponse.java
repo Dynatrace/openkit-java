@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.Logger;
+
 import java.util.List;
 import java.util.Map;
 
@@ -34,8 +36,8 @@ public class TimeSyncResponse extends Response {
 
     // *** constructors ***
 
-    public TimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
-        super(responseCode, headers);
+    public TimeSyncResponse(Logger logger, String response, int responseCode, Map<String, List<String>> headers) {
+        super(logger, responseCode, headers);
         parseResponse(response);
     }
 

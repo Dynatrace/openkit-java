@@ -643,7 +643,7 @@ public class BeaconTest {
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 200;
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap()));
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
@@ -664,7 +664,7 @@ public class BeaconTest {
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 418;
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse("", responseCode, Collections.<String, List<String>>emptyMap()));
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap()));
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)

@@ -30,12 +30,9 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -408,7 +405,7 @@ public class SessionImplTest {
 
         // mock a valid status response via the HTTPClient to be sure the beacon cache is empty
         final HTTPClient httpClient = mock(HTTPClient.class);
-        final StatusResponse statusResponse = new StatusResponse("", 200, Collections.<String, List<String>>emptyMap());
+        final StatusResponse statusResponse = new StatusResponse(logger, "", 200, Collections.<String, List<String>>emptyMap());
         when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class))).thenReturn(statusResponse);
         final HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
         when(clientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
@@ -521,10 +518,10 @@ public class SessionImplTest {
     }
 
     @Test
-    public void closeSessionEndsTheSession() throws IOException {
+    public void closeSessionEndsTheSession() {
 
         // given
-        Closeable target = new SessionImpl(logger, beaconSender, beacon);
+        SessionImpl target = new SessionImpl(logger, beaconSender, beacon);
         beacon.clearData();
 
         // when
@@ -532,6 +529,6 @@ public class SessionImplTest {
 
         // then
         assertThat(beacon.isEmpty(), is(false));
-        verify(beaconSender, times(1)).finishSession((SessionImpl) target);
+        verify(beaconSender, times(1)).finishSession(target);
     }
 }

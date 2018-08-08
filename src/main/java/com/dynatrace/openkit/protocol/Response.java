@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +43,24 @@ public abstract class Response {
      */
     private static final int HTTP_BAD_REQUEST = 400;
 
+    /**
+     * Key in the HTTP response headers for Retry-After
+     */
+    static final String RESPONSE_KEY_RETRY_AFTER = "retry-after";
+    /**
+     * Default "Retry-After" is 10 minutes.
+     */
+    static final long DEFAULT_RETRY_AFTER_IN_MILLISECONDS = 10L * 60L * 1000L;
+
+    private final Logger logger;
+
     private final int responseCode;
     private final Map<String, List<String>> headers;
 
     // *** constructors ***
 
-    Response(int responseCode, Map<String, List<String>> headers) {
+    Response(Logger logger, int responseCode, Map<String, List<String>> headers) {
+        this.logger = logger;
         this.responseCode = responseCode;
         this.headers = headers;
     }
@@ -65,13 +79,43 @@ public abstract class Response {
         return headers;
     }
 
+    public long getRetryAfterInMilliseconds() {
+
+        List<String> values = getHeaders().get(RESPONSE_KEY_RETRY_AFTER);
+        if (values == null) {
+            // the Retry-After response header is missing
+            logger.warning(RESPONSE_KEY_RETRY_AFTER + " is not available - using default value " + DEFAULT_RETRY_AFTER_IN_MILLISECONDS);
+            return DEFAULT_RETRY_AFTER_IN_MILLISECONDS;
+        }
+
+        if (values.size() != 1) {
+            // the Retry-After response header has multiple values, but only one is expected
+            logger.warning(RESPONSE_KEY_RETRY_AFTER + " has unexpected number of values - using default value " + DEFAULT_RETRY_AFTER_IN_MILLISECONDS);
+            return DEFAULT_RETRY_AFTER_IN_MILLISECONDS;
+        }
+
+        // according to RFC 7231 Section 7.1.3 (https://tools.ietf.org/html/rfc7231#section-7.1.3)
+        // Retry-After value can either be a delay seconds value, which is a non-negative decimal integer
+        // or it is an HTTP date.
+        // Our implementation assumes only delay seconds value here
+        int delaySeconds;
+        try {
+             delaySeconds = Integer.parseInt(values.get(0));
+        } catch (NumberFormatException e) {
+            logger.error("Failed to parse " + RESPONSE_KEY_RETRY_AFTER + " value \"" + values.get(0)
+                + "\" - using default value " + DEFAULT_RETRY_AFTER_IN_MILLISECONDS);
+            return DEFAULT_RETRY_AFTER_IN_MILLISECONDS;
+        }
+
+        // convert delay seconds to milliseconds
+        return delaySeconds * 1000L;
+    }
+
     static List<KeyValuePair> parseResponseKeyValuePair(String response) {
 
         List<KeyValuePair> result = new ArrayList<KeyValuePair>();
         StringTokenizer tokenizer = new StringTokenizer(response, "&");
         while (tokenizer.hasMoreTokens()) {
-
-
             String token = tokenizer.nextToken();
             int keyValueSeparatorIndex = token.indexOf('=');
             if (keyValueSeparatorIndex == -1) {
