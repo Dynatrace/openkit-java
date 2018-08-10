@@ -44,6 +44,11 @@ public abstract class Response {
     private static final int HTTP_BAD_REQUEST = 400;
 
     /**
+     * Too many requests sent by client (rate limiting) error code.
+     */
+    public static final int HTTP_TOO_MANY_REQUESTS = 429;
+
+    /**
      * Key in the HTTP response headers for Retry-After
      */
     static final String RESPONSE_KEY_RETRY_AFTER = "retry-after";
