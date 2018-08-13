@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 
@@ -108,7 +109,7 @@ public class Configuration {
     // updates settings based on a status response
     public void updateSettings(StatusResponse statusResponse) {
         // if invalid status response OR response code != 200 -> capture off
-        if ((statusResponse == null) || (statusResponse.getResponseCode() != 200)) {
+        if ((statusResponse == null) || (statusResponse.getResponseCode() != Response.HTTP_OK)) {
             disableCapture();
             return;
         }
