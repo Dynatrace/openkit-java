@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,14 +33,22 @@ public class BeaconSendingInitStateTest {
 
     private HTTPClient httpClient;
     private BeaconSendingContext stateContext;
+    private StatusResponse statusResponse;
 
     @Before
     public void setUp() {
 
         httpClient = mock(HTTPClient.class);
         stateContext = mock(BeaconSendingContext.class);
+        statusResponse = mock(StatusResponse.class);
 
+        // setup state context
         when(stateContext.getHTTPClient()).thenReturn(httpClient);
+        // setup http client
+        when(httpClient.sendStatusRequest()).thenReturn(statusResponse);
+        // setup status response
+        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(statusResponse.isErroneousResponse()).thenReturn(false);
     }
 
     @Test
@@ -50,6 +59,16 @@ public class BeaconSendingInitStateTest {
 
         // when/then
         assertThat(target.isTerminalState(), is(false));
+    }
+
+    @Test
+    public void toStringReturnsTheStateName() {
+
+        // given
+        BeaconSendingInitState target = new BeaconSendingInitState();
+
+        // then
+        assertThat(target.toString(), is(equalTo("Initial")));
     }
 
     @Test
@@ -152,8 +171,11 @@ public class BeaconSendingInitStateTest {
     public void reinitializeSleepsBeforeSendingStatusRequestsAgain() throws InterruptedException {
 
         // given
+        StatusResponse erroneousResponse = mock(StatusResponse.class);
+        when(erroneousResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
-        when(httpClient.sendStatusRequest()).thenReturn(null); // always return null -> means erroneous response
+        when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
         when(stateContext.isShutdownRequested()).thenAnswer(new Answer<Boolean>() {
             private int count = 0;
 
@@ -233,7 +255,11 @@ public class BeaconSendingInitStateTest {
     public void sleepTimeIsDoubledBetweenStatusRequestRetries() throws InterruptedException {
 
         // given
-        when(httpClient.sendStatusRequest()).thenReturn(null); // always return null -> means erroneous response
+        StatusResponse erroneousResponse = mock(StatusResponse.class);
+        when(erroneousResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousResponse.isErroneousResponse()).thenReturn(true);
+
+        when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
         when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, true);
         InOrder inOrder = inOrder(stateContext);
 
@@ -255,7 +281,11 @@ public class BeaconSendingInitStateTest {
     public void initialStatusRequestGivesUpWhenShutdownRequestIsSetDuringExecution() throws InterruptedException {
 
         // given
-        when(httpClient.sendStatusRequest()).thenReturn(null);
+        StatusResponse erroneousResponse = mock(StatusResponse.class);
+        when(erroneousResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousResponse.isErroneousResponse()).thenReturn(true);
+
+        when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
         when(stateContext.isShutdownRequested()).thenReturn(false)
                                                 .thenReturn(false)
                                                 .thenReturn(true);
@@ -281,9 +311,6 @@ public class BeaconSendingInitStateTest {
     public void aSuccessfulStatusResponsePerformsStateTransitionToTimeSyncState() {
 
         // given
-        StatusResponse statusResponse = mock(StatusResponse.class);
-        when(httpClient.sendStatusRequest()).thenReturn(statusResponse);
-
         BeaconSendingInitState target = new BeaconSendingInitState();
 
         // when
@@ -292,5 +319,45 @@ public class BeaconSendingInitStateTest {
         // verify state transition
         verify(stateContext, times(1)).handleStatusResponse(statusResponse);
         verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
+    }
+
+    @Test
+    public void receivingTooManyRequestsResponseUsesSleepTimeFromResponse() throws InterruptedException {
+
+        // given
+        StatusResponse tooManyRequestsResponse = mock(StatusResponse.class);
+        when(tooManyRequestsResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
+        when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
+        when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
+        when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, false, true);
+
+        BeaconSendingInitState target = new BeaconSendingInitState();
+
+        // when
+        target.execute(stateContext);
+
+        // verify sleep was performed accordingly
+        verify(stateContext, times(1)).sleep(1234L * 1000L);
+    }
+
+    @Test
+    public void receivingTooManyRequestsResponseDisablesCapturing() {
+
+        // given
+        StatusResponse tooManyRequestsResponse = mock(StatusResponse.class);
+        when(tooManyRequestsResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
+        when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
+        when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
+        when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, false, true);
+
+        BeaconSendingInitState target = new BeaconSendingInitState();
+
+        // when
+        target.execute(stateContext);
+
+        // verify sleep was performed accordingly
+        verify(stateContext, times(1)).disableCapture();
     }
 }
