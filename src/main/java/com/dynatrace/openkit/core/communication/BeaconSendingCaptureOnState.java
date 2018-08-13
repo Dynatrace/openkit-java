@@ -35,11 +35,6 @@ import java.util.List;
  */
 class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
-    /**
-     * store last received status response
-     */
-    private StatusResponse statusResponse = null;
-
     BeaconSendingCaptureOnState() {
         super(false);
     }
@@ -57,15 +52,28 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         context.sleep();
 
         // send new session request for all sessions that are new
-        sendNewSessionRequests(context);
-
-        statusResponse = null;
+        StatusResponse statusResponse = sendNewSessionRequests(context);
+        if (BeaconSendingRequestUtil.isTooManyRequestsResponse(statusResponse)) {
+            // server is currently overloaded, temporarily switch to capture off
+            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+            return;
+        }
 
         // send all finished sessions (this method may set this.statusResponse)
-        sendFinishedSessions(context);
+        statusResponse = sendFinishedSessions(context);
+        if (BeaconSendingRequestUtil.isTooManyRequestsResponse(statusResponse)) {
+            // server is currently overloaded, temporarily switch to capture off
+            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+            return;
+        }
 
         // check if we need to send open sessions & do it if necessary (this method may set this.statusResponse)
-        sendOpenSessions(context);
+        statusResponse = sendOpenSessions(context);
+        if (BeaconSendingRequestUtil.isTooManyRequestsResponse(statusResponse)) {
+            // server is currently overloaded, temporarily switch to capture off
+            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+            return;
+        }
 
         // handle the last statusResponse received (or null if none was received) from the server
         handleStatusResponse(context, statusResponse);
@@ -76,8 +84,15 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         return new BeaconSendingFlushSessionsState();
     }
 
-    private void sendNewSessionRequests(BeaconSendingContext context) {
+    /**
+     * Send new session requests for all sessions where we currently don't have a multiplicity configuration.
+     *
+     * @param context The state context.
+     * @return The last status response received.
+     */
+    private StatusResponse sendNewSessionRequests(BeaconSendingContext context) {
 
+        StatusResponse statusResponse = null;
         List<SessionWrapper> newSessions = context.getAllNewSessions();
 
         for (SessionWrapper session : newSessions) {
@@ -90,17 +105,22 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
                 continue;
             }
 
-            StatusResponse response = context.getHTTPClient().sendNewSessionRequest();
-            if (response != null) {
+            statusResponse = context.getHTTPClient().sendNewSessionRequest();
+            if (BeaconSendingRequestUtil.isSuccessfulStatusResponse(statusResponse)) {
                 BeaconConfiguration currentConfiguration = session.getBeaconConfiguration();
-                BeaconConfiguration newConfiguration = new BeaconConfiguration(response.getMultiplicity(),
-                    currentConfiguration.getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
+                BeaconConfiguration newConfiguration = new BeaconConfiguration(statusResponse.getMultiplicity(), currentConfiguration
+                    .getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
                 session.updateBeaconConfiguration(newConfiguration);
+            } else if (BeaconSendingRequestUtil.isTooManyRequestsResponse(statusResponse)) {
+                // server is currently overloaded, return immediately
+                break;
             } else {
-                // did not retrieve any response from server, maybe the cluster is down?
+                // any other unsuccessful response
                 session.decreaseNumNewSessionRequests();
             }
         }
+
+        return statusResponse;
     }
 
     /**
@@ -108,17 +128,18 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
      *
      * @param context Context.
      */
-    private void sendFinishedSessions(BeaconSendingContext context) {
+    private StatusResponse sendFinishedSessions(BeaconSendingContext context) {
 
+        StatusResponse statusResponse = null;
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
         List<SessionWrapper> finishedSessions = context.getAllFinishedAndConfiguredSessions();
 
         for (SessionWrapper finishedSession : finishedSessions) {
             if (finishedSession.isDataSendingAllowed()) {
                 statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
-                if (statusResponse == null) {
+                if (!BeaconSendingRequestUtil.isSuccessfulStatusResponse(statusResponse)) {
                     // something went wrong,
-                    if (!finishedSession.isEmpty()) {
+                    if (BeaconSendingRequestUtil.isTooManyRequestsResponse(statusResponse) || !finishedSession.isEmpty()) {
                         break; //  sending did not work, break out for now and retry it later
                     }
                 }
@@ -129,6 +150,8 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             finishedSession.clearCapturedData();
             finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
         }
+
+        return statusResponse;
     }
 
     /**
@@ -136,23 +159,31 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
      *
      * @param context
      */
-    private void sendOpenSessions(BeaconSendingContext context) {
+    private StatusResponse sendOpenSessions(BeaconSendingContext context) {
+
+        StatusResponse statusResponse = null;
 
         long currentTimestamp = context.getCurrentTimestamp();
         if (currentTimestamp <= context.getLastOpenSessionBeaconSendTime() + context.getSendInterval()) {
-            return; // send interval to send open sessions has not expired yet
+            return null;
         }
 
         List<SessionWrapper> openSessions = context.getAllOpenAndConfiguredSessions();
         for (SessionWrapper session : openSessions) {
             if (session.isDataSendingAllowed()) {
                 statusResponse = session.sendBeacon(context.getHTTPClientProvider());
+                if (BeaconSendingRequestUtil.isTooManyRequestsResponse(statusResponse)) {
+                    // server is currently overloaded, return immediately
+                    break;
+                }
             } else {
                 session.clearCapturedData();
             }
         }
 
         context.setLastOpenSessionBeaconSendTime(currentTimestamp);
+
+        return statusResponse;
     }
 
     private static void handleStatusResponse(BeaconSendingContext context, StatusResponse statusResponse) {
