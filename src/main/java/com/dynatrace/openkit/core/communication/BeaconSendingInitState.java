@@ -74,7 +74,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             // shutdown was requested -> abort init with failure
             // transition to shutdown state is handled by base class
             context.initCompleted(false);
-        } else if (isSuccessfulStatusResponse(statusResponse)) {
+        } else if (BeaconSendingRequestUtil.isSuccessfulStatusResponse(statusResponse)) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
             context.setNextState(new BeaconSendingTimeSyncState(true));
@@ -114,7 +114,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             context.setLastStatusCheckTime(currentTimestamp);
 
             statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
-            if (context.isShutdownRequested() || isSuccessfulStatusResponse(statusResponse)) {
+            if (context.isShutdownRequested() || BeaconSendingRequestUtil.isSuccessfulStatusResponse(statusResponse)) {
                 // shutdown was requested or a successful status response was received
                 break;
             }
@@ -135,16 +135,5 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
         }
 
         return statusResponse;
-    }
-
-    /**
-     * Test if the given {@link StatusResponse} is a successful response.
-     *
-     * @param statusResponse The given status response to check whether it is successful or not.
-     * @return {@code true} if status response is successful, {@code false} otherwise.
-     */
-    private static boolean isSuccessfulStatusResponse(StatusResponse statusResponse) {
-
-        return statusResponse != null && !statusResponse.isErroneousResponse();
     }
 }

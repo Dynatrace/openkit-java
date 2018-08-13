@@ -330,7 +330,7 @@ public class BeaconSendingInitStateTest {
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
         when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
-        when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, false, true);
+        when(stateContext.isShutdownRequested()).thenReturn(false, true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 
@@ -350,7 +350,7 @@ public class BeaconSendingInitStateTest {
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
         when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
-        when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, false, true);
+        when(stateContext.isShutdownRequested()).thenReturn(false, true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
 

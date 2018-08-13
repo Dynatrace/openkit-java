@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
@@ -42,7 +43,8 @@ class BeaconSendingRequestUtil {
 
         while (true) {
             statusResponse = context.getHTTPClient().sendStatusRequest();
-            if ((statusResponse != null && !statusResponse.isErroneousResponse())
+            if (isSuccessfulStatusResponse(statusResponse)
+                || isTooManyRequestsResponse(statusResponse) // is handled by the states
                 || retry >= numRetries
                 || context.isShutdownRequested()) {
                 break;
@@ -55,5 +57,31 @@ class BeaconSendingRequestUtil {
         }
 
         return statusResponse;
+    }
+
+    /**
+     * Test if the given {@link StatusResponse} is a successful response.
+     *
+     * @param statusResponse The given status response to check whether it is successful or not.
+     * @return {@code true} if status response is successful, {@code false} otherwise.
+     */
+    static boolean isSuccessfulStatusResponse(StatusResponse statusResponse) {
+
+        return statusResponse != null && !statusResponse.isErroneousResponse();
+    }
+
+    /**
+     * Test if the given {@link StatusResponse} is a "too many requests" response.
+     *
+     * <p>
+     * A "too many requests" response is an HTTP response with response code 429.
+     * </p>
+     *
+     * @param statusResponse The given status response to check whether it is a "too many requests" response or not.
+     * @return {@code true} if status response indicates too many requests, {@code false} otherwise.
+     */
+    static boolean isTooManyRequestsResponse(StatusResponse statusResponse) {
+
+        return statusResponse != null && statusResponse.getResponseCode() == Response.HTTP_TOO_MANY_REQUESTS;
     }
 }
