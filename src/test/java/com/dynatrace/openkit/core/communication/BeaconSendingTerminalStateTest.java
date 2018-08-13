@@ -59,6 +59,16 @@ public class BeaconSendingTerminalStateTest {
     }
 
     @Test
+    public void toStringReturnsTheStateName() {
+
+        // given
+        BeaconSendingTerminalState target = new BeaconSendingTerminalState();
+
+        // then
+        assertThat(target.toString(), is(equalTo("Terminal")));
+    }
+
+    @Test
     public void executeRequestsShutdown() {
 
         // given
