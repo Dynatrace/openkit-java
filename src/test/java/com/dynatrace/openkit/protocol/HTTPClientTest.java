@@ -38,7 +38,7 @@ public class HTTPClientTest {
     private static final String CHARSET = "UTF-8";
     private static final String APP_ID = "appID";
     private static final int SERVER_ID = 123;
-    private static final String BASE_URL = "http://www.example.com";
+    private static final String BASE_URL = "http://127.0.0.1:12345";
 
     private HTTPClientConfiguration configuration;
 
@@ -85,58 +85,6 @@ public class HTTPClientTest {
         Response response = client.sendStatusRequest();
 
         // then
-        assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
-    }
-
-    @Test
-    public void sendStatusRequestToSomeValidUrl() {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-
-        // when
-        StatusResponse response = client.sendStatusRequest();
-
-        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
-        assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
-    }
-
-    @Test
-    public void sendBeaconRequestToSomeValidUrl() {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-
-        // when
-        StatusResponse response = client.sendBeaconRequest("127.0.0.1", null);
-
-        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
-        assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(411)));
-    }
-
-    @Test
-    public void sendTimeSyncRequestToSomeValidUrl() {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-
-        // when
-        TimeSyncResponse response = client.sendTimeSyncRequest();
-
-        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
-        assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
-    }
-
-    @Test
-    public void sendNewSessionRequestToSomeValidUrl() {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-
-        // when
-        StatusResponse response = client.sendNewSessionRequest();
-
-        // then (we use a URL not understanding the beacon protocol, thus unknown error is expected)
         assertThat(response, is(notNullValue()));
         assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
