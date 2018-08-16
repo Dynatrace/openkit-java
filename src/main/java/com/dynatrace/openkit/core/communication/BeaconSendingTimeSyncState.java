@@ -146,7 +146,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             } else if (retry >= TIME_SYNC_RETRY_COUNT) {
                 // retry limits exceeded
                 break;
-            } else if (timeSyncResponse != null && timeSyncResponse.getResponseCode() == Response.HTTP_TOO_MANY_REQUESTS) {
+            } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(timeSyncResponse)) {
                 // special handling for too many requests
                 // clear all time sync offsets captured so far and store the response, which is handled later
                 response.timeSyncOffsets.clear();

@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.concurrent.TimeUnit;
@@ -74,7 +73,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             // shutdown was requested -> abort init with failure
             // transition to shutdown state is handled by base class
             context.initCompleted(false);
-        } else if (BeaconSendingRequestUtil.isSuccessfulStatusResponse(statusResponse)) {
+        } else if (BeaconSendingResponseUtil.isSuccessfulStatusResponse(statusResponse)) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
             context.setNextState(new BeaconSendingTimeSyncState(true));
@@ -114,13 +113,13 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             context.setLastStatusCheckTime(currentTimestamp);
 
             statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
-            if (context.isShutdownRequested() || BeaconSendingRequestUtil.isSuccessfulStatusResponse(statusResponse)) {
+            if (context.isShutdownRequested() || BeaconSendingResponseUtil.isSuccessfulStatusResponse(statusResponse)) {
                 // shutdown was requested or a successful status response was received
                 break;
             }
 
             long sleepTime = REINIT_DELAY_MILLISECONDS[reinitializeDelayIndex];
-            if (statusResponse != null && statusResponse.getResponseCode() == Response.HTTP_TOO_MANY_REQUESTS) {
+            if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
                 // in case of too many requests the server might send us a retry-after
                 sleepTime = statusResponse.getRetryAfterInMilliseconds();
 
