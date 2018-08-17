@@ -130,7 +130,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             TimeSyncResponse timeSyncResponse = context.getHTTPClient().sendTimeSyncRequest();
             long responseReceiveTime = context.getCurrentTimestamp();
 
-            if (timeSyncResponse != null && !timeSyncResponse.isErroneousResponse()) {
+            if (BeaconSendingResponseUtil.isSuccessfulResponse(timeSyncResponse)) {
                 long requestReceiveTime = timeSyncResponse.getRequestReceiveTime();
                 long responseSendTime = timeSyncResponse.getResponseSendTime();
 
@@ -272,10 +272,10 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         private final List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
 
         /**
-         * List storing time sync response.
+         * TimeSync response which is only stored in case of "too many requests" response, otherwise it's always {@code null}.
          *
          * <p>
-         * This might be required for e.g. handling 429 response error.
+         * This is required for e.g. handling 429 response error.
          * </p>
          */
         private TimeSyncResponse response = null;
