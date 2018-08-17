@@ -112,6 +112,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     /**
      * Execute the time synchronisation requests (HTTP requests).
+     *
+     * @param context State's context
+     * @return Special container class
      */
     private TimeSyncRequestsResponse executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
 

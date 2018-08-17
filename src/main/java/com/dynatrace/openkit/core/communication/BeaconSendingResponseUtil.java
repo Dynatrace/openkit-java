@@ -39,7 +39,7 @@ class BeaconSendingResponseUtil {
      * @param response The given response to check whether it is successful or not.
      * @return {@code true} if response is successful, {@code false} otherwise.
      */
-    static boolean isSuccessfulStatusResponse(Response response) {
+    static boolean isSuccessfulResponse(Response response) {
 
         return response != null && !response.isErroneousResponse();
     }

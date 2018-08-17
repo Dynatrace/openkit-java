@@ -32,7 +32,7 @@ public class BeaconSendingResponseUtilTest {
     public void isSuccessfulStatusResponseReturnsFalseIfResponseIsNull() {
 
         // when, then
-        assertThat(BeaconSendingResponseUtil.isSuccessfulStatusResponse(null), is(false));
+        assertThat(BeaconSendingResponseUtil.isSuccessfulResponse(null), is(false));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class BeaconSendingResponseUtilTest {
         when(response.isErroneousResponse()).thenReturn(true);
 
         // when
-        boolean obtained = BeaconSendingResponseUtil.isSuccessfulStatusResponse(response);
+        boolean obtained = BeaconSendingResponseUtil.isSuccessfulResponse(response);
 
         // then
         assertThat(obtained, is(false));
@@ -61,7 +61,7 @@ public class BeaconSendingResponseUtilTest {
         when(response.isErroneousResponse()).thenReturn(false);
 
         // when
-        boolean obtained = BeaconSendingResponseUtil.isSuccessfulStatusResponse(response);
+        boolean obtained = BeaconSendingResponseUtil.isSuccessfulResponse(response);
 
         // then
         assertThat(obtained, is(true));

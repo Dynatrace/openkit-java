@@ -73,7 +73,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             // shutdown was requested -> abort init with failure
             // transition to shutdown state is handled by base class
             context.initCompleted(false);
-        } else if (BeaconSendingResponseUtil.isSuccessfulStatusResponse(statusResponse)) {
+        } else if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
             context.setNextState(new BeaconSendingTimeSyncState(true));
@@ -113,7 +113,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             context.setLastStatusCheckTime(currentTimestamp);
 
             statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
-            if (context.isShutdownRequested() || BeaconSendingResponseUtil.isSuccessfulStatusResponse(statusResponse)) {
+            if (context.isShutdownRequested() || BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
                 // shutdown was requested or a successful status response was received
                 break;
             }

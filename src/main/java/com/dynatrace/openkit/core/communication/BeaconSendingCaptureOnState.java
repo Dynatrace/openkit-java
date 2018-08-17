@@ -106,7 +106,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             }
 
             statusResponse = context.getHTTPClient().sendNewSessionRequest();
-            if (BeaconSendingResponseUtil.isSuccessfulStatusResponse(statusResponse)) {
+            if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
                 BeaconConfiguration currentConfiguration = session.getBeaconConfiguration();
                 BeaconConfiguration newConfiguration = new BeaconConfiguration(statusResponse.getMultiplicity(), currentConfiguration
                     .getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
@@ -126,7 +126,8 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
     /**
      * Send all sessions which have been finished previously.
      *
-     * @param context Context.
+     * @param context The state's context
+     * @return The last status response received.
      */
     private StatusResponse sendFinishedSessions(BeaconSendingContext context) {
 
@@ -137,7 +138,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         for (SessionWrapper finishedSession : finishedSessions) {
             if (finishedSession.isDataSendingAllowed()) {
                 statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
-                if (!BeaconSendingResponseUtil.isSuccessfulStatusResponse(statusResponse)) {
+                if (!BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
                     // something went wrong,
                     if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse) || !finishedSession.isEmpty()) {
                         break; //  sending did not work, break out for now and retry it later
@@ -157,7 +158,8 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
     /**
      * Check if the send interval (configured by server) has expired and start to send open sessions if it has expired.
      *
-     * @param context
+     * @param context The state's context
+     * @return The last status response received.
      */
     private StatusResponse sendOpenSessions(BeaconSendingContext context) {
 
