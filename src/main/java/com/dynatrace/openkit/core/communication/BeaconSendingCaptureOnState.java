@@ -52,31 +52,39 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         context.sleep();
 
         // send new session request for all sessions that are new
-        StatusResponse statusResponse = sendNewSessionRequests(context);
-        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
+        StatusResponse newSessionsResponse = sendNewSessionRequests(context);
+        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(newSessionsResponse)) {
             // server is currently overloaded, temporarily switch to capture off
-            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+            context.setNextState(new BeaconSendingCaptureOffState(newSessionsResponse.getRetryAfterInMilliseconds()));
             return;
         }
 
         // send all finished sessions (this method may set this.statusResponse)
-        statusResponse = sendFinishedSessions(context);
-        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
+        StatusResponse finishedSessionsResponse = sendFinishedSessions(context);
+        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(finishedSessionsResponse)) {
             // server is currently overloaded, temporarily switch to capture off
-            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+            context.setNextState(new BeaconSendingCaptureOffState(finishedSessionsResponse.getRetryAfterInMilliseconds()));
             return;
         }
 
         // check if we need to send open sessions & do it if necessary (this method may set this.statusResponse)
-        statusResponse = sendOpenSessions(context);
-        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
+        StatusResponse openSessionsResponse = sendOpenSessions(context);
+        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(openSessionsResponse)) {
             // server is currently overloaded, temporarily switch to capture off
-            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+            context.setNextState(new BeaconSendingCaptureOffState(openSessionsResponse.getRetryAfterInMilliseconds()));
             return;
         }
 
+        // collect the last status response
+        StatusResponse lastStatusResponse = newSessionsResponse;
+        if (openSessionsResponse != null) {
+            lastStatusResponse = openSessionsResponse;
+        } else if (finishedSessionsResponse != null) {
+            lastStatusResponse = finishedSessionsResponse;
+        }
+
         // handle the last statusResponse received (or null if none was received) from the server
-        handleStatusResponse(context, statusResponse);
+        handleStatusResponse(context, lastStatusResponse);
     }
 
     @Override
