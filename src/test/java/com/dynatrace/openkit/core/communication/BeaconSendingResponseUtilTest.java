@@ -29,14 +29,14 @@ public class BeaconSendingResponseUtilTest {
 
 
     @Test
-    public void isSuccessfulStatusResponseReturnsFalseIfResponseIsNull() {
+    public void isSuccessfulResponseReturnsFalseIfResponseIsNull() {
 
         // when, then
         assertThat(BeaconSendingResponseUtil.isSuccessfulResponse(null), is(false));
     }
 
     @Test
-    public void isSuccessfulStatusResponseReturnsFalseIfResponseIsErroneous() {
+    public void isSuccessfulResponseReturnsFalseIfResponseIsErroneous() {
 
         // given
         StatusResponse response = mock(StatusResponse.class);
@@ -54,7 +54,7 @@ public class BeaconSendingResponseUtilTest {
     }
 
     @Test
-    public void isSuccessfulStatusResponseReturnsTrueIfResponseIsNotErroneous() {
+    public void isSuccessfulResponseReturnsTrueIfResponseIsNotErroneous() {
 
         // given
         StatusResponse response = mock(StatusResponse.class);

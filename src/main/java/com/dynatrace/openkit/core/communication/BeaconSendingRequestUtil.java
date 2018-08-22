@@ -18,8 +18,6 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.StatusResponse;
 
-import static com.dynatrace.openkit.core.communication.BeaconSendingResponseUtil.isSuccessfulResponse;
-
 /**
  * Utility class for sending requests to the server and retry several times
  */
@@ -44,7 +42,7 @@ class BeaconSendingRequestUtil {
 
         while (true) {
             statusResponse = context.getHTTPClient().sendStatusRequest();
-            if (isSuccessfulResponse(statusResponse)
+            if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)
                 || BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse) // is handled by the states
                 || retry >= numRetries
                 || context.isShutdownRequested()) {
