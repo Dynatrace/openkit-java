@@ -1,7 +1,7 @@
 # Dynatrace OpenKit - Java Reference Implementation
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://travis-ci.org/Dynatrace/openkit-java.svg?branch=master)](https://travis-ci.org/Dynatrace/openkit-java)
+[![Build Status](https://travis-ci.org/Dynatrace/openkit-java.svg?branch=release%2F1.0)](https://travis-ci.org/Dynatrace/openkit-java)
 
 ## What is the OpenKit?
 
