@@ -25,8 +25,9 @@ script: ./gradlew check --info
 after_success:
 - |
   if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$TARGET_COMPATIBILITY" = "8" ]; then
-
-    export CI_BRANCH=$TRAVIS_BRANCH
+    export CI_NAME="travis-ci"
+    export CI_BUILD_NUMBER="$TRAVIS_BUILD_NUMBER"
+    export CI_BRANCH="$TRAVIS_BRANCH"
     ./gradlew jacocoTestReport coveralls
   else
     echo "Skipping coveralls [branch=$TRAVIS_BRANCH; pull_request=$TRAVIS_PULL_REQUEST; target_compat=$TARGET_COMPATIBILITY]"
