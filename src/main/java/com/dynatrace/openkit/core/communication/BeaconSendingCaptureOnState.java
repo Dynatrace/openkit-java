@@ -59,7 +59,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             return;
         }
 
-        // send all finished sessions (this method may set this.statusResponse)
+        // send all finished sessions
         StatusResponse finishedSessionsResponse = sendFinishedSessions(context);
         if (BeaconSendingResponseUtil.isTooManyRequestsResponse(finishedSessionsResponse)) {
             // server is currently overloaded, temporarily switch to capture off
@@ -67,7 +67,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             return;
         }
 
-        // check if we need to send open sessions & do it if necessary (this method may set this.statusResponse)
+        // check if we need to send open sessions & do it if necessary
         StatusResponse openSessionsResponse = sendOpenSessions(context);
         if (BeaconSendingResponseUtil.isTooManyRequestsResponse(openSessionsResponse)) {
             // server is currently overloaded, temporarily switch to capture off
