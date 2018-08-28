@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     static final int TIME_SYNC_REQUESTS = 5;
-    static final int TIME_SYNC_RETRY_COUNT = 5;
+    private static final int TIME_SYNC_RETRY_COUNT = 5;
     static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
     static final long TIME_SYNC_INTERVAL_IN_MILLIS = TimeUnit.HOURS.toMillis(2);
 
@@ -94,9 +95,9 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         // execute time sync requests - note during initial sync it might be possible
         // that the time sync capability is disabled.
-        List<Long> timeSyncOffsets = executeTimeSyncRequests(context);
+        TimeSyncRequestsResponse response = executeTimeSyncRequests(context);
 
-        handleTimeSyncResponses(context, timeSyncOffsets);
+        handleTimeSyncResponses(context, response);
 
         // mark init being completed if it's the initial time sync
         if (initialTimeSync) {
@@ -111,22 +112,25 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
     /**
      * Execute the time synchronisation requests (HTTP requests).
+     *
+     * @param context State's context
+     * @return Special container class
      */
-    private List<Long> executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
+    private TimeSyncRequestsResponse executeTimeSyncRequests(BeaconSendingContext context) throws InterruptedException {
 
-        List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
+        TimeSyncRequestsResponse response = new TimeSyncRequestsResponse();
 
         int retry = 0;
         long sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
 
         // no check for shutdown here, time sync has to be completed
-        while (timeSyncOffsets.size() < TIME_SYNC_REQUESTS && !context.isShutdownRequested()) {
+        while (response.timeSyncOffsets.size() < TIME_SYNC_REQUESTS && !context.isShutdownRequested()) {
             // doExecute time-sync request and take timestamps
             long requestSendTime = context.getCurrentTimestamp();
             TimeSyncResponse timeSyncResponse = context.getHTTPClient().sendTimeSyncRequest();
             long responseReceiveTime = context.getCurrentTimestamp();
 
-            if (timeSyncResponse != null) {
+            if (BeaconSendingResponseUtil.isSuccessfulResponse(timeSyncResponse)) {
                 long requestReceiveTime = timeSyncResponse.getRequestReceiveTime();
                 long responseSendTime = timeSyncResponse.getResponseSendTime();
 
@@ -134,7 +138,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
                 if ((requestReceiveTime > 0) && (responseSendTime > 0)) {
                     // if yes -> continue time-sync
                     long offset = ((requestReceiveTime - requestSendTime) + (responseSendTime - responseReceiveTime)) / 2;
-                    timeSyncOffsets.add(offset);
+                    response.timeSyncOffsets.add(offset);
                     retry = 0; // on successful response reset the retry count & initial sleep time
                     sleepTimeInMillis = INITIAL_RETRY_SLEEP_TIME_MILLISECONDS;
                 } else {
@@ -145,6 +149,12 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             } else if (retry >= TIME_SYNC_RETRY_COUNT) {
                 // retry limits exceeded
                 break;
+            } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(timeSyncResponse)) {
+                // special handling for too many requests
+                // clear all time sync offsets captured so far and store the response, which is handled later
+                response.timeSyncOffsets.clear();
+                response.response = timeSyncResponse;
+                break;
             } else {
                 context.sleep(sleepTimeInMillis);
                 sleepTimeInMillis *= 2;
@@ -152,7 +162,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             }
         }
 
-        return timeSyncOffsets;
+        return response;
     }
 
     @Override
@@ -163,7 +173,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
     }
 
-    private void handleTimeSyncResponses(BeaconSendingContext context, List<Long> timeSyncOffsets) {
+    private void handleTimeSyncResponses(BeaconSendingContext context, TimeSyncRequestsResponse response) {
 
         // time sync requests were *not* successful
         // either because of networking issues
@@ -171,13 +181,13 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         // the server does not support time sync at all (e.g. AppMon).
         //
         // -> handle this case
-        if (timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
-            handleErroneousTimeSyncRequest(context);
+        if (response.timeSyncOffsets.size() < TIME_SYNC_REQUESTS) {
+            handleErroneousTimeSyncRequest(response.response, context);
             return;
         }
 
         //sanity check to catch case with div/0
-        long calculatedOffset = computeClusterTimeOffset(timeSyncOffsets);
+        long calculatedOffset = computeClusterTimeOffset(response.timeSyncOffsets);
         if (calculatedOffset < 0) {
             return;
         }
@@ -225,7 +235,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         return Math.round(sum / (double) count);
     }
 
-    private void handleErroneousTimeSyncRequest(BeaconSendingContext context) {
+    private void handleErroneousTimeSyncRequest(TimeSyncResponse response, BeaconSendingContext context) {
 
         // if this is the initial sync try, we have to initialize the time provider
         // in every other case we keep the previous setting
@@ -233,7 +243,11 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
             context.initializeTimeSync(0, context.isTimeSyncSupported());
         }
 
-        if (context.isTimeSyncSupported()) {
+        if (response != null && response.getResponseCode() == Response.HTTP_TOO_MANY_REQUESTS) {
+            // server is currently overloaded, change to CaptureOff state temporarily
+            context.setNextState(new BeaconSendingCaptureOffState(response.getRetryAfterInMilliseconds()));
+        }
+        else if (context.isTimeSyncSupported()) {
             // server supports time sync
             context.setNextState(new BeaconSendingCaptureOffState());
         } else {
@@ -245,5 +259,25 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
     @Override
     public String toString() {
         return "TimeSync";
+    }
+
+    /**
+     * Container class storing data for processing requests.
+     */
+    private static final class TimeSyncRequestsResponse {
+
+        /**
+         * List storing time sync offsets.
+         */
+        private final List<Long> timeSyncOffsets = new ArrayList<Long>(TIME_SYNC_REQUESTS);
+
+        /**
+         * TimeSync response which is only stored in case of "too many requests" response, otherwise it's always {@code null}.
+         *
+         * <p>
+         * This is required for e.g. handling 429 response error.
+         * </p>
+         */
+        private TimeSyncResponse response = null;
     }
 }

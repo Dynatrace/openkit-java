@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,22 +38,26 @@ public class BeaconSendingRequestUtilTest {
         context = mock(BeaconSendingContext.class);
         httpClient = mock(HTTPClient.class);
         response = mock(StatusResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.isErroneousResponse()).thenReturn(false);
 
         when(context.getHTTPClient()).thenReturn(httpClient);
+        when(httpClient.sendStatusRequest()).thenReturn(response);
     }
 
     @Test
     public void sendStatusRequestIsAbortedWhenShutdownIsRequested() throws InterruptedException {
 
         // given
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(true);
-        when(httpClient.sendStatusRequest()).thenReturn(null);
 
         // when
         StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 5, 1000L);
 
         // then
-        assertThat(obtained, is(nullValue()));
+        assertThat(obtained, is(sameInstance(response)));
 
         verify(context, times(1)).isShutdownRequested();
         verify(context, times(1)).getHTTPClient();
@@ -66,14 +71,15 @@ public class BeaconSendingRequestUtilTest {
     public void sendStatusRequestIsAbortedIfTheNumberOfRetriesIsExceeded() throws InterruptedException {
 
         // given
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(false);
-        when(httpClient.sendStatusRequest()).thenReturn(null);
 
         // when
         StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 3, 1000L);
 
         // then
-        assertThat(obtained, is(nullValue()));
+        assertThat(obtained, is(sameInstance(response)));
 
         verify(context, times(4)).getHTTPClient();
         verify(context, times(3)).sleep(anyLong());
@@ -83,11 +89,10 @@ public class BeaconSendingRequestUtilTest {
     }
 
     @Test
-    public void sendStatusRequestIsDoneWhenHttpClientReturnsANonNullResponse() throws InterruptedException {
+    public void sendStatusRequestIsDoneWhenHttpClientReturnsASuccessfulResponse() throws InterruptedException {
 
         // given
         when(context.isShutdownRequested()).thenReturn(false);
-        when(httpClient.sendStatusRequest()).thenReturn(response);
 
         // when
         StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 5, 1000L);
@@ -107,15 +112,17 @@ public class BeaconSendingRequestUtilTest {
     public void sleepTimeIsDoubledBetweenConsecutiveRetries() throws InterruptedException {
 
         // given
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(false);
-        when(httpClient.sendStatusRequest()).thenReturn(null);
+        when(httpClient.sendStatusRequest()).thenReturn(response);
         InOrder inOrder = inOrder(context);
 
         // when
         StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 5, 1000L);
 
         // then
-        assertThat(obtained, is(nullValue()));
+        assertThat(obtained, is(sameInstance(response)));
         verify(context, times(6)).getHTTPClient();
         verify(httpClient, times(6)).sendStatusRequest();
 
@@ -126,5 +133,45 @@ public class BeaconSendingRequestUtilTest {
         inOrder.verify(context).sleep(16000L);
     }
 
+    @Test
+    public void sendStatusRequestHandlesNullResponsesSameAsErroneousResponses() throws InterruptedException {
+
+        // given
+        when(context.isShutdownRequested()).thenReturn(false);
+        when(httpClient.sendStatusRequest()).thenReturn(null);
+
+        // when
+        StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 3, 1000L);
+
+        // then
+        assertThat(obtained, is(nullValue()));
+
+        verify(context, times(4)).getHTTPClient();
+        verify(context, times(3)).sleep(anyLong());
+        verify(httpClient, times(4)).sendStatusRequest();
+
+        verifyNoMoreInteractions(httpClient);
+    }
+
+    @Test
+    public void sendStatusRequestReturnsTooManyRequestsResponseImmediately() throws InterruptedException {
+
+        // given
+        when(response.isErroneousResponse()).thenReturn(true);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(context.isShutdownRequested()).thenReturn(false);
+
+        // when
+        StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 3, 1000L);
+
+        // then
+        assertThat(obtained, is(sameInstance(response)));
+
+        verify(context, times(1)).getHTTPClient();
+        verify(context, times(0)).sleep(anyLong());
+        verify(httpClient, times(1)).sendStatusRequest();
+
+        verifyNoMoreInteractions(httpClient);
+    }
 
 }

@@ -30,6 +30,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -265,7 +266,7 @@ public class HTTPClient {
     private Response parseTimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isTimeSyncResponse(response)) {
             try {
-                return new TimeSyncResponse(logger, response, responseCode, headers);
+                return new TimeSyncResponse(logger, response, responseCode, responseHeadersWithLowerCaseKeys(headers));
             }
             catch(Exception e) {
                 logger.error(getClass().getSimpleName() + " parseTimeSyncResponse() - Failed to parse TimeSyncResponse", e);
@@ -281,7 +282,7 @@ public class HTTPClient {
     private Response parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isStatusResponse(response) && !isTimeSyncResponse(response)) {
             try {
-                return new StatusResponse(logger, response, responseCode, headers);
+                return new StatusResponse(logger, response, responseCode, responseHeadersWithLowerCaseKeys(headers));
             }
             catch (Exception e) {
                 logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
@@ -292,6 +293,16 @@ public class HTTPClient {
         // invalid/unexpected response
         logger.warning(getClass().getSimpleName() + " parseStatusResponse() - The HTTPResponse \"" + response + "\" is not a valid status response");
         return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
+    }
+
+    private static Map<String, List<String>> responseHeadersWithLowerCaseKeys(Map<String, List<String>> headers) {
+
+        Map<String, List<String>> result = new HashMap<String, List<String>>(headers.size());
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            result.put(entry.getKey().toLowerCase(), entry.getValue());
+        }
+
+        return Collections.unmodifiableMap(result);
     }
 
     private static  boolean isStatusResponse(String response) {

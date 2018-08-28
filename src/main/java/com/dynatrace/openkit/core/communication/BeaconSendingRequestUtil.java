@@ -42,7 +42,10 @@ class BeaconSendingRequestUtil {
 
         while (true) {
             statusResponse = context.getHTTPClient().sendStatusRequest();
-            if (statusResponse != null || retry >= numRetries || context.isShutdownRequested()) {
+            if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)
+                || BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse) // is handled by the states
+                || retry >= numRetries
+                || context.isShutdownRequested()) {
                 break;
             }
 
@@ -54,4 +57,6 @@ class BeaconSendingRequestUtil {
 
         return statusResponse;
     }
+
+
 }

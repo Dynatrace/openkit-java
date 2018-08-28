@@ -88,7 +88,7 @@ public class Beacon {
     private static final String BEACON_KEY_WEBREQUEST_BYTES_RECEIVED = "br";
 
     // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
-    public static final String CHARSET = "UTF-8";
+    static final String CHARSET = "UTF-8";
 
     // max name length
     private static final int MAX_NAME_LEN = 250;
@@ -624,7 +624,7 @@ public class Beacon {
 
             // send the request
             response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon);
-            if (response == null) {
+            if (response == null || response.isErroneousResponse()) {
                 // error happened - but don't know what exactly
                 // reset the previously retrieved chunk (restore it in internal cache) & retry another time
                 beaconCache.resetChunkedData(sessionNumber);

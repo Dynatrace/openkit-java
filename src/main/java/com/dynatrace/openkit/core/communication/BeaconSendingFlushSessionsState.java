@@ -17,6 +17,8 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.List;
 
@@ -56,10 +58,14 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         }
 
         // flush already finished (and previously ended) sessions
+        boolean tooManyRequestsReceived = false;
         List<SessionWrapper> finishedSessions = context.getAllFinishedAndConfiguredSessions();
         for (SessionWrapper finishedSession : finishedSessions) {
-            if (finishedSession.isDataSendingAllowed()) {
-                finishedSession.sendBeacon(context.getHTTPClientProvider());
+            if (!tooManyRequestsReceived && finishedSession.isDataSendingAllowed()) {
+                StatusResponse response = finishedSession.sendBeacon(context.getHTTPClientProvider());
+                if (BeaconSendingResponseUtil.isTooManyRequestsResponse(response)) {
+                    tooManyRequestsReceived = true;
+                }
             }
             finishedSession.clearCapturedData();
             finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
