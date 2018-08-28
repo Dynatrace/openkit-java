@@ -51,7 +51,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     /**
      * Maximum number of retries
      */
-    static final int MAX_INITIAL_STATUS_REQUEST_RETRIES = 5;
+    private static final int MAX_INITIAL_STATUS_REQUEST_RETRIES = 5;
     static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     /**
@@ -66,29 +66,14 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
-        StatusResponse statusResponse;
-        while (true) {
-            long currentTimestamp = context.getCurrentTimestamp();
-            context.setLastOpenSessionBeaconSendTime(currentTimestamp);
-            context.setLastStatusCheckTime(currentTimestamp);
-
-            statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
-            if (context.isShutdownRequested() || statusResponse != null) {
-                // shutdown was requested or a status response was received
-                break;
-            }
-
-            // status request needs to be sent again after some delay
-            context.sleep(REINIT_DELAY_MILLISECONDS[reinitializeDelayIndex]);
-
-            reinitializeDelayIndex = Math.min(reinitializeDelayIndex + 1, REINIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
-        }
+        // execute the status request until we get a response
+        StatusResponse statusResponse = executeStatusRequest(context);
 
         if (context.isShutdownRequested()) {
             // shutdown was requested -> abort init with failure
             // transition to shutdown state is handled by base class
             context.initCompleted(false);
-        } else if (statusResponse != null) {
+        } else if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
             // success -> continue with time sync
             context.handleStatusResponse(statusResponse);
             context.setNextState(new BeaconSendingTimeSyncState(true));
@@ -108,5 +93,46 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
     @Override
     public String toString() {
         return "Initial";
+    }
+
+    /**
+     * Execute status requests, until a successful response was received or shutdown was requested.
+     *
+     * @param context The state's context
+     * @return The last received status response, which might be erroneous if shutdown has been requested.
+     *
+     * @throws InterruptedException Thrown if the current thread has been interrupted.
+     */
+    private StatusResponse executeStatusRequest(BeaconSendingContext context) throws InterruptedException {
+
+        StatusResponse statusResponse;
+
+        while (true) {
+            long currentTimestamp = context.getCurrentTimestamp();
+            context.setLastOpenSessionBeaconSendTime(currentTimestamp);
+            context.setLastStatusCheckTime(currentTimestamp);
+
+            statusResponse = BeaconSendingRequestUtil.sendStatusRequest(context, MAX_INITIAL_STATUS_REQUEST_RETRIES, INITIAL_RETRY_SLEEP_TIME_MILLISECONDS);
+            if (context.isShutdownRequested() || BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
+                // shutdown was requested or a successful status response was received
+                break;
+            }
+
+            long sleepTime = REINIT_DELAY_MILLISECONDS[reinitializeDelayIndex];
+            if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
+                // in case of too many requests the server might send us a retry-after
+                sleepTime = statusResponse.getRetryAfterInMilliseconds();
+
+                // also temporarily disable capturing to avoid further server overloading
+                context.disableCapture();
+            }
+
+            // status request needs to be sent again after some delay
+            context.sleep(sleepTime);
+
+            reinitializeDelayIndex = Math.min(reinitializeDelayIndex + 1, REINIT_DELAY_MILLISECONDS.length - 1); // ensure no out of bounds
+        }
+
+        return statusResponse;
     }
 }

@@ -40,13 +40,32 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
      */
     private static final int STATUS_REQUEST_RETRIES = 5;
     private static final long INITIAL_RETRY_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+
     /**
      * maximum time to wait till next status check
      */
     private static final long STATUS_CHECK_INTERVAL = TimeUnit.HOURS.toMillis(2);
 
+    /**
+     * Sleep time in milliseconds.
+     */
+    final long sleepTimeInMilliseconds;
+
+    /**
+     * Create CaptureOff state with default sleep behavior.
+     */
     BeaconSendingCaptureOffState() {
+        this(-1L);
+    }
+
+    /**
+     * Create CaptureOff state with explicitly set sleep time.
+     *
+     * @param sleepTimeInMilliseconds The number of milliseconds to sleep.
+     */
+    BeaconSendingCaptureOffState(long sleepTimeInMilliseconds) {
         super(false);
+        this.sleepTimeInMilliseconds = sleepTimeInMilliseconds;
     }
 
     @Override
@@ -57,7 +76,9 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
 
         long currentTime = context.getCurrentTimestamp();
 
-        long delta = STATUS_CHECK_INTERVAL - (currentTime - context.getLastStatusCheckTime());
+        long delta = sleepTimeInMilliseconds > 0
+            ? sleepTimeInMilliseconds
+            : STATUS_CHECK_INTERVAL - (currentTime - context.getLastStatusCheckTime());
         if (delta > 0 && !context.isShutdownRequested()) {
             context.sleep(delta);
         }
@@ -76,13 +97,19 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
     private static void handleStatusResponse(BeaconSendingContext context, StatusResponse statusResponse) {
 
         if (statusResponse != null) {
+            // handle status response, even if it's erroneous
+            // if it's an erroneous response capturing is disabled
             context.handleStatusResponse(statusResponse);
         }
-        // if initial time sync failed before
-        if (context.isTimeSyncSupported() && !context.isTimeSynced()) {
-            // then retry initial time sync
+
+        if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
+            // received "too many requests" response
+            // in this case stay in capture off state and use the retry-after delay for sleeping
+            context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
+        } else if (context.isTimeSyncSupported() && !context.isTimeSynced()) {
+            // if initial time sync failed before, then retry initial time sync
             context.setNextState(new BeaconSendingTimeSyncState(true));
-        } else if (statusResponse != null && context.isCaptureOn()) {
+        } else if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse) && context.isCaptureOn()) {
             // capturing is re-enabled again, but only if we received a response from the server
             context.setNextState(new BeaconSendingCaptureOnState());
         }

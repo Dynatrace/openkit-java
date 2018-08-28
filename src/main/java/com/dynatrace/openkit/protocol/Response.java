@@ -39,9 +39,19 @@ public abstract class Response {
     }
 
     /**
+     * Response code sent by HTTP server to indicate success.
+     */
+    public static final int HTTP_OK = 200;
+
+    /**
      * Bad request is error code 400 in the HTTP protocol.
      */
-    private static final int HTTP_BAD_REQUEST = 400;
+    public static final int HTTP_BAD_REQUEST = 400;
+
+    /**
+     * Too many requests sent by client (rate limiting) error code.
+     */
+    public static final int HTTP_TOO_MANY_REQUESTS = 429;
 
     /**
      * Key in the HTTP response headers for Retry-After

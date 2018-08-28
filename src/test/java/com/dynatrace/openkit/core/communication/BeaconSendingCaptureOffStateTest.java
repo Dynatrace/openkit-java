@@ -17,10 +17,15 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -28,13 +33,16 @@ import static org.mockito.Mockito.*;
 
 public class BeaconSendingCaptureOffStateTest {
 
+    private HTTPClient httpClient;
     private BeaconSendingContext mockContext;
 
     @Before
     public void setUp() {
         StatusResponse mockResponse = mock(StatusResponse.class);
+        when(mockResponse.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(mockResponse.isErroneousResponse()).thenReturn(false);
 
-        HTTPClient httpClient = mock(HTTPClient.class);
+        httpClient = mock(HTTPClient.class);
         when(httpClient.sendStatusRequest()).thenReturn(mockResponse);
 
         mockContext = mock(BeaconSendingContext.class);
@@ -49,6 +57,16 @@ public class BeaconSendingCaptureOffStateTest {
 
         //verify that BeaconSendingCaptureOffState is not a terminal state
         assertThat(target.isTerminalState(), is(false));
+    }
+
+    @Test
+    public void toStringReturnsTheStateName() {
+
+        // given
+        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
+
+        // then
+        assertThat(target.toString(), is(equalTo("CaptureOff")));
     }
 
     @Test
@@ -70,7 +88,7 @@ public class BeaconSendingCaptureOffStateTest {
         when(mockContext.isTimeSynced()).thenReturn(false);
 
         // when calling execute
-        target.doExecute(mockContext);
+        target.execute(mockContext);
 
         // then verify that capturing is set to disabled
         verify(mockContext, times(1)).disableCapture();
@@ -88,7 +106,7 @@ public class BeaconSendingCaptureOffStateTest {
         when(mockContext.isCaptureOn()).thenReturn(true);
 
         // when calling execute
-        target.doExecute(mockContext);
+        target.execute(mockContext);
 
         // then verify that capturing is set to disabled
         verify(mockContext, times(1)).disableCapture();
@@ -109,7 +127,7 @@ public class BeaconSendingCaptureOffStateTest {
         when(mockContext.isTimeSynced()).thenReturn(false);
 
         // when calling execute
-        target.doExecute(mockContext);
+        target.execute(mockContext);
 
         // then verify that capturing is set to disabled
         verify(mockContext, times(1)).disableCapture();
@@ -119,5 +137,47 @@ public class BeaconSendingCaptureOffStateTest {
         verify(mockContext, times(1)).sleep(7200000);//wait for two hours
         // verify that after sleeping the transition to BeaconSendingTimeSyncState works
         verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
+    }
+
+    @Test
+    public void aBeaconSendingCaptureOffStateWaitsForGivenTime() throws InterruptedException {
+
+        //given
+        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState(12345L);
+        when(mockContext.isTimeSyncSupported()).thenReturn(true);
+        when(mockContext.isCaptureOn()).thenReturn(true);
+
+        // when calling execute
+        target.execute(mockContext);
+
+        // then verify the custom amount of time was waited
+        verify(mockContext, times(1)).sleep(12345L);//wait for custom time
+    }
+
+    @Test
+    public void aBeaconSendingCaptureOffStateStaysInOffStateWhenServerRespondsWithTooManyRequests() throws InterruptedException {
+
+        //given
+        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState(12345L);
+
+        StatusResponse tooManyRequestsResponse = mock(StatusResponse.class);
+        when(tooManyRequestsResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
+        when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
+        when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
+        when(mockContext.isTimeSyncSupported()).thenReturn(false);
+        when(mockContext.isCaptureOn()).thenReturn(false);
+        ArgumentCaptor<BeaconSendingCaptureOffState> stateCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);
+
+        // when calling execute
+        target.execute(mockContext);
+
+        // then verify next state
+        verify(mockContext, times(1)).setNextState(stateCaptor.capture());
+
+        // get captured state
+        List<BeaconSendingCaptureOffState> capturedStates = stateCaptor.getAllValues();
+        BeaconSendingCaptureOffState capturedState = capturedStates.get(0);
+        assertThat(capturedState.sleepTimeInMilliseconds, is(equalTo(1234L * 1000L)));
     }
 }

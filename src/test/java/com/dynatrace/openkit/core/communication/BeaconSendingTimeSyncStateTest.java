@@ -18,10 +18,12 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.TimeSyncResponse;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
 import java.util.Collections;
@@ -51,7 +53,7 @@ public class BeaconSendingTimeSyncStateTest {
         // by default true is returned
         when(timingProvider.isTimeSyncSupported()).thenReturn(true);
 
-        when(stateContext.isTimeSyncSupported()).thenReturn(true); // by set time sync support to enabled
+        when(stateContext.isTimeSyncSupported()).thenReturn(true); // set time sync support to enabled
         when(stateContext.getLastTimeSyncTime()).thenReturn(-1L);
         when(stateContext.getHTTPClient()).thenReturn(httpClient);
     }
@@ -64,6 +66,16 @@ public class BeaconSendingTimeSyncStateTest {
 
         // when/then
         assertThat(target.isTerminalState(), is(false));
+    }
+
+    @Test
+    public void toStringReturnsTheStateName() {
+
+        // given
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // then
+        assertThat(target.toString(), is(equalTo("TimeSync")));
     }
 
     @Test
@@ -199,6 +211,24 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeSyncRequestsAreInterruptedAfterUnsuccessfulRetries() {
 
         // given
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(response); // unsuccessful
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when
+        target.execute(stateContext);
+
+        // then
+        verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS + 1)).sendTimeSyncRequest();
+    }
+
+    @Test
+    public void timeSyncRequestsAreInterruptedAfterUnsuccessfulRetriesWithNullResponse() {
+
+        // given
         when(httpClient.sendTimeSyncRequest()).thenReturn(null); // unsuccessful
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
@@ -214,7 +244,10 @@ public class BeaconSendingTimeSyncStateTest {
     public void sleepTimeDoublesBetweenConsecutiveTimeSyncRequests() throws InterruptedException {
 
         // given
-        when(httpClient.sendTimeSyncRequest()).thenReturn(null); // unsuccessful
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(response); // unsuccessful
         InOrder inOrder = inOrder(stateContext);
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
@@ -235,24 +268,27 @@ public class BeaconSendingTimeSyncStateTest {
     public void sleepTimeIsResetToInitialValueAfterASuccessfulTimeSyncResponse() throws InterruptedException {
 
         // given
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         when(httpClient.sendTimeSyncRequest())
             // first time sync request (1 retry)
-            .thenReturn(null)
+            .thenReturn(response)
             .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=6&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=7", 200, Collections.<String, List<String>>emptyMap()))
             // second time sync request (2 retries)
-            .thenReturn(null)
-            .thenReturn(null)
+            .thenReturn(response)
+            .thenReturn(response)
             .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=20&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=22", 200, Collections.<String, List<String>>emptyMap()))
             // third time sync request (3 retries)
-            .thenReturn(null)
-            .thenReturn(null)
-            .thenReturn(null)
+            .thenReturn(response)
+            .thenReturn(response)
+            .thenReturn(response)
             .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=40&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=41", 200, Collections.<String, List<String>>emptyMap()))
             // fourth time sync request (4 retries)
-            .thenReturn(null)
-            .thenReturn(null)
-            .thenReturn(null)
-            .thenReturn(null)
+            .thenReturn(response)
+            .thenReturn(response)
+            .thenReturn(response)
+            .thenReturn(response)
             .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=48&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=50", 200, Collections.<String, List<String>>emptyMap()))
             // fifth time sync request (0 retries)
             .thenReturn(new TimeSyncResponse(mockLogger, TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=60&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=61", 200, Collections.<String, List<String>>emptyMap()));
@@ -446,8 +482,11 @@ public class BeaconSendingTimeSyncStateTest {
     public void timeProviderInitializeIsCalledIfItIsAnInitialTimeSyncEvenWhenResponseIsErroneous() {
 
         // given
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         timingProvider.initialize(42, true); // explicitly initialize TimeProvider (verify that it's changed later)
-        when(httpClient.sendTimeSyncRequest()).thenReturn(null);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(response);
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
 
@@ -462,8 +501,11 @@ public class BeaconSendingTimeSyncStateTest {
     public void stateTransitionToCaptureOffIsPerformedIfTimeSyncIsSupportedButFailed() {
 
         // given
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(null);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(response);
 
         BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
 
@@ -541,12 +583,15 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
-    public void stateTransitionToInitIsMadeIfInitialTimeSyncFails() {
+    public void stateTransitionToCaptureOffIsMadeIfInitialTimeSyncFails() {
 
         // given
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.isErroneousResponse()).thenReturn(true);
         when(stateContext.isTimeSyncSupported()).thenReturn(true);
         when(stateContext.isCaptureOn()).thenReturn(true);
-        when(httpClient.sendTimeSyncRequest()).thenReturn(null);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(response);
         when(stateContext.getCurrentTimestamp()).thenReturn(2L)
                                                 .thenReturn(8L)
                                                 .thenReturn(10L)
@@ -565,7 +610,33 @@ public class BeaconSendingTimeSyncStateTest {
         target.execute(stateContext);
 
         // then
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(AbstractBeaconSendingState.class));
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingInitState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
+    }
+
+    @Test
+    public void stateTransitionToCaptureOffIsMadeIfTooManyRequestsResponseIsReceived() {
+
+        // given
+        TimeSyncResponse response = mock(TimeSyncResponse.class);
+        when(response.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(response.isErroneousResponse()).thenReturn(true);
+        when(response.getRetryAfterInMilliseconds()).thenReturn(456L * 1000L);
+        when(stateContext.isTimeSyncSupported()).thenReturn(true);
+        when(stateContext.isCaptureOn()).thenReturn(true);
+        when(httpClient.sendTimeSyncRequest()).thenReturn(response);
+
+        ArgumentCaptor<BeaconSendingCaptureOffState> argumentCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState(true);
+
+        // when
+        target.execute(stateContext);
+
+        // then
+        verify(stateContext, times(1)).setNextState(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getAllValues().size(), is(equalTo(1)));
+        assertThat(argumentCaptor.getAllValues().get(0).sleepTimeInMilliseconds, is(equalTo(456L * 1000L)));
+
     }
 }
