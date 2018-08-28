@@ -15,6 +15,8 @@ group 'com.dynatrace.openkit'
 version '1.2.0-SNAPSHOT'
 
 def groupString = group
+def title = 'Dynatrace OpenKit SDK for Java'
+def vendor = 'Dynatrace LLC'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -51,8 +53,6 @@ jar {
         classifier = 'java' + target
     }
 
-    def vendor = 'Dynatrace LLC'
-
     // split version into specification & implementation version
     def specVersion = version
     def implVersion = ''
@@ -72,7 +72,7 @@ jar {
 
     manifest {
         attributes 'Name': "${name}/",
-                'Specification-Title': 'Dynatrace OpenKit SDK for Java',
+                'Specification-Title': title,
                 'Specification-Version': specVersion,
                 'Specification-Vendor': vendor,
                 'Implementation-Title': groupString,
