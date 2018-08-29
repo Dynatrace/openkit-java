@@ -1,23 +1,22 @@
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
-  }
-  dependencies {
-    classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-    classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.3.0'
-    classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
-  }
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.3.0'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+    }
 }
 
 group 'com.dynatrace.openkit'
 version '1.2.0-SNAPSHOT'
 
-def buildNumber = System.getenv()['BUILD_NUMBER']
-if (version.endsWith('-SNAPSHOT') && buildNumber != null) {
-  version version + '-' + buildNumber
-}
+def groupString = group
+def title = 'Dynatrace OpenKit SDK for Java'
+def vendor = 'Dynatrace LLC'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -36,7 +35,6 @@ def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
 sourceCompatibility = 1.6
 targetCompatibility = "1." + target
 
-
 dependencies {
     signature 'org.codehaus.mojo.signature:java16:1.1@signature'
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -54,11 +52,32 @@ jar {
         classifier = 'java' + target
     }
 
+    // split version into specification & implementation version
+    def specVersion = version
+    def implVersion = ''
+    def splitIndex = version.indexOf('-')
+    if (splitIndex != -1) {
+        implVersion = version.substring(splitIndex + 1)
+        specVersion = version.take(splitIndex)
+    }
+
+    // append build information to the spec version
+    def buildNumber = System.getenv()['BUILD_NUMBER']
+    if (buildNumber != null) {
+        implVersion = "${implVersion}-b${buildNumber}"
+    }
+
+    def name = groupString.replaceAll('\\.', '/')
+
     manifest {
-      attributes 'Specification-Title': 'Dynatrace OpenKit SDK for Java',
-				'Specification-Version': version,
-				'Specification-Vendor': 'Dynatrace LLC',
-				'url': 'https://github.com/Dynatrace/openkit-java'
+        attributes 'Name': "${name}/",
+                'Specification-Title': title,
+                'Specification-Version': specVersion,
+                'Specification-Vendor': vendor,
+                'Implementation-Title': groupString,
+                'Implementation-Version': implVersion,
+                'Implementation-Vendor': vendor,
+                'url': 'https://github.com/Dynatrace/openkit-java'
     }
 }
 
@@ -101,8 +120,8 @@ task javadocZip(type: Zip, dependsOn: javadoc) {
 }
 
 task javadocJar(type: Jar) {
-	classifier = 'javadoc'
-	from javadoc
+    classifier = 'javadoc'
+    from javadoc
 }
 
 artifacts {
@@ -110,24 +129,29 @@ artifacts {
 }
 
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifactId project.name
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId project.name
 
-			from components.java
+            from components.java
 
-			artifact sourceJar {
-				classifier "sources"
-			}
-			artifact javadocJar {
-				classifier "javadoc"
-			}
-		}
-	}
+            artifact sourceJar {
+                classifier "sources"
+            }
+            artifact javadocJar {
+                classifier "javadoc"
+            }
+        }
+    }
 }
 
 task printVersion {
-  doLast {
-    logger.quiet version
-  }
+    doLast {
+        def buildNumber = System.getenv()['BUILD_NUMBER']
+        if (buildNumber != null) {
+            logger.quiet "${version}-b${buildNumber}"
+        } else {
+            logger.quiet version
+        }
+    }
 }

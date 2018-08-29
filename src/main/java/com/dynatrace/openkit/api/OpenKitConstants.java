@@ -16,6 +16,10 @@
 
 package com.dynatrace.openkit.api;
 
+import java.net.URL;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 /**
  * Defines constant values used in OpenKit
  */
@@ -35,9 +39,37 @@ public class OpenKitConstants {
     public static final String WEBREQUEST_TAG_HEADER = "X-dynaTrace";
 
     // default values used in configuration
-    public static final String DEFAULT_APPLICATION_VERSION = "1.2.0";
-    public static final String DEFAULT_OPERATING_SYSTEM = "OpenKit " + DEFAULT_APPLICATION_VERSION;
-    public static final String DEFAULT_MANUFACTURER = "Dynatrace";
+    public static final String DEFAULT_APPLICATION_VERSION;
+    public static final String DEFAULT_OPERATING_SYSTEM;
+    public static final String DEFAULT_MANUFACTURER;
     public static final String DEFAULT_MODEL_ID = "OpenKitDevice";
 
+    // load default version and vendor information from MANIFEST.MF
+    static {
+
+        String specificationVersion = "<unknown version>";
+        String implementationVersion = "<unknown version>";
+        String implementationVendor = "Dynatrace";
+
+        try {
+            Class clazz = OpenKitConstants.class;
+            String className = clazz.getSimpleName() + ".class";
+            String classPath = clazz.getResource(className).toString();
+            if (classPath.startsWith("jar")) {
+                String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
+                Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+                Attributes attr = manifest.getMainAttributes();
+
+                specificationVersion = attr.getValue("Specification-Version");
+                implementationVersion = attr.getValue("Implementation-Version");
+                implementationVendor = attr.getValue("Implementation-Vendor");
+            }
+        } catch (Exception e) {
+            // intentionally left empty
+        }
+
+        DEFAULT_APPLICATION_VERSION = specificationVersion + "-" + implementationVersion;
+        DEFAULT_OPERATING_SYSTEM = "OpenKit " + DEFAULT_APPLICATION_VERSION;
+        DEFAULT_MANUFACTURER = implementationVendor;
+    }
 }
