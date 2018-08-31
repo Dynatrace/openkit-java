@@ -2,8 +2,15 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.1.0...HEAD)
 
+### Added
+- Server overload prevention  
+  Additional HTTP 429 response code handling
+
 ### Changed
 - Fix wrong Session start time
+
+### Improved
+- OpenKit internal version handling
 
 ## 1.1.0 [Release date: 2018-07-20]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.1.0)
