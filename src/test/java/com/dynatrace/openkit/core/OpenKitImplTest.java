@@ -43,6 +43,7 @@ import static org.mockito.Mockito.when;
 public class OpenKitImplTest {
 
     private static final String APP_ID = "appID";
+    private static final String DEVICE_ID = "deviceID";
     private static final String APP_NAME = "appName";
 
     private Logger logger;
@@ -55,6 +56,7 @@ public class OpenKitImplTest {
 
         config = mock(Configuration.class);
         when(config.getApplicationID()).thenReturn(APP_ID);
+        when(config.getDeviceID()).thenReturn(DEVICE_ID);
         when(config.getApplicationName()).thenReturn(APP_NAME);
         when(config.getDevice()).thenReturn(new Device("", "", ""));
         when(config.isCapture()).thenReturn(true);

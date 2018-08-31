@@ -38,6 +38,17 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
      * @param deviceID        unique device id
      */
     public AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID) {
+        this(endpointURL, applicationName, Long.toString(deviceID));
+    }
+
+    /**
+     * Creates a new instance of type AppMonOpenKitBuilder
+     *
+     * @param endpointURL     endpoint OpenKit connects to
+     * @param applicationName unique application id
+     * @param deviceID        unique device id, truncated to 250 characters
+     */
+    public AppMonOpenKitBuilder(String endpointURL, String applicationName, String deviceID) {
         super(endpointURL, deviceID);
         this.applicationName = applicationName;
     }

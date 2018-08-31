@@ -46,7 +46,7 @@ public class ConfigurationTest {
     }
 
     private Configuration getDynatraceConfig(String tenantURL) {
-        return new Configuration(OpenKitType.DYNATRACE, applicationName, "", 17, tenantURL,
+        return new Configuration(OpenKitType.DYNATRACE, applicationName, "", "17", tenantURL,
                 new DefaultSessionIDProvider(), new SSLStrictTrustManager(), new Device("", "", ""), applicationVersion,
             new BeaconCacheConfiguration(-1, -1, -1),
             new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));

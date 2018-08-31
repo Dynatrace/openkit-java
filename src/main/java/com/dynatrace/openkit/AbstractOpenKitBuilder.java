@@ -34,7 +34,7 @@ public abstract class AbstractOpenKitBuilder {
 
     // immutable fields
     private final String endpointURL;
-    private final long deviceID;
+    private final String deviceID;
 
     // mutable fields
     private Logger logger;
@@ -56,7 +56,7 @@ public abstract class AbstractOpenKitBuilder {
      * @param endpointURL endpoint OpenKit connects to
      * @param deviceID    unique device id
      */
-    AbstractOpenKitBuilder(String endpointURL, long deviceID) {
+    AbstractOpenKitBuilder(String endpointURL, String deviceID) {
         this.endpointURL = endpointURL;
         this.deviceID = deviceID;
     }
@@ -273,7 +273,7 @@ public abstract class AbstractOpenKitBuilder {
         return endpointURL;
     }
 
-    long getDeviceID() {
+    String getDeviceID() {
         return deviceID;
     }
 
