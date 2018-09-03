@@ -299,7 +299,9 @@ public class HTTPClient {
 
         Map<String, List<String>> result = new HashMap<String, List<String>>(headers.size());
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            result.put(entry.getKey().toLowerCase(), entry.getValue());
+            if (entry.getKey() != null && entry.getValue() != null) {
+                result.put(entry.getKey().toLowerCase(), entry.getValue());
+            }
         }
 
         return Collections.unmodifiableMap(result);
