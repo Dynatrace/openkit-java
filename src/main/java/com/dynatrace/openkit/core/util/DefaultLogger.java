@@ -30,7 +30,7 @@ public class DefaultLogger implements Logger {
     private final boolean verbose;
     private final PrintStream outputStream;
 
-    static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     static {
         DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
