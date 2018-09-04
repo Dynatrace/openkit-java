@@ -122,7 +122,7 @@ public class OpenKitBuilderTest {
         Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration();
 
         assertThat(target.getApplicationName(), is(equalTo(APP_NAME)));
-        assertThat(target.getApplicationName(), is(equalTo(target.getApplicationID())));
+        assertThat(target.getApplicationID(), is(equalTo(APP_NAME)));
     }
 
     @Test
