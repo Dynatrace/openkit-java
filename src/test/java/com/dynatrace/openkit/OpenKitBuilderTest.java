@@ -26,6 +26,7 @@ import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import sun.security.krb5.Config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -45,12 +46,54 @@ public class OpenKitBuilderTest {
 
     @Test
     public void defaultsAreSetForAppMon() {
-        verifyDefaultsAreSet(new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).buildConfiguration());
+
+        // when
+        Configuration obtained = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration();
+
+        // then
+        assertThat(obtained.getEndpointURL(), is(equalTo(ENDPOINT)));
+        assertThat(obtained.getDeviceID(), is(equalTo("1234")));
+        assertThat(obtained.getApplicationName(), is(equalTo(APP_NAME)));
+        assertThat(obtained.getApplicationID(), is(equalTo(APP_NAME)));
+
+        // ensure remaining defaults
+        verifyDefaultsAreSet(obtained);
+    }
+
+    @Test
+    public void appMonOpenKitBuilderTakesStringDeviceID() {
+
+        // given
+        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, "stringDeviceID");
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo("stringDeviceID")));
     }
 
     @Test
     public void defaultsAreSetForDynatrace() {
-        verifyDefaultsAreSet(new DynatraceOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration());
+
+        // when
+        Configuration obtained = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).buildConfiguration();
+
+        // then
+        assertThat(obtained.getEndpointURL(), is(equalTo(ENDPOINT)));
+        assertThat(obtained.getDeviceID(), is(equalTo("1234")));
+        assertThat(obtained.getApplicationName(), is(equalTo("")));
+        assertThat(obtained.getApplicationID(), is(equalTo(APP_ID)));
+
+        // ensure remaining defaults
+        verifyDefaultsAreSet(obtained);
+    }
+
+    @Test
+    public void dynatraceOpenKitBuilderTakesStringDeviceID() {
+
+        // given
+        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, "stringDeviceID");
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo("stringDeviceID")));
     }
 
     private void verifyDefaultsAreSet(Configuration configuration) {
