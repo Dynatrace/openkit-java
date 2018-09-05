@@ -1,6 +1,6 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.1.1...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.1.1...HEAD)
 
 ### Changed
 - Fix wrong SimpleDatePattern, which does not work with Java 6
