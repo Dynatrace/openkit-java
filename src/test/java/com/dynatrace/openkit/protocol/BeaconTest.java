@@ -1023,7 +1023,7 @@ public class BeaconTest {
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
         verify(mockConfiguration, times(0)).getDeviceID();
-        verify(mockRandom, times(2)).nextLong();
+        verify(mockRandom, times(1)).nextLong();
     }
 
     @Test
@@ -1046,7 +1046,7 @@ public class BeaconTest {
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
         verify(mockConfiguration, times(0)).getDeviceID();
-        verify(mockRandom, times(2)).nextLong();
+        verify(mockRandom, times(1)).nextLong();
     }
 
     @Test
@@ -1069,7 +1069,7 @@ public class BeaconTest {
         long visitorID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
-        verify(mockConfiguration, times(2)).getDeviceID();
+        verify(mockConfiguration, times(1)).getDeviceID();
         verifyNoMoreInteractions(mockRandom);
         assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
     }
@@ -1094,9 +1094,10 @@ public class BeaconTest {
         //when
         long visitorID = target.getDeviceID();
 
-        //then verify that device id is taken from configuration
-        verify(mockRandom, times(2)).nextLong();
-        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
+        //then verify that the id is positive regardless of the data collection level
+        verify(mockRandom, times(1)).nextLong();
+        assertThat(visitorID, is(greaterThanOrEqualTo(0L)));
+        assertThat(visitorID, is(equalTo(-123456789L & Long.MAX_VALUE)));
     }
 
     @Test
@@ -1119,9 +1120,10 @@ public class BeaconTest {
         //when
         long visitorID = target.getDeviceID();
 
-        //then verify that the id is positive regardless of the
-        verify(mockRandom, times(2)).nextLong();
-        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
+        //then verify that the id is positive regardless of the data collection level
+        verify(mockRandom, times(1)).nextLong();
+        assertThat(visitorID, is(greaterThanOrEqualTo(0L)));
+        assertThat(visitorID, is(equalTo(-123456789L & Long.MAX_VALUE)));
     }
 
     @Test
