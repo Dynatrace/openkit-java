@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 public class DefaultLoggerTest {
 
     private static final String CHARSET = "UTF-8";
+    private static final String LOGGER_DATE_TIME_PATTERN = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}";
 
     private ByteArrayOutputStream byteArrayOutputStream;
     private PrintStream printStream;
@@ -66,7 +67,7 @@ public class DefaultLoggerTest {
         String obtained = byteArrayOutputStream.toString(CHARSET).trim();
 
         // then
-        assertThat(Pattern.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3} \\[ERROR] Error message$", obtained),
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[ERROR] Error message$", obtained),
             is(true));
     }
 
@@ -83,7 +84,7 @@ public class DefaultLoggerTest {
 
         // then
         assertThat(obtained.length, is(equalTo(2)));
-        assertThat(Pattern.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3} \\[ERROR] Error message$", obtained[0]),
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[ERROR] Error message$", obtained[0]),
             is(true));
 
         final StringWriter stringWriter = new StringWriter();
@@ -104,7 +105,7 @@ public class DefaultLoggerTest {
         String obtained = byteArrayOutputStream.toString(CHARSET).trim();
 
         // then
-        assertThat(Pattern.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3} \\[WARN ] Warning message$", obtained),
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[WARN ] Warning message$", obtained),
             is(true));
     }
 
@@ -119,7 +120,7 @@ public class DefaultLoggerTest {
         String obtained = byteArrayOutputStream.toString(CHARSET).trim();
 
         // then
-        assertThat(Pattern.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3} \\[INFO ] Info message$", obtained),
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[INFO ] Info message$", obtained),
             is(true));
     }
 
@@ -148,7 +149,7 @@ public class DefaultLoggerTest {
         String obtained = byteArrayOutputStream.toString(CHARSET).trim();
 
         // then
-        assertThat(Pattern.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3} \\[DEBUG] Debug message$", obtained),
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[DEBUG] Debug message$", obtained),
             is(true));
     }
 
