@@ -56,6 +56,16 @@ public abstract class AbstractOpenKitBuilder {
      * @param endpointURL endpoint OpenKit connects to
      * @param deviceID    unique device id
      */
+    AbstractOpenKitBuilder(String endpointURL, long deviceID) {
+        this(endpointURL, Long.toString(deviceID));
+    }
+
+    /**
+     * Creates a new instance of type AbstractOpenKitBuilder
+     *
+     * @param endpointURL endpoint OpenKit connects to
+     * @param deviceID    unique device id
+     */
     AbstractOpenKitBuilder(String endpointURL, String deviceID) {
         this.endpointURL = endpointURL;
         this.deviceID = deviceID;
