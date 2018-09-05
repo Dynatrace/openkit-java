@@ -8,6 +8,7 @@
 
 ### Changed
 - Fix wrong Session start time
+- Fix wrong SimpleDatePattern, which does not work with Java 6
 
 ### Improved
 - OpenKit internal version handling
