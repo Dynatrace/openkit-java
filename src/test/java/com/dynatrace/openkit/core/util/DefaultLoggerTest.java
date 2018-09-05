@@ -16,83 +16,210 @@
 
 package com.dynatrace.openkit.core.util;
 
-import com.dynatrace.openkit.core.util.DefaultLogger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
+import java.io.*;
+import java.util.regex.Pattern;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyString;
 
 public class DefaultLoggerTest {
+
+    private static final String CHARSET = "UTF-8";
+    private static final String LOGGER_DATE_TIME_PATTERN = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}";
+
+    private ByteArrayOutputStream byteArrayOutputStream;
+    private PrintStream printStream;
+
+    @Before
+    public void setUp() throws UnsupportedEncodingException {
+        byteArrayOutputStream = new ByteArrayOutputStream();
+        printStream = new PrintStream(byteArrayOutputStream, true, CHARSET);
+    }
+
+    @After
+    public void tearDown() {
+        printStream.close();
+    }
 
     @Test
     public void defaultLoggerWithVerboseOutputWritesErrorLevelMessages() {
         //given
-        DefaultLogger log = new DefaultLogger(true);
+        DefaultLogger target = new DefaultLogger(true);
 
         //then
-        assertThat(log.isErrorEnabled(), is(true));
+        assertThat(target.isErrorEnabled(), is(true));
     }
 
     @Test
-    public void defaultLoggerWithVerboseOutputWritesWarnLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(true);
+    public void errorLogsAppropriateMessage() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isWarnEnabled(), is(true));
+        //given
+        DefaultLogger target = new DefaultLogger(true, printStream);
+
+        // when
+        target.error("Error message");
+        String obtained = byteArrayOutputStream.toString(CHARSET).trim();
+
+        // then
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[ERROR] Error message$", obtained),
+            is(true));
     }
 
     @Test
-    public void defaultLoggerWithVerboseOutputWritesInfoLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(true);
+    public void errorWithStacktraceLogsAppropriateMessage() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isInfoEnabled(), is(true));
+        //given
+        Exception e = new Exception("test exception");
+        DefaultLogger target = new DefaultLogger(true, printStream);
+
+        // when
+        target.error("Error message", e);
+        String[] obtained = byteArrayOutputStream.toString(CHARSET).trim().split(System.getProperty("line.separator"), 2);
+
+        // then
+        assertThat(obtained.length, is(equalTo(2)));
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[ERROR] Error message$", obtained[0]),
+            is(true));
+
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        e.printStackTrace(printWriter);
+        final String expectedStacktrace = stringWriter.getBuffer().toString().trim();
+        assertThat(obtained[1], is(equalTo(expectedStacktrace)));
     }
 
     @Test
-    public void defaultLoggerWithVerboseOutputWritesDebugLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(true);
+    public void warningLogsAppropriateMessage() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isDebugEnabled(), is(true));
+        //given
+        DefaultLogger target = new DefaultLogger(true, printStream);
+
+        // when
+        target.warning("Warning message");
+        String obtained = byteArrayOutputStream.toString(CHARSET).trim();
+
+        // then
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[WARN ] Warning message$", obtained),
+            is(true));
     }
 
     @Test
-    public void defaultLoggerWithoutVerboseOutputWritesErrorLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(false);
+    public void infoLogsAppropriateMessage() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isErrorEnabled(), is(true));
+        //given
+        DefaultLogger target = new DefaultLogger(true, printStream);
+
+        // when
+        target.info("Info message");
+        String obtained = byteArrayOutputStream.toString(CHARSET).trim();
+
+        // then
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[INFO ] Info message$", obtained),
+            is(true));
     }
 
     @Test
-    public void defaultLoggerWithoutVerboseOutputWritesWarnLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(false);
+    public void infoDoesNotLogIfVerboseIsDisabled() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isWarnEnabled(), is(true));
+        //given
+        DefaultLogger target = new DefaultLogger(false, printStream);
+
+        // when
+        target.info("Info message");
+        String obtained = byteArrayOutputStream.toString(CHARSET);
+
+        // then
+        assertThat(obtained, isEmptyString());
     }
 
     @Test
-    public void defaultLoggerWithoutVerboseOutputWritesInfoLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(false);
+    public void debugLogsAppropriateMessage() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isInfoEnabled(), is(false));
+        //given
+        DefaultLogger target = new DefaultLogger(true, printStream);
+
+        // when
+        target.debug("Debug message");
+        String obtained = byteArrayOutputStream.toString(CHARSET).trim();
+
+        // then
+        assertThat(Pattern.matches("^" + LOGGER_DATE_TIME_PATTERN + " \\[DEBUG] Debug message$", obtained),
+            is(true));
     }
 
     @Test
-    public void defaultLoggerWithoutVerboseOutputWritesDebugLevelMessages() {
-        //given
-        DefaultLogger log = new DefaultLogger(false);
+    public void debugDoesNotLogIfVerboseIsDisabled() throws UnsupportedEncodingException {
 
-        //then
-        assertThat(log.isDebugEnabled(), is(false));
+        //given
+        DefaultLogger target = new DefaultLogger(false, printStream);
+
+        // when
+        target.debug("Debug message");
+        String obtained = byteArrayOutputStream.toString(CHARSET);
+
+        // then
+        assertThat(obtained, isEmptyString());
+    }
+
+    @Test
+    public void isErrorEnabledIsTrueIfVerboseIsTrue() {
+
+        // then
+        assertThat(new DefaultLogger(true).isErrorEnabled(), is(true));
+    }
+
+    @Test
+    public void isErrorEnabledIsTrueIfVerboseIsFalse() {
+
+        // then
+        assertThat(new DefaultLogger(false).isErrorEnabled(), is(true));
+    }
+
+    @Test
+    public void isWarnEnabledIsTrueIfVerboseIsTrue() {
+
+        // then
+        assertThat(new DefaultLogger(true).isWarnEnabled(), is(true));
+    }
+
+    @Test
+    public void isWarnEnabledIsTrueIfVerboseIsFalse() {
+
+        // then
+        assertThat(new DefaultLogger(false).isWarnEnabled(), is(true));
+    }
+
+    @Test
+    public void isInfoEnabledIsTrueIfVerboseIsTrue() {
+
+        // then
+        assertThat(new DefaultLogger(true).isInfoEnabled(), is(true));
+    }
+
+    @Test
+    public void isInfoEnabledIsFalseIfVerboseIsFalse() {
+
+        // then
+        assertThat(new DefaultLogger(false).isInfoEnabled(), is(false));
+    }
+
+    @Test
+    public void isDebugEnabledIsTrueIfVerboseIsTrue() {
+
+        // then
+        assertThat(new DefaultLogger(true).isDebugEnabled(), is(true));
+    }
+
+    @Test
+    public void isDebugEnabledIsFalseIfVerboseIsFalse() {
+
+        // then
+        assertThat(new DefaultLogger(false).isDebugEnabled(), is(false));
     }
 }
