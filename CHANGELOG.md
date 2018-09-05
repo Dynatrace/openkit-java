@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.1.1...HEAD)
 
+### Changed
+- Fix wrong SimpleDatePattern, which does not work with Java 6
+
 ## 1.1.1 [Release date: 2018-09-03]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.1.1)
 
