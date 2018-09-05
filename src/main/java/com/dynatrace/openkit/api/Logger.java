@@ -61,28 +61,28 @@ public interface Logger {
     /**
      * Return a flag if 'error' level messages are currently printed
      *
-     * @return true if 'error' level messages are printed, 'false' if not
+     * @return {@code true} if 'error' level messages are printed, {@code false} if not
      */
     boolean isErrorEnabled();
 
     /**
      * Return a flag if 'warn' level messages are currently printed
      *
-     * @return true if 'warn' level messages are printed, 'false' if not
+     * @return {@code true} if 'warn' level messages are printed, {@code false} if not
      */
     boolean isWarnEnabled();
 
     /**
      * Return a flag if 'info' level messages are currently printed
      *
-     * @return true if 'info' level messages are printed, 'false' if not
+     * @return {@code true} if 'info' level messages are printed, {@code false} if not
      */
     boolean isInfoEnabled();
 
     /**
      * Return a flag if 'debug' level messages are currently printed
      *
-     * @return true if 'debug' level messages are printed, 'false' if not
+     * @return {@code true} if 'debug' level messages are printed, {@code false} if not
      */
     boolean isDebugEnabled();
 
