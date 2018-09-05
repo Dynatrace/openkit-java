@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.util;
 
 import com.dynatrace.openkit.api.Logger;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -27,25 +28,30 @@ import java.util.TimeZone;
 public class DefaultLogger implements Logger {
 
     private final boolean verbose;
+    private final PrintStream outputStream;
 
-    static final String DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
-    static final SimpleDateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     static {
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     private static String getUTCTime() {
-        return dateFormat.format(new Date());
+        return DATE_FORMAT.format(new Date());
     }
 
     public DefaultLogger(boolean verbose) {
+        this(verbose, System.out);
+    }
+
+    DefaultLogger(boolean verbose, PrintStream outputStream) {
         this.verbose = verbose;
+        this.outputStream = outputStream;
     }
 
     @Override
     public void error(String message) {
-        System.out.println(getUTCTime() + " ERROR [" + Thread.currentThread().getName() + "] " + message);
+        outputStream.println(getUTCTime() + " ERROR [" + Thread.currentThread().getName() + "] " + message);
     }
 
     @Override
@@ -55,26 +61,26 @@ public class DefaultLogger implements Logger {
         t.printStackTrace(printWriter);
         final String stacktrace = stringWriter.getBuffer().toString();
 
-        System.out.println(getUTCTime() + " ERROR [" + Thread.currentThread().getName() + "] " + message
+        outputStream.println(getUTCTime() + " ERROR [" + Thread.currentThread().getName() + "] " + message
                 + System.getProperty("line.separator") + stacktrace);
     }
 
     @Override
     public void warning(String message) {
-        System.out.println(getUTCTime() + " WARN  [" + Thread.currentThread().getName() + "] " + message);
+        outputStream.println(getUTCTime() + " WARN  [" + Thread.currentThread().getName() + "] " + message);
     }
 
     @Override
     public void info(String message) {
         if (isInfoEnabled()) {
-            System.out.println(getUTCTime() + " INFO  [" + Thread.currentThread().getName() + "] " + message);
+            outputStream.println(getUTCTime() + " INFO  [" + Thread.currentThread().getName() + "] " + message);
         }
     }
 
     @Override
     public void debug(String message) {
         if (isDebugEnabled()) {
-            System.out.println(getUTCTime() + " DEBUG [" + Thread.currentThread().getName() + "] " + message);
+            outputStream.println(getUTCTime() + " DEBUG [" + Thread.currentThread().getName() + "] " + message);
         }
     }
 
@@ -97,6 +103,4 @@ public class DefaultLogger implements Logger {
     public boolean isDebugEnabled() {
         return verbose;
     }
-
-
 }
