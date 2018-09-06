@@ -9,6 +9,7 @@
 ### Changed
 - Fix wrong Session start time
 - Fix wrong SimpleDatePattern, which does not work with Java 6
+- Fix wrong device ID in web requests
 
 ### Improved
 - OpenKit internal version handling
