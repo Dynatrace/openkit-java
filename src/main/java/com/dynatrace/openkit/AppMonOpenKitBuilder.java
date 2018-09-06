@@ -44,9 +44,14 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
     /**
      * Creates a new instance of type AppMonOpenKitBuilder
      *
+     * <p>
+     *     If the given @code deviceID is longer than 250 characters,
+     *     only the first 250 characters are used.
+     * </p>
+     *
      * @param endpointURL     endpoint OpenKit connects to
      * @param applicationName unique application id
-     * @param deviceID        unique device id, truncated to 250 characters
+     * @param deviceID        unique device id
      */
     public AppMonOpenKitBuilder(String endpointURL, String applicationName, String deviceID) {
         super(endpointURL, deviceID);
