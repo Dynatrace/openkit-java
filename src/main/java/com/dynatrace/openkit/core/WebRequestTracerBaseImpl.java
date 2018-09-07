@@ -46,19 +46,19 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     // Beacon and Action references
     private final Beacon beacon;
-    private final ActionImpl action;
+    private final int parentActionId;
 
     // *** constructors ***
 
-    WebRequestTracerBaseImpl(Logger logger, Beacon beacon, ActionImpl action) {
+    WebRequestTracerBaseImpl(Logger logger, Beacon beacon, int parentActionId) {
         this.logger = logger;
         this.beacon = beacon;
-        this.action = action;
+        this.parentActionId = parentActionId;
 
         // creating start sequence number has to be done here, because it's needed for the creation of the tag
         startSequenceNo = beacon.createSequenceNumber();
 
-        tag = beacon.createTag(action, startSequenceNo);
+        tag = beacon.createTag(parentActionId, startSequenceNo);
 
         // if start is not called before using the setters the start time (e.g. load time) is not in 1970
         startTime = beacon.getCurrentTimestamp();
@@ -121,7 +121,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
         endSequenceNo = beacon.createSequenceNumber();
 
         // add web request to beacon
-        beacon.addWebRequest(action, this);
+        beacon.addWebRequest(parentActionId, this);
     }
 
     @Override
@@ -169,6 +169,6 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + action.getID() + ", url='" + url + "'] ";
+        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + parentActionId + ", url='" + url + "'] ";
     }
 }
