@@ -50,6 +50,7 @@ import static org.mockito.Mockito.*;
 public class SessionImplTest {
 
     private static final String APP_ID = "appID";
+    private static final String DEVICE_ID = "deviceID";
     private static final String APP_NAME = "appName";
 
     private Logger logger;
@@ -65,6 +66,7 @@ public class SessionImplTest {
         final BeaconCacheImpl beaconCache = new BeaconCacheImpl(logger);
         final Configuration configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getDeviceID()).thenReturn(DEVICE_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);

@@ -91,7 +91,7 @@ public class Beacon {
     static final String CHARSET = "UTF-8";
 
     // max name length
-    private static final int MAX_NAME_LEN = 250;
+    static final int MAX_NAME_LEN = 250;
 
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
@@ -798,17 +798,17 @@ public class Beacon {
      * in case of level 2 (USER_BEHAVIOR) the value from the configuration is used
      * in case of level 1 (PERFORMANCE) or 0 (OFF) a random number in the positive Long range is used
      *
-     * @return
+     * @return The device identifier, which is truncated to 250 characters if level 2 (USER_BEHAVIOR) is used.
      */
-    public long getDeviceID() {
+    public String getDeviceID() {
         BeaconConfiguration beaconConfig = getBeaconConfiguration();
         if (configuration != null && beaconConfig != null) {
             DataCollectionLevel dataCollectionLevel = beaconConfig.getDataCollectionLevel();
             if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
-                return configuration.getDeviceID();
+                return truncate(configuration.getDeviceID());
             }
         }
-        return random.nextLong() & 0x7fffffffffffffffL; // ensure a positive long
+        return Long.toString(random.nextLong() & Long.MAX_VALUE); // ensure a positive long
     }
 
     /**

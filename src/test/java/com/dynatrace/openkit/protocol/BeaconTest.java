@@ -50,7 +50,7 @@ public class BeaconTest {
     private static final String APP_NAME = "appName";
     private static final int ACTION_ID = 17;
     private static final int SERVER_ID = 123;
-    private static final long DEVICE_ID = 456;
+    private static final String DEVICE_ID = "456";
     private static final int THREAD_ID = 1234567;
 
     private Configuration configuration;
@@ -1004,7 +1004,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void visitorIDIsRandomizedOnDataCollectionLevel0() {
+    public void deviceIDIsRandomizedOnDataCollectionLevel0() {
         //given
         Configuration mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
@@ -1027,7 +1027,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void visitorIDIsRandomizedOnDataCollectionLevel1() {
+    public void deviceIDIsRandomizedOnDataCollectionLevel1() {
         //given
         Configuration mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
@@ -1050,8 +1050,8 @@ public class BeaconTest {
     }
 
     @Test
-    public void givenVisitorIDIsUsedOnDataCollectionLevel2() {
-        long TEST_DEVICE_ID = 1338;
+    public void givenDeviceIDIsUsedOnDataCollectionLevel2() {
+        String TEST_DEVICE_ID = "1338";
         //given
         Configuration mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
@@ -1066,17 +1066,17 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
-        long visitorID = target.getDeviceID();
+        String deviceID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
         verify(mockConfiguration, times(2)).getDeviceID();
         verifyNoMoreInteractions(mockRandom);
-        assertThat(visitorID, is(equalTo(TEST_DEVICE_ID)));
+        assertThat(deviceID, is(equalTo(TEST_DEVICE_ID)));
     }
 
     @Test
-    public void randomVisitorIDCannotBeNegativeOnDataCollectionLevel0() {
-        long TEST_DEVICE_ID = 1338;
+    public void randomDeviceIDCannotBeNegativeOnDataCollectionLevel0() {
+        String TEST_DEVICE_ID = "1338";
         //given
         Configuration mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
@@ -1092,36 +1092,60 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
-        long visitorID = target.getDeviceID();
+        long deviceID = Long.valueOf(target.getDeviceID());
 
         //then verify that device id is taken from configuration
         verify(mockRandom, times(2)).nextLong();
-        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
+        assertThat(deviceID, is(greaterThanOrEqualTo(1L)));
     }
 
     @Test
-    public void randomVisitorIDCannotBeNegativeOnDataCollectionLevel1() {
-        long TEST_DEVICE_ID = 1338;
+    public void randomDeviceIDCannotBeNegativeOnDataCollectionLevel1() {
+        String TEST_DEVICE_ID = "1338";
         //given
-        Configuration mockConfiguration = mock(Configuration.class);
-        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
-        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
-        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
-        when(mockConfiguration.getDevice()).thenReturn(testDevice);
-        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
-        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        when(configuration.getDevice()).thenReturn(testDevice);
+        when(configuration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         when(mockRandom.nextLong()).thenReturn(-123456789L);
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
-        long visitorID = target.getDeviceID();
+        long deviceID = Long.valueOf(target.getDeviceID());
 
         //then verify that the id is positive regardless of the
         verify(mockRandom, times(2)).nextLong();
-        assertThat(visitorID, is(greaterThanOrEqualTo(1L)));
+        assertThat(deviceID, is(greaterThanOrEqualTo(1L)));
+    }
+
+    @Test
+    public void deviceIDIsTruncatedTo250Characters() {
+
+        // given
+        StringBuilder deviceIDBuilder = new StringBuilder();
+
+        // append 249 times the character 'a'
+        for (int i = 0; i < Beacon.MAX_NAME_LEN - 1; i++) {
+            deviceIDBuilder.append('a');
+        }
+        // append character 'b' and 'c'
+        deviceIDBuilder.append('b').append('c');
+
+        String deviceID = deviceIDBuilder.toString();
+
+        when(configuration.getDeviceID()).thenReturn(deviceID);
+
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+
+        // when
+        String obtained = target.getDeviceID();
+
+        // then
+        assertThat(obtained.length(), is(equalTo(Beacon.MAX_NAME_LEN)));
+        assertThat(obtained, is(equalTo(deviceID.substring(0, deviceID.length() - 1))));
     }
 
     @Test
@@ -1154,16 +1178,13 @@ public class BeaconTest {
     public void sessionIDIsValueFromSessionIDProviderOnDataCollectionLevel2() {
         // given
         final int SESSION_ID = 1234;
-        Configuration mockConfiguration = mock(Configuration.class);
-        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
-        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
-        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
-        when(mockConfiguration.getDevice()).thenReturn(testDevice);
-        when(mockConfiguration.createSessionNumber()).thenReturn(SESSION_ID);
-        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        when(configuration.getDevice()).thenReturn(testDevice);
+        when(configuration.createSessionNumber()).thenReturn(SESSION_ID);
+        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
 
         //when
         int sessionNumber = target.getSessionNumber();

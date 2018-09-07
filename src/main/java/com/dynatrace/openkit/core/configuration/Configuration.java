@@ -39,7 +39,7 @@ public class Configuration {
     private final String applicationName;
     private final String applicationID;
     private final OpenKitType openKitType;
-    private final long deviceID;
+    private final String deviceID;
     private final String endpointURL;
 
     // mutable settings
@@ -62,7 +62,7 @@ public class Configuration {
 
     // *** constructors ***
 
-    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL,
+    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL,
                          SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion,
                          BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
 
@@ -174,7 +174,7 @@ public class Configuration {
         return applicationID;
     }
 
-    public long getDeviceID() {
+    public String getDeviceID() {
         return deviceID;
     }
 
