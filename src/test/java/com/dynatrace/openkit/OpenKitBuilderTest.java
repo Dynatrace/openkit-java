@@ -45,12 +45,54 @@ public class OpenKitBuilderTest {
 
     @Test
     public void defaultsAreSetForAppMon() {
-        verifyDefaultsAreSet(new AppMonOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).buildConfiguration());
+
+        // when
+        Configuration obtained = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration();
+
+        // then
+        assertThat(obtained.getEndpointURL(), is(equalTo(ENDPOINT)));
+        assertThat(obtained.getDeviceID(), is(equalTo("1234")));
+        assertThat(obtained.getApplicationName(), is(equalTo(APP_NAME)));
+        assertThat(obtained.getApplicationID(), is(equalTo(APP_NAME)));
+
+        // ensure remaining defaults
+        verifyDefaultsAreSet(obtained);
+    }
+
+    @Test
+    public void appMonOpenKitBuilderTakesStringDeviceID() {
+
+        // given
+        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, "stringDeviceID");
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo("stringDeviceID")));
     }
 
     @Test
     public void defaultsAreSetForDynatrace() {
-        verifyDefaultsAreSet(new DynatraceOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration());
+
+        // when
+        Configuration obtained = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, DEVICE_ID).buildConfiguration();
+
+        // then
+        assertThat(obtained.getEndpointURL(), is(equalTo(ENDPOINT)));
+        assertThat(obtained.getDeviceID(), is(equalTo("1234")));
+        assertThat(obtained.getApplicationName(), is(equalTo("")));
+        assertThat(obtained.getApplicationID(), is(equalTo(APP_ID)));
+
+        // ensure remaining defaults
+        verifyDefaultsAreSet(obtained);
+    }
+
+    @Test
+    public void dynatraceOpenKitBuilderTakesStringDeviceID() {
+
+        // given
+        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, "stringDeviceID");
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo("stringDeviceID")));
     }
 
     private void verifyDefaultsAreSet(Configuration configuration) {
@@ -79,7 +121,7 @@ public class OpenKitBuilderTest {
         Configuration target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, DEVICE_ID).buildConfiguration();
 
         assertThat(target.getApplicationName(), is(equalTo(APP_NAME)));
-        assertThat(target.getApplicationName(), is(equalTo(target.getApplicationID())));
+        assertThat(target.getApplicationID(), is(equalTo(APP_NAME)));
     }
 
     @Test

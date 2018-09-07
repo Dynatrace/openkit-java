@@ -91,7 +91,7 @@ public class Beacon {
     static final String CHARSET = "UTF-8";
 
     // max name length
-    private static final int MAX_NAME_LEN = 250;
+    static final int MAX_NAME_LEN = 250;
 
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
@@ -109,7 +109,7 @@ public class Beacon {
     private final long sessionStartTime;
 
     // unique device identifier
-    private final long deviceID;
+    private final String deviceID;
 
     // client IP address
     private final String clientIPAddress;
@@ -196,20 +196,20 @@ public class Beacon {
      * @param configuration Configuration.
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
-    private static long createDeviceID(Random random, Configuration configuration) {
+    private static String createDeviceID(Random random, Configuration configuration) {
 
         if (configuration == null) {
-            return nextRandomPositiveLong(random);
+            return Long.toString(nextRandomPositiveLong(random));
         }
 
         BeaconConfiguration beaconConfig = configuration.getBeaconConfiguration();
         if (beaconConfig != null && beaconConfig.getDataCollectionLevel() == DataCollectionLevel.USER_BEHAVIOR) {
             // configuration is valid and user allows data tracking
-            return configuration.getDeviceID();
+            return truncate(configuration.getDeviceID());
         }
 
         // no user tracking allowed
-        return nextRandomPositiveLong(random);
+        return Long.toString(nextRandomPositiveLong(random));
     }
 
     /**
@@ -836,9 +836,10 @@ public class Beacon {
      * in case of level 2 (USER_BEHAVIOR) the value from the configuration is used
      * in case of level 1 (PERFORMANCE) or 0 (OFF) a random number in the positive Long range is used
      *
-     * @return Unique device identifier.
+
+     * @return The device identifier, which is truncated to 250 characters if level 2 (USER_BEHAVIOR) is used.
      */
-    public long getDeviceID() {
+    public String getDeviceID() {
         return deviceID;
     }
 
@@ -997,7 +998,7 @@ public class Beacon {
     /**
      * helper method for truncating name at max name size
      */
-    private String truncate(String name) {
+    private static String truncate(String name) {
         name = name.trim();
         if (name.length() > MAX_NAME_LEN) {
             name = name.substring(0, MAX_NAME_LEN);

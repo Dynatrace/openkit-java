@@ -957,6 +957,7 @@ public class ActionImplTest {
         final Configuration configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn("appID");
         when(configuration.getApplicationName()).thenReturn("appName");
+        when(configuration.getDeviceID()).thenReturn("deviceID");
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
         BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
