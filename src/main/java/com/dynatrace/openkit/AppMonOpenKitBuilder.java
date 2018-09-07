@@ -45,7 +45,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
      * Creates a new instance of type AppMonOpenKitBuilder
      *
      * <p>
-     *     If the given @code deviceID is longer than 250 characters,
+     *     If the given {@code deviceID} is longer than 250 characters,
      *     only the first 250 characters are used.
      * </p>
      *
