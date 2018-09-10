@@ -108,6 +108,9 @@ public class Beacon {
     private final ThreadIDProvider threadIDProvider;
     private final long sessionStartTime;
 
+    // unique device identifier
+    private final String deviceID;
+
     // client IP address
     private final String clientIPAddress;
 
@@ -165,6 +168,8 @@ public class Beacon {
         this.threadIDProvider = threadIDProvider;
         this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
 
+        this.deviceID = createDeviceID(random, configuration);
+
         this.random = random;
 
         if (InetAddressValidator.isValidIP(clientIPAddress)) {
@@ -182,6 +187,39 @@ public class Beacon {
         beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
+    }
+
+    /**
+     * Create a device ID.
+     *
+     * @param random Pseudo random number generator.
+     * @param configuration Configuration.
+     * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
+     */
+    private static String createDeviceID(Random random, Configuration configuration) {
+
+        if (configuration == null) {
+            return Long.toString(nextRandomPositiveLong(random));
+        }
+
+        BeaconConfiguration beaconConfig = configuration.getBeaconConfiguration();
+        if (beaconConfig != null && beaconConfig.getDataCollectionLevel() == DataCollectionLevel.USER_BEHAVIOR) {
+            // configuration is valid and user allows data tracking
+            return truncate(configuration.getDeviceID());
+        }
+
+        // no user tracking allowed
+        return Long.toString(nextRandomPositiveLong(random));
+    }
+
+    /**
+     * Get a random long, which is in positive range (including {@code 0}).
+     *
+     * @param random Pseudo random number generator.
+     * @return Randomly generated long, which is greater than or equal to {@code 0}.
+     */
+    private static long nextRandomPositiveLong(Random random) {
+        return random.nextLong() & 0x7fffffffffffffffL;
     }
 
     /**
@@ -237,8 +275,8 @@ public class Beacon {
         if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
-        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + configuration
-            .getDeviceID() + "_" + sessionNumber + "_" + configuration.getApplicationID() + "_" + parentAction.getID() + "_" + threadIDProvider
+        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + getDeviceID()
+            + "_" + sessionNumber + "_" + configuration.getApplicationID() + "_" + parentAction.getID() + "_" + threadIDProvider
             .getThreadID() + "_" + sequenceNo;
     }
 
@@ -801,14 +839,7 @@ public class Beacon {
      * @return The device identifier, which is truncated to 250 characters if level 2 (USER_BEHAVIOR) is used.
      */
     public String getDeviceID() {
-        BeaconConfiguration beaconConfig = getBeaconConfiguration();
-        if (configuration != null && beaconConfig != null) {
-            DataCollectionLevel dataCollectionLevel = beaconConfig.getDataCollectionLevel();
-            if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
-                return truncate(configuration.getDeviceID());
-            }
-        }
-        return Long.toString(random.nextLong() & Long.MAX_VALUE); // ensure a positive long
+        return deviceID;
     }
 
     /**
@@ -817,7 +848,7 @@ public class Beacon {
      * in case of level 2 ({@link DataCollectionLevel#USER_BEHAVIOR}) the value from the session id provider is used
      * in case of level 1 ({@link DataCollectionLevel#PERFORMANCE}) or 0 ({@link DataCollectionLevel#OFF}) a random positive int value is used
      *
-     * @return
+     * @return Pre calculated session number or {@code 1} if data collection level is not equal to {@link DataCollectionLevel#USER_BEHAVIOR}.
      */
     public int getSessionNumber() {
         DataCollectionLevel dataCollectionLevel = getBeaconConfiguration().getDataCollectionLevel();
@@ -966,7 +997,7 @@ public class Beacon {
     /**
      * helper method for truncating name at max name size
      */
-    private String truncate(String name) {
+    private static String truncate(String name) {
         name = name.trim();
         if (name.length() > MAX_NAME_LEN) {
             name = name.substring(0, MAX_NAME_LEN);
