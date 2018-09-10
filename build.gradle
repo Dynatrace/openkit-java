@@ -31,6 +31,7 @@ repositories {
 }
 
 def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
+def targetJavaExecutable = System.getenv('JAVA_HOME_' + target) ?: System.getenv('JAVA_HOME_6')
 
 sourceCompatibility = 1.6
 targetCompatibility = "1." + target
@@ -44,6 +45,7 @@ dependencies {
 
 test {
     exclude '**/local/*.class'
+    executable = targetJavaExecutable + "/bin/java"
 }
 
 jar {
