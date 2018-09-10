@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.api;
 
 import java.io.Closeable;
+import java.net.URLConnection;
 
 /**
  * This interface provides functionality to create Actions in a Session.
@@ -61,6 +62,27 @@ public interface Session extends Closeable {
      * @param stacktrace stacktrace leading to that crash
      */
     void reportCrash(String errorName, String reason, String stacktrace);
+
+    /**
+     * Traces a web request - which is provided as a URLConnection - and allows adding timing information to this request.
+     * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
+     * the resulting server-side PurePath.
+     *
+     * @param connection the URLConnection of the HTTP request to be tagged and timed
+     * @return a WebRequestTracer which allows adding timing information
+     */
+    WebRequestTracer traceWebRequest(URLConnection connection);
+    /**
+     * Allows tracing and timing of a web request handled by any 3rd party HTTP Client (e.g. Apache, Google, Jetty, ...).
+     * In this case the Dynatrace HTTP header ({@link OpenKitConstants#WEBREQUEST_TAG_HEADER}) has to be set manually to the
+     * tag value of this WebRequestTracer. <br>
+     * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
+     * the resulting server-side PurePath.
+     *
+     * @param url the URL of the web request to be tagged and timed
+     * @return a WebRequestTracer which allows getting the tag value and adding timing information
+     */
+    WebRequestTracer traceWebRequest(String url);
 
     /**
      * Ends this Session and marks it as ready for immediate sending.

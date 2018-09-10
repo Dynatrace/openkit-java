@@ -19,19 +19,15 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
-
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 /**
@@ -39,46 +35,87 @@ import static org.mockito.Mockito.*;
  */
 public class WebRequestTracerURLConnectionTest {
 
-    @Test
-    public void constructor() {
-        // create test environment
-        Logger logger = mock(Logger.class);
-        final Beacon beacon = mock(Beacon.class);
-        final ActionImpl action = mock(ActionImpl.class);
-        final URLConnection urlConnection = mock(URLConnection.class);
+    private static final String UNKNOWN_URL_STRING = "<unknown>";
 
-        // test the constructor call
-        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, action,
-                urlConnection);
-        assertThat(conn, notNullValue());
+    private Logger mockLogger;
+    private Beacon mockBeacon;
+    private URLConnection mockURLConnection;
 
-        // verify the correct methods being called
-        verify(beacon, times(1)).createSequenceNumber();
-        verify(beacon, times(1)).createTag(eq(action), eq(0));
+    @Before
+    public void setUp() {
+        mockLogger = mock(Logger.class);
+        mockBeacon = mock(Beacon.class);
+        mockURLConnection = mock(URLConnection.class);
     }
 
     @Test
-    public void isWebRequestTagSetInConnection() throws MalformedURLException, IOException {
-        // create test environment
-        Logger logger = mock(Logger.class);
-        final Beacon beacon = mock(Beacon.class);
-        final String tag = "Some tag";
-        when(beacon.createTag(isA(ActionImpl.class), anyInt())).thenReturn(tag);
-        final ActionImpl action = mock(ActionImpl.class);
-        final URLConnection urlConnection = new URL("http://example.com").openConnection();
+    public void passingNullURLConnectionLeavesUnknownURLString() {
+        // given
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, null);
 
-        // Check that the tag is not yet set
-        String existingTag = urlConnection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
-        assertThat(existingTag, is(nullValue()));
-
-        // test the constructor call
-        final WebRequestTracerURLConnection conn = new WebRequestTracerURLConnection(logger, beacon, action,
-                urlConnection);
-        assertThat(conn, notNullValue());
-
-        // verify that the tag is now set
-        existingTag = urlConnection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
-        assertThat(existingTag, notNullValue());
-        assertThat(existingTag, is(tag));
+        // then
+        assertThat(target.getURL(), is(equalTo(UNKNOWN_URL_STRING)));
     }
+
+    @Test
+    public void whenURLOfURLConnectionIsNullUnknownURLStringIsLeft() {
+        // given
+        when(mockURLConnection.getURL()).thenReturn(null);
+
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+
+        // then
+        assertThat(target.getURL(), is(equalTo(UNKNOWN_URL_STRING)));
+    }
+
+    @Test
+    public void whenURLOfURLConnectionIsNullTagIsSet() {
+        // given
+        when(mockURLConnection.getURL()).thenReturn(null);
+
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+
+        // then verify
+        verify(mockURLConnection, times(1)).getURL();
+        verify(mockURLConnection, times(1)).getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
+        verify(mockURLConnection, times(1)).setRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER, target.getTag());
+        verifyNoMoreInteractions(mockURLConnection);
+    }
+
+    @Test
+    public void whenTagIsAlreadySetThanItIsNotSetAgain() {
+        // given
+        when(mockURLConnection.getURL()).thenReturn(null);
+        when(mockURLConnection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER)).thenReturn("");
+
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+
+        // then verify
+        verify(mockURLConnection, times(1)).getURL();
+        verify(mockURLConnection, times(1)).getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
+        verifyNoMoreInteractions(mockURLConnection);
+    }
+
+    @Test
+    public void whenURLOfURLConnectionIsNotNullURLStringIsAssignedAccordingly() throws MalformedURLException {
+        // given
+        when(mockURLConnection.getURL()).thenReturn(new URL("https://www.google.com"));
+
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+
+        // then
+        assertThat(target.getURL(), is(equalTo("https://www.google.com")));
+    }
+
+    @Test
+    public void urlStoredDoesNotContainRequestParameters() throws MalformedURLException {
+        // given
+        when(mockURLConnection.getURL()).thenReturn(new URL("https://www.google.com/foo/bar?foo=bar&asdf=jklo"));
+
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+
+        // then
+        assertThat(target.getURL(), is(equalTo("https://www.google.com/foo/bar")));
+    }
+
 }
