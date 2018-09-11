@@ -618,22 +618,4 @@ public class SessionImplTest {
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
     }
-
-    /*
-
-
-    */
-
-    /*
-
-
-
-
-
-
-
-
-
-
-    */
 }

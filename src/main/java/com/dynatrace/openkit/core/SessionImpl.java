@@ -16,7 +16,11 @@
 
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.api.*;
+import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.RootAction;
+import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
