@@ -72,6 +72,7 @@ public interface Session extends Closeable {
      * @return a WebRequestTracer which allows adding timing information
      */
     WebRequestTracer traceWebRequest(URLConnection connection);
+
     /**
      * Allows tracing and timing of a web request handled by any 3rd party HTTP Client (e.g. Apache, Google, Jetty, ...).
      * In this case the Dynatrace HTTP header ({@link OpenKitConstants#WEBREQUEST_TAG_HEADER}) has to be set manually to the
