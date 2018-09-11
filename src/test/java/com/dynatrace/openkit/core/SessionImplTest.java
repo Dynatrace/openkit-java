@@ -16,31 +16,22 @@
 
 package com.dynatrace.openkit.core;
 
-import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
-import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.providers.ThreadIDProvider;
-import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URLConnection;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 /**
@@ -49,440 +40,409 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("resource")
 public class SessionImplTest {
 
-    private static final String APP_ID = "appID";
-    private static final String DEVICE_ID = "deviceID";
-    private static final String APP_NAME = "appName";
-
-    private Logger logger;
-    private Beacon beacon;
-    private BeaconSender beaconSender;
+    private Logger mockLogger;
+    private Beacon mockBeacon;
+    private BeaconSender mockBeaconSender;
 
     @Before
     public void setUp() {
-        logger = mock(Logger.class);
-        when(logger.isInfoEnabled()).thenReturn(true);
-        when(logger.isDebugEnabled()).thenReturn(true);
-        beaconSender = mock(BeaconSender.class);
-        final BeaconCacheImpl beaconCache = new BeaconCacheImpl(logger);
-        final Configuration configuration = mock(Configuration.class);
-        when(configuration.getApplicationID()).thenReturn(APP_ID);
-        when(configuration.getDeviceID()).thenReturn(DEVICE_ID);
-        when(configuration.getApplicationName()).thenReturn(APP_NAME);
-        when(configuration.getDevice()).thenReturn(new Device("", "", ""));
-        when(configuration.isCapture()).thenReturn(true);
-        when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB=default size
-        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
-        when(mockBeaconConfiguration.getMultiplicity()).thenReturn(1);
-        when(mockBeaconConfiguration.getDataCollectionLevel()).thenReturn(DataCollectionLevel.USER_BEHAVIOR);
-        when(mockBeaconConfiguration.getCrashReportingLevel()).thenReturn(CrashReportingLevel.OPT_IN_CRASHES);
-        when(mockBeaconConfiguration.isCapturingAllowed()).thenReturn(true);
-        when(configuration.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
-        final String clientIPAddress = "127.0.0.1";
-        final ThreadIDProvider threadIDProvider = mock(ThreadIDProvider.class);
-        final TimingProvider timingProvider = mock(TimingProvider.class);
-        when(timingProvider.provideTimestampInMilliseconds()).thenReturn(System.currentTimeMillis());
-        beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
+
+        // mock Logger
+        mockLogger = mock(Logger.class);
+        when(mockLogger.isInfoEnabled()).thenReturn(true);
+        when(mockLogger.isDebugEnabled()).thenReturn(true);
+
+        // mock Beacon
+        mockBeacon = mock(Beacon.class);
+
+        // mock BeaconSender
+        mockBeaconSender = mock(BeaconSender.class);
     }
 
     @Test
-    public void constructor() {
-        // test the constructor call
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void defaultEndTimeIsSetToMinusOne() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // verify default values
-        assertThat(session, notNullValue());
-        assertThat(session.getEndTime(), is(-1L));
+        // then
+        assertThat(target.getEndTime(), is(equalTo(-1L)));
     }
 
     @Test
-    public void enterActionWithNullActionName() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void enterActionWithNullActionNameGivesNullRootActionObject() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // add/enter "null-action"
-        final RootAction rootAction = session.enterAction(null);
+        // when
+        RootAction obtained = target.enterAction(null);
 
-        // we definitely got a NullRootAction instance
-        assertThat(rootAction, is(instanceOf(NullRootAction.class)));
+        // then
+        assertThat(obtained, is(instanceOf(NullRootAction.class)));
 
         // ensure that some log message has been written
-        verify(logger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
     }
 
     @Test
-    public void enterActionWithEmptyActionName() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void enterActionWithEmptyActionNameGivesNullRootActionObject() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // add/enter "null-action"
-        final RootAction rootAction = session.enterAction("");
+        // when
+        RootAction obtained = target.enterAction("");
 
-        // we definitely got a NullRootAction instance
-        assertThat(rootAction, is(instanceOf(NullRootAction.class)));
+        // then
+        assertThat(obtained, is(instanceOf(NullRootAction.class)));
 
         // ensure that some log message has been written
-        verify(logger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
     }
 
     @Test
-    public void enterSingleAction() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void enterActionWithNonEmptyNamesGivesRootAction() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // add/enter one action
-        final RootAction rootAction = session.enterAction("Some action");
-        rootAction.leaveAction();
+        // when
+        RootAction obtained = target.enterAction("Some action");
 
-        // verify that the action is closed, thus moved to the beacon cache (thus the cache is no longer empty)
-        assertThat(session.isEmpty(), is(false));
+        // then
+        assertThat(obtained, is(instanceOf(RootActionImpl.class)));
     }
 
     @Test
-    public void enterMultipleActions() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void enterActionAlwaysGivesANewInstance() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // add/enter two actions
-        final RootAction rootAction1 = session.enterAction("Some action 1");
-        rootAction1.leaveAction();
-        final RootAction rootAction2 = session.enterAction("Some action 2");
-        rootAction2.leaveAction();
+        // when
+        RootAction obtainedOne = target.enterAction("Some action");
+        RootAction obtainedTwo = target.enterAction("Some action");
 
-        // verify that the actions are closed, thus moved to the beacon cache (thus the cache is no longer empty)
-        assertThat(session.isEmpty(), is(false));
+        // then
+        assertThat(obtainedOne, is(notNullValue()));
+        assertThat(obtainedTwo, is(notNullValue()));
+        assertThat(obtainedOne, is(not(sameInstance(obtainedTwo))));
     }
 
-    @Test
-    public void enterSameAction() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-
-        // add/enter two actions
-        final RootAction rootAction1 = session.enterAction("Some action");
-        rootAction1.leaveAction();
-        final RootAction rootAction2 = session.enterAction("Some action");
-        rootAction2.leaveAction();
-
-        // verify that the actions are closed, thus moved to the beacon cache (thus the cache is no longer empty)
-        assertThat(session.isEmpty(), is(false));
-        // verify that multiple actions with same name are possible
-        assertThat(rootAction1, not(rootAction2));
-    }
 
     @Test
     public void identifyUserWithNullTagDoesNothing() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // identify a "null-user" must be possible
-        session.identifyUser(null);
+        // when
+        target.identifyUser(null);
 
-        // verify the correct methods being called
-        verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
-        verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(1)).startSession();
-        verify(beacon, times(0)).identifyUser(anyString());
-        verifyNoMoreInteractions(beacon);
+        // then
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(mockBeacon, times(1)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
     public void identifyUserWithEmptyTagDoesNothing() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // identify a "null-user" must be possible
-        session.identifyUser("");
+        // when
+        target.identifyUser("");
 
-        // verify the correct methods being called
-        verify(logger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
-        verify(beacon, times(1)).startSession();
-        verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(0)).identifyUser(anyString());
-        verifyNoMoreInteractions(beacon);
+        // then
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(mockBeacon, times(1)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
-    public void identifySingleUser() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void identifyUserWithNonEmptyTagReportsUser() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // identify a single user
-        final String userTag = "Some user";
-        session.identifyUser(userTag);
+        // when
+        target.identifyUser("user");
 
-        // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).identifyUser(userTag);
+        // then
+        verify(mockLogger, times(0)).warning(anyString());
+        verify(mockBeacon, times(1)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).identifyUser("user");
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
-    public void identifyMultipleUsers() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void identifyUserMultipleTimesAlwaysCallsBeacon() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // identify multiple users
-        final String userTag1 = "Some user";
-        final String userTag2 = "Some other user";
-        final String userTag3 = "Yet another user";
-        session.identifyUser(userTag1);
-        session.identifyUser(userTag2);
-        session.identifyUser(userTag3);
+        // when
+        target.identifyUser("user");
+        target.identifyUser("user");
 
-        // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).identifyUser(userTag1);
-        verify(beacon, times(1)).identifyUser(userTag2);
-        verify(beacon, times(1)).identifyUser(userTag3);
-    }
-
-    @Test
-    public void identifySameUser() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-
-        // identify the same user twice
-        final String userTag = "Some user";
-        session.identifyUser(userTag);
-        session.identifyUser(userTag);
-
-        // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(2)).identifyUser(userTag);
+        // then
+        verify(mockLogger, times(0)).warning(anyString());
+        verify(mockBeacon, times(2)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(2)).identifyUser("user");
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
     public void reportingCrashWithNullErrorNameDoesNotReportAnything() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // report a crash, passing null values
-        session.reportCrash(null, "some reason", "some stack trace");
+        // when reporting a crash, passing null values
+        target.reportCrash(null, "some reason", "some stack trace");
 
-        // verify the correct methods being called
-        verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
-        verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(1)).startSession();
-        verifyZeroInteractions(beacon, beacon);
+        // then verify the correct methods being called
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
+        verify(mockBeacon, times(1)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verifyZeroInteractions(mockBeacon);
     }
 
     @Test
     public void reportingCrashWithEmptyErrorNameDoesNotReportAnything() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // report a crash, passing null values
-        session.reportCrash("", "some reason", "some stack trace");
+        // when reporting a crash, passing empty errorName
+        target.reportCrash("", "some reason", "some stack trace");
 
         // verify the correct methods being called
-        verify(logger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
-        verify(beacon, times(1)).getSessionNumber();
-        verify(beacon, times(1)).startSession();
-        verifyZeroInteractions(beacon, beacon);
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
+        verify(mockBeacon, times(1)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verifyZeroInteractions(mockBeacon);
     }
 
     @Test
     public void reportingCrashWithNullReasonAndStacktraceWorks() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        when(beacon.getSessionNumber()).thenReturn(17);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // report a crash, passing null values
-        session.reportCrash("errorName", null, null);
+        // when reporting a crash, passing null values
+        target.reportCrash("errorName", null, null);
+
+        // then verify the correct methods being called
+        verify(mockBeacon, times(1)).reportCrash("errorName", null, null);
+    }
+
+    @Test
+    public void reportingCrashWithEmptyReasonAndStacktraceStringWorks() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when reporting a crash, passing null values
+        target.reportCrash("errorName", "", "" );
+
+        // then verify the correct methods being called
+        verify(mockBeacon, times(1)).reportCrash("errorName", "", "");
+    }
+
+    @Test
+    public void reportingCrashWithSameDataMultipleTimesForwardsEachCallToBeacon() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        String errorName = "error name";
+        String reason = "error reason";
+        String stacktrace = "the stacktrace causing the error";
+
+        // when
+        target.reportCrash(errorName, reason, stacktrace);
+        target.reportCrash(errorName, reason, stacktrace);
 
         // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).reportCrash("errorName", null, null);
+        verify(mockBeacon, times(2)).reportCrash(errorName, reason, stacktrace);
     }
 
     @Test
-    public void reportSingleCrash() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        when(beacon.getSessionNumber()).thenReturn(17);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void endSessionSetsTheSessionsEndTime() {
+        // given
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // report a single crash
-        final String errorName = "error name";
-        final String reason = "error reason";
-        final String stacktrace = "the stacktrace causing the error";
-        session.reportCrash(errorName, reason, stacktrace);
+        // when
+        target.end();
 
-        // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).reportCrash(errorName, reason, stacktrace);
+        // then
+        assertThat(target.getEndTime(), is(equalTo(1234L)));
+        verify(mockBeacon, times(1)).getCurrentTimestamp();
     }
 
     @Test
-    public void reportMultipleCrashes() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        when(beacon.getSessionNumber()).thenReturn(17);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void endSessionFinishesSessionOnBeacon() {
+        // given
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // report multiple crashes
-        final String errorName1 = "error name 1";
-        final String reason1 = "error reason 1";
-        final String stacktrace1 = "the stacktrace causing the error 1";
-        session.reportCrash(errorName1, reason1, stacktrace1);
-        final String errorName2 = "error name 2";
-        final String reason2 = "error reason 2";
-        final String stacktrace2 = "the stacktrace causing the error 2";
-        session.reportCrash(errorName2, reason2, stacktrace2);
+        // when
+        target.end();
 
-        // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).reportCrash(errorName1, reason1, stacktrace1);
-        verify(beacon, times(1)).reportCrash(errorName2, reason2, stacktrace2);
+        // then
+        verify(mockBeacon, times(1)).endSession(target);
     }
 
     @Test
-    public void reportSameCrash() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        when(beacon.getSessionNumber()).thenReturn(17);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void endSessionFinishesSessionOnBeaconSender() {
+        // given
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // report the same cache twice
-        final String errorName = "error name";
-        final String reason = "error reason";
-        final String stacktrace = "the stacktrace causing the error";
-        session.reportCrash(errorName, reason, stacktrace);
-        session.reportCrash(errorName, reason, stacktrace);
+        // when
+        target.end();
 
-        // verify the correct methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(2)).reportCrash(errorName, reason, stacktrace);
+        // then
+        verify(mockBeaconSender, times(1)).finishSession(target);
     }
 
     @Test
-    public void endSession() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void endingAnAlreadyEndedSessionDoesNothing() {
+        // given
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L, 4242L);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // end the session
-        session.end();
+        // when ending a session twice
+        target.end();
+        target.end();
 
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).getCurrentTimestamp();
-        verify(beacon, times(1)).endSession(session);
-        verify(beaconSender, times(1)).finishSession(session);
-        assertThat(session.getEndTime(), not(-1L));
+        // then
+        assertThat(target.getEndTime(), is(equalTo(1234L)));
+        verify(mockBeacon, times(2)).getCurrentTimestamp();
+
+        verify(mockBeacon, times(1)).endSession(target);
+        verify(mockBeaconSender, times(1)).finishSession(target);
     }
 
     @Test
-    public void endSessionTwice() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void endingASessionImplicitelyClosesAllOpenRootActions() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // end the session twice
-        session.end();
-        session.end();
+        RootActionImpl rootActionOne = (RootActionImpl)target.enterAction("Action 1");
+        RootActionImpl rootActionTwo = (RootActionImpl)target.enterAction("Action 2");
 
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(2)).getCurrentTimestamp();
-        verify(beacon, times(1)).endSession(session);
-        verify(beaconSender, times(1)).finishSession(session);
-        assertThat(session.getEndTime(), not(-1L));
+        // when
+        target.end();
+
+        // then
+        verify(mockBeacon, times(1)).addAction(rootActionOne);
+        verify(mockBeacon, times(1)).addAction(rootActionTwo);
     }
 
     @Test
-    public void endSessionWithOpenRootActions() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void sendBeaconForwardsCallToBeacon() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
 
-        // end the session containing open (=not left) actions
-        session.enterAction("Some action 1");
-        session.enterAction("Some action 2");
-        session.end();
+        // when
+        target.sendBeacon(clientProvider);
 
-        // mock a valid status response via the HTTPClient to be sure the beacon cache is empty
-        final HTTPClient httpClient = mock(HTTPClient.class);
-        final StatusResponse statusResponse = new StatusResponse(logger, "", 200, Collections.<String, List<String>>emptyMap());
-        when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class))).thenReturn(statusResponse);
-        final HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
-        when(clientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
-
-        session.sendBeacon(clientProvider);
-        // verify that the actions if the action is still active, it is not in the beacon cache (thus cache is empty)
-        assertThat(session.isEmpty(), is(true));
+        // then verify the proper methods being called
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).send(clientProvider);
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
-    public void sendBeacon() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-        final HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
+    public void clearCapturedDataForwardsCallToBeacon() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        session.sendBeacon(clientProvider);
+        // when
+        target.clearCapturedData();
 
-        // verify the proper methods being called
-        verify(beaconSender, times(1)).startSession(session);
-        verify(beacon, times(1)).send(clientProvider);
+        // then verify the proper methods being called
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).clearData();
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
-    public void clearCapturedData() {
-        // create test environment
-        final SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+    public void isEmptyForwardsCallToBeacon() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
-        // end the session containing closed actions (moved to the beacon cache)
-        final RootAction rootAction1 = session.enterAction("Some action 1");
-        rootAction1.leaveAction();
-        final RootAction rootAction2 = session.enterAction("Some action 2");
-        rootAction2.leaveAction();
-        // verify that the actions are closed, thus moved to the beacon cache (thus the cache is no longer empty)
-        assertThat(session.isEmpty(), is(false));
+        // when
+        target.isEmpty();
 
-        // clear the captured data
-        session.clearCapturedData();
+        // then verify the proper methods being called
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).isEmpty();
+        verifyNoMoreInteractions(mockBeacon);
+    }
 
-        // verify that the cached items are cleared and the cache is empty
-        assertThat(session.isEmpty(), is(true));
+    @Test
+    public void setBeaconConfigurationForwardsCallToBeacon() {
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
+
+        // when
+        target.setBeaconConfiguration(mockBeaconConfiguration);
+
+        // then verify the proper methods being called
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).setBeaconConfiguration(mockBeaconConfiguration);
+        verifyNoMoreInteractions(mockBeacon);
+    }
+
+    @Test
+    public void getBeaconConfigurationForwardsCallToBeacon() {
+        // given
+        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        when(target.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
+
+        // when
+        BeaconConfiguration obtained = target.getBeaconConfiguration();
+
+        // then verify obtained value
+        assertThat(obtained, is(sameInstance(mockBeaconConfiguration)));
+
+        // then verify the proper methods being called
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).getBeaconConfiguration();
+        verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
     public void aNewlyConstructedSessionIsNotEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
         // when, then
-        assertThat(session.isSessionEnded(), is(false));
+        assertThat(target.isSessionEnded(), is(false));
     }
 
     @Test
     public void aSessionIsEndedIfEndIsCalled() {
 
         // given
-        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
         // when end is called
-        session.end();
+        target.end();
 
         // then the session is ended
-        assertThat(session.isSessionEnded(), is(true));
+        assertThat(target.isSessionEnded(), is(true));
     }
 
     @Test
     public void enterActionGivesNullRootActionIfSessionIsAlreadyEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-        session.end();
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        target.end();
 
         // when entering an action on already ended session
-        RootAction obtained = session.enterAction("Test");
+        RootAction obtained = target.enterAction("Test");
 
         // then
         assertThat(obtained, is(notNullValue()));
@@ -493,44 +453,169 @@ public class SessionImplTest {
     public void identifyUserDoesNothingIfSessionIsEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-        session.end();
-        beacon.clearData();
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        target.end();
 
         // when trying to identify a user on an ended session
-        session.identifyUser("Jane Doe");
+        target.identifyUser("Jane Doe");
 
         // then
-        assertThat(session.isEmpty(), is(true));
+        verify(mockBeacon, times(0)).identifyUser(anyString());
     }
 
     @Test
     public void reportCrashDoesNothingIfSessionIsEnded() {
 
         // given
-        SessionImpl session = new SessionImpl(logger, beaconSender, beacon);
-        session.end();
-        beacon.clearData();
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        target.end();
 
         // when trying to identify a user on an ended session
-        session.reportCrash("errorName", "reason", "stacktrace");
+        target.reportCrash("errorName", "reason", "stacktrace");
 
         // then
-        assertThat(session.isEmpty(), is(true));
+        verify(mockBeacon, times(0)).reportCrash(anyString(), anyString(), anyString());
     }
 
     @Test
     public void closeSessionEndsTheSession() {
 
         // given
-        SessionImpl target = new SessionImpl(logger, beaconSender, beacon);
-        beacon.clearData();
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(4321L);
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 
         // when
         target.close();
 
         // then
-        assertThat(beacon.isEmpty(), is(false));
-        verify(beaconSender, times(1)).finishSession(target);
+        assertThat(target.getEndTime(), is(equalTo(4321L)));
+        verify(mockBeacon, times(1)).endSession(target);
+        verify(mockBeaconSender, times(1)).finishSession(target);
+    }
+
+    @Test
+    public void traceWebRequestWithValidUrlStringGivesAppropriateTracer() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest("https://www.google.com");
+
+        // then
+        assertThat(obtained, is(instanceOf(WebRequestTracerStringURL.class)));
+    }
+
+    @Test
+    public void tracingANullStringWebRequestIsNotAllowed() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest((String) null);
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+
+        // and a warning message has been generated
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] traceWebRequest (String): url must not be null or empty");
+    }
+
+    @Test
+    public void tracingAnEmptyStringWebRequestIsNotAllowed() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest("");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+
+        // and a warning message has been generated
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] traceWebRequest (String): url must not be null or empty");
+    }
+
+    @Test
+    public void tracingAStringWebRequestWithInvalidURLIsNotAllowed() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest("foobar/://");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+
+        // and a warning message has been generated
+        verify(mockLogger, times(1)).warning(
+            "SessionImpl [sn=0] traceWebRequest (String): url \"foobar/://\" does not have a valid scheme");
+    }
+
+    @Test
+    public void traceWebRequestWithValidURLConnectionGivesAppropriateTracer() throws MalformedURLException {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest(mock(URLConnection.class));
+
+        // then
+        assertThat(obtained, is(instanceOf(WebRequestTracerURLConnection.class)));
+    }
+
+    @Test
+    public void tracingANullURLConnectionWebRequestIsNotAllowed() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest((URLConnection) null);
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+
+        // and a warning message has been generated
+        verify(mockLogger, times(1)).warning(
+            "SessionImpl [sn=0] traceWebRequest (URLConnection): connection must not be null");
+    }
+
+    @Test
+    public void traceWebRequestWithURLConnectionArgumentGivesNullTracerIfSessionIsEnded() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        target.end();
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest(mock(URLConnection.class));
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
+    }
+
+    @Test
+    public void traceWebRequestWithStringArgumentGivesNullTracerIfSessionIsEnded() {
+
+        // given
+        SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
+        target.end();
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest("http://www.google.com");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullWebRequestTracer.class)));
     }
 }

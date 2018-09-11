@@ -23,7 +23,6 @@ import com.dynatrace.openkit.protocol.Beacon;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Closeable;
 import java.io.IOException;
 
 import static org.hamcrest.Matchers.is;
@@ -37,7 +36,6 @@ public class WebRequestTracerBaseImplTest {
 
     private Logger logger;
     private Beacon mockBeacon;
-    private ActionImpl mockActionImpl;
 
     private static final int SEQUENCE_NUMBER = 1234;
     private static final String TAG = "THE_TAG";
@@ -46,17 +44,16 @@ public class WebRequestTracerBaseImplTest {
     public void setUp() {
         logger = mock(Logger.class);
         mockBeacon = mock(Beacon.class);
-        mockActionImpl = mock(ActionImpl.class);
 
         when(mockBeacon.createSequenceNumber()).thenReturn(SEQUENCE_NUMBER);
-        when(mockBeacon.createTag(org.mockito.Matchers.any(ActionImpl.class), anyInt())).thenReturn(TAG);
+        when(mockBeacon.createTag(anyInt(), anyInt())).thenReturn(TAG);
     }
 
     @Test
     public void defaultValues() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // then
         assertThat(target.getURL(), is("<unknown>"));
@@ -70,13 +67,13 @@ public class WebRequestTracerBaseImplTest {
 
         // and verify that the sequence number was retrieved from beacon, as well as the tag
         verify(mockBeacon, times(1)).createSequenceNumber();
-        verify(mockBeacon, times(1)).createTag(mockActionImpl, SEQUENCE_NUMBER);
+        verify(mockBeacon, times(1)).createTag(0, SEQUENCE_NUMBER);
     }
 
     @Test
     public void getTag() {
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // then
         assertThat(target.getTag(), is(TAG));
@@ -85,7 +82,7 @@ public class WebRequestTracerBaseImplTest {
     @Test
     public void aNewlyCreatedWebRequestTracerIsNotStopped() {
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // then
         assertThat(target.isStopped(), is(false));
@@ -94,7 +91,7 @@ public class WebRequestTracerBaseImplTest {
     @Test
     public void aWebRequestTracerIsStoppedAfterStopHasBeenCalled() {
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // when calling the stop method
         target.stop();
@@ -107,7 +104,7 @@ public class WebRequestTracerBaseImplTest {
     public void setResponseCodeSetsTheResponseCode() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // when setting response code
         WebRequestTracer obtained = target.setResponseCode(418);
@@ -121,7 +118,7 @@ public class WebRequestTracerBaseImplTest {
     public void setResponseCodeDoesNotSetTheResponseCodeIfStopped() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         target.stop();
 
         // when setting response code
@@ -136,7 +133,7 @@ public class WebRequestTracerBaseImplTest {
     public void setBytesSentSetsTheNumberOfSentBytes() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // when setting the sent bytes
         WebRequestTracer obtained = target.setBytesSent(1234);
@@ -150,7 +147,7 @@ public class WebRequestTracerBaseImplTest {
     public void setBytesSentDoesNotSetAnythingIfStopped() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         target.stop();
 
         // when setting the sent bytes
@@ -165,7 +162,7 @@ public class WebRequestTracerBaseImplTest {
     public void setBytesReceivedSetsTheNumberOfReceivedBytes() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
 
         // when setting the received bytes
         WebRequestTracer obtained = target.setBytesReceived(4321);
@@ -179,7 +176,7 @@ public class WebRequestTracerBaseImplTest {
     public void setBytesReceivedDoesNotSetAnythingIfStopped() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         target.stop();
 
         // when setting the received bytes
@@ -194,7 +191,7 @@ public class WebRequestTracerBaseImplTest {
     public void startSetsTheStartTime() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         when(mockBeacon.getCurrentTimestamp()).thenReturn(123456789L);
 
         // when starting web request tracing
@@ -209,7 +206,7 @@ public class WebRequestTracerBaseImplTest {
     public void startDoesNothingIfAlreadyStopped() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         when(mockBeacon.getCurrentTimestamp()).thenReturn(123456789L);
         target.stop();
 
@@ -225,7 +222,7 @@ public class WebRequestTracerBaseImplTest {
     public void stopCanOnlyBeExecutedOnce() {
 
         // given
-        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
         // when executed the first time
@@ -234,36 +231,36 @@ public class WebRequestTracerBaseImplTest {
         // then
         assertThat(target.getEndSequenceNo(), is(42));
         verify(mockBeacon, times(2)).createSequenceNumber();
-        verify(mockBeacon, times(1)).addWebRequest(mockActionImpl, target);
+        verify(mockBeacon, times(1)).addWebRequest(0, target);
 
         // and when executed the second time
         target.stop();
 
         // then
         verify(mockBeacon, times(2)).createSequenceNumber();
-        verify(mockBeacon, times(1)).addWebRequest(mockActionImpl, target);
+        verify(mockBeacon, times(1)).addWebRequest(0, target);
     }
 
     @Test
     public void closingAWebRequestStopsIt() throws IOException {
 
         // given
-        Closeable target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, mockActionImpl);
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, mockBeacon, 0);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
         // when executed the first time
         target.close();
 
         // then
-        assertThat(((WebRequestTracerBaseImpl)target).getEndSequenceNo(), is(42));
+        assertThat(target.getEndSequenceNo(), is(42));
         verify(mockBeacon, times(2)).createSequenceNumber();
-        verify(mockBeacon, times(1)).addWebRequest(mockActionImpl, (WebRequestTracerBaseImpl)target);
+        verify(mockBeacon, times(1)).addWebRequest(0, target);
     }
 
     private static final class TestWebRequestTracerBaseImpl extends WebRequestTracerBaseImpl {
 
-        public TestWebRequestTracerBaseImpl(Logger logger, Beacon beacon, ActionImpl action) {
-            super(logger, beacon, action);
+        TestWebRequestTracerBaseImpl(Logger logger, Beacon beacon, int parentActionID) {
+            super(logger, beacon, parentActionID);
         }
     }
 }

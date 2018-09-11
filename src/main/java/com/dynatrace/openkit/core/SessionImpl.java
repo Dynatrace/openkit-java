@@ -20,11 +20,13 @@ import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
+import java.net.URLConnection;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SessionImpl implements Session {
 
     private static final RootAction NULL_ROOT_ACTION = new NullRootAction();
+    private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
 
     // end time of this Session
     private final AtomicLong endTime = new AtomicLong(-1);
@@ -106,6 +109,42 @@ public class SessionImpl implements Session {
         if (!isSessionEnded()) {
             beacon.reportCrash(errorName, reason, stacktrace);
         }
+    }
+
+    @Override
+    public WebRequestTracer traceWebRequest(URLConnection connection) {
+        if (connection == null) {
+            logger.warning(this + "traceWebRequest (URLConnection): connection must not be null");
+            return NULL_WEB_REQUEST_TRACER;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
+        }
+        if (!isSessionEnded()) {
+            return new WebRequestTracerURLConnection(logger, beacon, 0, connection);
+        }
+
+        return NULL_WEB_REQUEST_TRACER;
+    }
+
+    @Override
+    public WebRequestTracer traceWebRequest(String url) {
+        if (url == null || url.isEmpty()) {
+            logger.warning(this + "traceWebRequest (String): url must not be null or empty");
+            return NULL_WEB_REQUEST_TRACER;
+        }
+        if (!WebRequestTracerStringURL.isValidURLScheme(url)) {
+            logger.warning(this + "traceWebRequest (String): url \"" + url + "\" does not have a valid scheme");
+            return NULL_WEB_REQUEST_TRACER;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "traceWebRequest (String) (" + url + ")");
+        }
+        if (!isSessionEnded()) {
+            return new WebRequestTracerStringURL(logger, beacon, 0, url);
+        }
+
+        return NULL_WEB_REQUEST_TRACER;
     }
 
     @Override

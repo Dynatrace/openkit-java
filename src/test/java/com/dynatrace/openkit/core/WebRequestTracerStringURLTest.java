@@ -18,7 +18,6 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.protocol.Beacon;
-
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -73,8 +72,7 @@ public class WebRequestTracerStringURLTest {
     public void anURLIsOnlySetInConstructorIfItIsValid() {
 
         // given
-        WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class),
-            mock(Beacon.class), mock(ActionImpl.class), "a1337://foo");
+        WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class), mock(Beacon.class), 0, "a1337://foo");
 
         // then
         assertThat(target.getURL(), is(equalTo("a1337://foo")));
@@ -83,10 +81,18 @@ public class WebRequestTracerStringURLTest {
     @Test
     public void ifURLIsInvalidTheDefaultValueIsUsed() {
         // given
-        WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class),
-            mock(Beacon.class), mock(ActionImpl.class), "foobar");
+        WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class), mock(Beacon.class), 0, "foobar");
 
         // then
         assertThat(target.getURL(), is(equalTo("<unknown>")));
+    }
+
+    @Test
+    public void urlStoredDoesNotContainRequestParameters() {
+        // given
+        WebRequestTracerStringURL target = new WebRequestTracerStringURL(mock(Logger.class), mock(Beacon.class), 0, "https://www.google.com/foo/bar?foo=bar&asdf=jklo");
+
+        // then
+        assertThat(target.getURL(), is(equalTo("https://www.google.com/foo/bar")));
     }
 }
