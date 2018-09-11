@@ -31,7 +31,7 @@ repositories {
 }
 
 def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
-def targetJavaExecutable = System.getenv('JAVA_HOME_' + target) ?: System.getenv('JAVA_HOME_6')
+def targetJavaExecutable = System.getenv('TEST_JVM') ?: System.getenv("JAVA_HOME")
 
 sourceCompatibility = 1.6
 targetCompatibility = "1." + target
