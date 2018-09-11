@@ -1,5 +1,5 @@
 def branchPattern = /v\d+\.\d+\.\d+.*/
-def targetCompatibilities = [6, 7, 8]
+def targetCompatibilities = [6]
 
 properties([
 		buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -39,10 +39,7 @@ timeout(time: 15, unit: 'MINUTES') {
 def createBuildTask(label) {
 	return {
 		node('default') {
-			withEnv(["TARGET_COMPATIBILITY=${label}",
-			         "TEST_JVM=" + env["JAVA_HOME_" + label]]) {
-			    checkTestJVM(label)
-
+			withEnv(["TARGET_COMPATIBILITY=${label}"]) {
 				echo "Build for Java ${label}"
 
 				checkout scm
@@ -58,12 +55,6 @@ def createBuildTask(label) {
 			}
 		}
 	}
-}
-
-def checkTestJVM(Integer label) {
-    if(env["JAVA_HOME_" + label] == null) {
-        error("Please specify JAVA_HOME_" + label + " for using the correct JVM in test environment.")
-    }
 }
 
 def copy(String source, String destination) {
