@@ -38,7 +38,7 @@ public class ActionImpl implements Action {
     private final int id;
     private final String name;
 
-    private ActionImpl parentAction = null;
+    private final ActionImpl parentAction;
 
     // start/end time & sequence number
     private final long startTime;
@@ -49,7 +49,7 @@ public class ActionImpl implements Action {
     // Beacon reference
     private final Beacon beacon;
 
-    private SynchronizedQueue<Action> thisLevelActions = null;
+    private final SynchronizedQueue<Action> thisLevelActions;
 
     // *** constructors ***
 
@@ -165,7 +165,7 @@ public class ActionImpl implements Action {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
         if (!isActionLeft()) {
-            return new WebRequestTracerURLConnection(logger, beacon, this, connection);
+            return new WebRequestTracerURLConnection(logger, beacon, getID(), connection);
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -185,7 +185,7 @@ public class ActionImpl implements Action {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
         if (!isActionLeft()) {
-            return new WebRequestTracerStringURL(logger, beacon, this, url);
+            return new WebRequestTracerStringURL(logger, beacon, getID(), url);
         }
 
         return NULL_WEB_REQUEST_TRACER;

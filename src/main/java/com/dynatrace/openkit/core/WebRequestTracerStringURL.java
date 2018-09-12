@@ -33,8 +33,8 @@ public class WebRequestTracerStringURL extends WebRequestTracerBaseImpl {
     // *** constructors ***
 
     // creates web request tracer with a simple string URL
-    public WebRequestTracerStringURL(Logger logger, Beacon beacon, ActionImpl action, String url) {
-        super(logger, beacon, action);
+    public WebRequestTracerStringURL(Logger logger, Beacon beacon, int parentActionID, String url) {
+        super(logger, beacon, parentActionID);
 
         // separate query string from URL
         if (isValidURLScheme(url)) {
