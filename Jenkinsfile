@@ -18,7 +18,7 @@ timeout(time: 15, unit: 'MINUTES') {
 
 			stage('Build') {
 				parallel (targetCompatibilities.collectEntries {[
-					'Java ' + it, createBuildTask(it,jvmToTest.join())
+					'Java ' + it, createBuildTask(it,jvmToTest.join(","))
 				]})
 			}
 
