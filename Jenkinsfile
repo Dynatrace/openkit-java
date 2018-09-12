@@ -1,5 +1,4 @@
 def branchPattern = /v\d+\.\d+\.\d+.*/
-def targetCompatibilities = [6]
 def jvmToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
 
 properties([
@@ -17,9 +16,8 @@ timeout(time: 15, unit: 'MINUTES') {
 			}
 
 			stage('Build') {
-				parallel (targetCompatibilities.collectEntries {[
-					'Java ' + it, createBuildTask(it,jvmToTest.join(","))
-				]})
+				parallel (['Java',
+				            createBuildTask(jvmToTest.join(","))])
 			}
 
 			echo "Branch: ${env.BRANCH_NAME}"
@@ -37,13 +35,10 @@ timeout(time: 15, unit: 'MINUTES') {
 	}
 }
 
-def createBuildTask(label,jvmToTest) {
+def createBuildTask(jvmToTest) {
 	return {
 		node('default') {
-			withEnv(["TARGET_COMPATIBILITY=${label}",
-			         "JVM_TO_TEST=${jvmToTest}"]) {
-				echo "Build for Java ${label}"
-
+			withEnv(["JVM_TO_TEST=${jvmToTest}"]) {
 				checkout scm
 
 				gradlew "clean assemble compileTestJava --parallel"

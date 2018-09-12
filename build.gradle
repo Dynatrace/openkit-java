@@ -30,11 +30,11 @@ repositories {
     mavenCentral()
 }
 
-def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
+def sourceTarget = "6"
 def jvmToTest = System.getenv("JVM_TO_TEST") ?: "JAVA_HOME"
 
-sourceCompatibility = 1.6
-targetCompatibility = "1." + target
+sourceCompatibility = "1." + sourceTarget
+targetCompatibility = "1." + sourceTarget
 
 dependencies {
     signature 'org.codehaus.mojo.signature:java16:1.1@signature'
@@ -46,7 +46,7 @@ dependencies {
 jar {
     baseName = 'openkit'
     if (System.getenv('TRAVIS') != null) {
-        classifier = 'java' + target
+        classifier = 'java' + sourceTarget
     }
 
     // split version into specification & implementation version
@@ -154,7 +154,7 @@ task printVersion {
 }
 
 // run each test for every JAVA_HOME_* environment which is specified and set as environment
-[target, jvmToTest.split(",")].combinations { targetJVM, envJVM ->
+[sourceTarget, jvmToTest.split(",")].combinations { targetJVM, envJVM ->
     if(System.getenv(envJVM) != null) {
         def configName = "${targetJVM}-${envJVM}"
         task "test-${configName}"(type: Test) {
