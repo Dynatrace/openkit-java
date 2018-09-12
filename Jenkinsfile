@@ -1,6 +1,6 @@
 def branchPattern = /v\d+\.\d+\.\d+.*/
 def targetCompatibilities = [6]
-def jvmToTest = [6,7,8]
+def jvmToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
 
 properties([
 		buildDiscarder(logRotator(numToKeepStr: '10'))

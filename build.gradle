@@ -31,7 +31,7 @@ repositories {
 }
 
 def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
-def jvmToTest = System.getenv("JVM_TO_TEST") ?: "6"
+def jvmToTest = System.getenv("JVM_TO_TEST") ?: "JAVA_HOME"
 
 sourceCompatibility = 1.6
 targetCompatibility = "1." + target
@@ -155,15 +155,15 @@ task printVersion {
 
 // run each test for every JAVA_HOME_* environment which is specified and set as environment
 [target, jvmToTest.split(",")].combinations { targetJVM, envJVM ->
-    if(System.getenv("JAVA_HOME_" + envJVM) != null) {
-        def configName = "${targetJVM}-JAVA_HOME_${envJVM}"
+    if(System.getenv(envJVM) != null) {
+        def configName = "${targetJVM}-${envJVM}"
         task "test-${configName}"(type: Test) {
             exclude '**/local/*.class'
-            executable = System.getenv("JAVA_HOME_" + envJVM) + "/bin/java"
+            executable = System.getenv(envJVM) + "/bin/java"
         }
         tasks.test.dependsOn tasks."test-${configName}"
     } else {
-        logger.quiet("Can't find JAVA_HOME_" + envJVM + ". Test ignored!")
+        logger.quiet("Can't find " + envJVM + ". Test ignored!")
 
     }
 }
