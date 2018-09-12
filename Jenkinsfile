@@ -16,8 +16,7 @@ timeout(time: 15, unit: 'MINUTES') {
 			}
 
 			stage('Build') {
-				parallel (['Java',
-				            createBuildTask(jvmToTest.join(","))])
+				parallel (['Java': createBuildTask(jvmToTest.join(","))])
 			}
 
 			echo "Branch: ${env.BRANCH_NAME}"
