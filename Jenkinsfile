@@ -1,5 +1,6 @@
 def branchPattern = /v\d+\.\d+\.\d+.*/
 def targetCompatibilities = [6]
+def jvmToTest = [6,7,8]
 
 properties([
 		buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -17,7 +18,7 @@ timeout(time: 15, unit: 'MINUTES') {
 
 			stage('Build') {
 				parallel (targetCompatibilities.collectEntries {[
-					'Java ' + it, createBuildTask(it)
+					'Java ' + it, createBuildTask(it,jvmToTest.join())
 				]})
 			}
 
@@ -36,10 +37,11 @@ timeout(time: 15, unit: 'MINUTES') {
 	}
 }
 
-def createBuildTask(label) {
+def createBuildTask(label,jvmToTest) {
 	return {
 		node('default') {
-			withEnv(["TARGET_COMPATIBILITY=${label}"]) {
+			withEnv(["TARGET_COMPATIBILITY=${label}",
+			         "JVM_TO_TEST=${jvmToTest}"]) {
 				echo "Build for Java ${label}"
 
 				checkout scm
