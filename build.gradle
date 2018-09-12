@@ -156,7 +156,7 @@ task printVersion {
 // run each test for every JAVA_HOME_* environment which is specified and set as environment
 [target, jvmToTest.split(",")].combinations { targetJVM, envJVM ->
     if(System.getenv("JAVA_HOME_" + envJVM) != null) {
-        def configName = "test-${targetJVM}-${envJVM}"
+        def configName = "${targetJVM}-JAVA_HOME_${envJVM}"
         task "test-${configName}"(type: Test) {
             exclude '**/local/*.class'
             executable = System.getenv("JAVA_HOME_" + envJVM) + "/bin/java"
