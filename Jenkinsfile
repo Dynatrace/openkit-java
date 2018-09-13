@@ -1,3 +1,5 @@
+String currentVersion = readVersion('version.properties')
+String buildVersion = currentVersion + "-b" + env.BUILD_NUMBER
 def jvmsToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
 
 properties([
@@ -10,8 +12,7 @@ timeout(time: 15, unit: 'MINUTES') {
 			stage('Checkout') {
 				checkout scm
 
-				def currentVersion = sh script: printVersion(), returnStdout: true
-				currentBuild.displayName += " - ${currentVersion}"
+				currentBuild.displayName += " - ${buildVersion}"
 			}
 
 			stage('Build') {
@@ -39,10 +40,10 @@ def createBuildTask(jvmsToTest) {
 			withEnv(["JVMS_TO_TEST=${jvmsToTest}"]) {
 				checkout scm
 
-				gradlew "clean assemble compileTestJava --parallel"
+				gradlew "-Pversion=${currentVersion} clean assemble compileTestJava --parallel"
 
 				try {
-					gradlew "check --continue --parallel"
+					gradlew "-Pversion=${currentVersion} check --continue --parallel"
 				} finally {
 					junit testResults: '**/build/test-results/test/TEST-*.xml', keepLongStdio: false
 					archiveArtifacts artifacts: '**/build/reports/**'
@@ -57,13 +58,5 @@ def copy(String source, String destination) {
 		sh "cp -f ${source} ${destination}"
 	} else {
 		bat "copy ${source} ${destination}"
-	}
-}
-
-def printVersion() {
-	if (isUnix()) {
-		return "./gradlew -q printVersion"
-	} else {
-		return "gradlew.bat -q printVersion"
 	}
 }
