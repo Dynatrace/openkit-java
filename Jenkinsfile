@@ -16,7 +16,7 @@ timeout(time: 15, unit: 'MINUTES') {
 			}
 
 			stage('Build') {
-				parallel (['Java': createBuildTask(jvmsToTest.join(","))])
+				parallel (['Java': createBuildTask(jvmsToTest.join(","),currentVersion)])
 			}
 
 			echo "Branch: ${env.BRANCH_NAME}"
@@ -34,7 +34,7 @@ timeout(time: 15, unit: 'MINUTES') {
 	}
 }
 
-def createBuildTask(jvmsToTest) {
+def createBuildTask(jvmsToTest,currentVersion) {
 	return {
 		node('default') {
 			withEnv(["JVMS_TO_TEST=${jvmsToTest}"]) {
