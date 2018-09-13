@@ -1,4 +1,4 @@
-def jvmToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
+def jvmsToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
 
 properties([
 		buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -15,7 +15,7 @@ timeout(time: 15, unit: 'MINUTES') {
 			}
 
 			stage('Build') {
-				parallel (['Java': createBuildTask(jvmToTest.join(","))])
+				parallel (['Java': createBuildTask(jvmsToTest.join(","))])
 			}
 
 			echo "Branch: ${env.BRANCH_NAME}"
@@ -33,10 +33,10 @@ timeout(time: 15, unit: 'MINUTES') {
 	}
 }
 
-def createBuildTask(jvmToTest) {
+def createBuildTask(jvmsToTest) {
 	return {
 		node('default') {
-			withEnv(["JVM_TO_TEST=${jvmToTest}"]) {
+			withEnv(["JVMS_TO_TEST=${jvmsToTest}"]) {
 				checkout scm
 
 				gradlew "clean assemble compileTestJava --parallel"
