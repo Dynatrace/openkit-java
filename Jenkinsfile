@@ -1,5 +1,5 @@
-String currentVersion = readVersion('version.properties')
-String buildVersion = currentVersion + "-b" + env.BUILD_NUMBER
+def currentVersion = readVersion('version.properties')
+def buildVersion = currentVersion + "-b" + env.BUILD_NUMBER
 def jvmsToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
 
 properties([
