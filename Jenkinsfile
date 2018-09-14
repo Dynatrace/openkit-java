@@ -1,5 +1,6 @@
-def branchPattern = /v\d+\.\d+\.\d+.*/
-def targetCompatibilities = [6, 7, 8]
+def currentVersion = readVersion('version.properties')
+def buildVersion = currentVersion + "-b" + env.BUILD_NUMBER
+def jvmsToTest = ["JAVA_HOME","JAVA_HOME_6","JAVA_HOME_7","JAVA_HOME_8"]
 
 properties([
 		buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -11,14 +12,11 @@ timeout(time: 15, unit: 'MINUTES') {
 			stage('Checkout') {
 				checkout scm
 
-				def currentVersion = sh script: printVersion(), returnStdout: true
-				currentBuild.displayName += " - ${currentVersion}"
+				currentBuild.displayName += " - ${buildVersion}"
 			}
 
 			stage('Build') {
-				parallel (targetCompatibilities.collectEntries {[
-					'Java ' + it, createBuildTask(it)
-				]})
+				parallel (['Java': createBuildTask(jvmsToTest.join(","),currentVersion)])
 			}
 
 			echo "Branch: ${env.BRANCH_NAME}"
@@ -36,18 +34,16 @@ timeout(time: 15, unit: 'MINUTES') {
 	}
 }
 
-def createBuildTask(label) {
+def createBuildTask(jvmsToTest,currentVersion) {
 	return {
 		node('default') {
-			withEnv(["TARGET_COMPATIBILITY=${label}"]) {
-				echo "Build for Java ${label}"
-
+			withEnv(["JVMS_TO_TEST=${jvmsToTest}"]) {
 				checkout scm
 
-				gradlew "clean assemble compileTestJava --parallel"
+				gradlew "-Pversion=${currentVersion} clean assemble compileTestJava --parallel"
 
 				try {
-					gradlew "check --continue --parallel"
+					gradlew "-Pversion=${currentVersion} check --continue --parallel"
 				} finally {
 					junit testResults: '**/build/test-results/test/TEST-*.xml', keepLongStdio: false
 					archiveArtifacts artifacts: '**/build/reports/**'
@@ -62,13 +58,5 @@ def copy(String source, String destination) {
 		sh "cp -f ${source} ${destination}"
 	} else {
 		bat "copy ${source} ${destination}"
-	}
-}
-
-def printVersion() {
-	if (isUnix()) {
-		return "./gradlew -q printVersion"
-	} else {
-		return "gradlew.bat -q printVersion"
 	}
 }

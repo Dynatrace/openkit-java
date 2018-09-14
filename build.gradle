@@ -6,13 +6,13 @@ buildscript {
     }
     dependencies {
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.3.0'
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.6'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
     }
 }
 
 group 'com.dynatrace.openkit'
-version '1.3.0-SNAPSHOT'
+version '${version}'
 
 def groupString = group
 def title = 'Dynatrace OpenKit SDK for Java'
@@ -30,10 +30,11 @@ repositories {
     mavenCentral()
 }
 
-def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
+def sourceTarget = "6"
+def jvmsToTest = System.getenv("JVMS_TO_TEST") ?: "JAVA_HOME"
 
-sourceCompatibility = 1.6
-targetCompatibility = "1." + target
+sourceCompatibility = "1." + sourceTarget
+targetCompatibility = "1." + sourceTarget
 
 dependencies {
     signature 'org.codehaus.mojo.signature:java16:1.1@signature'
@@ -42,14 +43,10 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 }
 
-test {
-    exclude '**/local/*.class'
-}
-
 jar {
     baseName = 'openkit'
     if (System.getenv('TRAVIS') != null) {
-        classifier = 'java' + target
+        classifier = 'java' + sourceTarget
     }
 
     // split version into specification & implementation version
@@ -145,13 +142,20 @@ publishing {
     }
 }
 
-task printVersion {
-    doLast {
-        def buildNumber = System.getenv()['BUILD_NUMBER']
-        if (buildNumber != null) {
-            logger.quiet "${version}-b${buildNumber}"
-        } else {
-            logger.quiet version
+// run each test for every JAVA_HOME_* environment which is specified and set as environment
+[[sourceTarget], jvmsToTest.split(",")].combinations { targetJVM, envJVM ->
+    if(System.getenv(envJVM) != null) {
+        def configName = "${targetJVM}-${envJVM}"
+        task "test-${configName}"(type: Test) {
+            exclude '**/local/*.class'
+            executable = System.getenv(envJVM) + "/bin/java"
         }
+        tasks.test.dependsOn tasks."test-${configName}"
+    } else {
+        logger.quiet("Can't find " + envJVM + ". Test ignored!")
     }
+}
+
+test {
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 }
