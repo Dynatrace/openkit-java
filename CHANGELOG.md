@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.1.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.2.0...HEAD)
+
+## 1.2.0 [Release date: 2018-09-14]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.0)
 
 ### Added
 - Server overload prevention  
@@ -9,7 +12,8 @@
 ### Changed
 - Fix wrong Session start time
 - Fix wrong SimpleDatePattern, which does not work with Java 6
-- Fix wrong device ID in web requests
+- Fix wrong device ID in web requests  
+  This has only an impact, if `DataCollectionLevel.PERFORMANCE` was used
 
 ### Improved
 - OpenKit internal version handling
