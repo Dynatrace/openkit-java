@@ -176,8 +176,3 @@ publishing {
 test {
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 }
-
-
-task dops {
-    print "TSET ${version}"
-}
