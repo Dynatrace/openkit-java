@@ -40,10 +40,10 @@ def createBuildTask(jvmsToTest,currentVersion) {
 			withEnv(["JVMS_TO_TEST=${jvmsToTest}"]) {
 				checkout scm
 
-				gradlew "-Pversion=${currentVersion} clean assemble compileTestJava --parallel"
+				gradlew "-PcurrentVersion=${currentVersion} clean assemble compileTestJava --parallel"
 
 				try {
-					gradlew "-Pversion=${currentVersion} check --continue --parallel"
+					gradlew "-PcurrentVersion=${currentVersion} check --continue --parallel"
 				} finally {
 					junit testResults: '**/build/test-results/test/TEST-*.xml', keepLongStdio: false
 					archiveArtifacts artifacts: '**/build/reports/**'
