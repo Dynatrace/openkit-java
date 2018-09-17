@@ -13,23 +13,7 @@ buildscript {
 
 group 'com.dynatrace.openkit'
 
-def releaseVersion
-if(!project.hasProperty('currentVersion')) {
-    Properties properties = new Properties()
-    File propertiesFile = new File('version.properties')
-    propertiesFile.withInputStream {
-        properties.load(it)
-    }
-    if(properties.version != null) {
-        releaseVersion=properties.version
-    } else {
-        releaseVersion="undefined"
-    }
-} else {
-    // use -P argument of calling script
-    releaseVersion=project['currentVersion']
-}
-version "${releaseVersion}"
+version readVersion()
 
 def groupString = group
 def title = 'Dynatrace OpenKit SDK for Java'
@@ -175,4 +159,23 @@ publishing {
 
 test {
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
+
+def readVersion() {
+    def releaseVersion
+    if(version == 'unspecified') {
+        Properties properties = new Properties()
+        File propertiesFile = new File('version.properties')
+        propertiesFile.withInputStream {
+            properties.load(it)
+        }
+        if(properties.version != null) {
+            releaseVersion = properties.version
+        } else {
+            releaseVersion = "unspecified"
+        }
+    } else {
+        releaseVersion = "${version}"
+    }
+   return releaseVersion
 }
