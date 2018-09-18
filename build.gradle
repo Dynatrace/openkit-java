@@ -59,9 +59,24 @@ jar {
     }
 
     // append build information to the spec version
-    def buildNumber = System.getenv()['BUILD_NUMBER']
+    def buildNumber
+    if (System.getenv('TRAVIS') != null) {
+        // if the build is running on Travis CI, then the
+        // build number can be retrieved via TRAVIS_BUILD_NUMBER
+        buildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
+    } else {
+        // otherwise via BUILD_NUMBER
+        buildNumber = System.getenv('BUILD_NUMBER')
+    }
+
     if (buildNumber != null) {
-        implVersion = "${implVersion}-b${buildNumber}"
+        if (implVersion?.trim()) {
+            // SNAPSHOT release or release candidate
+            implVersion = "${implVersion}-b${buildNumber}"
+        } else {
+            // release
+            implVersion = "b${buildNumber}"
+        }
     }
 
     def name = groupString.replaceAll('\\.', '/')

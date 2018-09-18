@@ -68,7 +68,11 @@ public class OpenKitConstants {
             // intentionally left empty
         }
 
-        DEFAULT_APPLICATION_VERSION = specificationVersion + "-" + implementationVersion;
+        if (implementationVersion != null && !implementationVersion.trim().isEmpty()) {
+            DEFAULT_APPLICATION_VERSION = specificationVersion + "-" + implementationVersion;
+        } else {
+            DEFAULT_APPLICATION_VERSION = specificationVersion;
+        }
         DEFAULT_OPERATING_SYSTEM = "OpenKit " + DEFAULT_APPLICATION_VERSION;
         DEFAULT_MANUFACTURER = implementationVendor;
     }
