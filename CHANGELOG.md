@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.2.0...HEAD)
 
+### Changed
+- Take build number from `TRAVIS_BUILD_NUMBER` environment variable when
+  building on Travis CI. 
+
 ## 1.2.0 [Release date: 2018-09-14]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.0)
 
