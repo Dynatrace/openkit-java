@@ -177,7 +177,6 @@ test {
 }
 
 def readVersion() {
-    def releaseVersion
     if(version == 'unspecified') {
         Properties properties = new Properties()
         File propertiesFile = new File('version.properties')
@@ -185,12 +184,8 @@ def readVersion() {
             properties.load(it)
         }
         if(properties.version != null) {
-            releaseVersion = properties.version
-        } else {
-            releaseVersion = "unspecified"
+            return properties.version
         }
-    } else {
-        releaseVersion = "${version}"
     }
-   return releaseVersion
+    return version
 }
