@@ -31,7 +31,7 @@ repositories {
     mavenCentral()
 }
 
-def sourceTarget = "6"
+def sourceTarget = System.getenv("TARGET_COMPATIBILITY") ?: "6"
 def jvmsToTest = System.getenv("JVMS_TO_TEST") ?: "JAVA_HOME"
 
 sourceCompatibility = "1." + sourceTarget
