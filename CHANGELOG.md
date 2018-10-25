@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-dotnet/compare/v1.2.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.2.1...HEAD)
+
+## 1.2.1 [Release date: 2018-10-25]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.1)
 
 ### Changed
 - Take build number from `TRAVIS_BUILD_NUMBER` environment variable when
