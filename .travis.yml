@@ -18,7 +18,7 @@ matrix:
     - name: "Java 8 compatible"
       jdk: oraclejdk8
       env: TARGET_COMPATIBILITY=8
-    - name: "Java 8 compatible"
+    - name: "Java 11 compatible"
       jdk: oraclejdk11
       env: TARGET_COMPATIBILITY=11
 
