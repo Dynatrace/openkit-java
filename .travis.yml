@@ -3,15 +3,24 @@ dist: trusty
 # The main language that this repo uses - this enables Gradle support
 language: java
 
-# The JDK to be used
-jdk:
-- oraclejdk8
+# run in container
+sudo: false
 
-# The target compatibility matrix, that creates artifacts for different java versions
-env:
-- TARGET_COMPATIBILITY=6
-- TARGET_COMPATIBILITY=7
-- TARGET_COMPATIBILITY=8
+# Job matrix
+matrix:
+  include:
+    - name: "Java 6 compatible"
+      jdk: oraclejdk8
+      env: TARGET_COMPATIBILITY=6
+    - name: "Java 7 compatible"
+      jdk: oraclejdk8
+      env: TARGET_COMPATIBILITY=7
+    - name: "Java 8 compatible"
+      jdk: oraclejdk8
+      env: TARGET_COMPATIBILITY=8
+    - name: "Java 8 compatible"
+      jdk: oraclejdk11
+      env: TARGET_COMPATIBILITY=11
 
 # Install the repository locally - this downloads dependencies, compiles the source code, and
 # creates all artifacts
