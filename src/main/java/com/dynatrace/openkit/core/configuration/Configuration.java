@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.SessionIDProvider;
@@ -29,6 +30,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Configuration {
 
+    /** Character set used to encode application & device ID */
+    private static final String ENCODING_CHARSET = "UTF-8";
+    /** Underscore is a reserved character in the server, therefore it also needs to be encoded */
+    private static final String RESERVED_CHARACTERS = "_";
+
     private static final boolean DEFAULT_CAPTURE = true;                           // default: capture on
     private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;                 // default: wait 2m (in ms) to send beacon
     private static final int DEFAULT_MAX_BEACON_SIZE = 30 * 1024;                   // default: max 30KB (in B) to send in one beacon
@@ -38,6 +44,7 @@ public class Configuration {
     // immutable settings
     private final String applicationName;
     private final String applicationID;
+    private final String applicationIDPercentEncoded;
     private final OpenKitType openKitType;
     private final String deviceID;
     private final String endpointURL;
@@ -71,6 +78,7 @@ public class Configuration {
         // immutable settings
         this.applicationName = applicationName;
         this.applicationID = applicationID;
+        applicationIDPercentEncoded = PercentEncoder.encode(applicationID, ENCODING_CHARSET, RESERVED_CHARACTERS);
         this.deviceID = deviceID;
         this.endpointURL = endpointURL;
 
@@ -87,7 +95,7 @@ public class Configuration {
             new HTTPClientConfiguration(
                 endpointURL,
                 openKitType.getDefaultServerID(),
-                applicationID,
+                applicationIDPercentEncoded,
                 trustManager);
 
         this.applicationVersion = applicationVersion;
@@ -172,6 +180,10 @@ public class Configuration {
 
     public String getApplicationID() {
         return applicationID;
+    }
+
+    public String getApplicationIDPercentEncoded() {
+        return applicationIDPercentEncoded;
     }
 
     public String getDeviceID() {

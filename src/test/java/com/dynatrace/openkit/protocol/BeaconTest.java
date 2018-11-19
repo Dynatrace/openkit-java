@@ -43,7 +43,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("resource")
+
 public class BeaconTest {
 
     private static final String APP_ID = "appID";
@@ -63,6 +63,7 @@ public class BeaconTest {
     public void setUp() {
         configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationIDPercentEncoded()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.getDeviceID()).thenReturn(DEVICE_ID);
@@ -174,6 +175,23 @@ public class BeaconTest {
 
         // then
         assertThat(tag, is(equalTo("MT_3_" + SERVER_ID + "_" + DEVICE_ID + "_0_" + APP_ID + "_" + ACTION_ID + "_" + THREAD_ID + "_" + sequenceNo)));
+    }
+
+    @Test
+    public void createWebRequestTagEncodesDeviceIDPropperly() {
+        // given
+        when(configuration.getDeviceID()).thenReturn("device_id/");
+        final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
+
+        // when
+        int sequenceNo = 42;
+        String tag = beacon.createTag(ACTION_ID, sequenceNo);
+
+        // then
+        assertThat(tag, is(equalTo("MT_3_" + SERVER_ID + "_device%5Fid%2F_0_" + APP_ID + "_" + ACTION_ID + "_" + THREAD_ID + "_" + sequenceNo)));
+
+        // also ensure that the application ID is the encoded one
+        verify(configuration, times(1)).getApplicationIDPercentEncoded();
     }
 
     @Test

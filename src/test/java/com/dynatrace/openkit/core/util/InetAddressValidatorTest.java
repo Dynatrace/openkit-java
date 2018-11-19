@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.util;
 
-import com.dynatrace.openkit.core.util.InetAddressValidator;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

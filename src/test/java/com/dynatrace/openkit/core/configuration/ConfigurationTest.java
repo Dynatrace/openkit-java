@@ -25,6 +25,7 @@ import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
@@ -164,6 +165,24 @@ public class ConfigurationTest {
 
         //then
         assertThat(obtained, is(sameInstance(beaconConfiguration)));
+    }
+
+    @Test
+    public void getApplicationID() {
+        // given
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", "777", "");
+
+        // then
+        assertThat(target.getApplicationID(), is(equalTo("/App_ID%")));
+    }
+
+    @Test
+    public void getApplicationIDPercentEncodedDoesPropperEncoding() {
+        // given
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", "777", "");
+
+        // then
+        assertThat(target.getApplicationIDPercentEncoded(), is(equalTo("%2FApp%5FID%25")));
     }
 
     private final class TestConfiguration extends Configuration {
