@@ -29,7 +29,7 @@ import java.util.BitSet;
  *
  * <p>
  *     Unlike Java's {@code URLEncoder} this class uses RFC 3986 to determine
- *     the unreserved characters(see also {@see https://tools.ietf.org/html/rfc3986#section-2.3})
+ *     the unreserved characters(see also {@see <a href="https://tools.ietf.org/html/rfc3986#section-2.3>https://tools.ietf.org/html/rfc3986#section-2.3</a>})
  * </p>
  */
 public class PercentEncoder {
@@ -72,7 +72,7 @@ public class PercentEncoder {
      * @return Percent encoded string.
      */
     public static String encode(String input, String encoding) {
-        return encode(input, encoding, "");
+        return encode(input, encoding, null);
     }
 
     /**
@@ -81,10 +81,10 @@ public class PercentEncoder {
      * @param input The input string to percent-encode.
      * @param encoding Encoding used to encode characters.
      * @param additionalReservedChars Characters that should be unreserved, but need
-     *                                to bee considered reserved too.
+     *                                to be considered reserved too.
      * @return Percent encoded string.
      */
-    public static String encode(String input, String encoding, String additionalReservedChars) {
+    public static String encode(String input, String encoding, char[] additionalReservedChars) {
 
         BitSet unreservedSet = buildUnreservedCharacters(additionalReservedChars);
         StringBuilder resultBuilder = new StringBuilder(input.length());
@@ -98,17 +98,16 @@ public class PercentEncoder {
                 index++;
             } else {
                 // reserved character, but encoding needs to be applied first
-                StringBuilder tmp = new StringBuilder();
-                tmp.append((char)c);
+                StringBuilder sb = new StringBuilder().append((char)c);
                 index++;
                 while (index < input.length() && !unreservedSet.get(input.charAt(index))) {
-                    tmp.append(input.charAt(index));
+                    sb.append(input.charAt(index));
                     index++;
                 }
 
                 // encode temp string using given encoding; & percent encoding
                 try {
-                    byte[] encoded = tmp.toString().getBytes(encoding);
+                    byte[] encoded = sb.toString().getBytes(encoding);
                     // now perform percent encoding
                     for (byte b : encoded) {
                         resultBuilder.append(hexEncode(b));
@@ -140,14 +139,13 @@ public class PercentEncoder {
         return result;
     }
 
-    private static BitSet buildUnreservedCharacters(String additionalReservedChars) {
+    private static BitSet buildUnreservedCharacters(char[] additionalReservedChars) {
         BitSet unreservedSet = UNRESERVED_CHARACTERS;
-        if (!additionalReservedChars.isEmpty()) {
+        if (additionalReservedChars != null && additionalReservedChars.length > 0) {
             // duplicate the
             unreservedSet = new BitSet(UNRESERVED_CHARACTERS_BITS);
             unreservedSet.or(UNRESERVED_CHARACTERS);
-            for (int i = 0; i < additionalReservedChars.length(); i++) {
-                int c = additionalReservedChars.charAt(i);
+            for (char c : additionalReservedChars) {
                 if (c < UNRESERVED_CHARACTERS_BITS) {
                     unreservedSet.clear(c);
                 }

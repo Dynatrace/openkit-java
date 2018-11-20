@@ -33,7 +33,7 @@ public class Configuration {
     /** Character set used to encode application & device ID */
     private static final String ENCODING_CHARSET = "UTF-8";
     /** Underscore is a reserved character in the server, therefore it also needs to be encoded */
-    private static final String RESERVED_CHARACTERS = "_";
+    private static final char[] RESERVED_CHARACTERS = {'_'};
 
     private static final boolean DEFAULT_CAPTURE = true;                           // default: capture on
     private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;                 // default: wait 2m (in ms) to send beacon
@@ -95,7 +95,7 @@ public class Configuration {
             new HTTPClientConfiguration(
                 endpointURL,
                 openKitType.getDefaultServerID(),
-                applicationIDPercentEncoded,
+                applicationID,
                 trustManager);
 
         this.applicationVersion = applicationVersion;

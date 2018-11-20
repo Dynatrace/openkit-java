@@ -73,7 +73,7 @@ public class PercentEncoderTest {
     public void itIsPossibleToMarkAdditionalCharactersAsReserved() {
         // when
         String additionalReservedCharacters = "€0_";
-        String obtained = PercentEncoder.encode("0123456789-._~", "UTF-8", additionalReservedCharacters);
+        String obtained = PercentEncoder.encode("0123456789-._~", "UTF-8", additionalReservedCharacters.toCharArray());
 
         // then
         String expected = "%30123456789-.%5F~";

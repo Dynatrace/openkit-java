@@ -96,6 +96,9 @@ public class Beacon {
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
 
+    // web request tag reserved characters
+    private static final char[] RESERVED_CHARACTERS = {'_'};
+
     private static final char BEACON_DATA_DELIMITER = '&';
 
     // next ID and sequence number
@@ -276,7 +279,7 @@ public class Beacon {
         if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
-        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, "_")
+        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
             + "_" + sessionNumber + "_" + configuration.getApplicationIDPercentEncoded() + "_" + parentActionID + "_" + threadIDProvider
             .getThreadID() + "_" + sequenceNo;
     }
@@ -900,7 +903,7 @@ public class Beacon {
      * @param stringValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, String stringValue) {
-        String encodedValue = PercentEncoder.encode(stringValue, CHARSET, "_");
+        String encodedValue = PercentEncoder.encode(stringValue, CHARSET, RESERVED_CHARACTERS);
         if (encodedValue == null) {
             // if encoding fails, skip this key/value pair
             logger.error(getClass().getSimpleName() + "Skipped encoding of Key/Value: " + key + "/" + stringValue);
