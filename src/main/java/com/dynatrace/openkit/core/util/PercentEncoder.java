@@ -29,7 +29,7 @@ import java.util.BitSet;
  *
  * <p>
  *     Unlike Java's {@code URLEncoder} this class uses RFC 3986 to determine
- *     the unreserved characters(see also {@see <a href="https://tools.ietf.org/html/rfc3986#section-2.3>https://tools.ietf.org/html/rfc3986#section-2.3</a>})
+ *     the unreserved characters(see also <a href="https://tools.ietf.org/html/rfc3986#section-2.3">https://tools.ietf.org/html/rfc3986#section-2.3</a>)
  * </p>
  */
 public class PercentEncoder {
