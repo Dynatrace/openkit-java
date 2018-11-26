@@ -177,7 +177,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void getApplicationIDPercentEncodedDoesPropperEncoding() {
+    public void getApplicationIDPercentEncodedDoesProperEncoding() {
         // given
         TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", "777", "");
 
