@@ -43,7 +43,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("resource")
+
 public class BeaconTest {
 
     private static final String APP_ID = "appID";
@@ -63,6 +63,7 @@ public class BeaconTest {
     public void setUp() {
         configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationIDPercentEncoded()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.getDeviceID()).thenReturn(DEVICE_ID);
