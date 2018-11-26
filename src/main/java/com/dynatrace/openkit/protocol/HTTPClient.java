@@ -19,6 +19,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -28,7 +29,6 @@ import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -75,6 +75,9 @@ public class HTTPClient {
     // constant query parameter values
     private static final String PLATFORM_TYPE_OPENKIT = "1";
     private static final String AGENT_TECHNOLOGY_TYPE = "okjava";
+
+    // additional reserved characters for URL encoding
+    private static final char[] QUERY_RESERVED_CHARACTERS = {'_'};
 
     // connection constants
     private static final int MAX_SEND_RETRIES = 3;
@@ -286,18 +289,11 @@ public class HTTPClient {
     }
 
     // helper method for appending query parameters
-    private void appendQueryParam(StringBuilder urlBuilder, String key, String value) {
-        String encodedValue = "";
-        try {
-            encodedValue = URLEncoder.encode(value, Beacon.CHARSET);
-        } catch (UnsupportedEncodingException e) {
-            // must not happen, as UTF-8 should *really* be supported
-        }
-
+    private static void appendQueryParam(StringBuilder urlBuilder, String key, String value) {
         urlBuilder.append('&');
         urlBuilder.append(key);
         urlBuilder.append('=');
-        urlBuilder.append(encodedValue);
+        urlBuilder.append(PercentEncoder.encode(value, "UTF-8", QUERY_RESERVED_CHARACTERS));
     }
 
     // helper method for gzipping beacon data

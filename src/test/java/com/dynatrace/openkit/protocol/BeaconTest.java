@@ -49,6 +49,7 @@ public class BeaconTest {
     public void setUp() {
         configuration = mock(Configuration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationIDPercentEncoded()).thenReturn(APP_ID);
         when(configuration.getApplicationName()).thenReturn(APP_NAME);
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
