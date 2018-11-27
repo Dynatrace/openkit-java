@@ -36,6 +36,8 @@ def target = System.getenv("TARGET_COMPATIBILITY") ?: "6"
 sourceCompatibility = 1.6
 targetCompatibility = "1." + target
 
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
 
 dependencies {
     signature 'org.codehaus.mojo.signature:java16:1.1@signature'
