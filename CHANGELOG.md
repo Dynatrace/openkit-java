@@ -1,6 +1,14 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.2.1...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.2.2...release/1.2)
+
+## 1.2.2 [Release date: 2018-12-19]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.2)
+
+### Changed
+- Application ID is correctly encoded for special characters
+  The encoding is a percent-encoding based on RFC 3986 with additional encoding of underscore characters.
+- Set file encoding to UTF-8 in gradle build
 
 ## 1.2.1 [Release date: 2018-10-25]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.1)
