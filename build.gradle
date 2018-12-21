@@ -21,9 +21,11 @@ def vendor = 'Dynatrace LLC'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
-apply plugin: 'ru.vyarus.animalsniffer'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
+if (Integer.valueOf(System.getenv("TARGET_COMPATIBILITY") ?: "6") <= 8) {
+    apply plugin: 'ru.vyarus.animalsniffer'
+}
 
 apply from: "gradle/license.gradle"
 
@@ -41,7 +43,9 @@ compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
 dependencies {
-    signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+    if (Integer.valueOf(sourceTarget) <= 8) {
+        signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+    }
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
