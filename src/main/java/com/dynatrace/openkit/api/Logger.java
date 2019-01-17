@@ -23,39 +23,66 @@ package com.dynatrace.openkit.api;
 public interface Logger {
 
     /**
+     * Log with a given level and message
+     *
+     * @param level     the level of the log entry
+     * @param message   the message to write to the log
+     */
+    void log(Level level, String message);
+
+    /**
+     * Log with a given level, message and throwable
+     *
+     * @param level     the level of the log entry
+     * @param message   the message to write to the log
+     * @param throwable an instance of a throwable to be attached to the output.
+     */
+    void log(Level level, String message, Throwable throwable);
+
+    /**
      * Log with level 'error'
      *
+     * @deprecated {@link #log(Level, String)}
      * @param message the message to write to the log
      */
+    @Deprecated
     void error(String message);
 
     /**
      * Log with level 'error'
      *
+     * @deprecated {@link #log(Level, String)}
      * @param message the message to write to the log
      * @param t       an instance of a throwable to be attached to the output
      */
+    @Deprecated
     void error(String message, Throwable t);
 
     /**
      * Log with level 'warning'
      *
+     * @deprecated {@link #log(Level, String)}
      * @param message the message to write to the log
      */
+    @Deprecated
     void warning(String message);
 
     /**
      * Log with level 'info'
      *
+     * @deprecated {@link #log(Level, String)}
      * @param message the message to write to the log
      */
+    @Deprecated
     void info(String message);
 
     /**
      * Log with level 'debug'
      *
+     * @deprecated {@link #log(Level, String)}
      * @param message the message to write to the log
      */
+    @Deprecated
     void debug(String message);
 
     /**

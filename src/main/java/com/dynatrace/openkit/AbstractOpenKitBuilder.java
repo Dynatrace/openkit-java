@@ -17,6 +17,7 @@
 package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.Level;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
@@ -39,7 +40,7 @@ public abstract class AbstractOpenKitBuilder {
     // mutable fields
     private Logger logger;
     private SSLTrustManager trustManager = new SSLStrictTrustManager();
-    private boolean verbose;
+    private Level logLevel = Level.WARN;
     private String operatingSystem = OpenKitConstants.DEFAULT_OPERATING_SYSTEM;
     private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
     private String modelID = OpenKitConstants.DEFAULT_MODEL_ID;
@@ -78,10 +79,24 @@ public abstract class AbstractOpenKitBuilder {
      * If a custom logger is provided by calling  {@code withLogger} debug and info log output
      * depends on the values returned by {@code isDebugEnabled} and {@code isInfoEnabled}.
      *
+     * @deprecated {@link #setLogLevel(Level)}
      * @return {@code this}
      */
+    @Deprecated
     public AbstractOpenKitBuilder enableVerbose() {
-        verbose = true;
+        return setLogLevel(Level.DEBUG);
+    }
+
+    /**
+     * Sets the default log level if the default logger is used.
+     * If a custom logger is provided by calling {@link #withLogger(Logger)}, debug and info log output
+     * depends on the values returned by {@link Logger#isDebugEnabled()} and {@link Logger#isInfoEnabled()}.
+     *
+     * @param level The logLevel for the custom logger
+     * @return {@link AbstractOpenKitBuilder}
+     */
+    public AbstractOpenKitBuilder setLogLevel(Level level) {
+        logLevel = level;
         return this;
     }
 
@@ -204,17 +219,17 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the data collection level.
+     * Sets the data collection logLevel.
      *
      * <p>
-     * Depending on the chosen level the amount and granularity of data sent is controlled.
+     * Depending on the chosen logLevel the amount and granularity of data sent is controlled.
      * OFF (0) - no data collected
      * PERFORMANCE (1) - only performance related data is collected
      * USER_BEHAVIOR (2) - all available RUM data including performance related data is collected
      * default value is OFF(0)
      * </p>
      *
-     * @param dataCollectionLevel Data collection  level to apply.
+     * @param dataCollectionLevel Data collection  logLevel to apply.
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withDataCollectionLevel(DataCollectionLevel dataCollectionLevel) {
@@ -316,6 +331,6 @@ public abstract class AbstractOpenKitBuilder {
             return logger;
         }
 
-        return new DefaultLogger(verbose);
+        return new DefaultLogger(logLevel);
     }
 }
