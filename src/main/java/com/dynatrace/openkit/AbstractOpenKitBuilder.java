@@ -79,12 +79,12 @@ public abstract class AbstractOpenKitBuilder {
      * If a custom logger is provided by calling  {@code withLogger} debug and info log output
      * depends on the values returned by {@code isDebugEnabled} and {@code isInfoEnabled}.
      *
-     * @deprecated {@link #setLogLevel(LogLevel)}
+     * @deprecated {@link #withLogLevel(LogLevel)}
      * @return {@code this}
      */
     @Deprecated
     public AbstractOpenKitBuilder enableVerbose() {
-        return setLogLevel(LogLevel.DEBUG);
+        return withLogLevel(LogLevel.DEBUG);
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class AbstractOpenKitBuilder {
      * @param level The logLevel for the custom logger
      * @return {@link AbstractOpenKitBuilder}
      */
-    public AbstractOpenKitBuilder setLogLevel(LogLevel level) {
+    public AbstractOpenKitBuilder withLogLevel(LogLevel level) {
         logLevel = level;
         return this;
     }

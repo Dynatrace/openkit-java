@@ -61,8 +61,8 @@ customize OpenKit. This includes device specific information like operating syst
 | `withBeaconCacheMaxRecordAge`  | sets the maximum age of an entry in the beacon cache in milliseconds | 1 h 45 min |
 | `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes  | 100 MB |
 | `withBeaconCacheUpperMemoryBoundary`  |  sets the upper memory boundary of the beacon cache in bytes | 80 MB |
-| `enableVerbose`  | *Deprecated*, use `setLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `setLogLevel(LogLevel.DEBUG)`.  | `false` |
-| `setLogLevel` | sets the default log level if the default logger is used | `LogLevel.WARN`
+| `enableVerbose`  | *Deprecated*, use `withLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `withLogLevel(LogLevel.DEBUG)`.  | `false` |
+| `withLogLevel` | sets the default log level if the default logger is used | `LogLevel.WARN`
 
 :grey_exclamation: Please refer to the the JavaDoc for more information regarding possible configuration values.
 
@@ -79,11 +79,11 @@ man-in-the-middle attacks.
 ## Logging
 
 By default, OpenKit uses a logger implementation that logs to stdout. If the default logger is used, the desired
-minimum log level can be set by calling `setLogLevel` in the builder, and only messages with the same or higher 
+minimum log level can be set by calling `withLogLevel` in the builder, and only messages with the same or higher 
 priorities are logged.
 
 A custom logger can be set by calling `withLogger` in the builder. When a custom logger is used, a call to 
-`setLogLevel` or `enableVerbose` has no effect. In that case, debug and info logs are logged depending on the values returned 
+`withLogLevel` or `enableVerbose` has no effect. In that case, debug and info logs are logged depending on the values returned 
 in `isDebugEnabled` and `isInfoEnabled`.
 
 ## Initializing OpenKit
