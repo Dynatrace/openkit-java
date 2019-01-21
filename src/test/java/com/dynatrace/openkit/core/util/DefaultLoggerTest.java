@@ -23,13 +23,12 @@ import org.junit.Test;
 import java.io.*;
 import java.util.regex.Pattern;
 
-import static com.dynatrace.openkit.api.Level.*;
+import static com.dynatrace.openkit.api.LogLevel.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 
-@SuppressWarnings("deprecation")
 public class DefaultLoggerTest {
 
     private static final String CHARSET = "UTF-8";

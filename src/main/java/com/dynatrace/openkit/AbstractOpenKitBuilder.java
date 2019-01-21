@@ -17,7 +17,7 @@
 package com.dynatrace.openkit;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.api.Level;
+import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
@@ -40,7 +40,7 @@ public abstract class AbstractOpenKitBuilder {
     // mutable fields
     private Logger logger;
     private SSLTrustManager trustManager = new SSLStrictTrustManager();
-    private Level logLevel = Level.WARN;
+    private LogLevel logLevel = LogLevel.WARN;
     private String operatingSystem = OpenKitConstants.DEFAULT_OPERATING_SYSTEM;
     private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
     private String modelID = OpenKitConstants.DEFAULT_MODEL_ID;
@@ -79,12 +79,12 @@ public abstract class AbstractOpenKitBuilder {
      * If a custom logger is provided by calling  {@code withLogger} debug and info log output
      * depends on the values returned by {@code isDebugEnabled} and {@code isInfoEnabled}.
      *
-     * @deprecated {@link #setLogLevel(Level)}
+     * @deprecated {@link #setLogLevel(LogLevel)}
      * @return {@code this}
      */
     @Deprecated
     public AbstractOpenKitBuilder enableVerbose() {
-        return setLogLevel(Level.DEBUG);
+        return setLogLevel(LogLevel.DEBUG);
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class AbstractOpenKitBuilder {
      * @param level The logLevel for the custom logger
      * @return {@link AbstractOpenKitBuilder}
      */
-    public AbstractOpenKitBuilder setLogLevel(Level level) {
+    public AbstractOpenKitBuilder setLogLevel(LogLevel level) {
         logLevel = level;
         return this;
     }

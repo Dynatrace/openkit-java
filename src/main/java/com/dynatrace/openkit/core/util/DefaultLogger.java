@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.util;
 
-import com.dynatrace.openkit.api.Level;
+import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.Logger;
 
 import java.io.PrintStream;
@@ -26,11 +26,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static com.dynatrace.openkit.api.Level.*;
+import static com.dynatrace.openkit.api.LogLevel.*;
 
 public class DefaultLogger implements Logger {
 
-    private final Level logLevel;
+    private final LogLevel logLevel;
     private final PrintStream outputStream;
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -44,22 +44,22 @@ public class DefaultLogger implements Logger {
         return DATE_FORMAT.format(new Date());
     }
 
-    public DefaultLogger(Level logLevel) {
+    public DefaultLogger(LogLevel logLevel) {
         this(logLevel, System.out);
     }
 
-    DefaultLogger(Level logLevel, PrintStream outputStream) {
+    DefaultLogger(LogLevel logLevel, PrintStream outputStream) {
         this.logLevel = logLevel;
         this.outputStream = outputStream;
     }
 
     @Override
-    public void log(Level level, String message) {
+    public void log(LogLevel level, String message) {
         log(level, message, null);
     }
 
     @Override
-    public void log(Level level, String message, Throwable throwable) {
+    public void log(LogLevel level, String message, Throwable throwable) {
         if(!level.hasSameOrGreaterPriorityThan(this.logLevel)) {
             return;
         }
@@ -79,31 +79,26 @@ public class DefaultLogger implements Logger {
     }
 
     @Override
-    @Deprecated
     public void error(String message) {
         log(ERROR, message);
     }
 
     @Override
-    @Deprecated
     public void error(String message, Throwable t) {
         log(ERROR, message, t);
     }
 
     @Override
-    @Deprecated
     public void warning(String message) {
         log(WARN, message);
     }
 
     @Override
-    @Deprecated
     public void info(String message) {
         log(INFO, message);
     }
 
     @Override
-    @Deprecated
     public void debug(String message) {
         log(DEBUG, message);
     }
