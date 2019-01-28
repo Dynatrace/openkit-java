@@ -186,7 +186,7 @@ test {
 def readVersion() {
     if(version == 'unspecified') {
         Properties properties = new Properties()
-        File propertiesFile = new File('version.properties')
+        File propertiesFile = file("version.properties")
         propertiesFile.withInputStream {
             properties.load(it)
         }
