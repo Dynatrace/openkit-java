@@ -16,21 +16,27 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.zip.GZIPOutputStream;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -136,9 +142,8 @@ public class HTTPClient {
             if (logger.isDebugEnabled()) {
                 logger.debug(getClass().getSimpleName() + " sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
             }
-            URL httpURL = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) httpURL.openConnection();
-            return sendRequestInternal(requestType, connection, clientIPAddress, data, method);
+            HttpURLConnectionWrapperImpl httpURLConnectionWrapperImpl = new HttpURLConnectionWrapperImpl(url, MAX_SEND_RETRIES);
+            return sendRequestInternal(requestType, httpURLConnectionWrapperImpl, clientIPAddress, data, method);
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + " sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
@@ -148,10 +153,10 @@ public class HTTPClient {
     // *** private methods ***
 
     // only for unit testing the HTTPClient
-    Response sendRequest(RequestType requestType, HttpURLConnection connection, String clientIPAddress, byte[] data,
-            String method) {
+    Response sendRequest(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress, byte[] data,
+                         String method) {
         try {
-            return sendRequestInternal(requestType, connection, clientIPAddress, data, method);
+            return sendRequestInternal(requestType, httpURLConnectionWrapper, clientIPAddress, data, method);
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + "sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
@@ -159,11 +164,12 @@ public class HTTPClient {
     }
 
     // generic internal request send
-    private Response sendRequestInternal(RequestType requestType, HttpURLConnection connection, String clientIPAddress,
+    private Response sendRequestInternal(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress,
             byte[] data, String method) throws IOException, GeneralSecurityException {
-        int retry = 1;
         while (true) {
             try {
+                HttpURLConnection connection = httpURLConnectionWrapper.getHttpURLConnection();
+
                 // specific handling for HTTPS
                 if (connection instanceof HttpsURLConnection) {
                     applySSLTrustManager((HttpsURLConnection) connection);
@@ -203,10 +209,11 @@ public class HTTPClient {
 
 
             } catch (IOException exception) {
-                retry++;
-                if (retry > MAX_SEND_RETRIES) {
+                if (!httpURLConnectionWrapper.isRetryAllowed()) {
                     throw exception;
                 }
+
+                logger.log(LogLevel.INFO, "Exception occurred during connection establishment. Retry in progress.", exception);
 
                 try {
                     Thread.sleep(RETRY_SLEEP_TIME);
@@ -402,4 +409,26 @@ public class HTTPClient {
         return responseBuilder.toString();
     }
 
+    // A wrapper class to hold url and create HttpURLConnection on-demand.
+    // This allows us to generate HttpURLConnections for failed attempts as well as test the HTTPClient with desired
+    // output values
+    public static class HttpURLConnectionWrapperImpl implements HttpURLConnectionWrapper {
+        private final URL httpURL;
+        private final int maxCount;
+        private int connectCount;
+
+        public HttpURLConnectionWrapperImpl(String url, int maxCount) throws MalformedURLException {
+            this.httpURL= new URL(url);
+            this.maxCount = maxCount;
+        }
+
+        public HttpURLConnection getHttpURLConnection() throws IOException {
+            this.connectCount += 1;
+            return (HttpURLConnection) httpURL.openConnection();
+        }
+
+        public boolean isRetryAllowed() {
+            return this.maxCount > this.connectCount;
+        }
+    }
 }
