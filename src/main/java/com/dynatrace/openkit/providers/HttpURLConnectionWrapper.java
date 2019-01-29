@@ -20,18 +20,22 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 
 /**
- * Interface wrapping HttpURLConnection creation. Implementations can support connection retry.
+ * Interface wrapping {@link HttpURLConnection} creation. Implementations can support connection retry.
  */
 public interface HttpURLConnectionWrapper {
 
     /**
-     * Returns a HttpURLConnection generated from the implementation specifics
+     * Get a HttpURLConnection generated from the implementation specifics
+     *
+     * @return {@link HttpURLConnection} which is generated
      */
     HttpURLConnection getHttpURLConnection() throws IOException;
 
 
     /**
      * Returns retry allowed status
+     *
+     * @return {@code true} if retry is allowed and {@code false} if retry is not allowed
      */
     boolean isRetryAllowed();
 
