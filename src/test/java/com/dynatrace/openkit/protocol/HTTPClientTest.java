@@ -32,11 +32,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.zip.GZIPInputStream;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class HTTPClientTest {
@@ -329,6 +332,7 @@ public class HTTPClientTest {
         Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
+        verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
         assertThat(response.getResponseCode(), is(200));
         assertThat(gunzip(os.toByteArray()), is(data));
     }
@@ -354,6 +358,32 @@ public class HTTPClientTest {
 
         // then
         assertThat(response, nullValue());
+    }
+
+
+    /**
+     * Tests the retry mechanism to fail after retry limit,
+     */
+    @Test
+    public void sendRequestWithRetryFailOnRetryLimit() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        when(httpURLConnectionWrapper.isRetryAllowed())
+                .thenReturn(true)
+                .thenReturn(true)
+                .thenReturn(false);
+        when(httpURLConnectionWrapper.getHttpURLConnection())
+                .thenThrow(new IOException("First failure"))
+                .thenThrow(new IOException("Second failure"))
+                .thenThrow(new IOException("Third failure"));
+
+        // when
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
+
+        // then
+        verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
     }
 
     @Test
