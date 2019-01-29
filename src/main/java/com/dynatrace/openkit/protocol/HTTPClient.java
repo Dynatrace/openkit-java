@@ -142,8 +142,8 @@ public class HTTPClient {
             if (logger.isDebugEnabled()) {
                 logger.debug(getClass().getSimpleName() + " sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
             }
-            HttpURLConnectionWrapperImpl httpURLConnectionWrapperImpl = new HttpURLConnectionWrapperImpl(url, MAX_SEND_RETRIES);
-            return sendRequestInternal(requestType, httpURLConnectionWrapperImpl, clientIPAddress, data, method);
+            HttpURLConnectionWrapper httpURLConnectionWrapper = new HttpURLConnectionWrapperImpl(url, MAX_SEND_RETRIES);
+            return sendRequestInternal(requestType, httpURLConnectionWrapper, clientIPAddress, data, method);
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + " sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
@@ -422,11 +422,13 @@ public class HTTPClient {
             this.maxCount = maxCount;
         }
 
+        @Override
         public HttpURLConnection getHttpURLConnection() throws IOException {
             this.connectCount += 1;
             return (HttpURLConnection) httpURL.openConnection();
         }
 
+        @Override
         public boolean isRetryAllowed() {
             return this.maxCount > this.connectCount;
         }
