@@ -159,8 +159,8 @@ public class HTTPClient {
             if (logger.isDebugEnabled()) {
                 logger.debug(getClass().getSimpleName() + " sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
             }
-            HttpURLConnectionWrapperImpl httpURLConnectionWrapperImpl = new HttpURLConnectionWrapperImpl(url, MAX_SEND_RETRIES);
-            return sendRequestInternal(requestType, httpURLConnectionWrapperImpl, clientIPAddress, data, method);
+            HttpURLConnectionWrapper httpURLConnectionWrapper = new HttpURLConnectionWrapperImpl(url, MAX_SEND_RETRIES);
+            return sendRequestInternal(requestType, httpURLConnectionWrapper, clientIPAddress, data, method);
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + " sendRequest() - ERROR: " + requestType + " Request failed!", e);
         }
@@ -434,10 +434,11 @@ public class HTTPClient {
         }
     }
 
-    // A wrapper class to hold url and create HttpURLConnection on-demand.
-    // This allows us to generate HttpURLConnections for failed attempts as well as test the HTTPClient with desired
-    // output values
-    public static class HttpURLConnectionWrapperImpl implements HttpURLConnectionWrapper {
+    /**
+     * A wrapper class to hold url and create {@link HttpURLConnection} on-demand.
+     * This allows to generate {@link HttpURLConnection} for failed attempts.
+     */
+    private static class HttpURLConnectionWrapperImpl implements HttpURLConnectionWrapper {
         private final URL httpURL;
         private final int maxCount;
         private int connectCount;
@@ -447,11 +448,13 @@ public class HTTPClient {
             this.maxCount = maxCount;
         }
 
+        @Override
         public HttpURLConnection getHttpURLConnection() throws IOException {
             this.connectCount += 1;
             return (HttpURLConnection) httpURL.openConnection();
         }
 
+        @Override
         public boolean isRetryAllowed() {
             return this.maxCount > this.connectCount;
         }
