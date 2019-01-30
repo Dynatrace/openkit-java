@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.protocol;
 
-import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
@@ -213,7 +212,8 @@ public class HTTPClient {
                     throw exception;
                 }
 
-                logger.log(LogLevel.INFO, "Exception occurred during connection establishment. Retry in progress.", exception);
+                logger.info(String.format(
+                        "Exception occurred during connection establishment. Cause : %s . Retry in progress.", exception.toString()));
 
                 try {
                     Thread.sleep(RETRY_SLEEP_TIME);
