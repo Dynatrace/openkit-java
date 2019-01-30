@@ -19,19 +19,27 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
-
+import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.zip.GZIPInputStream;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class HTTPClientTest {
@@ -42,6 +50,7 @@ public class HTTPClientTest {
     private static final String BASE_URL = "http://www.example.com";
 
     private HTTPClientConfiguration configuration;
+    private HttpURLConnectionWrapper httpURLConnectionWrapper;
 
     private Logger logger;
 
@@ -51,6 +60,8 @@ public class HTTPClientTest {
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getServerID()).thenReturn(SERVER_ID);
         when(configuration.getBaseURL()).thenReturn(BASE_URL);
+
+        httpURLConnectionWrapper = mock(HttpURLConnectionWrapper.class);
 
         logger = mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
@@ -142,12 +153,13 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(418);
         InputStream is = new ByteArrayInputStream("err".getBytes(CHARSET));
         when(connection.getErrorStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that for error responses null is returned)
         assertThat(response, nullValue());
@@ -158,12 +170,13 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response, notNullValue());
@@ -175,12 +188,13 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(418);
         InputStream is = new ByteArrayInputStream("err".getBytes(CHARSET));
         when(connection.getErrorStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.NEW_SESSION, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that for error responses null is returned)
         assertThat(response, nullValue());
@@ -191,12 +205,13 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.NEW_SESSION, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response, notNullValue());
@@ -208,12 +223,13 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", null, "POST");
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response.getResponseCode(), is(200));
@@ -224,6 +240,7 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
@@ -232,7 +249,7 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
         assertThat(response.getResponseCode(), is(200));
@@ -262,12 +279,13 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response.getResponseCode(), is(200));
@@ -277,13 +295,14 @@ public class HTTPClientTest {
     public void sendTimesyncRequestWithHttps() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpsURLConnection.class);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response.getResponseCode(), is(200));
@@ -297,6 +316,8 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(httpURLConnectionWrapper.isRetryAllowed()).thenReturn(true);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
@@ -308,9 +329,10 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
+        verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
         assertThat(response.getResponseCode(), is(200));
         assertThat(gunzip(os.toByteArray()), is(data));
     }
@@ -323,6 +345,8 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(httpURLConnectionWrapper.isRetryAllowed()).thenReturn(false);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
@@ -330,9 +354,34 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
+        assertThat(response, nullValue());
+    }
+
+
+    /**
+     * Tests the retry mechanism to fail after retry limit,
+     */
+    @Test
+    public void sendRequestWithRetryFailOnRetryLimit() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        when(httpURLConnectionWrapper.isRetryAllowed())
+                .thenReturn(true)
+                .thenReturn(true)
+                .thenReturn(false);
+        when(httpURLConnectionWrapper.getHttpURLConnection())
+                .thenThrow(new IOException("First failure"))
+                .thenThrow(new IOException("Second failure"))
+                .thenThrow(new IOException("Third failure"));
+
+        // when
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
+
+        // then
+        verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
         assertThat(response, nullValue());
     }
 
@@ -340,13 +389,14 @@ public class HTTPClientTest {
     public void sendTimesyncRequestWithMobileResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpsURLConnection.class);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify null response)
         assertThat(response, is(nullValue()));
@@ -356,13 +406,14 @@ public class HTTPClientTest {
     public void sendStatusRequestWithTimeSyncResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpsURLConnection.class);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, connection, null, null, "GET");
+        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify null response)
         assertThat(response, is(nullValue()));
@@ -373,6 +424,7 @@ public class HTTPClientTest {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
@@ -380,7 +432,7 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, connection, "127.0.0.1", data.getBytes(), "POST");
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
         assertThat(response, nullValue());
