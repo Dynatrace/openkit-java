@@ -382,8 +382,7 @@ public class HTTPClientTest {
 
         // then
         verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
-        assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+        assertThat(response, nullValue());
     }
 
     @Test
