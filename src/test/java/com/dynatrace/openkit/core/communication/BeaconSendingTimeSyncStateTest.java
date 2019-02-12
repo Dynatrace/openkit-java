@@ -334,6 +334,44 @@ public class BeaconSendingTimeSyncStateTest {
     }
 
     @Test
+    public void clusterTimeOffsetCanBeNegativeAsWell() {
+
+        // given
+        when(httpClient.sendTimeSyncRequest()).thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=3&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=6", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=12&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=19", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=34&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=36", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=45&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=47", 200))
+                                              .thenReturn(new TimeSyncResponse(TimeSyncResponse.RESPONSE_KEY_REQUEST_RECEIVE_TIME + "=56&" + TimeSyncResponse.RESPONSE_KEY_RESPONSE_SEND_TIME + "=58", 200));
+
+        when(stateContext.getCurrentTimestamp()).thenReturn(2L)
+                                                .thenReturn(8L) // times on client side for responseOne     --> time sync offset = -1/2
+                                                .thenReturn(10L)
+                                                .thenReturn(23L) // times on client side for responseTwo   --> time sync offset = -1
+                                                .thenReturn(32L)
+                                                .thenReturn(42L) // times on client side for responseThree --> time sync offset = -2
+                                                .thenReturn(44L)
+                                                .thenReturn(52L) // times on client side for responseFour  --> time sync offset = -2
+                                                .thenReturn(54L)
+                                                .thenReturn(62L) // times on client side for responseFive --> time sync offset = 2
+                                                .thenReturn(66L); // time set as last time sync time
+
+        BeaconSendingTimeSyncState target = new BeaconSendingTimeSyncState();
+
+        // when being executed
+        target.execute(stateContext);
+
+        // verify init was done
+        verify(stateContext, times(1)).initializeTimeSync(-1L, true);
+
+        // verify number of method calls
+        verify(httpClient, times(BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS)).sendTimeSyncRequest();
+        verify(stateContext, times(2 * BeaconSendingTimeSyncState.TIME_SYNC_REQUESTS + 1)).getCurrentTimestamp();
+
+        verify(stateContext, times(1)).setLastTimeSyncTime(66L);
+        verify(stateContext, times(0)).initCompleted(anyBoolean());
+    }
+
+    @Test
     public void successfulTimeSyncSetSuccessfulInitCompletionInContextWhenItIsInitialTimeSync() {
 
         // given
