@@ -178,9 +178,6 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
 
         //sanity check to catch case with div/0
         long calculatedOffset = computeClusterTimeOffset(timeSyncOffsets);
-        if (calculatedOffset < 0) {
-            return;
-        }
 
         // initialize time provider with cluster time offset
         context.initializeTimeSync(calculatedOffset, true);
@@ -219,7 +216,7 @@ class BeaconSendingTimeSyncState extends AbstractBeaconSendingState {
         }
 
         if (count == 0) { // shouldn't come here under normal circumstances
-            return -1; // prevents div/0
+            return 0; // prevents div/0
         }
 
         return Math.round(sum / (double) count);
