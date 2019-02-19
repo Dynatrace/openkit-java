@@ -2,16 +2,19 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.0...release/1.4)
 
-## 1.4.0 [Release date: 2018-12-19]
+## 1.4.0 [Release date: 2018-02-19]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.0)
 
 ### Added
 - Java 11 Support
+- Deployment to JFrog Bintray, which makes it easier for users to retrieve the package 
 
 ### Changed
 - Application ID and Device ID are correctly encoded for special characters
   The encoding is a percent-encoding based on RFC 3986 with additional encoding of underscore characters.
 - Set file encoding to UTF-8 in gradle build
+- Fixed problem with infinite time sync requests  
+  This problem occurred mainly in AppMon settings.
 
 ## 1.3.0 [Release date: 2018-10-25]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.3.0)
