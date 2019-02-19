@@ -45,29 +45,45 @@ after_success:
 
 # Creates a GitHub release and deploys artifacts to this release
 deploy:
+  #############################################################################
   # The provider that simplifies communication with GitHub
-  provider: releases
-  # The GitHub API key is read from the environment (needs to be configured in Travis CI)
-  api_key: $API_KEY
+  - provider: releases
+    # The GitHub API key is read from the environment (needs to be configured in Travis CI)
+    api_key: $API_KEY
 
-  # Conditions that all must be true to create a release in the first place
-  on:
-    # Only if this commit has tags should a release be initiated
-    tags: true
+    # Conditions that all must be true to create a release in the first place
+    on:
+      # Only on correct repo
+      repo: Dynatrace/openkit-java
+      # Only if this commit has tags should a release be initiated
+      tags: true
 
-  # Metadata of this release
-  #
-  # The name of this release
-  name: openkit-java $(git tag --contains HEAD)
-  # This release should be flagged as pre-release
-  prerelease: true
+    # Metadata of this release
+    #
+    # The name of this release
+    name: openkit-java $(git tag --contains HEAD)
+    # This release should be flagged as pre-release
+    prerelease: true
 
-  # Files to be added to this release
-  file:
-  - build/libs/openkit*-java*.jar
-  - build/distributions/openkit*-javadoc.zip
-  # Enable wildcard operators in the file selector above
-  file_glob: true
+    # Files to be added to this release
+    file:
+    - build/libs/openkit*-java*.jar
+    - build/distributions/openkit*-javadoc.zip
+    # Enable wildcard operators in the file selector above
+    file_glob: true
 
-  # Prevent cleanup of build that would otherwise delete artifacts
-  skip_cleanup: true
+    # Prevent cleanup of build that would otherwise delete artifacts
+    skip_cleanup: true
+
+  #############################################################################
+  # JFrog Bintray is handled via gradle
+  - provider: script
+    script: ./gradlew bintrayUpload
+    # Prevent cleanup of build that would otherwise delete artifacts
+    skip_cleanup: true
+
+    on:
+      # Only on correct repo
+      repo: Dynatrace/openkit-java
+      # Only if this commit has tags should a release be initiated
+      tags: true

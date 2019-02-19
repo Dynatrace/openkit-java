@@ -14,12 +14,29 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.github.hierynomus.license'
+def coverageReportDir = file("$buildDir/reports/coverage/jacoco")
 
-license {
-    header = rootProject.file('docs/licenses/HEADER.txt')
-    strictCheck = true
-    ignoreFailures = true // enable if this should break the build
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
-    ext.name = 'Dynatrace LLC'
+jacoco {
+    toolVersion = "0.8.2"
+    reportsDir = coverageReportDir
+}
+
+def coverageXmlReportFile = file("${coverageReportDir}/jacocoReport.xml")
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        xml.destination = coverageXmlReportFile
+        html.enabled = true
+        html.destination = file("${coverageReportDir}/html")
+    }
+}
+
+coveralls {
+    jacocoReportPath = coverageXmlReportFile.toString()
+}
+
+tasks.coveralls {
+    dependsOn 'check'
+    onlyIf { System.env.'CI' }
 }
