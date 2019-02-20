@@ -1,6 +1,13 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.2.2...release/1.2)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.2.3...release/1.2)
+
+## 1.2.3 [Release date: 2018-02-20]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.3)
+
+### Changed
+- Fixed problem with infinite time sync requests  
+  This problem occurred mainly in AppMon settings.
 
 ## 1.2.2 [Release date: 2018-12-19]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.2.2)
