@@ -48,10 +48,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * HTTP client helper which abstracts the 3 basic request types:
+ * HTTP client helper which abstracts the 2 basic request types:
  * - status check
  * - beacon send
- * - time sync
  */
 public class HTTPClient {
 
