@@ -247,35 +247,6 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void initializeTimeSyncDelegatesToTimingProvider() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-            timingProvider);
-
-        // when
-        target.initializeTimeSync(1L, true);
-
-        // then
-        verify(timingProvider).initialize(1L, true);
-        verifyNoMoreInteractions(timingProvider);
-    }
-
-    @Test
-    public void timeSyncIsNotSupportedIfDisabled() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-
-        // when
-        target.disableTimeSyncSupport();
-
-        // then
-        assertThat(target.isTimeSyncSupported(), is(false));
-    }
-
-    @Test
     public void setAndGetLastOpenSessionBeaconSendTime() {
 
         BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
@@ -407,37 +378,6 @@ public class BeaconSendingContextTest {
 
         verify(timingProvider, times(1)).sleep(1234L);
         verifyNoMoreInteractions(timingProvider);
-    }
-
-    @Test
-    public void defaultLastTimeSyncTimeIsMinusOne() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-
-        // then
-        assertThat(target.getLastTimeSyncTime(), is(-1L));
-    }
-
-    @Test
-    public void getAndSetLastTimeSyncTime() {
-
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-                timingProvider);
-
-        // when setting first value
-        target.setLastTimeSyncTime(1234L);
-
-        // then
-        assertThat(target.getLastTimeSyncTime(), is(1234L));
-
-        // and when setting other value
-        target.setLastTimeSyncTime(4321L);
-
-        // then
-        assertThat(target.getLastTimeSyncTime(), is(4321L));
     }
 
     @Test
@@ -583,42 +523,6 @@ public class BeaconSendingContextTest {
         verify(mockSessionThree, times(1)).clearCapturedData();
         verify(mockSessionFour, times(1)).clearCapturedData();
         verifyNoMoreInteractions(mockSessionOne, mockSessionTwo, mockSessionThree, mockSessionFour);
-    }
-
-    @Test
-    public void isTimeSyncedReturnsTrueIfSyncWasNeverPerformed() {
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-            timingProvider);
-        when(timingProvider.isTimeSyncSupported()).thenReturn(true);
-
-        assertThat(target.isTimeSynced(), is(false));
-    }
-
-    @Test
-    public void isTimeSyncedReturnsTrueIfSyncIsNotSupported() {
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-            timingProvider);
-
-        // when
-        target.disableTimeSyncSupport();
-
-        // then
-        assertThat(target.isTimeSynced(), is(true));
-    }
-
-    @Test
-    public void timingProviderIsCalledOnTimeSyncInit() {
-        // given
-        BeaconSendingContext target = new BeaconSendingContext(logger, configuration, httpClientProvider,
-            timingProvider);
-
-        // when
-        target.initializeTimeSync(1234L, true);
-
-        // then
-        verify(timingProvider, times(1)).initialize(1234L, true);
     }
 
     @Test

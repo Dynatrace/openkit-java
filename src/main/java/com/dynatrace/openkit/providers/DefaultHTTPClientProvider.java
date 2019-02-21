@@ -21,7 +21,7 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 
 /**
- * Implementation of an HTTPClientProvider which creates a HTTP client for executing status check, beacon send and time sync requests.
+ * Implementation of an HTTPClientProvider which creates a HTTP client for executing status check and beacon send requests.
  */
 public class DefaultHTTPClientProvider implements HTTPClientProvider {
 

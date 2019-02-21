@@ -90,7 +90,6 @@ public class BeaconTest {
 
         timingProvider = mock(TimingProvider.class);
         when(timingProvider.provideTimestampInMilliseconds()).thenReturn(0L);
-        when(timingProvider.isTimeSyncSupported()).thenReturn(true);
 
         logger = mock(Logger.class);
     }

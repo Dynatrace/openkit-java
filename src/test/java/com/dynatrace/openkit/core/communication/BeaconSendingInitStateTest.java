@@ -308,17 +308,61 @@ public class BeaconSendingInitStateTest {
     }
 
     @Test
-    public void aSuccessfulStatusResponsePerformsStateTransitionToTimeSyncState() {
+    public void aSuccessfulStatusResponseSetsInitCompletedToTrueForCaptureOn() {
 
         // given
         BeaconSendingInitState target = new BeaconSendingInitState();
+        when(statusResponse.isCapture()).thenReturn(true);
+
+        // when
+        target.execute(stateContext);
+
+        // verify init completed is called
+        verify(stateContext, times(1)).initCompleted(true);
+    }
+
+    @Test
+    public void aSuccessfulStatusResponseSetsInitCompletedToTrueForCaptureOff() {
+
+        // given
+        BeaconSendingInitState target = new BeaconSendingInitState();
+        when(statusResponse.isCapture()).thenReturn(false);
+
+        // when
+        target.execute(stateContext);
+
+        // verify init completed is called
+        verify(stateContext, times(1)).initCompleted(true);
+    }
+
+    @Test
+    public void aSuccessfulStatusResponsePerformsStateTransitionToCaptureOnIfCapturingIsEnabled() {
+
+        // given
+        BeaconSendingInitState target = new BeaconSendingInitState();
+        when(statusResponse.isCapture()).thenReturn(true);
 
         // when
         target.execute(stateContext);
 
         // verify state transition
         verify(stateContext, times(1)).handleStatusResponse(statusResponse);
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
+    }
+
+    @Test
+    public void aSuccessfulStatusResponsePerformsStateTransitionToCaptureOffIfCapturingIsDisabled() {
+
+        // given
+        BeaconSendingInitState target = new BeaconSendingInitState();
+        when(statusResponse.isCapture()).thenReturn(false);
+
+        // when
+        target.execute(stateContext);
+
+        // verify state transition
+        verify(stateContext, times(1)).handleStatusResponse(statusResponse);
+        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
     }
 
     @Test

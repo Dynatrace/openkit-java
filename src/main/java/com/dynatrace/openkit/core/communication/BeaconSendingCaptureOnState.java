@@ -27,7 +27,6 @@ import java.util.List;
  * <p>
  * Transitions to:
  * <ul>
- * <li>{@link BeaconSendingTimeSyncState} if {@link BeaconSendingTimeSyncState#isTimeSyncRequired(BeaconSendingContext)} is {@code true}</li>
  * <li>{@link BeaconSendingCaptureOffState} if capturing is turned off</li>
  * <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
  * </ul>
@@ -41,13 +40,6 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
     @Override
     void doExecute(BeaconSendingContext context) throws InterruptedException {
-
-        // check if time sync is required (from time to time a re-sync must be performed)
-        if (BeaconSendingTimeSyncState.isTimeSyncRequired(context)) {
-            // time re-sync required -> transition
-            context.setNextState(new BeaconSendingTimeSyncState());
-            return;
-        }
 
         context.sleep();
 

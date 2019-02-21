@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
  * Transition to:
  * <ul>
  * <li>{@link BeaconSendingTerminalState} upon shutdown request</li>
- * <li>{@link BeaconSendingTimeSyncState} if initial status request succeeded</li>
+ * <li>{@link BeaconSendingCaptureOnState} if initial status request succeeded and capturing is enabled.</li>
+ * <li>{@link BeaconSendingCaptureOffState} if initial status request succeeded and capturing is disabled.</li>
  * </ul>
  * </p>
  */
@@ -74,9 +75,12 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             // transition to shutdown state is handled by base class
             context.initCompleted(false);
         } else if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-            // success -> continue with time sync
+            // success -> continue with capture on/off depending on context
+            context.initCompleted(true);
             context.handleStatusResponse(statusResponse);
-            context.setNextState(new BeaconSendingTimeSyncState(true));
+            context.setNextState(context.isCaptureOn()
+                    ? new BeaconSendingCaptureOnState()
+                    : new BeaconSendingCaptureOffState());
         }
     }
 

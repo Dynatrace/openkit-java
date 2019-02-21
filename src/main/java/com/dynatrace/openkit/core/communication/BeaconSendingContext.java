@@ -77,17 +77,9 @@ public class BeaconSendingContext {
      */
     private long lastStatusCheckTime;
     /**
-     * timestamp when last time sync was done
-     */
-    private long lastTimeSyncTime = -1;
-    /**
      * boolean indicating whether init was successful or not
      */
     private final AtomicBoolean initSucceeded = new AtomicBoolean(false);
-    /**
-     * boolean indicating whether the server supports a time sync (true) or not (false).
-     */
-    private boolean timeSyncSupported = true;
 
     /**
      * Constructor.
@@ -216,41 +208,6 @@ public class BeaconSendingContext {
      */
     boolean isCaptureOn() {
         return configuration.isCapture();
-    }
-
-    /**
-     * Initialize time synchronization with cluster time.
-     *
-     * @param clusterTimeOffset   the cluster offset
-     * @param isTimeSyncSupported {@code true} if time sync is supported, otherwise {@code false}
-     */
-    void initializeTimeSync(long clusterTimeOffset, boolean isTimeSyncSupported) {
-        timingProvider.initialize(clusterTimeOffset, isTimeSyncSupported);
-    }
-
-    /**
-     * Gets a boolean flag indicating whether time sync is supported or not.
-     *
-     * @return {@code true} if time sync is supported, {@code false} otherwise.
-     */
-    boolean isTimeSyncSupported() {
-        return timeSyncSupported;
-    }
-
-    /**
-     * Disables the time sync
-     */
-    void disableTimeSyncSupport() {
-        timeSyncSupported = false;
-    }
-
-    /**
-     * Gets a boolean flag indicating whether the time sync has been performed before
-     *
-     * @return {@code true} if time sync was performed, {@code false} otherwise
-     */
-    boolean isTimeSynced() {
-        return !isTimeSyncSupported() || getLastTimeSyncTime() >= 0;
     }
 
     /**
@@ -410,20 +367,6 @@ public class BeaconSendingContext {
                 iterator.remove();
             }
         }
-    }
-
-    /**
-     * Gets the timestamp when time sync was executed last time.
-     */
-    long getLastTimeSyncTime() {
-        return lastTimeSyncTime;
-    }
-
-    /**
-     * Sets the timestamp when time sync was executed last time.
-     */
-    void setLastTimeSyncTime(long lastTimeSyncTime) {
-        this.lastTimeSyncTime = lastTimeSyncTime;
     }
 
     /**

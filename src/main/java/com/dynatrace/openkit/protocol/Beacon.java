@@ -871,11 +871,8 @@ public class Beacon {
         StringBuilder timestampBuilder = new StringBuilder();
 
         // timestamp information
-        addKeyValuePair(timestampBuilder, BEACON_KEY_SESSION_START_TIME, timingProvider.convertToClusterTime(sessionStartTime));
-        addKeyValuePair(timestampBuilder, BEACON_KEY_TIMESYNC_TIME, timingProvider.convertToClusterTime(sessionStartTime));
-        if (!timingProvider.isTimeSyncSupported()) {
-            addKeyValuePair(timestampBuilder, BEACON_KEY_TRANSMISSION_TIME, timingProvider.provideTimestampInMilliseconds());
-        }
+        addKeyValuePair(timestampBuilder, BEACON_KEY_TRANSMISSION_TIME, timingProvider.provideTimestampInMilliseconds());
+        addKeyValuePair(timestampBuilder, BEACON_KEY_SESSION_START_TIME, sessionStartTime);
 
         return timestampBuilder.toString();
     }
