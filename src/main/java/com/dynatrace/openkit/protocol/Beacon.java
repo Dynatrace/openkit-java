@@ -64,7 +64,6 @@ public class Beacon {
 
     // timestamp constants
     private static final String BEACON_KEY_SESSION_START_TIME = "tv";
-    private static final String BEACON_KEY_TIMESYNC_TIME = "ts";
     private static final String BEACON_KEY_TRANSMISSION_TIME = "tx";
 
     // Action related constants
@@ -132,8 +131,6 @@ public class Beacon {
 
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
 
-    private final Random random;
-
     // *** constructors ***
 
     /**
@@ -172,8 +169,6 @@ public class Beacon {
         this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
 
         this.deviceID = createDeviceID(random, configuration);
-
-        this.random = random;
 
         if (InetAddressValidator.isValidIP(clientIPAddress)) {
             this.clientIPAddress = clientIPAddress;
