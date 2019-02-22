@@ -328,69 +328,6 @@ public class HTTPClientTest {
         assertThat(response.getHeaders(), is(equalTo(expectedHeaderFields)));
     }
 
-    @Test
-    public void sendTimeSyncRequestAndReadResponseHeaderFields() throws IOException {
-        // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
-        headerFields.put("Content-Length", Collections.singletonList("1234"));
-        headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
-        headerFields.put("X-BAR", Collections.<String>emptyList());
-
-        HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpURLConnection.class);
-        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
-        when(connection.getResponseCode()).thenReturn(200);
-        InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
-        when(connection.getInputStream()).thenReturn(is);
-        when(connection.getHeaderFields()).thenReturn(headerFields);
-
-        // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
-
-        // then verify header field keys are transformed to lower case
-        assertThat(response, notNullValue());
-
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
-        expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
-        expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
-        expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
-        assertThat(response.getHeaders(), is(equalTo(expectedHeaderFields)));
-    }
-
-    @Test
-    public void sendTimeSyncRequestAndReadStatusResponse() throws IOException {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpURLConnection.class);
-        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
-        when(connection.getResponseCode()).thenReturn(200);
-        InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
-        when(connection.getInputStream()).thenReturn(is);
-
-        // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
-
-        // then (verify that we properly send the request and parsed the response)
-        assertThat(response.getResponseCode(), is(200));
-    }
-
-    @Test
-    public void sendTimeSyncRequestWithHttps() throws IOException {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpURLConnection.class);
-        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
-        when(connection.getResponseCode()).thenReturn(200);
-        InputStream is = new ByteArrayInputStream("type=mts".getBytes(CHARSET));
-        when(connection.getInputStream()).thenReturn(is);
-
-        // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
-
-        // then (verify that we properly send the request and parsed the response)
-        assertThat(response.getResponseCode(), is(200));
-    }
-
     /**
      * Tests the retry mechanism in the send method (method eventually shall succeed),
      */
@@ -471,25 +408,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void sendTimeSyncRequestWithMobileResponse() throws IOException {
-        // given
-        HTTPClient client = new HTTPClient(logger, configuration);
-        HttpURLConnection connection = mock(HttpURLConnection.class);
-        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
-        when(connection.getResponseCode()).thenReturn(200);
-        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
-        when(connection.getInputStream()).thenReturn(is);
-
-        // when
-        Response response = client.sendRequest(RequestType.TIMESYNC, httpURLConnectionWrapper, null, null, "GET");
-
-        // then (verify unknown error response)
-        assertThat(response, is(notNullValue()));
-        assertThat(response.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
-    }
-
-    @Test
-    public void sendStatusRequestWithTimeSyncResponse() throws IOException {
+    public void sendStatusRequestWithWrongResponse() throws IOException {
         // given
         HTTPClient client = new HTTPClient(logger, configuration);
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -562,20 +481,6 @@ public class HTTPClientTest {
 
         // when
         StatusResponse obtained = target.sendBeaconRequest("127.0.0.1", "".getBytes(CHARSET));
-
-        // then
-        assertThat(obtained, is(notNullValue()));
-        assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
-    }
-
-    @Test
-    public void sendTimeSyncRequestDoesNotReturnNull() {
-        // given
-        HTTPClient target = spy(new HTTPClient(logger, configuration));
-        doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
-
-        // when
-        TimeSyncResponse obtained = target.sendTimeSyncRequest();
 
         // then
         assertThat(obtained, is(notNullValue()));

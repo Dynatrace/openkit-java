@@ -48,10 +48,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * HTTP client helper which abstracts the 3 basic request types:
+ * HTTP client helper which abstracts the 2 basic request types:
  * - status check
  * - beacon send
- * - time sync
  */
 public class HTTPClient {
 
@@ -59,7 +58,6 @@ public class HTTPClient {
 
         STATUS("Status"),                // status check
         BEACON("Beacon"),                // beacon send
-        TIMESYNC("TimeSync"),            // time sync
         NEW_SESSION("NewSession");       // new session request
 
         private String requestName;
@@ -76,7 +74,7 @@ public class HTTPClient {
 
     // request type constants
     private static final String REQUEST_TYPE_MOBILE = "type=m";
-    private static final String REQUEST_TYPE_TIMESYNC = "type=mts";
+    private static final String REQUEST_TYPE_MOBILE_WITH_ARGS_SEPARATOR = "type=m&";
 
     // query parameter constants
     private static final String QUERY_KEY_SERVER_ID = "srvid";
@@ -98,7 +96,6 @@ public class HTTPClient {
     // URLs for requests
     private final String monitorURL;
     private final String newSessionURL;
-    private final String timeSyncURL;
 
     private final int serverID;
 
@@ -113,7 +110,6 @@ public class HTTPClient {
         serverID = configuration.getServerID();
         monitorURL = buildMonitorURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
         newSessionURL = buildNewSessionURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
-        timeSyncURL = buildTimeSyncURL(configuration.getBaseURL());
         sslTrustManager = configuration.getSSLTrustManager();
     }
 
@@ -142,19 +138,11 @@ public class HTTPClient {
             : (StatusResponse)response;
     }
 
-    // sends a time sync request and returns a time sync response
-    public TimeSyncResponse sendTimeSyncRequest() {
-        Response response = sendRequest(RequestType.TIMESYNC, timeSyncURL, null, null, "GET");
-        return response == null
-            ? new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : (TimeSyncResponse)response;
-    }
-
     // *** protected methods ***
 
     // generic request send with some verbose output and exception handling
     // protected because it's overridden by the TestHTTPClient
-    protected Response sendRequest(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
+    Response sendRequest(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug(getClass().getSimpleName() + " sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
@@ -199,28 +187,8 @@ public class HTTPClient {
                 connection.setReadTimeout(READ_TIMEOUT);
                 connection.setRequestMethod(method);
 
-                // gzip beacon data, if available
-                if (data != null && data.length > 0) {
-                    byte[] gzippedData = gzip(data);
-
-                    String decodedData = "";
-                    try {
-                        decodedData = new String(data, Beacon.CHARSET);
-                    } catch (UnsupportedEncodingException e) {
-                        logger.error(getClass().getSimpleName() + " sendRequestInternal() - JRE does not support UTF-8", e);
-                    }
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(getClass().getSimpleName() + " sendRequestInternal() - Beacon Payload: " + decodedData);
-                    }
-
-                    connection.setRequestProperty("Content-Encoding", "gzip");
-                    connection.setRequestProperty("Content-Length", String.valueOf(data.length));
-                    connection.setDoOutput(true);
-                    OutputStream outputStream = connection.getOutputStream();
-                    outputStream.write(gzippedData);
-                    outputStream.close();
-                }
+                // write the post body data
+                writePostBodyData(connection, data);
 
                 return handleResponse(requestType, connection);
 
@@ -242,6 +210,38 @@ public class HTTPClient {
         }
     }
 
+    private void writePostBodyData(HttpURLConnection connection, byte[] data) throws IOException {
+
+        // gzip beacon data, if available
+        if (data == null || data.length == 0) {
+            return;
+        }
+
+        byte[] gzippedData = gzip(data);
+
+        String decodedData = decodeData(data);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(getClass().getSimpleName() + " sendRequestInternal() - Beacon Payload: " + decodedData);
+        }
+
+        connection.setRequestProperty("Content-Encoding", "gzip");
+        connection.setRequestProperty("Content-Length", String.valueOf(data.length));
+        connection.setDoOutput(true);
+        OutputStream outputStream = connection.getOutputStream();
+        outputStream.write(gzippedData);
+        outputStream.close();
+    }
+
+    private String decodeData(byte[] data) {
+        try {
+            return new String(data, Beacon.CHARSET);
+        } catch (UnsupportedEncodingException e) {
+            logger.error(getClass().getSimpleName() + " sendRequestInternal() - JRE does not support UTF-8", e);
+            return "";
+        }
+    }
+
     private Response handleResponse(RequestType requestType, HttpURLConnection connection) throws IOException {
         // get response code
         int responseCode = connection.getResponseCode();
@@ -256,12 +256,7 @@ public class HTTPClient {
         }
 
         // create typed response based on request type and response content
-        if (requestType.getRequestName().equals(RequestType.TIMESYNC.getRequestName())) {
-            return responseCode >= 400
-                ? new TimeSyncResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap())
-                : parseTimeSyncResponse(response, responseCode, connection.getHeaderFields());
-        }
-        else if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
+        if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
             return responseCode >= 400
@@ -274,24 +269,8 @@ public class HTTPClient {
         }
     }
 
-    private Response parseTimeSyncResponse(String response, int responseCode, Map<String, List<String>> headers) {
-        if (isTimeSyncResponse(response)) {
-            try {
-                return new TimeSyncResponse(logger, response, responseCode, responseHeadersWithLowerCaseKeys(headers));
-            }
-            catch(Exception e) {
-                logger.error(getClass().getSimpleName() + " parseTimeSyncResponse() - Failed to parse TimeSyncResponse", e);
-                return new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
-            }
-        }
-
-        // invalid/unexpected response
-        logger.warning(getClass().getSimpleName() + " parseTimeSyncResponse() - The HTTPResponse \"" + response + "\" is not a valid time sync response");
-        return new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
-    }
-
     private Response parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
-        if (isStatusResponse(response) && !isTimeSyncResponse(response)) {
+        if (isStatusResponse(response)) {
             try {
                 return new StatusResponse(logger, response, responseCode, responseHeadersWithLowerCaseKeys(headers));
             }
@@ -318,12 +297,9 @@ public class HTTPClient {
         return Collections.unmodifiableMap(result);
     }
 
-    private static  boolean isStatusResponse(String response) {
-        return response.startsWith(REQUEST_TYPE_MOBILE);
-    }
-
-    private static boolean isTimeSyncResponse(String response) {
-        return response.startsWith(REQUEST_TYPE_TIMESYNC);
+    private static boolean isStatusResponse(String response) {
+        return response.equals(REQUEST_TYPE_MOBILE)
+            || response.startsWith(REQUEST_TYPE_MOBILE_WITH_ARGS_SEPARATOR);
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
@@ -366,12 +342,6 @@ public class HTTPClient {
         appendQueryParam(monitorURLBuilder, QUERY_KEY_NEW_SESSION, "1");
 
         return monitorURLBuilder.toString();
-    }
-
-    // build URL used for time sync requests
-    private static String buildTimeSyncURL(String baseURL) {
-
-        return baseURL + '?' + REQUEST_TYPE_TIMESYNC;
     }
 
     // helper method for appending query parameters
@@ -426,8 +396,6 @@ public class HTTPClient {
             case BEACON: // fallthrough
             case NEW_SESSION: // fallthrough
                 return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
-            case TIMESYNC:
-                return new TimeSyncResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
             default:
                 // should not be reached
                 return null;
@@ -443,7 +411,7 @@ public class HTTPClient {
         private final int maxCount;
         private int connectCount;
 
-        public HttpURLConnectionWrapperImpl(String url, int maxCount) throws MalformedURLException {
+        HttpURLConnectionWrapperImpl(String url, int maxCount) throws MalformedURLException {
             this.httpURL= new URL(url);
             this.maxCount = maxCount;
         }

@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
  * <ul>
  * <li>{@link BeaconSendingCaptureOnState} if capturing is re-enabled</li>
  * <li>{@link BeaconSendingFlushSessionsState} on shutdown</li>
- * <li>{@link BeaconSendingTimeSyncState} if initial time sync failed</li>
  * </ul>
  * </p>
  */
@@ -106,9 +105,6 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
             // received "too many requests" response
             // in this case stay in capture off state and use the retry-after delay for sleeping
             context.setNextState(new BeaconSendingCaptureOffState(statusResponse.getRetryAfterInMilliseconds()));
-        } else if (context.isTimeSyncSupported() && !context.isTimeSynced()) {
-            // if initial time sync failed before, then retry initial time sync
-            context.setNextState(new BeaconSendingTimeSyncState(true));
         } else if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse) && context.isCaptureOn()) {
             // capturing is re-enabled again, but only if we received a response from the server
             context.setNextState(new BeaconSendingCaptureOnState());

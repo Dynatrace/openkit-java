@@ -18,10 +18,6 @@ package com.dynatrace.openkit.providers;
 
 public class DefaultTimingProvider implements TimingProvider {
 
-    private long clusterTimeOffset = 0;
-    private boolean isTimeSyncSupported = true;
-
-
     @Override
     public long provideTimestampInMilliseconds() {
         return System.currentTimeMillis();
@@ -31,26 +27,5 @@ public class DefaultTimingProvider implements TimingProvider {
     public void sleep(long milliseconds) throws InterruptedException {
 
         Thread.sleep(milliseconds);
-    }
-
-    @Override
-    public synchronized void initialize(long clusterTimeOffset, boolean isTimeSyncSupported) {
-
-        this.isTimeSyncSupported = isTimeSyncSupported;
-        if (isTimeSyncSupported) {
-            this.clusterTimeOffset = clusterTimeOffset;
-        } else {
-            this.clusterTimeOffset = 0;
-        }
-    }
-
-    @Override
-    public synchronized boolean isTimeSyncSupported() {
-        return isTimeSyncSupported;
-    }
-
-    @Override
-    public synchronized long convertToClusterTime(long timestamp) {
-        return timestamp + clusterTimeOffset;
     }
 }

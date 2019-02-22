@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
- * Abstract base class for a response to one of the 3 request types (status check, beacon send, time sync).
+ * Abstract base class for a response to one of the 2 request types (status check, beacon send).
  */
 public abstract class Response {
 
@@ -85,7 +85,7 @@ public abstract class Response {
         return responseCode;
     }
 
-    public Map<String, List<String>> getHeaders() {
+    Map<String, List<String>> getHeaders() {
         return headers;
     }
 

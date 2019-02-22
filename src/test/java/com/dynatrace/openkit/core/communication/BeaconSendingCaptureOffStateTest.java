@@ -47,7 +47,6 @@ public class BeaconSendingCaptureOffStateTest {
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.getHTTPClient()).thenReturn(httpClient);
-        when(mockContext.isTimeSynced()).thenReturn(true);
     }
 
     @Test
@@ -80,29 +79,9 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateTransitionsToTimeSyncStateWhenNotYetTimeSynched() throws InterruptedException {
+    public void aBeaconSendingCaptureOffStateTransitionsToCaptureOnStateWhenCapturingActive() {
         //given
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
-        when(mockContext.isCaptureOn()).thenReturn(false);
-        when(mockContext.isTimeSynced()).thenReturn(false);
-
-        // when calling execute
-        target.execute(mockContext);
-
-        // then verify that capturing is set to disabled
-        verify(mockContext, times(1)).disableCapture();
-
-        // also verify that lastStatusCheckTime was updated
-        verify(mockContext, times(1)).setLastStatusCheckTime(org.mockito.Matchers.anyLong());
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
-    }
-
-    @Test
-    public void aBeaconSendingCaptureOffStateTransitionsToCaptureOnStateWhenCapturingActive() throws InterruptedException {
-        //given
-        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(true);
 
         // when calling execute
@@ -118,33 +97,10 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateWaitsForSpecifiedTimeWhenTimeSyncFails() throws InterruptedException {
-
-        //given
-        BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState();
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
-        when(mockContext.isCaptureOn()).thenReturn(false);
-        when(mockContext.isTimeSynced()).thenReturn(false);
-
-        // when calling execute
-        target.execute(mockContext);
-
-        // then verify that capturing is set to disabled
-        verify(mockContext, times(1)).disableCapture();
-        // also verify that lastStatusCheckTime was updated
-        verify(mockContext, times(1)).setLastStatusCheckTime(0);
-        // verify that the next time sync operation will follow after a sleep of 7200000 ms
-        verify(mockContext, times(1)).sleep(7200000);//wait for two hours
-        // verify that after sleeping the transition to BeaconSendingTimeSyncState works
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
-    }
-
-    @Test
     public void aBeaconSendingCaptureOffStateWaitsForGivenTime() throws InterruptedException {
 
         //given
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState(12345L);
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(true);
 
         // when calling execute
@@ -155,7 +111,7 @@ public class BeaconSendingCaptureOffStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOffStateStaysInOffStateWhenServerRespondsWithTooManyRequests() throws InterruptedException {
+    public void aBeaconSendingCaptureOffStateStaysInOffStateWhenServerRespondsWithTooManyRequests() {
 
         //given
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState(12345L);
@@ -165,7 +121,6 @@ public class BeaconSendingCaptureOffStateTest {
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
         when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
-        when(mockContext.isTimeSyncSupported()).thenReturn(false);
         when(mockContext.isCaptureOn()).thenReturn(false);
         ArgumentCaptor<BeaconSendingCaptureOffState> stateCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);
 
