@@ -74,6 +74,7 @@ public class HTTPClient {
 
     // request type constants
     private static final String REQUEST_TYPE_MOBILE = "type=m";
+    private static final String REQUEST_TYPE_MOBILE_WITH_ARGS_SEPARATOR = "type=m&";
 
     // query parameter constants
     private static final String QUERY_KEY_SERVER_ID = "srvid";
@@ -296,9 +297,9 @@ public class HTTPClient {
         return Collections.unmodifiableMap(result);
     }
 
-    private static  boolean isStatusResponse(String response) {
+    private static boolean isStatusResponse(String response) {
         return response.equals(REQUEST_TYPE_MOBILE)
-            || response.startsWith(REQUEST_TYPE_MOBILE + "&");
+            || response.startsWith(REQUEST_TYPE_MOBILE_WITH_ARGS_SEPARATOR);
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {

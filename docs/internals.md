@@ -17,8 +17,8 @@ The request is retried several times (by default 5 retries, in total 6 requests)
 delays between consecutive retries.  
 If the server returned a successful status response a state transition to either CaptureOn or CaptureOff
 is performed, depending on whether capturing is enabled or disabled in the initial status response.
-If the status response is unsuccessful OpenKit stays in the Initialize state,
-but sleeps some time until the next status request is sent. 
+If the status request fails OpenKit stays in the Initialize state and sleeps some time
+until the next status request is sent. 
  
 If `OpenKit.shutdown()` is called while OpenKit is in the Init state, 
 a transition to the Terminal state is performed.
@@ -29,7 +29,7 @@ In the CaptureOff state (class `BeaconSendingCaptureOffState`) OpenKit checks wh
 status request was sent to the server and sleeps some time before performing the next status
 request.  
 A transition to CaptureOn state is performed if capturing was re-enabled by the server's status response.
-If capturing is disabled then no transition is performed and the state machine stays in CaptureOff state.  
+If capturing is disabled no transition is performed and the state machine stays in CaptureOff state.  
 
 If OpenKit is shut down during CaptureOff state a transition to FlushSessions is performed.
 
