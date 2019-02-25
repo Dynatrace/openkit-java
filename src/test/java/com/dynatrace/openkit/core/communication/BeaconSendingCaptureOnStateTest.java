@@ -70,8 +70,6 @@ public class BeaconSendingCaptureOnStateTest {
         HTTPClientProvider mockHTTPClientProvider = mock(HTTPClientProvider.class);
 
         mockContext = mock(BeaconSendingContext.class);
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
-        when(mockContext.getLastTimeSyncTime()).thenReturn(0L);
         when(mockContext.getCurrentTimestamp()).thenReturn(42L);
         when(mockContext.getAllNewSessions()).thenReturn(Collections.<SessionWrapper>emptyList());
         when(mockContext.getAllOpenAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession1Open, mockSession2Open));
@@ -108,48 +106,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateWhenLastSyncTimeIsNegative() {
-
-        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
-
-        //given
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
-        when(mockContext.isCaptureOn()).thenReturn(false);
-        when(mockContext.getLastTimeSyncTime()).thenReturn(-1L);
-
-        // when calling execute
-        target.execute(mockContext);
-
-        // then verify next state is set to TimeSyncState
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
-
-        // verify that no interactions happened with sessions
-        verifyZeroInteractions(mockSession1Open, mockSession2Open, mockSession3Finished, mockSession4Finished, mockSession5New, mockSession6New);
-    }
-
-    @Test
-    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateWhenCheckIntervalPassed() throws InterruptedException {
-
-        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
-
-        //given
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
-        when(mockContext.isCaptureOn()).thenReturn(true);
-        when(mockContext.getLastTimeSyncTime()).thenReturn(0L);
-        when(mockContext.getCurrentTimestamp()).thenReturn(7500000L);
-
-        // when calling execute
-        target.execute(mockContext);
-
-        // then verify next state is set to TimeSyncState
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
-
-        // verify that no interactions happened with sessions
-        verifyZeroInteractions(mockSession1Open, mockSession2Open, mockSession3Finished, mockSession4Finished, mockSession5New, mockSession6New);
-    }
-
-    @Test
-    public void newSessionRequestsAreMadeForAllNewSessions() throws InterruptedException {
+    public void newSessionRequestsAreMadeForAllNewSessions() {
 
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -188,7 +145,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void multiplicityIsSetToZeroIfNoFurtherNewSessionRequestsAreAllowed() throws InterruptedException {
+    public void multiplicityIsSetToZeroIfNoFurtherNewSessionRequestsAreAllowed() {
 
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -230,7 +187,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void newSessionRequestsAreAbortedWhenTooManyRequestsResponseIsReceived() throws InterruptedException {
+    public void newSessionRequestsAreAbortedWhenTooManyRequestsResponseIsReceived() {
 
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -276,7 +233,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateSendsFinishedSessions() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateSendsFinishedSessions() {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -302,7 +259,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateClearsFinishedSessionsIfSendingIsNotAllowed() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateClearsFinishedSessionsIfSendingIsNotAllowed() {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -324,7 +281,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateDoesNotRemoveFinishedSessionIfSendWasUnsuccessful() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateDoesNotRemoveFinishedSessionIfSendWasUnsuccessful() {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -350,7 +307,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaconIsEmtpy() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaconIsEmtpy() {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -383,7 +340,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void sendingFinishedSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() throws InterruptedException {
+    public void sendingFinishedSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() {
 
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
@@ -421,7 +378,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateSendsOpenSessionsIfNotExpired() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateSendsOpenSessionsIfNotExpired() {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
@@ -436,7 +393,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateClearsOpenSessionDataIfSendingIsNotAllowed() throws InterruptedException {
+    public void aBeaconSendingCaptureOnStateClearsOpenSessionDataIfSendingIsNotAllowed() {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(false);
@@ -453,7 +410,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void sendingOpenSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() throws InterruptedException {
+    public void sendingOpenSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() {
 
         //given
         StatusResponse statusResponse = mock(StatusResponse.class);
@@ -486,30 +443,11 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateTransitionsToTimeSyncStateIfSessionExpired() throws InterruptedException {
-
-        //given
-        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
-        when(mockContext.getCurrentTimestamp()).thenReturn(72000042L);
-
-        //when calling execute
-        target.execute(mockContext);
-
-        verify(mockContext, times(1)).isTimeSyncSupported();
-        verify(mockContext, times(1)).getCurrentTimestamp();
-        verify(mockContext, times(2)).getLastTimeSyncTime();
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTimeSyncState.class));
-        verify(mockContext, times(1)).isShutdownRequested(); // from the AbstractState
-        verifyNoMoreInteractions(mockContext);
-    }
-
-    @Test
     public void aBeaconSendingCaptureOnStateTransitionsToCaptureOffStateWhenCapturingGotDisabled() {
 
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         //given
-        when(mockContext.isTimeSyncSupported()).thenReturn(true);
         when(mockContext.isCaptureOn()).thenReturn(false);
 
         // when calling execute

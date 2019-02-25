@@ -16,16 +16,27 @@
 
 package com.dynatrace.openkit.providers;
 
-public class DefaultTimingProvider implements TimingProvider {
+import java.io.IOException;
+import java.net.HttpURLConnection;
 
-    @Override
-    public long provideTimestampInMilliseconds() {
-        return System.currentTimeMillis();
-    }
+/**
+ * Interface wrapping {@link HttpURLConnection} creation. Implementations can support connection retry.
+ */
+public interface HttpURLConnectionWrapper {
 
-    @Override
-    public void sleep(long milliseconds) throws InterruptedException {
+    /**
+     * Get a HttpURLConnection generated from the implementation specifics
+     *
+     * @return {@link HttpURLConnection} which is generated
+     */
+    HttpURLConnection getHttpURLConnection() throws IOException;
 
-        Thread.sleep(milliseconds);
-    }
+
+    /**
+     * Returns retry allowed status
+     *
+     * @return {@code true} if retry is allowed and {@code false} if retry is not allowed
+     */
+    boolean isRetryAllowed();
+
 }

@@ -23,14 +23,33 @@ package com.dynatrace.openkit.api;
 public interface Logger {
 
     /**
-     * Log with level 'error'
+     * Log with a given level and message
+     *
+     * @param level     the level of the log entry
+     * @param message   the message to write to the log
+     */
+    void log(LogLevel level, String message);
+
+    /**
+     * Log with a given level, message and throwable
+     *
+     * @param level     the level of the log entry
+     * @param message   the message to write to the log
+     * @param throwable an instance of a throwable to be attached to the output.
+     */
+    void log(LogLevel level, String message, Throwable throwable);
+
+    /**
+     * Log with level 'error'.<br>
+     * This is a convenience method for {@link #log(LogLevel, String)}
      *
      * @param message the message to write to the log
      */
     void error(String message);
 
     /**
-     * Log with level 'error'
+     * Log with level 'error'.<br>
+     * This is a convenience method for {@link #log(LogLevel, String, Throwable)}
      *
      * @param message the message to write to the log
      * @param t       an instance of a throwable to be attached to the output
@@ -38,21 +57,24 @@ public interface Logger {
     void error(String message, Throwable t);
 
     /**
-     * Log with level 'warning'
+     * Log with level 'warning'.<br>
+     * This is a convenience method for {@link #log(LogLevel, String)}
      *
      * @param message the message to write to the log
      */
     void warning(String message);
 
     /**
-     * Log with level 'info'
+     * Log with level 'info'.<br>
+     * This is a convenience method for {@link #log(LogLevel, String)}
      *
      * @param message the message to write to the log
      */
     void info(String message);
 
     /**
-     * Log with level 'debug'
+     * Log with level 'debug'.<br>
+     * This is a convenience method for {@link #log(LogLevel, String)}
      *
      * @param message the message to write to the log
      */

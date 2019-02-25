@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.github.hierynomus.license'
+package com.dynatrace.openkit.api;
 
-license {
-    header = rootProject.file('docs/licenses/HEADER.txt')
-    strictCheck = true
-    ignoreFailures = true // enable if this should break the build
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
-    ext.name = 'Dynatrace LLC'
+public enum LogLevel {
+    DEBUG(0),
+    INFO(10),
+    WARN(20),
+    ERROR(30);
+
+    private final int priority;
+
+    LogLevel(int priority) {
+        this.priority = priority;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public boolean hasSameOrGreaterPriorityThan(LogLevel other) {
+        return getPriority() >= other.getPriority();
+    }
 }
