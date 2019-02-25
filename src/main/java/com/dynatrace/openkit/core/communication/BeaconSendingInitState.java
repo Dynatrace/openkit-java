@@ -76,11 +76,11 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
             context.initCompleted(false);
         } else if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
             // success -> continue with capture on/off depending on context
-            context.initCompleted(true);
             context.handleStatusResponse(statusResponse);
             context.setNextState(context.isCaptureOn()
                     ? new BeaconSendingCaptureOnState()
                     : new BeaconSendingCaptureOffState());
+            context.initCompleted(true);
         }
     }
 
