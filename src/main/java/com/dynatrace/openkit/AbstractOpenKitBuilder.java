@@ -224,7 +224,7 @@ public abstract class AbstractOpenKitBuilder {
      * Depending on the chosen level the amount and granularity of data sent is controlled.<br>
      * {@code Off (0)} - no data collected<br>
      * {@code PERFORMANCE (1)} - only performance related data is collected<br>
-     * {@code USER_BEHAVIOR (2)} - all available RUM data including performance related data is <br>
+     * {@code USER_BEHAVIOR (2)} - all available RUM data including performance related data is collected<br>
      *
      * Default value: {@code USER_BEHAVIOR}
      *
