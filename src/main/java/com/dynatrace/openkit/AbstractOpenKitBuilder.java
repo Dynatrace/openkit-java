@@ -222,10 +222,11 @@ public abstract class AbstractOpenKitBuilder {
      * Sets the data collection level.
      *
      * Depending on the chosen level the amount and granularity of data sent is controlled.<br>
-     * <code>OFF (0)</code> - no data collected<br>
-     * <code>PERFORMANCE (1)</code> - only performance related data is collected<br>
-     * <code>USER_BEHAVIOR (2)</code> - all available RUM data including performance related data is collected<br>
-     * Default value: <code>USER_BEHAVIOR</code>
+     * {@code Off (0)} - no data collected<br>
+     * {@code PERFORMANCE (1)} - only performance related data is collected<br>
+     * {@code USER_BEHAVIOR (2)} - all available RUM data including performance related data is <br>
+     *
+     * Default value: {@code USER_BEHAVIOR}
      *
      * @param dataCollectionLevel Data collection level to apply.
      * @return {@code this}
@@ -240,11 +241,11 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Sets the flag if crash reporting is enabled
      *
-     * <code>OFF (0)</code> - Crashes are not send to the server<br>
-     * <code>OPT_OUT_CRASHES (1)</code> - Crashes are not send to the server<br>
-     * <code>OPT_IN_CRASHES (2)</code> - Crashes are not send to the server<br>
+     * {@code OFF (0)} - Crashes are not send to the server<br>
+     * {@code OPT_OUT_CRASHES (1)} - Crashes are not send to the server<br>
+     * {@code OPT_IN_CRASHES (2)} - Crashes are not send to the server<br>
      *
-     * Default value: <code>OPT_IN_CRASHES</code>
+     * Default value: {@code OPT_IN_CRASHES}
      *
      * @param crashReportLevel Flag if crash reporting is enabled
      * @return {@code this}
