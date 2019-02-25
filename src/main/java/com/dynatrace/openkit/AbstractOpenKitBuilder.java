@@ -243,7 +243,7 @@ public abstract class AbstractOpenKitBuilder {
      *
      * {@code OFF (0)} - Crashes are not send to the server<br>
      * {@code OPT_OUT_CRASHES (1)} - Crashes are not send to the server<br>
-     * {@code OPT_IN_CRASHES (2)} - Crashes are not send to the server<br>
+     * {@code OPT_IN_CRASHES (2)} - Crashes are send to the server<br>
      *
      * Default value: {@code OPT_IN_CRASHES}
      *
