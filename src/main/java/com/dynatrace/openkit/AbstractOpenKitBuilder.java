@@ -57,16 +57,6 @@ public abstract class AbstractOpenKitBuilder {
      * @param endpointURL endpoint OpenKit connects to
      * @param deviceID    unique device id
      */
-    AbstractOpenKitBuilder(String endpointURL, long deviceID) {
-        this(endpointURL, Long.toString(deviceID));
-    }
-
-    /**
-     * Creates a new instance of type AbstractOpenKitBuilder
-     *
-     * @param endpointURL endpoint OpenKit connects to
-     * @param deviceID    unique device id
-     */
     AbstractOpenKitBuilder(String endpointURL, String deviceID) {
         this.endpointURL = endpointURL;
         this.deviceID = deviceID;
@@ -241,9 +231,9 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Sets the flag if crash reporting is enabled
      *
-     * {@code OFF (0)} - Crashes are not send to the server<br>
-     * {@code OPT_OUT_CRASHES (1)} - Crashes are not send to the server<br>
-     * {@code OPT_IN_CRASHES (2)} - Crashes are send to the server<br>
+     * {@code OFF (0)} - Crashes are not sent to the server<br>
+     * {@code OPT_OUT_CRASHES (1)} - Crashes are not sent to the server<br>
+     * {@code OPT_IN_CRASHES (2)} - Crashes are sent to the server<br>
      *
      * Default value: {@code OPT_IN_CRASHES}
      *
