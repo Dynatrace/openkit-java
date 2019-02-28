@@ -43,6 +43,7 @@ repositories {
 }
 
 def jvmsToTest = System.getenv("JVMS_TO_TEST") ?: "JAVA_HOME"
+def isGradle5OrAbove = getGradleMajorVersion() >= 5
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -58,7 +59,7 @@ dependencies {
 }
 
 jar {
-    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+    if (isGradle5OrAbove) {
         archiveBaseName = 'openkit'
     } else {
         baseName  = 'openkit'
@@ -109,7 +110,7 @@ jar {
 }
 
 task sourceJar(type: Jar) {
-    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+    if (isGradle5OrAbove) {
         archiveClassifier = 'sources'
     } else {
         classifier = 'sources'
@@ -119,7 +120,7 @@ task sourceJar(type: Jar) {
 }
 
 task javadocZip(type: Zip, dependsOn: javadoc) {
-    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+    if (isGradle5OrAbove) {
         archiveBaseName = 'openkit'
         archiveClassifier = 'javadoc'
     } else {
@@ -131,7 +132,7 @@ task javadocZip(type: Zip, dependsOn: javadoc) {
 }
 
 task javadocJar(type: Jar) {
-    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+    if (isGradle5OrAbove) {
         archiveClassifier = 'javadoc'
     } else {
         classifier = 'javadoc'
@@ -171,4 +172,13 @@ def readVersion() {
         }
     }
     return version
+}
+
+def getGradleMajorVersion() {
+    def majorMinorSeparatorIndex = gradle.gradleVersion.indexOf('.')
+    if (majorMinorSeparatorIndex != -1) {
+        return Integer.parseInt(gradle.gradleVersion.substring(0, majorMinorSeparatorIndex))
+    } else {
+        return Integer.parseInt(gradle.gradleVersion)
+    }
 }

@@ -41,7 +41,7 @@ matrix:
 # creates all artifacts
 install: ./gradlew assemble
 
-before_script:
+before_build:
 - |
   if [ x"$GRADLE_DIST_URL" != "x" ]; then
       GRADLE_WRAPPER_PROPERTIES=./gradle/wrapper/gradle-wrapper.properties
