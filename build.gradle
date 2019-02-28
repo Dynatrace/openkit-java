@@ -58,7 +58,11 @@ dependencies {
 }
 
 jar {
-    archiveBaseName = 'openkit'
+    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+        archiveBaseName = 'openkit'
+    } else {
+        baseName  = 'openkit'
+    }
 
     // split version into specification & implementation version
     def specVersion = version
@@ -105,18 +109,33 @@ jar {
 }
 
 task sourceJar(type: Jar) {
-    archiveClassifier = 'sources'
+    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+        archiveClassifier = 'sources'
+    } else {
+        classifier = 'sources'
+    }
+
     from sourceSets.main.allJava
 }
 
 task javadocZip(type: Zip, dependsOn: javadoc) {
-    archiveBaseName = 'openkit'
-    archiveClassifier = 'javadoc'
+    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+        archiveBaseName = 'openkit'
+        archiveClassifier = 'javadoc'
+    } else {
+        baseName = 'openkit'
+        classifier = 'sources'
+    }
+
     from javadoc.destinationDir
 }
 
 task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
+    if (GradleVersion.current() >= GradleVersion.version('5.0')) {
+        archiveClassifier = 'javadoc'
+    } else {
+        classifier = 'javadoc'
+    }
     from javadoc
 }
 

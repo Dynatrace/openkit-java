@@ -18,20 +18,36 @@ matrix:
   include:
     - name: "Java 6 compatible"
       jdk: openjdk6
-      env: INCLUDE_IN_COVERAGE=false
+      env:
+        - INCLUDE_IN_COVERAGE=false
+        - GRADLE_DIST_URL=https\://services.gradle.org/distributions/gradle-2.14.1-bin.zip
     - name: "Java 7 compatible"
       jdk: openjdk7
-      env: INCLUDE_IN_COVERAGE=false
+      env:
+        - INCLUDE_IN_COVERAGE=false
+        - GRADLE_DIST_URL=https://services.gradle.org/distributions/gradle-3.5.1-bin.zip
     - name: "Java 8 compatible"
       jdk: oraclejdk8
-      env: INCLUDE_IN_COVERAGE=true
+      env:
+        - INCLUDE_IN_COVERAGE=true
+        - GRADLE_DIST_URL=
     - name: "Java 11 compatible"
       jdk: oraclejdk11
-      env: INCLUDE_IN_COVERAGE=false
+      env:
+        - INCLUDE_IN_COVERAGE=false
+        - GRADLE_DIST_URL=
 
 # Install the repository locally - this downloads dependencies, compiles the source code, and
 # creates all artifacts
 install: ./gradlew assemble
+
+before_script:
+- |
+  if [ x"$GRADLE_DIST_URL" != "x" ]; then
+      GRADLE_WRAPPER_PROPERTIES=./gradle/wrapper/gradle-wrapper.properties
+      echo "Patching $GRADLE_WRAPPER_PROPERTIES file using dist URL $GRADLE_DIST_URL"
+      sed -i -e "s/distributionUrl=.*/distributionUrl=$GRADLE_DIST_URL/g" $GRADLE_WRAPPER_PROPERTIES
+  fi
 
 # Runs tests that check the implementation (unit tests)
 script: ./gradlew check --info
