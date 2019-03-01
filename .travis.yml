@@ -37,11 +37,8 @@ matrix:
         - INCLUDE_IN_COVERAGE=false
         - GRADLE_DIST_URL=
 
-# Install the repository locally - this downloads dependencies, compiles the source code, and
-# creates all artifacts
-install: ./gradlew assemble
-
-before_build:
+# executed before running the build script
+before_script:
 - |
   if [ x"$GRADLE_DIST_URL" != "x" ]; then
       GRADLE_WRAPPER_PROPERTIES=./gradle/wrapper/gradle-wrapper.properties
@@ -50,7 +47,12 @@ before_build:
   fi
 
 # Runs tests that check the implementation (unit tests)
-script: ./gradlew check --info
+script:
+- |
+  # build
+  ./gradlew assemble
+  # run tests
+  ./gradlew check --info
 
 # Runs code coverage when everything else was successful
 
