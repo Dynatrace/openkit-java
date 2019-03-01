@@ -1,13 +1,1 @@
-pluginManagement {
-    repositories {
-        if (JavaVersion.current().isJava6()) {
-            maven {
-                url "http://jcenter.bintray.com"
-            }
-        } else {
-            gradlePluginPortal()
-        }
-    }
-}
-
 rootProject.name = "openkit-java"

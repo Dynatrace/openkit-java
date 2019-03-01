@@ -16,13 +16,7 @@
 
 buildscript {
     repositories {
-        if (JavaVersion.current().isJava6()) {
-            maven {
-                url 'http://repo.maven.apache.org/maven2/'
-            }
-        } else {
-            mavenCentral()
-        }
+        mavenCentral()
     }
 }
 
@@ -164,6 +158,7 @@ jvmsToTest.split(",").each { envJVM ->
 
 test {
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    executable project.findProperty('test.executable') + "/bin/java" ?: System.getenv('java.home') + "/bin/java"
 }
 
 def readVersion() {
