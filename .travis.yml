@@ -66,7 +66,7 @@ script:
 
 after_success:
 - |
-  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "INCLUDE_IN_COVERAGE" = "true" ]; then
+  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$INCLUDE_IN_COVERAGE" = true ]; then
     export CI_NAME="travis-ci"
     export CI_BUILD_NUMBER="$TRAVIS_BUILD_NUMBER"
     export CI_BRANCH="$TRAVIS_BRANCH"
