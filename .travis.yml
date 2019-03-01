@@ -46,7 +46,7 @@ before_build:
   if [ x"$GRADLE_DIST_URL" != "x" ]; then
       GRADLE_WRAPPER_PROPERTIES=./gradle/wrapper/gradle-wrapper.properties
       echo "Patching $GRADLE_WRAPPER_PROPERTIES file using dist URL $GRADLE_DIST_URL"
-      sed -i -e "s/distributionUrl=.*/distributionUrl=$GRADLE_DIST_URL/g" $GRADLE_WRAPPER_PROPERTIES
+      sed -i -e "s#distributionUrl=.*#distributionUrl=$GRADLE_DIST_URL#g" $GRADLE_WRAPPER_PROPERTIES
   fi
 
 # Runs tests that check the implementation (unit tests)
