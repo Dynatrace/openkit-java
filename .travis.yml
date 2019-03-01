@@ -37,6 +37,8 @@ matrix:
         - INCLUDE_IN_COVERAGE=false
         - GRADLE_DIST_URL=
 
+install: true
+
 # executed before running the build script
 before_script:
 - |
