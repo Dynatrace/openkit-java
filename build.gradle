@@ -158,7 +158,9 @@ jvmsToTest.split(",").each { envJVM ->
 
 test {
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-    executable project.findProperty('test.executable') + "/bin/java" ?: System.getenv('java.home') + "/bin/java"
+}
+if (project.findProperty('test.executable') != null) {
+    test.executable = project.findProperty('test.executable') + "/bin/java"
 }
 
 def readVersion() {
