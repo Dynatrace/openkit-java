@@ -17,10 +17,11 @@ addons:
 matrix:
   include:
     - name: "Java 6 compatible"
-      jdk: openjdk6
+      jdk: openjdk7 # start with OpenJDK7 and switch later to 6
       env:
         - INCLUDE_IN_COVERAGE=false
-        - GRADLE_DIST_URL=https\://services.gradle.org/distributions/gradle-2.14.1-bin.zip
+        - GRADLE_DIST_URL=http://services.gradle.org/distributions/gradle-2.14.1-bin.zip
+        - SWITCH_TO_OPENJDK6=true
     - name: "Java 7 compatible"
       jdk: openjdk7
       env:
@@ -30,29 +31,31 @@ matrix:
       jdk: oraclejdk8
       env:
         - INCLUDE_IN_COVERAGE=true
-        - GRADLE_DIST_URL=
     - name: "Java 11 compatible"
       jdk: oraclejdk11
       env:
         - INCLUDE_IN_COVERAGE=false
-        - GRADLE_DIST_URL=
 
-install: true
-
-# executed before running the build script
-before_script:
+install:
 - |
-  if [ x"$GRADLE_DIST_URL" != "x" ]; then
+  # check if switching to OpenJDK 6 is needed
+  if [ "$SWITCH_TO_OPENJDK6" = true ]; then
+      jdk_switcher home openjdk6
+      jdk_switcher use openjdk6
+      javac -J-Xmx32m -version
+  fi
+  # next patch the gradle wrapper properties
+  if [ "x$GRADLE_DIST_URL" != "x" ]; then
       GRADLE_WRAPPER_PROPERTIES=./gradle/wrapper/gradle-wrapper.properties
       echo "Patching $GRADLE_WRAPPER_PROPERTIES file using dist URL $GRADLE_DIST_URL"
       sed -i -e "s#distributionUrl=.*#distributionUrl=$GRADLE_DIST_URL#g" $GRADLE_WRAPPER_PROPERTIES
   fi
+  # next assemble
+  ./gradlew assemble
 
 # Runs tests that check the implementation (unit tests)
 script:
 - |
-  # build
-  ./gradlew assemble
   # run tests
   ./gradlew check --info
 
