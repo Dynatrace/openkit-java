@@ -6,34 +6,67 @@ language: java
 # run in container
 sudo: false
 
+# Additional packages to install
+addons:
+  apt:
+    packages:
+      - openjdk-6-jdk
+      - oracle-java8-installer
+
 # Job matrix
 matrix:
   include:
     - name: "Java 6 compatible"
-      jdk: oraclejdk8
-      env: TARGET_COMPATIBILITY=6
+      jdk: openjdk7 # start with OpenJDK7 and switch later to 6
+      env:
+        - INCLUDE_IN_COVERAGE=false
+        - GRADLE_DIST_URL=https://services.gradle.org/distributions/gradle-3.5.1-bin.zip
+        - SWITCH_TO_OPENJDK6=true
     - name: "Java 7 compatible"
-      jdk: oraclejdk8
-      env: TARGET_COMPATIBILITY=7
+      jdk: openjdk7
+      env:
+        - INCLUDE_IN_COVERAGE=false
+        - GRADLE_DIST_URL=https://services.gradle.org/distributions/gradle-3.5.1-bin.zip
     - name: "Java 8 compatible"
       jdk: oraclejdk8
-      env: TARGET_COMPATIBILITY=8
+      env:
+        - INCLUDE_IN_COVERAGE=true
     - name: "Java 11 compatible"
       jdk: oraclejdk11
-      env: TARGET_COMPATIBILITY=11
+      env:
+        - INCLUDE_IN_COVERAGE=false
 
-# Install the repository locally - this downloads dependencies, compiles the source code, and
-# creates all artifacts
-install: ./gradlew assemble
+install:
+- |
+  # next patch the gradle wrapper properties
+  if [ "x$GRADLE_DIST_URL" != "x" ]; then
+      GRADLE_WRAPPER_PROPERTIES=./gradle/wrapper/gradle-wrapper.properties
+      echo "Patching $GRADLE_WRAPPER_PROPERTIES file using dist URL $GRADLE_DIST_URL"
+      sed -i -e "s#distributionUrl=.*#distributionUrl=$GRADLE_DIST_URL#g" $GRADLE_WRAPPER_PROPERTIES
+  fi
+  # next assemble
+  ./gradlew assemble
 
-# Runs tests that check the implementation (unit tests)
-script: ./gradlew check --info
+# Runs tests thatcheck the implementation (unit tests)
+script:
+- |
+  # run tests
+  # check if switching to OpenJDK 6 is needed
+  $JAVA_6_HOME=""
+  if [ "$SWITCH_TO_OPENJDK6" = true ]; then
+      JAVA_6_HOME=$(jdk_switcher home openjdk6)
+      ./gradlew check -Ptest.executable=$JAVA_6_HOME --info
+  else
+      # no need to switch to Java 6
+      ./gradlew check --info
+  fi
+
 
 # Runs code coverage when everything else was successful
 
 after_success:
 - |
-  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$TARGET_COMPATIBILITY" = "8" ]; then
+  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$INCLUDE_IN_COVERAGE" = true ]; then
     export CI_NAME="travis-ci"
     export CI_BUILD_NUMBER="$TRAVIS_BUILD_NUMBER"
     export CI_BRANCH="$TRAVIS_BRANCH"
