@@ -90,6 +90,8 @@ deploy:
       repo: Dynatrace/openkit-java
       # Only if this commit has tags should a release be initiated
       tags: true
+      # Only when built using Oracle JDK 8
+      jdk: oraclejdk8
 
     # Metadata of this release
     #
@@ -120,3 +122,5 @@ deploy:
       repo: Dynatrace/openkit-java
       # Only if this commit has tags should a release be initiated
       tags: true
+      # Only when built using Oracle JDK 8
+      jdk: oraclejdk8
