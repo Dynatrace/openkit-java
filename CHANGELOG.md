@@ -1,6 +1,13 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.0...release/1.4)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.1...release/1.4)
+
+## 1.4.1 [Release date: 2018-03-04]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.1)
+
+### Changed
+- Only one binary is built with Java 6 compatibility  
+  Otherwise the jcenter sync does not work
 
 ## 1.4.0 [Release date: 2018-02-19]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.0)
