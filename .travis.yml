@@ -90,6 +90,8 @@ deploy:
       repo: Dynatrace/openkit-java
       # Only if this commit has tags should a release be initiated
       tags: true
+      # Only when built using Oracle JDK 8
+      jdk: oraclejdk8
 
     # Metadata of this release
     #
@@ -100,7 +102,7 @@ deploy:
 
     # Files to be added to this release
     file:
-    - build/libs/openkit*-java*.jar
+    - build/libs/openkit-*.jar
     - build/distributions/openkit*-javadoc.zip
     # Enable wildcard operators in the file selector above
     file_glob: true
@@ -120,3 +122,5 @@ deploy:
       repo: Dynatrace/openkit-java
       # Only if this commit has tags should a release be initiated
       tags: true
+      # Only when built using Oracle JDK 8
+      jdk: oraclejdk8
