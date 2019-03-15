@@ -51,6 +51,11 @@ This repository contains the reference implementation in pure Java. Other implem
 ### (Unit-)Testing the OpenKit
 * Java Runtime Environment (JRE) 6, 7 or 8  
   Dependencies for testing (JUnit, Hamcrest, Mockito) are managed by Gradle.
+  
+## Obtaining OpenKit from jcenter
+
+OpenKit is available as Maven package on [JCenter](https://bintray.com/dynatrace/openkit/com.dynatrace.openkit) and should
+be used via Maven, Gradle or Ivy.
 
 ## Building the Source
 
