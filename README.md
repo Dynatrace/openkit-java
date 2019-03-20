@@ -74,25 +74,20 @@ The generated javadoc will be located in the `build/docs/javadoc` directory.
 In this part the concepts used throughout OpenKit are explained. A short sample how to use OpenKit is
 also provided. For detailed code samples have a look into [example.md](docs/example.md).
 
+### DynatraceOpenKitBuilder / AppMonOpenKitBuilder
+A `DynatraceOpenKitBuilder`/`AppMonOpenKitBuilder` instance is responsible for setting 
+application relevant information, e.g. the application's version and device specific information, and to create
+an `OpenKit` instance.
+
 ### OpenKit
 
-An `OpenKit` instance is responsible for getting and setting application relevant information, e.g.
-the application's version and device specific information.  
-Furthermore the `OpenKit` is responsible for creating user sessions (see `Session`).
+The OpenKit is responsible for creating user sessions (see Session).
   
 Although it would be possible to have multiple `OpenKit` instances connected to the same endpoint
 (Dynatrace/AppMon) within one process, there should be one unique instance. `OpenKit` is designed to be
 thread safe and therefore the instance can be shared among threads.  
 
 On application shutdown, `shutdown()` needs to be called on the OpenKit instance.
-
-### Device
-
-A `Device` instance, which can be retrieved from an `OpenKit` instance, contains methods
-for setting device specific information. It's not mandatory for the application developer to
-provide this information, reasonable default values exist.  
-However when the application is run on multiple different devices it might be quite handy
-to know details about the used device (e.g device identifier, device manufacturer, operating system).
 
 ### Session
 
@@ -106,14 +101,14 @@ When a `Session` is no longer required, it's highly recommended to end it, using
 
 The `RootAction` and `Action` are named hierarchical nodes for timing and attaching further details.
 A `RootAction` is created from the `Session` and it can create `Action` instances. Both, `RootAction` and
-`Action`, provide the possibility to attach key-value pairs, named events and errors, and are used 
+`Action`, provide the possibility to attach key-value pairs, named events and errors, and can be used 
 for tracing web requests.
 
 ### WebRequestTracer
 
 When the application developer wants to trace a web request, which is served by a service 
 instrumented by Dynatrace, a `WebRequestTracer` should be used, which can be
-requested from an `Action`.  
+requested from a `Session` or an `Action`.  
 
 ### Named Events
 
