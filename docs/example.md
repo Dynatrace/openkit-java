@@ -52,17 +52,19 @@ OpenKit openKit = new AppMonOpenKitBuilder(endpointURL, applicationName, deviceI
 In addition to the mandatory parameters described above, the builder provides additional methods to further 
 customize OpenKit. This includes device specific information like operating system, manufacturer, or model id. 
 
-| Method Name | Description | Default Value |
-| ------------- | ------------- | ---------- |
-| `withApplicationVersion`  | sets the application version  | `"1.5.0"` |
-| `withOperatingSystem`  | sets the operating system name | `"OpenKit 1.5.0"` |
-| `withManufacturer`  | sets the manufacturer | `"Dynatrace"` |
-| `withModelID`  | sets the model id  | `"OpenKitDevice"` |
-| `withBeaconCacheMaxRecordAge`  | sets the maximum age of an entry in the beacon cache in milliseconds | 1 h 45 min |
-| `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes  | 100 MB |
-| `withBeaconCacheUpperMemoryBoundary`  |  sets the upper memory boundary of the beacon cache in bytes | 80 MB |
-| `enableVerbose`  | *Deprecated*, use `withLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `withLogLevel(LogLevel.DEBUG)`.  | `false` |
-| `withLogLevel` | sets the default log level if the default logger is used | `LogLevel.WARN`
+| Method Name                           | Description                                                           | Default Value |
+| -------------                         | -------------                                                         | ---------- |
+| `withApplicationVersion`              | sets the application version                                          | `"1.5.0"` |
+| `withOperatingSystem`                 | sets the operating system name                                        | `"OpenKit 1.5.0"` |
+| `withManufacturer`                    | sets the manufacturer                                                 | `"Dynatrace"` |
+| `withModelID`                         | sets the model id                                                     | `"OpenKitDevice"` |
+| `withDataCollectionLevel`             | sets the data collection level                                        | `DataCollectionLevel.USER_BEHAVIOR` |
+| `withCrashReportingLevel`             | sets the crash reporting level                                        | `CrashReportingLevel.OPT_IN_CRASHES` |
+| `withBeaconCacheMaxRecordAge`         | sets the maximum age of an entry in the beacon cache in milliseconds  | 1 h 45 min |
+| `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes           | 100 MB |
+| `withBeaconCacheUpperMemoryBoundary`  |  sets the upper memory boundary of the beacon cache in bytes          | 80 MB |
+| `enableVerbose`                       | *Deprecated*, use `withLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `withLogLevel(LogLevel.DEBUG)`.  | `false` |
+| `withLogLevel`                        | sets the default log level if the default logger is used              | `LogLevel.WARN`
 
 :grey_exclamation: Please refer to the the JavaDoc for more information regarding possible configuration values.
 
@@ -124,16 +126,6 @@ if (isInitialized) {
 } else {
     System.out.println("OpenKit is not yet initialized");
 }
-```
-
-## Providing further Application Information
-
-If multiple version's of the same applications are monitored by OpenKit, it's quite useful
-to set the application's version in OpenKit.  
-This can be achieved by calling
-```java
-String applicationVersion = "1.2.3.4";
-openKit.setApplicationVersion(applicationVersion);
 ```
 
 ## Creating a Session
@@ -224,7 +216,7 @@ Action childAction = rootAction.enterAction(childActionName);
 
 ## Leaving Actions
 
-To leave an `Action` simply use the `leave` method. The method returns the parent action or `null`
+To leave an `Action` simply use the `leaveAction` method. The method returns the parent action or `null`
 if it has no parent.
 
 ```java
