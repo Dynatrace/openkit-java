@@ -24,7 +24,7 @@ timeout(time: 15, unit: 'MINUTES') {
 				withCredentials([file(credentialsId: 'init.gradle', variable: 'INIT_GRADLE')]) {
 					copy env.INIT_GRADLE, 'init.gradle'
 				}
-
+				sh 'cat init.gradle'
 				// Builds the artifacts with the default target compatibility (Java 6)
 				// and publishes them to the artifactory
 				// Adds the build number to the project version
