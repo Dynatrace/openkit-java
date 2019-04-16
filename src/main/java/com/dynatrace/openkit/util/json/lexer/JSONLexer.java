@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.util.json.lexer;
 
+import com.dynatrace.openkit.util.json.constants.JSONLiterals;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -73,15 +75,6 @@ public class JSONLexer implements Closeable {
     private static final char BACKSPACE = '\b';
     /** form feed character */
     private static final char FORM_FEED = '\f';
-
-    /** boolean true literal */
-    private static final String BOOLEAN_TRUE_LITERAL = "true";
-    /** boolean false literal */
-    private static final String BOOLEAN_FALSE_LITERAL = "false";
-    /** null literal */
-    private static final String NULL_LITERAL = "null";
-    /** regex pattern for parsing number literals */
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("^-?(0|[1-9]\\d*)(\\.\\d+)?([eE][+-]?\\d+)?$");
 
     /** The number of characters used, after an unicode escape sequence is encountered */
     private static final int NUM_UNICODE_CHARACTERS = 4;
@@ -227,7 +220,7 @@ public class JSONLexer implements Closeable {
      */
     private JSONToken tryParseBooleanLiteral() throws IOException, LexerException {
         String literalToken = parseLiteral();
-        if (literalToken.equals(BOOLEAN_TRUE_LITERAL) || literalToken.equals(BOOLEAN_FALSE_LITERAL)) {
+        if (literalToken.equals(JSONLiterals.BOOLEAN_TRUE_LITERAL) || literalToken.equals(JSONLiterals.BOOLEAN_FALSE_LITERAL)) {
             // it's a valid boolean literal
             return new JSONToken(JSONToken.TokenType.LITERAL_BOOLEAN, literalToken);
         }
@@ -248,7 +241,7 @@ public class JSONLexer implements Closeable {
      */
     private JSONToken tryParseNullLiteral() throws IOException, LexerException {
         String literalToken = parseLiteral();
-        if (literalToken.equals(NULL_LITERAL)) {
+        if (literalToken.equals(JSONLiterals.NULL_LITERAL)) {
             // it's a valid null literal
             return new JSONToken(JSONToken.TokenType.LITERAL_NULL, literalToken);
         }
@@ -432,7 +425,7 @@ public class JSONLexer implements Closeable {
      */
     private JSONToken tryParseNumberToken() throws IOException, LexerException {
         String literalToken = parseLiteral();
-        if (NUMBER_PATTERN.matcher(literalToken).matches()) {
+        if (JSONLiterals.NUMBER_PATTERN.matcher(literalToken).matches()) {
             return new JSONToken(JSONToken.TokenType.VALUE_NUMBER, literalToken);
         }
 
