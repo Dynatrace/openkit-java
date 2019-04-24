@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.util.json.lexer;
 
+import com.dynatrace.openkit.util.json.constants.JSONLiterals;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,5 +50,54 @@ public class JSONTokenTest {
         // then
         assertThat(target.getTokenType(), is(equalTo(JSONToken.TokenType.LEFT_BRACE)));
         assertThat(target.getValue(), is(nullValue()));
+    }
+
+    @Test
+    public void tokenTypeToStringReturnsAppropriateStringRepresentations() {
+
+        // when called with number, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.VALUE_NUMBER), is(equalTo("NUMBER")));
+        // when called with string, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.VALUE_STRING), is(equalTo("STRING")));
+        // when called with boolean, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.LITERAL_BOOLEAN), is(equalTo("BOOLEAN")));
+        // when called with null, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.LITERAL_NULL), is(equalTo(JSONLiterals.NULL_LITERAL)));
+        // when called with left brace, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.LEFT_BRACE), is(equalTo("{")));
+        // when called with right brace, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.RIGHT_BRACE), is(equalTo("}")));
+        // when called with left square bracket, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.LEFT_SQUARE_BRACKET), is(equalTo("[")));
+        // when called with right square bracket, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.RIGHT_SQUARE_BRACKET), is(equalTo("]")));
+        // when called with comma, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.COMMA), is(equalTo(",")));
+        // when called with colon, then
+        assertThat(JSONToken.tokenTypeToString(JSONToken.TokenType.COLON), is(equalTo(":")));
+    }
+
+    @Test
+    public void toStringForTokenWithoutValueGivesAppropriateStringRepresentation() {
+        // given
+        JSONToken target = new JSONToken(JSONToken.TokenType.COLON);
+
+        // when
+        String obtained = target.toString();
+
+        // then
+        assertThat(obtained, is("JSONToken {tokenType=:, value=null}"));
+    }
+
+    @Test
+    public void toStringForTokenWithValueGivesAppropriateStringRepresentation() {
+        // given
+        JSONToken target = new JSONToken(JSONToken.TokenType.VALUE_NUMBER, "12345");
+
+        // when
+        String obtained = target.toString();
+
+        // then
+        assertThat(obtained, is("JSONToken {tokenType=NUMBER, value=12345}"));
     }
 }

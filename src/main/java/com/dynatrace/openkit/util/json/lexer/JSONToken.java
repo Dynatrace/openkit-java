@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.util.json.lexer;
 
+import com.dynatrace.openkit.util.json.constants.JSONLiterals;
+
 /**
  * Container class representing a token.
  */
@@ -82,5 +84,43 @@ public final class JSONToken {
      */
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return "JSONToken {" + "tokenType=" + tokenTypeToString(tokenType) + ", value=" + value + "}";
+    }
+
+    /**
+     * Get string representation of given {@link TokenType}.
+     *
+     * @param tokenType The {@link TokenType} for which to obtain string representation.
+     * @return String representation of tokenType
+     */
+    static String tokenTypeToString(TokenType tokenType) {
+        switch (tokenType) {
+            case VALUE_NUMBER:
+                return "NUMBER";
+            case VALUE_STRING:
+                return "STRING";
+            case LITERAL_BOOLEAN:
+                return "BOOLEAN";
+            case LITERAL_NULL:
+                return JSONLiterals.NULL_LITERAL;
+            case LEFT_BRACE:
+                return "{";
+            case RIGHT_BRACE:
+                return "}";
+            case LEFT_SQUARE_BRACKET:
+                return "[";
+            case RIGHT_SQUARE_BRACKET:
+                return "]";
+            case COMMA:
+                return ",";
+            case COLON:
+                return ":";
+            default:
+                throw new IllegalStateException("Unknown token type " + tokenType);
+        }
     }
 }
