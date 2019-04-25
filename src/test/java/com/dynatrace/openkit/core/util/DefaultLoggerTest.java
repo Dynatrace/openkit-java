@@ -20,14 +20,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.regex.Pattern;
 
-import static com.dynatrace.openkit.api.LogLevel.*;
+import static com.dynatrace.openkit.api.LogLevel.DEBUG;
+import static com.dynatrace.openkit.api.LogLevel.WARN;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertThat;
 
 public class DefaultLoggerTest {
 

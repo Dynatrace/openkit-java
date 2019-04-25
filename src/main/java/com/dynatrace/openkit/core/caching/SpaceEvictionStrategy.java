@@ -19,7 +19,10 @@ package com.dynatrace.openkit.core.caching;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Space based eviction strategy for the beacon cache.

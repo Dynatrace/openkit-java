@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-
-
 import com.dynatrace.openkit.DynatraceOpenKitBuilder;
-import com.dynatrace.openkit.api.*;
+import com.dynatrace.openkit.api.Action;
+import com.dynatrace.openkit.api.OpenKit;
+import com.dynatrace.openkit.api.RootAction;
+import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.api.WebRequestTracer;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;

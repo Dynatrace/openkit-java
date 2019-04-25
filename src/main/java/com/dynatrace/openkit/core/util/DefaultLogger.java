@@ -26,7 +26,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static com.dynatrace.openkit.api.LogLevel.*;
+import static com.dynatrace.openkit.api.LogLevel.DEBUG;
+import static com.dynatrace.openkit.api.LogLevel.ERROR;
+import static com.dynatrace.openkit.api.LogLevel.INFO;
+import static com.dynatrace.openkit.api.LogLevel.WARN;
 
 public class DefaultLogger implements Logger {
 

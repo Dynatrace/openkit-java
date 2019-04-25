@@ -24,7 +24,12 @@ import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.providers.*;
+import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
+import com.dynatrace.openkit.providers.DefaultThreadIDProvider;
+import com.dynatrace.openkit.providers.DefaultTimingProvider;
+import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.ThreadIDProvider;
+import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
