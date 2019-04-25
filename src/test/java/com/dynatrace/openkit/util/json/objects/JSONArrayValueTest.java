@@ -58,19 +58,19 @@ public class JSONArrayValueTest {
     @Test
     public void isStringReturnsFalse() {
         // then
-        assertThat(JSONArrayValue.fromList(Collections.<JSONValue>emptyList()).isString(), is(false));
+        assertThat(JSONArrayValue.fromList(EMPTY_LIST).isString(), is(false));
     }
 
     @Test
     public void isArrayReturnsTrue() {
         // then
-        assertThat(JSONArrayValue.fromList(Collections.<JSONValue>emptyList()).isArray(), is(true));
+        assertThat(JSONArrayValue.fromList(EMPTY_LIST).isArray(), is(true));
     }
 
     @Test
     public void isObjectReturnsFalse() {
         // then
-        assertThat(JSONArrayValue.fromList(Collections.<JSONValue>emptyList()).isObject(), is(false));
+        assertThat(JSONArrayValue.fromList(EMPTY_LIST).isObject(), is(false));
     }
 
     @Test
