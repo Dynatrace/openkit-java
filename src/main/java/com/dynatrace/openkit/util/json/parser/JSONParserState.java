@@ -17,7 +17,10 @@
 package com.dynatrace.openkit.util.json.parser;
 
 public enum JSONParserState {
-    INIT,             // initial state of the JSON parser
-    END,              // end state of the JSON parser
-    ERROR             // error state
+    INIT,               // initial state of the JSON parser
+    IN_ARRAY_START,     // state when start of array was encountered
+    IN_ARRAY_VALUE,     // state in array, after value has been parsed
+    IN_ARRAY_DELIMITER, // state in array, after delimiter has been parsed
+    END,                // end state of the JSON parser
+    ERROR               // error state
 }
