@@ -23,21 +23,26 @@ import com.dynatrace.openkit.util.json.objects.JSONArrayValue;
 import com.dynatrace.openkit.util.json.objects.JSONBooleanValue;
 import com.dynatrace.openkit.util.json.objects.JSONNullValue;
 import com.dynatrace.openkit.util.json.objects.JSONNumberValue;
+import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
 import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 import com.dynatrace.openkit.util.json.parser.JSONParserState;
 import com.dynatrace.openkit.util.json.parser.ParserException;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JSON parser class for parsing a JSON input string.
  */
 public class JSONParser {
 
-    /** ERROR message used for exception, when a JSON array is not terminated */
+    /** error message used for exception, when a JSON array is not terminated */
     private static final String UNTERMINATED_JSON_ARRAY_ERROR = "Unterminated JSON array";
+    /** error message used for exception, when a JSON object is not terminated */
+    private static final String UNTERMINATED_JSON_OBJECT_ERROR = "Unterminated JSON object";
 
     /** Lexical analyzer */
     private final JSONLexer lexer;
@@ -67,7 +72,7 @@ public class JSONParser {
      *     This ctor can be used in tests when mocking the lexer is needed.
      * </p>
      *
-     * @param lexer Lexical
+     * @param lexer Lexical analyzer
      */
     JSONParser(JSONLexer lexer) {
         this.lexer = lexer;
@@ -139,6 +144,21 @@ public class JSONParser {
                 case IN_ARRAY_DELIMITER:
                     parseInArrayDelimiterState(token);
                     break;
+                case IN_OBJECT_START:
+                    parseInObjectStartState(token);
+                    break;
+                case IN_OBJECT_KEY:
+                    parseInObjectKeyState(token);
+                    break;
+                case IN_OBJECT_COLON:
+                    parseInObjectColonState(token);
+                    break;
+                case IN_OBJECT_VALUE:
+                    parseInObjectValueState(token);
+                    break;
+                case IN_OBJECT_DELIMITER:
+                    parseInObjectDelimiterState(token);
+                    break;
                 case END:
                     parseEndState(token);
                     break;
@@ -146,17 +166,14 @@ public class JSONParser {
                     // this should never be reached, since whenever there is a transition into
                     // error state, an exception is thrown right afterwards
                     // this is just a precaution
-                    throw new ParserException("Unexpected token \"" + token + "\" in error state");
+                    throw new ParserException(unexpectedTokenErrorMessage(token, "in error state"));
                 default:
                     // precaution: a new state has been added, a transition is
-                    throw new ParserException("Internal parser error: Unexpected JSONParserState " + state);
+                    throw new ParserException(internalParserErrorMessage(state, "Unexpected JSONParserState"));
             }
         } while (token != null);
 
-        if (valueContainerStack.isEmpty()) {
-            // sanity check, which cannot happen, unless there is a programming error
-            throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack is empty");
-        }
+        ensureValueContainerStackIsNotEmpty();
 
         return valueContainerStack.getFirst().jsonValue;
     }
@@ -189,9 +206,14 @@ public class JSONParser {
                 valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
                 state = JSONParserState.IN_ARRAY_START;
                 break;
+            case LEFT_BRACE:
+                Map<String, JSONValue> jsonObjectMap = new HashMap<String, JSONValue>();
+                valueContainerStack.addFirst(new JSONValueContainer(JSONObjectValue.fromMap(jsonObjectMap), jsonObjectMap));
+                state = JSONParserState.IN_OBJECT_START;
+                break;
             default:
                 state = JSONParserState.ERROR;
-                throw new ParserException("Unexpected token \"" + token + "\" at start of input");
+                throw new ParserException(unexpectedTokenErrorMessage(token, "at start of input"));
         }
     }
 
@@ -209,14 +231,7 @@ public class JSONParser {
             case LITERAL_BOOLEAN: // FALLTHROUGH
             case VALUE_STRING:    // FALLTHROUGH
             case VALUE_NUMBER:
-                if (valueContainerStack.isEmpty()) {
-                    // sanity check, which cannot happen, unless there is a programming error
-                    throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack is empty");
-                }
-                if (valueContainerStack.getFirst().backingList == null) {
-                    // precaution to ensure we did not do something wrong
-                    throw new ParserException("Internal parser error: [state=" + state + "] backing list is null");
-                }
+                ensureTopLevelElementIsAJSONArray();
                 valueContainerStack.getFirst().backingList.add(tokenToSimpleJSONValue(token));
                 state = JSONParserState.IN_ARRAY_VALUE;
                 break;
@@ -229,33 +244,11 @@ public class JSONParser {
                 state = JSONParserState.IN_ARRAY_START;
                 break;
             case RIGHT_SQUARE_BRACKET:
-                if (valueContainerStack.isEmpty()) {
-                    // sanity check, which cannot happen, unless there is a programming error
-                    throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack is empty");
-                }
-                if (valueContainerStack.size() != stateStack.size() + 1) {
-                    // sanity check, which cannot happen, unless there is a programming error
-                    throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack and stateStack sizes mismatch");
-                }
-                if (stateStack.isEmpty()) {
-                    // the outermost array is terminated
-                    // do not remove anything from the stack
-                    state = JSONParserState.END;
-                } else {
-                    // a nested array is terminated
-                    JSONValue currentValue = valueContainerStack.removeFirst().jsonValue;
-                    if (valueContainerStack.getFirst().backingList == null) {
-                        // precaution to ensure we did not do something wrong
-                        throw new ParserException("Internal parser error: [state=" + state + "] backing list is null");
-                    }
-                    valueContainerStack.getFirst().backingList.add(currentValue);
-                    state = stateStack.removeFirst();
-                }
+                restorePreviousValueAndState();
                 break;
-
             default:
                 state = JSONParserState.ERROR;
-                throw new ParserException("Unexpected token \"" + token + "\" at beginning of array");
+                throw new ParserException(unexpectedTokenErrorMessage(token, "at beginning of array"));
         }
     }
 
@@ -273,32 +266,11 @@ public class JSONParser {
                 state = JSONParserState.IN_ARRAY_DELIMITER;
                 break;
             case RIGHT_SQUARE_BRACKET:
-                if (valueContainerStack.isEmpty()) {
-                    // sanity check, which cannot happen, unless there is a programming error
-                    throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack is empty");
-                }
-                if (valueContainerStack.size() != stateStack.size() + 1) {
-                    // sanity check, which cannot happen, unless there is a programming error
-                    throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack and stateStack sizes mismatch");
-                }
-                if (stateStack.isEmpty()) {
-                    // the outermost array is terminated
-                    // do not remove anything from the stack
-                    state = JSONParserState.END;
-                } else {
-                    // a nested array is terminated
-                    JSONValue currentValue = valueContainerStack.removeFirst().jsonValue;
-                    if (valueContainerStack.getFirst().backingList == null) {
-                        // precaution to ensure we did not do something wrong
-                        throw new ParserException("Internal parser error: [state=" + state + "] backing list is null");
-                    }
-                    valueContainerStack.getFirst().backingList.add(currentValue);
-                    state = stateStack.removeFirst();
-                }
+                restorePreviousValueAndState();
                 break;
             default:
                 state = JSONParserState.ERROR;
-                throw new ParserException("Unexpected token \"" + token + "\" in array after value has been parsed");
+                throw new ParserException(unexpectedTokenErrorMessage(token, "in array after value has been parsed"));
         }
     }
 
@@ -316,13 +288,7 @@ public class JSONParser {
             case LITERAL_BOOLEAN: // FALLTHROUGH
             case VALUE_STRING:    // FALLTHROUGH
             case VALUE_NUMBER:
-                if (valueContainerStack.isEmpty()) {
-                    // sanity check, which cannot happen, unless there is a programming error
-                    throw new ParserException("Internal parser error: [state=\" + state + \"] valueContainerStack is empty");
-                }
-                if (valueContainerStack.getFirst().backingList == null) {
-                    throw new ParserException("Internal parser error: [state=" + state + "] backing list is null");
-                }
+                ensureTopLevelElementIsAJSONArray();
                 valueContainerStack.getFirst().backingList.add(tokenToSimpleJSONValue(token));
                 state = JSONParserState.IN_ARRAY_VALUE;
                 break;
@@ -336,10 +302,136 @@ public class JSONParser {
                 break;
             default:
                 state = JSONParserState.ERROR;
-                throw new ParserException("Unexpected token \"" + token + "\" in array after delimiter");
+                throw new ParserException(unexpectedTokenErrorMessage(token, "in array after delimiter"));
         }
     }
 
+    /**
+     * Parse token in state right after a JSON object has been started.
+     *
+     * @param token The token to parse.
+     * @throws ParserException In case parsing fails.
+     */
+    private void parseInObjectStartState(JSONToken token) throws ParserException {
+        ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+
+        switch (token.getTokenType()) {
+            case RIGHT_BRACE:
+                ensureValueContainerStackIsNotEmpty();
+                state = JSONParserState.END;
+                break;
+            case COMMA:  // FALLTHROUGH
+            case COLON:
+                // expect key, but got unexpected token instead
+                state = JSONParserState.ERROR;
+                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - key expected"));
+            case VALUE_STRING:
+                ensureTopLevelElementIsAJSONObject();
+                valueContainerStack.peekFirst().lastParsedObjectKey = token.getValue();
+                state = JSONParserState.IN_OBJECT_KEY;
+                break;
+            default:
+                state = JSONParserState.ERROR;
+                throw new ParserException("Unexpected object key token \"" + token + "\"");
+        }
+    }
+
+    /**
+     * Parse token in state right after a JSON key token has been parsed.
+     *
+     * @param token The token to parse.
+     * @throws ParserException In case parsing fails.
+     */
+    private void parseInObjectKeyState(JSONToken token) throws ParserException {
+        ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+
+        switch (token.getTokenType()) {
+            case COLON:
+                // got key-value delimiter as expected
+                state = JSONParserState.IN_OBJECT_COLON;
+                break;
+            default:
+                // expected key-value delimiter (":"), but got something different instead
+                state = JSONParserState.ERROR;
+                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - key-value delimiter expected"));
+        }
+    }
+
+    /**
+     * Parse token in state right after a JSON key-value delimiter (":") has been parsed.
+     *
+     * @param token The token to parse.
+     * @throws ParserException In case parsing fails.
+     */
+    private void parseInObjectColonState(JSONToken token) throws ParserException {
+        ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+
+        ensureTopLevelElementIsAJSONObject();
+
+        switch (token.getTokenType()) {
+            case VALUE_NUMBER:     // FALLTHROUGH
+            case VALUE_STRING:     // FALLTHROUGH
+            case LITERAL_BOOLEAN:  // FALLTHROUGH
+            case LITERAL_NULL:
+                // simple JSON value as object value
+                valueContainerStack.peekFirst().lastParsedObjectValue = tokenToSimpleJSONValue(token);
+                state = JSONParserState.IN_OBJECT_VALUE;
+                break;
+            default:
+                // anything else is not yet implemented
+                // TODO stefan.eberl - implement this as well
+                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - not implemented yet"));
+        }
+    }
+
+    /**
+     * Parse token in state right after a JSON object value has been parsed.
+     *
+     * <p>
+     *     Note for now: An object cannot have more than one key-value pair and the value must be simple type.
+     * </p>
+     *
+     * @param token The token to parse.
+     * @throws ParserException In case parsing fails.
+     */
+    private void parseInObjectValueState(JSONToken token) throws ParserException {
+        ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+
+        ensureTopLevelElementIsAJSONObject();
+
+        switch (token.getTokenType()) {
+            case RIGHT_BRACE:
+                // object is closed
+                // push last parsed - key value pair into object
+                ensureKeyValuePairWasParsed();
+                String key = valueContainerStack.peekFirst().lastParsedObjectKey;
+                JSONValue value = valueContainerStack.peekFirst().lastParsedObjectValue;
+                valueContainerStack.peekFirst().backingMap.put(key, value);
+                state = JSONParserState.END;
+                break;
+            default:
+                // anything else is not yet implemented
+                // TODO stefan.eberl - implement this as well
+                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - not implemented yet"));
+        }
+    }
+
+    /**
+     * Parse token in state right after a delimiter has been parsed.
+     *
+     * <p>
+     *     Note for now: Not supported yet.
+     * </p>
+     *
+     * @param token The token to parse.
+     * @throws ParserException In case parsing fails.
+     */
+    private void parseInObjectDelimiterState(JSONToken token) throws ParserException {
+        ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+
+        // TODO stefan.eberl - implement this as well
+        throw new IllegalStateException("multiple values in object are not yet implemented");
+    }
 
     /**
      * Parse token when already in end state.
@@ -355,7 +447,35 @@ public class JSONParser {
 
         // unexpected token when end of input was already expected
         state = JSONParserState.ERROR;
-        throw new ParserException("Unexpected token \"" + token + "\" at end of input");
+        throw new ParserException(unexpectedTokenErrorMessage(token, "at end of input"));
+    }
+
+    /**
+     * Helper method to remove the top level JSON value from the value stack and also the state.
+     *
+     * @throws ParserException In case of an exception.
+     */
+    private void restorePreviousValueAndState() throws ParserException {
+        ensureValueContainerStackIsNotEmpty();
+
+        if (valueContainerStack.size() != stateStack.size() + 1) {
+            // sanity check, which cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "valueContainerStack and stateStack sizes mismatch"));
+        }
+        if (stateStack.isEmpty()) {
+            // the outermost array is terminated
+            // do not remove anything from the stack
+            state = JSONParserState.END;
+        } else {
+            // a nested array is terminated
+            JSONValue currentValue = valueContainerStack.removeFirst().jsonValue;
+            if (valueContainerStack.getFirst().backingList == null) {
+                // precaution to ensure we did not do something wrong
+                throw new ParserException(internalParserErrorMessage(state, "backing list is null"));
+            }
+            valueContainerStack.getFirst().backingList.add(currentValue);
+            state = stateStack.removeFirst();
+        }
     }
 
     /**
@@ -402,6 +522,91 @@ public class JSONParser {
     }
 
     /**
+     * Ensure that value container stack's top element is ok such that a JSON array can be parsed.
+     *
+     * @throws ParserException If something is invalid.
+     */
+    private void ensureTopLevelElementIsAJSONArray() throws ParserException {
+        ensureValueContainerStackIsNotEmpty();
+
+        if (!valueContainerStack.peekFirst().jsonValue.isArray()) {
+            // sanity check, cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "top level element is not a JSON array"));
+        }
+        if (valueContainerStack.peekFirst().backingList == null) {
+            throw new ParserException(internalParserErrorMessage(state, "backing list is null"));
+        }
+    }
+
+    /**
+     * Ensure that value container stack's top element is ok such that a JSON object can be parsed.
+     *
+     * @throws ParserException If something is invalid.
+     */
+    private void ensureTopLevelElementIsAJSONObject() throws ParserException {
+        ensureValueContainerStackIsNotEmpty();
+
+        if (!valueContainerStack.peekFirst().jsonValue.isObject()) {
+            // sanity check, cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "top level element is not a JSON object"));
+        }
+        if (valueContainerStack.peekFirst().backingMap == null) {
+            // sanity check, cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "backing map is null"));
+        }
+    }
+
+    /**
+     * Ensure that previously a key-value pair was parsed.
+     *
+     * @throws ParserException If something is invalid.
+     */
+    private void ensureKeyValuePairWasParsed() throws ParserException {
+        ensureValueContainerStackIsNotEmpty();
+
+        if (valueContainerStack.peekFirst().lastParsedObjectKey == null) {
+            // sanity check, cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "lastParsedObjectKey is null"));
+        }
+        if (valueContainerStack.peekFirst().lastParsedObjectValue == null) {
+            // sanity check, cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "lastParsedObjectValue is null"));
+        }
+    }
+
+    /**
+     * Helper function to ensure that value container stack is not empty.
+     *
+     * @throws ParserException If {@link this#valueContainerStack} is empty.
+     */
+    private void ensureValueContainerStackIsNotEmpty() throws ParserException {
+        if (valueContainerStack.isEmpty()) {
+            // sanity check, which cannot happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "valueContainerStack is empty"));
+        }
+    }
+
+    /**
+     * Helper method for creating internal parser error text.
+     *
+     * @param state Current parser state.
+     * @param suffix The suffix to append to the message.
+     */
+    private static String internalParserErrorMessage(JSONParserState state, String suffix) {
+        return "Internal parser error: [state=\"" + state + "\"] " + suffix;
+    }
+
+    /**
+     * Helper method for creating unexpected token error text.
+     *
+     * @param token The unexpected token
+     * @param suffix The suffix to append to the message.
+     */
+    private static String unexpectedTokenErrorMessage(JSONToken token, String suffix) {
+        return "Unexpected token \"" + token + "\" " + suffix;
+    }
+
+    /**
      * Helper class storing the {@link JSONValue} and the appropriate backing container class, if it is a composite object.
      */
     private static final class JSONValueContainer {
@@ -409,6 +614,12 @@ public class JSONParser {
         private final JSONValue jsonValue;
         /** Backing list, which is non-null if and only if {@code jsonValue} is a {@link JSONArrayValue} */
         private final List<JSONValue> backingList;
+        /** Backing map, which is non-null if and only if {@code jsonValue} is a {@link JSONObjectValue} */
+        private final Map<String, JSONValue> backingMap;
+        /** Field to store the last parsed key of an object */
+        private String lastParsedObjectKey = null;
+        /** Field to store the last parsed value of an object */
+        private JSONValue lastParsedObjectValue = null;
 
         /**
          * Construct a {@link JSONValueContainer} with a JSON value.
@@ -422,6 +633,7 @@ public class JSONParser {
         JSONValueContainer(JSONValue jsonValue) {
             this.jsonValue = jsonValue;
             backingList = null;
+            backingMap = null;
         }
 
         /**
@@ -433,6 +645,19 @@ public class JSONParser {
         JSONValueContainer(JSONArrayValue jsonArrayValue, List<JSONValue> backingList) {
             jsonValue = jsonArrayValue;
             this.backingList = backingList;
+            backingMap = null;
+        }
+
+        /**
+         * Construct a {@link JSONValueContainer} with a JSON object value.
+         *
+         * @param jsonObjectValue The JSON object value.
+         * @param backingMap The backing map for the JSON object value.
+         */
+        JSONValueContainer(JSONObjectValue jsonObjectValue, Map<String, JSONValue> backingMap) {
+            jsonValue = jsonObjectValue;
+            backingList = null;
+            this.backingMap = backingMap;
         }
     }
 }

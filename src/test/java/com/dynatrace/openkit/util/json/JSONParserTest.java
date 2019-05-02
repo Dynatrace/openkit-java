@@ -23,6 +23,7 @@ import com.dynatrace.openkit.util.json.objects.JSONArrayValue;
 import com.dynatrace.openkit.util.json.objects.JSONBooleanValue;
 import com.dynatrace.openkit.util.json.objects.JSONNullValue;
 import com.dynatrace.openkit.util.json.objects.JSONNumberValue;
+import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
 import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 import com.dynatrace.openkit.util.json.parser.JSONParserState;
@@ -31,6 +32,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.util.Collections;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -237,6 +240,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch (ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=BOOLEAN, value=true}\" at end of input")));
             assertThat(e.getCause(), is(nullValue()));
@@ -254,6 +258,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch (ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=], value=null}\" at start of input")));
             assertThat(e.getCause(), is(nullValue()));
@@ -271,6 +276,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch (ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=}, value=null}\" at start of input")));
             assertThat(e.getCause(), is(nullValue()));
@@ -288,6 +294,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch (ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=,, value=null}\" at start of input")));
             assertThat(e.getCause(), is(nullValue()));
@@ -305,6 +312,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch (ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=:, value=null}\" at start of input")));
             assertThat(e.getCause(), is(nullValue()));
@@ -322,6 +330,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch (ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unterminated JSON array")));
             assertThat(e.getCause(), is(nullValue()));
@@ -469,6 +478,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=,, value=null}\" at beginning of array")));
             assertThat(e.getCause(), is(nullValue()));
@@ -486,6 +496,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=:, value=null}\" at beginning of array")));
             assertThat(e.getCause(), is(nullValue()));
@@ -503,6 +514,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unterminated JSON array")));
             assertThat(e.getCause(), is(nullValue()));
@@ -520,6 +532,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unterminated JSON array")));
             assertThat(e.getCause(), is(nullValue()));
@@ -537,6 +550,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=NUMBER, value=45}\" in array after value has been parsed")));
             assertThat(e.getCause(), is(nullValue()));
@@ -554,6 +568,7 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
+            fail("Expected ParserException not thrown");
         } catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=], value=null}\" in array after delimiter")));
             assertThat(e.getCause(), is(nullValue()));
@@ -693,8 +708,340 @@ public class JSONParserTest {
         // when, then
         try {
             target.parse();
-        } catch(ParserException e) {
+            fail("Expected ParserException not thrown");} catch(ParserException e) {
             assertThat(e.getMessage(), is(equalTo("Unterminated JSON array")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingUnterminatedEmptyObjectThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch (ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unterminated JSON object")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingEmptyObjectWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)obtained).size(), is(0));
+    }
+
+    @Test
+    public void parsingObjectWithNullLiteralAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{null: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected object key token \"JSONToken {tokenType=null, value=null}\"")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithBooleanTrueLiteralAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{true: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected object key token \"JSONToken {tokenType=BOOLEAN, value=true}\"")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithBooleanFalseLiteralAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{false: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected object key token \"JSONToken {tokenType=BOOLEAN, value=false}\"")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithNumberAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{42: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected object key token \"JSONToken {tokenType=NUMBER, value=42}\"")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithArrayAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{[]: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected object key token \"JSONToken {tokenType=[, value=null}\"")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithObjectAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{{}: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected object key token \"JSONToken {tokenType={, value=null}\"")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithoutKeyTokenThrowsThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{: \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=:, value=null}\" encountered - key expected")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithCommaAsKeyThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{, \"foo\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=,, value=null}\" encountered - key expected")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithValidKeyButNoKeyValueDelimiterThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{\"foo\" \"bar\"}");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch(ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unexpected token \"JSONToken {tokenType=STRING, value=bar}\" encountered - key-value delimiter expected")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingObjectWithStringKeyAndNullValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"bar\": null}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)obtained).keySet(), is(equalTo(Collections.singleton("bar"))));
+        assertThat(((JSONObjectValue)obtained).get("bar"), is(notNullValue()));
+        assertThat(((JSONObjectValue)obtained).get("bar"), is(instanceOf(JSONNullValue.class)));
+    }
+
+    @Test
+    public void parsingObjectWithStringKeyAndBooleanTrueValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"foo\": true}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)obtained).keySet(), is(equalTo(Collections.singleton("foo"))));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(notNullValue()));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue)((JSONObjectValue)obtained).get("foo")).getValue(), is(true));
+    }
+
+    @Test
+    public void parsingObjectWithStringKeyAndBooleanFalseValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"foo\": false}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)obtained).keySet(), is(equalTo(Collections.singleton("foo"))));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(notNullValue()));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue)((JSONObjectValue)obtained).get("foo")).getValue(), is(false));
+    }
+
+    @Test
+    public void parsingObjectWithStringKeyAndNumericValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"foo\": 42}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)obtained).keySet(), is(equalTo(Collections.singleton("foo"))));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(notNullValue()));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(instanceOf(JSONNumberValue.class)));
+        assertThat(((JSONNumberValue)((JSONObjectValue)obtained).get("foo")).getIntValue(), is(42));
+    }
+
+    @Test
+    public void parsingObjectWithStringKeyAndStringValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"foo\": \"bar\"}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)obtained).keySet(), is(equalTo(Collections.singleton("foo"))));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(notNullValue()));
+        assertThat(((JSONObjectValue)obtained).get("foo"), is(instanceOf(JSONStringValue.class)));
+        assertThat(((JSONStringValue)((JSONObjectValue)obtained).get("foo")).getValue(), is("bar"));
+    }
+
+    @Test
+    public void parsingUnterminatedObjectAfterKeyHasBeenParsedThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{\"foo\"");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch (ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unterminated JSON object")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingUnterminatedObjectAfterKeyValueDelimiterHasBeenParsedThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{\"foo\": ");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch (ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unterminated JSON object")));
+            assertThat(e.getCause(), is(nullValue()));
+        }
+
+        // and also check transition into error state
+        assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingUnterminatedObjectAfterValueHasBeenParsedThrowsAnException() {
+        // given
+        JSONParser target = new JSONParser("{\"foo\": \"bar\"");
+
+        // when, then
+        try {
+            target.parse();
+            fail("Expected ParserException not thrown");
+        } catch (ParserException e) {
+            assertThat(e.getMessage(), is(equalTo("Unterminated JSON object")));
             assertThat(e.getCause(), is(nullValue()));
         }
 

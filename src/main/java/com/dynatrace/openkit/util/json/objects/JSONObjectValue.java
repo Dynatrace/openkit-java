@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.util.json.objects;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * JSON value class representing an object value.
@@ -52,6 +53,15 @@ public class JSONObjectValue extends JSONValue {
     @Override
     public boolean isObject() {
         return true;
+    }
+
+    /**
+     * Returns a {@link Set} view of the keys contained in this JSON object.
+     *
+     * @return  A set view of the keys contained in this map
+     */
+    public Set<String> keySet() {
+        return jsonObjectMap.keySet();
     }
 
     /**

@@ -20,7 +20,9 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -76,6 +78,22 @@ public class JSONObjectValueTest {
     public void fromMapGivesNullIfArgumentIsNull() {
         // when constructed with null, then
         assertThat(JSONObjectValue.fromMap(null), is(nullValue()));
+    }
+
+    @Test
+    public void keySetDelegatesTheCallToTheUnderlyingMap() {
+        // given
+        @SuppressWarnings("unchecked") Map<String, JSONValue> jsonObjectMap = mock(Map.class);
+        when(jsonObjectMap.keySet()).thenReturn(Collections.singleton("foobar"));
+        JSONObjectValue target = JSONObjectValue.fromMap(jsonObjectMap);
+
+        // when
+        Set<String> obtained = target.keySet();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        verify(jsonObjectMap, times(1)).keySet();
+        verifyNoMoreInteractions(jsonObjectMap);
     }
 
     @Test
