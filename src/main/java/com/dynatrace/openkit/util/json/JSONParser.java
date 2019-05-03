@@ -320,11 +320,6 @@ public class JSONParser {
                 ensureValueContainerStackIsNotEmpty();
                 state = JSONParserState.END;
                 break;
-            case COMMA:  // FALLTHROUGH
-            case COLON:
-                // expect key, but got unexpected token instead
-                state = JSONParserState.ERROR;
-                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - key expected"));
             case VALUE_STRING:
                 ensureTopLevelElementIsAJSONObject();
                 valueContainerStack.peekFirst().lastParsedObjectKey = token.getValue();
@@ -332,7 +327,7 @@ public class JSONParser {
                 break;
             default:
                 state = JSONParserState.ERROR;
-                throw new ParserException("Unexpected object key token \"" + token + "\"");
+                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - object key expected"));
         }
     }
 
@@ -345,15 +340,11 @@ public class JSONParser {
     private void parseInObjectKeyState(JSONToken token) throws ParserException {
         ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
 
-        switch (token.getTokenType()) {
-            case COLON:
-                // got key-value delimiter as expected
-                state = JSONParserState.IN_OBJECT_COLON;
-                break;
-            default:
-                // expected key-value delimiter (":"), but got something different instead
-                state = JSONParserState.ERROR;
-                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - key-value delimiter expected"));
+        if (token.getTokenType() == JSONToken.TokenType.COLON) {// got key-value delimiter as expected
+            state = JSONParserState.IN_OBJECT_COLON;
+        } else {// expected key-value delimiter (":"), but got something different instead
+            state = JSONParserState.ERROR;
+            throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - key-value delimiter expected"));
         }
     }
 
@@ -377,10 +368,13 @@ public class JSONParser {
                 valueContainerStack.peekFirst().lastParsedObjectValue = tokenToSimpleJSONValue(token);
                 state = JSONParserState.IN_OBJECT_VALUE;
                 break;
+            case LEFT_BRACE:
+            case LEFT_SQUARE_BRACKET:
+                // composite object is the value - not yet implemented
+                throw new ParserException(unexpectedTokenErrorMessage(token, "Not yet implemented"));
             default:
-                // anything else is not yet implemented
-                // TODO stefan.eberl - implement this as well
-                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - not implemented yet"));
+                // anything other token
+                throw new ParserException(unexpectedTokenErrorMessage(token, "after key-value pair encountered"));
         }
     }
 
@@ -388,7 +382,7 @@ public class JSONParser {
      * Parse token in state right after a JSON object value has been parsed.
      *
      * <p>
-     *     Note for now: An object cannot have more than one key-value pair and the value must be simple type.
+     *     Note for now: An object can have more than one key-value pair, but the value must be simple type.
      * </p>
      *
      * @param token The token to parse.
@@ -399,20 +393,28 @@ public class JSONParser {
 
         ensureTopLevelElementIsAJSONObject();
 
+        ensureKeyValuePairWasParsed();
+        String key = valueContainerStack.peekFirst().lastParsedObjectKey;
+        JSONValue value = valueContainerStack.peekFirst().lastParsedObjectValue;
+
         switch (token.getTokenType()) {
             case RIGHT_BRACE:
                 // object is closed
                 // push last parsed - key value pair into object
-                ensureKeyValuePairWasParsed();
-                String key = valueContainerStack.peekFirst().lastParsedObjectKey;
-                JSONValue value = valueContainerStack.peekFirst().lastParsedObjectValue;
                 valueContainerStack.peekFirst().backingMap.put(key, value);
                 state = JSONParserState.END;
                 break;
+            case COMMA:
+                // expecting more entries in the current object, push existing and make state transition
+                valueContainerStack.peekFirst().backingMap.put(key, value);
+                valueContainerStack.peekFirst().lastParsedObjectKey = null;
+                valueContainerStack.peekFirst().lastParsedObjectValue = null;
+                state = JSONParserState.IN_OBJECT_DELIMITER;
+                break;
             default:
-                // anything else is not yet implemented
-                // TODO stefan.eberl - implement this as well
-                throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - not implemented yet"));
+                // any other token, which is illegal in this case
+                state = JSONParserState.ERROR;
+                throw new ParserException(unexpectedTokenErrorMessage(token, "after key-value pair encountered"));
         }
     }
 
@@ -429,8 +431,14 @@ public class JSONParser {
     private void parseInObjectDelimiterState(JSONToken token) throws ParserException {
         ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
 
-        // TODO stefan.eberl - implement this as well
-        throw new IllegalStateException("multiple values in object are not yet implemented");
+        if (token.getTokenType() == JSONToken.TokenType.VALUE_STRING) {
+            ensureTopLevelElementIsAJSONObject();
+            valueContainerStack.peekFirst().lastParsedObjectKey = token.getValue();
+            state = JSONParserState.IN_OBJECT_KEY;
+        } else {
+            state = JSONParserState.ERROR;
+            throw new ParserException(unexpectedTokenErrorMessage(token, "encountered - object key expected"));
+        }
     }
 
     /**
