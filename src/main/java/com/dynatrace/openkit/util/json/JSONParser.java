@@ -232,19 +232,19 @@ public class JSONParser {
             case VALUE_STRING:    // FALLTHROUGH
             case VALUE_NUMBER:
                 ensureTopLevelElementIsAJSONArray();
-                valueContainerStack.getFirst().backingList.add(tokenToSimpleJSONValue(token));
+                valueContainerStack.peekFirst().backingList.add(tokenToSimpleJSONValue(token));
                 state = JSONParserState.IN_ARRAY_VALUE;
                 break;
             case LEFT_SQUARE_BRACKET:
                 // start nested array as first element in array
-                // The nested array is just another value, therefore we push that state to the stack
-                stateStack.push(JSONParserState.IN_ARRAY_VALUE);
-                List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
-                valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
-                state = JSONParserState.IN_ARRAY_START;
+                parseStartOfNestedArray();
+                break;
+            case LEFT_BRACE:
+                // start nested object as first element in array
+                parseStartOfNestedObject();
                 break;
             case RIGHT_SQUARE_BRACKET:
-                restorePreviousValueAndState();
+                closeCompositeJSONValueAndRestoreState();
                 break;
             default:
                 state = JSONParserState.ERROR;
@@ -266,7 +266,7 @@ public class JSONParser {
                 state = JSONParserState.IN_ARRAY_DELIMITER;
                 break;
             case RIGHT_SQUARE_BRACKET:
-                restorePreviousValueAndState();
+                closeCompositeJSONValueAndRestoreState();
                 break;
             default:
                 state = JSONParserState.ERROR;
@@ -289,21 +289,49 @@ public class JSONParser {
             case VALUE_STRING:    // FALLTHROUGH
             case VALUE_NUMBER:
                 ensureTopLevelElementIsAJSONArray();
-                valueContainerStack.getFirst().backingList.add(tokenToSimpleJSONValue(token));
+                valueContainerStack.peekFirst().backingList.add(tokenToSimpleJSONValue(token));
                 state = JSONParserState.IN_ARRAY_VALUE;
                 break;
             case LEFT_SQUARE_BRACKET:
                 // start nested array as element in array
-                // The nested array is just another value, therefore we push that state to the stack
-                stateStack.push(JSONParserState.IN_ARRAY_VALUE);
-                List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
-                valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
-                state = JSONParserState.IN_ARRAY_START;
+                parseStartOfNestedArray();
+                break;
+            case LEFT_BRACE:
+                // start nested object as first element in array
+                parseStartOfNestedObject();
                 break;
             default:
                 state = JSONParserState.ERROR;
                 throw new ParserException(unexpectedTokenErrorMessage(token, "in array after delimiter"));
         }
+    }
+
+    /**
+     * Utility method to parse start of nested object.
+     *
+     * <p>
+     *     This method is called if the left brace token is encountered.
+     * </p>
+     */
+    private void parseStartOfNestedObject() {
+        stateStack.push(JSONParserState.IN_ARRAY_VALUE);
+        Map<String, JSONValue> jsonObjectMap = new HashMap<String, JSONValue>();
+        valueContainerStack.addFirst(new JSONValueContainer(JSONObjectValue.fromMap(jsonObjectMap), jsonObjectMap));
+        state = JSONParserState.IN_OBJECT_START;
+    }
+
+    /**
+     * Utility method to parse start of nested array.
+     *
+     * <p>
+     *     This method is called if the left square bracket token is encountered.
+     * </p>
+     */
+    private void parseStartOfNestedArray() {
+        stateStack.push(JSONParserState.IN_ARRAY_VALUE);
+        List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
+        valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
+        state = JSONParserState.IN_ARRAY_START;
     }
 
     /**
@@ -314,14 +342,14 @@ public class JSONParser {
      */
     private void parseInObjectStartState(JSONToken token) throws ParserException {
         ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+        ensureTopLevelElementIsAJSONObject();
 
         switch (token.getTokenType()) {
             case RIGHT_BRACE:
-                ensureValueContainerStackIsNotEmpty();
-                state = JSONParserState.END;
+                // object is cosed, right after it was started
+                closeCompositeJSONValueAndRestoreState();
                 break;
             case VALUE_STRING:
-                ensureTopLevelElementIsAJSONObject();
                 valueContainerStack.peekFirst().lastParsedObjectKey = token.getValue();
                 state = JSONParserState.IN_OBJECT_KEY;
                 break;
@@ -369,9 +397,19 @@ public class JSONParser {
                 state = JSONParserState.IN_OBJECT_VALUE;
                 break;
             case LEFT_BRACE:
+                // value is an object
+                Map<String, JSONValue> jsonObjectMap = new HashMap<String, JSONValue>();
+                valueContainerStack.addFirst(new JSONValueContainer(JSONObjectValue.fromMap(jsonObjectMap), jsonObjectMap));
+                stateStack.addFirst(JSONParserState.IN_OBJECT_VALUE);
+                state = JSONParserState.IN_OBJECT_START;
+                break;
             case LEFT_SQUARE_BRACKET:
-                // composite object is the value - not yet implemented
-                throw new ParserException(unexpectedTokenErrorMessage(token, "Not yet implemented"));
+                // value is an array
+                List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
+                valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
+                stateStack.addFirst(JSONParserState.IN_OBJECT_VALUE);
+                state = JSONParserState.IN_ARRAY_START;
+                break;
             default:
                 // anything other token
                 throw new ParserException(unexpectedTokenErrorMessage(token, "after key-value pair encountered"));
@@ -390,25 +428,21 @@ public class JSONParser {
      */
     private void parseInObjectValueState(JSONToken token) throws ParserException {
         ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
-
         ensureTopLevelElementIsAJSONObject();
-
-        ensureKeyValuePairWasParsed();
-        String key = valueContainerStack.peekFirst().lastParsedObjectKey;
-        JSONValue value = valueContainerStack.peekFirst().lastParsedObjectValue;
 
         switch (token.getTokenType()) {
             case RIGHT_BRACE:
-                // object is closed
-                // push last parsed - key value pair into object
+                // object is closed, right after some value
+                // push last parsed key/value into the map
+                ensureKeyValuePairWasParsed();
+                String key = valueContainerStack.peekFirst().lastParsedObjectKey;
+                JSONValue value = valueContainerStack.peekFirst().lastParsedObjectValue;
                 valueContainerStack.peekFirst().backingMap.put(key, value);
-                state = JSONParserState.END;
+                closeCompositeJSONValueAndRestoreState();
                 break;
             case COMMA:
                 // expecting more entries in the current object, push existing and make state transition
-                valueContainerStack.peekFirst().backingMap.put(key, value);
-                valueContainerStack.peekFirst().lastParsedObjectKey = null;
-                valueContainerStack.peekFirst().lastParsedObjectValue = null;
+                putLastParsedKeyValuePairIntoObject();
                 state = JSONParserState.IN_OBJECT_DELIMITER;
                 break;
             default:
@@ -430,9 +464,9 @@ public class JSONParser {
      */
     private void parseInObjectDelimiterState(JSONToken token) throws ParserException {
         ensureTokenIsNotNull(token, UNTERMINATED_JSON_OBJECT_ERROR);
+        ensureTopLevelElementIsAJSONObject();
 
         if (token.getTokenType() == JSONToken.TokenType.VALUE_STRING) {
-            ensureTopLevelElementIsAJSONObject();
             valueContainerStack.peekFirst().lastParsedObjectKey = token.getValue();
             state = JSONParserState.IN_OBJECT_KEY;
         } else {
@@ -463,27 +497,59 @@ public class JSONParser {
      *
      * @throws ParserException In case of an exception.
      */
-    private void restorePreviousValueAndState() throws ParserException {
+    private void closeCompositeJSONValueAndRestoreState() throws ParserException {
         ensureValueContainerStackIsNotEmpty();
 
         if (valueContainerStack.size() != stateStack.size() + 1) {
             // sanity check, which cannot happen, unless there is a programming error
             throw new ParserException(internalParserErrorMessage(state, "valueContainerStack and stateStack sizes mismatch"));
         }
-        if (stateStack.isEmpty()) {
+        if (valueContainerStack.size() == 1) {
             // the outermost array is terminated
             // do not remove anything from the stack
             state = JSONParserState.END;
-        } else {
-            // a nested array is terminated
-            JSONValue currentValue = valueContainerStack.removeFirst().jsonValue;
-            if (valueContainerStack.getFirst().backingList == null) {
+            return;
+        }
+
+        JSONValue currentValue = valueContainerStack.removeFirst().jsonValue;
+
+        // ensure that there is a new top level element which is a composite value (object or array)
+        ensureValueContainerStackIsNotEmpty();
+        if (valueContainerStack.peekFirst().jsonValue.isArray()) {
+            if (valueContainerStack.peekFirst().backingList == null) {
                 // precaution to ensure we did not do something wrong
                 throw new ParserException(internalParserErrorMessage(state, "backing list is null"));
             }
-            valueContainerStack.getFirst().backingList.add(currentValue);
-            state = stateStack.removeFirst();
+            valueContainerStack.peekFirst().backingList.add(currentValue);
+        } else if (valueContainerStack.peekFirst().jsonValue.isObject()) {
+            valueContainerStack.peekFirst().lastParsedObjectValue = currentValue;
+        } else {
+            // unexpected top level object - this should not happen, unless there is a programming error
+            throw new ParserException(internalParserErrorMessage(state, "not a composite top level object"));
         }
+
+        state = stateStack.removeFirst();
+    }
+
+    /**
+     * Put the last parsed key value pair into the top level stack element.
+     *
+     * <p>
+     *     Some sanity checks are performed to ensure consistency.
+     * </p>
+     *
+     * @throws ParserException If anything is inconsistent.
+     */
+    private void putLastParsedKeyValuePairIntoObject() throws ParserException {
+        ensureKeyValuePairWasParsed();
+        ensureTopLevelElementIsAJSONObject();
+
+        String key = valueContainerStack.peekFirst().lastParsedObjectKey;
+        JSONValue value = valueContainerStack.peekFirst().lastParsedObjectValue;
+        valueContainerStack.peekFirst().backingMap.put(key, value);
+
+        valueContainerStack.peekFirst().lastParsedObjectKey = null;
+        valueContainerStack.peekFirst().lastParsedObjectValue = null;
     }
 
     /**

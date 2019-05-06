@@ -28,13 +28,13 @@ import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 import com.dynatrace.openkit.util.json.parser.JSONParserState;
 import com.dynatrace.openkit.util.json.parser.ParserException;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.Collections;
-import java.util.Objects;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -1143,7 +1143,6 @@ public class JSONParserTest {
         assertThat(target.getState(), is(JSONParserState.ERROR));
     }
 
-
     @Test
     public void parsingNonStringTokenAsSecondKeyThrowsAnException() {
         // given
@@ -1160,5 +1159,200 @@ public class JSONParserTest {
 
         // and also check transition into error state
         assertThat(target.getState(), is(JSONParserState.ERROR));
+    }
+
+    @Test
+    public void parsingEmptyJSONArrayAsObjectValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"a\": [], \"b\": []}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+
+        JSONObjectValue jsonObject = (JSONObjectValue)obtained;
+        assertThat(jsonObject.keySet(), containsInAnyOrder("a", "b"));
+        assertThat(jsonObject.get("a"), is(notNullValue()));
+        assertThat(jsonObject.get("a"), is(instanceOf(JSONArrayValue.class)));
+        assertThat(((JSONArrayValue)jsonObject.get("a")).size(), is(0));
+        assertThat(jsonObject.get("b"), is(notNullValue()));
+        assertThat(jsonObject.get("b"), is(instanceOf(JSONArrayValue.class)));
+        assertThat(((JSONArrayValue)jsonObject.get("b")).size(), is(0));
+    }
+
+    @Test
+    public void parsingNonEmptyJSONArrayAsObjectValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"a\": [null, true], \"b\": [false, 42.25, \"foobar\"]}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+
+        JSONObjectValue jsonObject = (JSONObjectValue)obtained;
+        assertThat(jsonObject.keySet(), containsInAnyOrder("a", "b"));
+
+        // check the first parsed array
+        assertThat(jsonObject.get("a"), is(notNullValue()));
+        assertThat(jsonObject.get("a"), is(instanceOf(JSONArrayValue.class)));
+        JSONArrayValue jsonArray = (JSONArrayValue)jsonObject.get("a");
+        assertThat(jsonArray.size(), is(2));
+        assertThat(jsonArray.get(0), is(notNullValue()));
+        assertThat(jsonArray.get(0), is(instanceOf(JSONNullValue.class)));
+        assertThat(jsonArray.get(1), is(notNullValue()));
+        assertThat(jsonArray.get(1), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue)jsonArray.get(1)).getValue(), is(true));
+
+        assertThat(jsonObject.get("b"), is(notNullValue()));
+        assertThat(jsonObject.get("b"), is(instanceOf(JSONArrayValue.class)));
+        jsonArray = (JSONArrayValue)jsonObject.get("b");
+        assertThat(jsonArray.get(0), is(notNullValue()));
+        assertThat(jsonArray.get(0), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue)jsonArray.get(0)).getValue(), is(false));
+        assertThat(jsonArray.get(1), is(notNullValue()));
+        assertThat(jsonArray.get(1), is(instanceOf(JSONNumberValue.class)));
+        assertThat(((JSONNumberValue)jsonArray.get(1)).getDoubleValue(), is(42.25));
+        assertThat(jsonArray.get(2), is(notNullValue()));
+        assertThat(jsonArray.get(2), is(instanceOf(JSONStringValue.class)));
+        assertThat(((JSONStringValue)jsonArray.get(2)).getValue(), is("foobar"));
+    }
+
+    @Test
+    public void parsingEmptyJSONObjectAsObjectValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"a\": {}, \"b\": {}}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+
+        JSONObjectValue jsonObject = (JSONObjectValue)obtained;
+        assertThat(jsonObject.keySet(), containsInAnyOrder("a", "b"));
+        assertThat(jsonObject.get("a"), is(notNullValue()));
+        assertThat(jsonObject.get("a"), is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)jsonObject.get("a")).size(), is(0));
+        assertThat(jsonObject.get("b"), is(notNullValue()));
+        assertThat(jsonObject.get("b"), is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)jsonObject.get("b")).size(), is(0));
+    }
+
+    @Test
+    public void parsingNonEmptyJSONObjectAsObjectValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("{\"a\": {\"a\" : null, \"b\": true, \"c\": [false, 42.25, \"foobar\"]}}");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONObjectValue.class)));
+
+        JSONObjectValue jsonObject = (JSONObjectValue) obtained;
+        assertThat(jsonObject.keySet(), containsInAnyOrder("a"));
+
+        // check nested object
+        assertThat(jsonObject.get("a"), is(notNullValue()));
+        assertThat(jsonObject.get("a"), is(instanceOf(JSONObjectValue.class)));
+        jsonObject = (JSONObjectValue) jsonObject.get("a");
+
+        // check values from nested object
+        assertThat(jsonObject.keySet(), containsInAnyOrder("a", "b", "c"));
+        assertThat(jsonObject.get("a"), is(notNullValue()));
+        assertThat(jsonObject.get("a"), is(instanceOf(JSONNullValue.class)));
+        assertThat(jsonObject.get("b"), is(notNullValue()));
+        assertThat(jsonObject.get("b"), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue) jsonObject.get("b")).getValue(), is(true));
+        assertThat(jsonObject.get("c"), is(notNullValue()));
+        assertThat(jsonObject.get("c"), is(instanceOf(JSONArrayValue.class)));
+        JSONArrayValue jsonArray = (JSONArrayValue) jsonObject.get("c");
+        assertThat(jsonArray.size(), is(3));
+        assertThat(jsonArray.get(0), is(notNullValue()));
+        assertThat(jsonArray.get(0), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue) jsonArray.get(0)).getValue(), is(false));
+        assertThat(jsonArray.get(1), is(notNullValue()));
+        assertThat(jsonArray.get(1), is(instanceOf(JSONNumberValue.class)));
+        assertThat(((JSONNumberValue) jsonArray.get(1)).getDoubleValue(), is(42.25));
+        assertThat(jsonArray.get(2), is(notNullValue()));
+        assertThat(jsonArray.get(2), is(instanceOf(JSONStringValue.class)));
+        assertThat(((JSONStringValue) jsonArray.get(2)).getValue(), is("foobar"));
+    }
+
+    @Test
+    public void parsingEmptyJSONObjectsAsArrayValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("[{}, {}]");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONArrayValue.class)));
+
+        // check array contents
+        JSONArrayValue arrayValue = (JSONArrayValue)obtained;
+        assertThat(arrayValue.size(), is(equalTo(2)));
+        assertThat(arrayValue.get(0), is(notNullValue()));
+        assertThat(arrayValue.get(0), is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)arrayValue.get(0)).size(), is(0));
+        assertThat(arrayValue.get(1), is(notNullValue()));
+        assertThat(arrayValue.get(1), is(instanceOf(JSONObjectValue.class)));
+        assertThat(((JSONObjectValue)arrayValue.get(1)).size(), is(0));
+    }
+
+    @Test
+    public void parsingNonEmptyJSONObjectAsArrayValueWorks() throws ParserException {
+        // given
+        JSONParser target = new JSONParser("[{\"a\": null, \"b\": 42}, {\"x\": [true, false]}]");
+
+        // when
+        JSONValue obtained = target.parse();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(JSONArrayValue.class)));
+
+        // check array contents
+        JSONArrayValue arrayValue = (JSONArrayValue)obtained;
+        assertThat(arrayValue.size(), is(equalTo(2)));
+        assertThat(arrayValue.get(0), is(notNullValue()));
+        assertThat(arrayValue.get(0), is(instanceOf(JSONObjectValue.class)));
+        assertThat(arrayValue.get(1), is(notNullValue()));
+        assertThat(arrayValue.get(1), is(instanceOf(JSONObjectValue.class)));
+
+        // check contents of nested objects
+        JSONObjectValue jsonObject = (JSONObjectValue)arrayValue.get(0);
+        assertThat(jsonObject.keySet(), is(containsInAnyOrder("a", "b")));
+        assertThat(jsonObject.get("a"), is(notNullValue()));
+        assertThat(jsonObject.get("a"), is(instanceOf(JSONNullValue.class)));
+        assertThat(jsonObject.get("b"), is(notNullValue()));
+        assertThat(jsonObject.get("b"), is(instanceOf(JSONNumberValue.class)));
+        assertThat(((JSONNumberValue)jsonObject.get("b")).getIntValue(), is(42));
+
+        // check contents of nested objects
+        jsonObject = (JSONObjectValue)arrayValue.get(1);
+        assertThat(jsonObject.keySet(), is(containsInAnyOrder("x")));
+        assertThat(jsonObject.get("x"), is(notNullValue()));
+        assertThat(jsonObject.get("x"), is(instanceOf(JSONArrayValue.class)));
+
+        // check most inner array
+        arrayValue = (JSONArrayValue)jsonObject.get("x");
+        assertThat(arrayValue.size(), is(equalTo(2)));
+        assertThat(arrayValue.get(0), is(notNullValue()));
+        assertThat(arrayValue.get(0), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue)arrayValue.get(0)).getValue(), is(true));
+        assertThat(arrayValue.get(1), is(notNullValue()));
+        assertThat(arrayValue.get(1), is(instanceOf(JSONBooleanValue.class)));
+        assertThat(((JSONBooleanValue)arrayValue.get(1)).getValue(), is(false));
     }
 }
