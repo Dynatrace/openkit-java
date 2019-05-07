@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
+import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.objects.NullRootAction;
+import com.dynatrace.openkit.core.objects.NullWebRequestTracer;
+import com.dynatrace.openkit.core.objects.RootActionImpl;
+import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.WebRequestTracerStringURL;
+import com.dynatrace.openkit.core.objects.WebRequestTracerURLConnection;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;

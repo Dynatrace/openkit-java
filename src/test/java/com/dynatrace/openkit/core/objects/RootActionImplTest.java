@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.core.objects.ActionImpl;
+import com.dynatrace.openkit.core.objects.NullAction;
+import com.dynatrace.openkit.core.objects.RootActionImpl;
+import com.dynatrace.openkit.core.objects.SynchronizedQueue;
 import com.dynatrace.openkit.protocol.Beacon;
 
 import org.junit.Before;

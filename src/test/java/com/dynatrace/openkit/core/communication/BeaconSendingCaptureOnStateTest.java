@@ -19,7 +19,7 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.Response;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.RootAction;

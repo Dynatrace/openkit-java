@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.Session;
@@ -22,6 +22,10 @@ import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 
+import com.dynatrace.openkit.core.objects.Device;
+import com.dynatrace.openkit.core.objects.NullSession;
+import com.dynatrace.openkit.core.objects.OpenKitImpl;
+import com.dynatrace.openkit.core.objects.SessionImpl;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

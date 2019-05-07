@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.objects;
 
 /**
  * Class holding device specific information

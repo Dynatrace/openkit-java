@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dynatrace.openkit.core;
+package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
@@ -24,6 +24,13 @@ import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.objects.ActionImpl;
+import com.dynatrace.openkit.core.objects.Device;
+import com.dynatrace.openkit.core.objects.NullWebRequestTracer;
+import com.dynatrace.openkit.core.objects.RootActionImpl;
+import com.dynatrace.openkit.core.objects.SynchronizedQueue;
+import com.dynatrace.openkit.core.objects.WebRequestTracerStringURL;
+import com.dynatrace.openkit.core.objects.WebRequestTracerURLConnection;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;

@@ -19,6 +19,7 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 

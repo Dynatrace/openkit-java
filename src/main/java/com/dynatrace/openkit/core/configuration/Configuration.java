@@ -17,7 +17,7 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.api.SSLTrustManager;
-import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;

@@ -17,7 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;

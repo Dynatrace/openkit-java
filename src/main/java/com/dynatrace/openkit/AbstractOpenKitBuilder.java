@@ -21,7 +21,7 @@ import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
-import com.dynatrace.openkit.core.OpenKitImpl;
+import com.dynatrace.openkit.core.objects.OpenKitImpl;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
