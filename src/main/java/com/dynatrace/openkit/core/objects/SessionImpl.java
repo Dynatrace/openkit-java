@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Actual implementation of the {@link Session} interface.
  */
-public class SessionImpl implements Session {
+public class SessionImpl extends OpenKitComposite implements Session {
 
     private static final RootAction NULL_ROOT_ACTION = new NullRootAction();
     private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
@@ -122,7 +122,7 @@ public class SessionImpl implements Session {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
         if (!isSessionEnded()) {
-            return new WebRequestTracerURLConnection(logger, beacon, 0, connection);
+            return new WebRequestTracerURLConnection(logger, this, beacon, connection);
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -142,7 +142,7 @@ public class SessionImpl implements Session {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
         if (!isSessionEnded()) {
-            return new WebRequestTracerStringURL(logger, beacon, 0, url);
+            return new WebRequestTracerStringURL(logger, this, beacon, url);
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -234,6 +234,11 @@ public class SessionImpl implements Session {
      */
     public BeaconConfiguration getBeaconConfiguration() {
         return beacon.getBeaconConfiguration();
+    }
+
+    @Override
+    void onChildClosed(OpenKitObject childObject) {
+        removeChildFromList(childObject);
     }
 
     @Override

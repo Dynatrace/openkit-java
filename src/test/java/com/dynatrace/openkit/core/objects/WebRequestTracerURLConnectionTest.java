@@ -28,6 +28,7 @@ import java.net.URLConnection;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -45,18 +46,20 @@ public class WebRequestTracerURLConnectionTest {
     private Logger mockLogger;
     private Beacon mockBeacon;
     private URLConnection mockURLConnection;
+    private OpenKitComposite  parentOpenKitObject;
 
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
         mockBeacon = mock(Beacon.class);
         mockURLConnection = mock(URLConnection.class);
+        parentOpenKitObject = mock(OpenKitComposite.class);
     }
 
     @Test
     public void passingNullURLConnectionLeavesUnknownURLString() {
         // given
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, null);
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, null);
 
         // then
         assertThat(target.getURL(), is(equalTo(UNKNOWN_URL_STRING)));
@@ -67,7 +70,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(null);
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
 
         // then
         assertThat(target.getURL(), is(equalTo(UNKNOWN_URL_STRING)));
@@ -78,7 +81,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(null);
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
 
         // then verify
         verify(mockURLConnection, times(1)).getURL();
@@ -93,7 +96,7 @@ public class WebRequestTracerURLConnectionTest {
         when(mockURLConnection.getURL()).thenReturn(null);
         when(mockURLConnection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER)).thenReturn("");
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
 
         // then verify
         verify(mockURLConnection, times(1)).getURL();
@@ -106,7 +109,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(new URL("https://www.google.com"));
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
 
         // then
         assertThat(target.getURL(), is(equalTo("https://www.google.com")));
@@ -117,10 +120,22 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(new URL("https://www.google.com/foo/bar?foo=bar&asdf=jklo"));
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, mockBeacon, 0, mockURLConnection);
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
 
         // then
         assertThat(target.getURL(), is(equalTo("https://www.google.com/foo/bar")));
+    }
+
+    @Test
+    public void aNewlyCreatedWebRequestTracerDoesNotAttachToTheParent() {
+
+        // given
+        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+
+        // then parent is stored, but no interaction with parent happened
+        assertThat(target.getParent(), is(sameInstance(parentOpenKitObject)));
+        verify(parentOpenKitObject, times(1)).getActionID();
+        verifyNoMoreInteractions(parentOpenKitObject);
     }
 
 }

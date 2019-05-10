@@ -20,7 +20,6 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 
-import java.net.URL;
 import java.net.URLConnection;
 
 /**
@@ -28,28 +27,60 @@ import java.net.URLConnection;
  */
 public class WebRequestTracerURLConnection extends WebRequestTracerBaseImpl {
 
-    // *** constructors ***
-
-    // creates web request tag with a URLConnection
-    public WebRequestTracerURLConnection(Logger logger, Beacon beacon, int parentActionID, URLConnection connection) {
-        super(logger, beacon, parentActionID);
-
-        // only set tag header and URL if connection is not null
-        if (connection != null) {
-            // separate query string from URL
-            URL connectionURL = connection.getURL();
-            if (connectionURL != null) {
-                this.url = connectionURL.toString().split("\\?")[0];
-            }
-
-            setTagOnConnection(connection);
-        }
+    /**
+     * Creates web request tag with a URLConnection
+     *
+     * <p>
+     *     The required Dynatrace tag is applied automatically, if not done yet.
+     * </p>
+     *
+     * @param logger The logger used to log information
+     * @param parent The parent object, to which this web request tracer belongs to
+     * @param beacon {@link Beacon} for data sending and tag creation
+     * @param connection The URL connection to trace
+     */
+    public WebRequestTracerURLConnection(Logger logger,
+                                         OpenKitComposite parent,
+                                         Beacon beacon,
+                                         URLConnection connection) {
+        super(logger, parent, extractURLParts(connection), beacon);
+        setTagOnConnection(connection);
     }
 
-    // *** private methods ***
+    /**
+     * Extract URL parts of interest from given url connection.
+     *
+     * <p>
+     *     The URL parts of interest are
+     *     <ul>
+     *         <li>scheme</li>
+     *         <li>host</li>
+     *         <li>port</li>
+     *         <li>path</li>
+     *     </ul>
+     * </p>
+     *
+     * @param connection The url connection from which to get the URL to trace
+     * @return The {@code url} substring containing scheme, host, port, path
+     */
+    private static String extractURLParts(URLConnection connection) {
+        if (connection == null || connection.getURL() == null) {
+            return WebRequestTracerBaseImpl.UNKNOWN_URL;
+        }
 
-    // set the Dynatrace tag on the provided URLConnection
+        return connection.getURL().toString().split("\\?", 2)[0];
+    }
+
+    /**
+     * Set the Dynatrace tag on the provided URLConnection
+     *
+     * @param connection The URL connection.
+     */
     private void setTagOnConnection(URLConnection connection) {
+        if (connection == null) {
+            return;
+        }
+
         // check if header is already set
         String existingTag = connection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER);
         if (existingTag == null) {

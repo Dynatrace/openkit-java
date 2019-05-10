@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Actual implementation of the {@link Action} interface.
  */
-public class ActionImpl implements Action {
+public class ActionImpl extends OpenKitComposite implements Action {
 
     private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
 
@@ -165,7 +165,7 @@ public class ActionImpl implements Action {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
         if (!isActionLeft()) {
-            return new WebRequestTracerURLConnection(logger, beacon, getID(), connection);
+            return new WebRequestTracerURLConnection(logger, this, beacon, connection);
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -185,7 +185,7 @@ public class ActionImpl implements Action {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
         if (!isActionLeft()) {
-            return new WebRequestTracerStringURL(logger, beacon, getID(), url);
+            return new WebRequestTracerStringURL(logger, this, beacon, url);
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -216,6 +216,16 @@ public class ActionImpl implements Action {
         thisLevelActions.remove(this);
 
         return parentAction;            // can be null if there's no parent Action!
+    }
+
+    @Override
+    void onChildClosed(OpenKitObject childObject) {
+        removeChildFromList(childObject);
+    }
+
+    @Override
+    public int getActionID() {
+        return getID();
     }
 
     // *** getter methods ***

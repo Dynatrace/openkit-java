@@ -20,39 +20,69 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * Abstract base class implementation of the {@link WebRequestTracer} interface.
+ *
+ * <p>
+ *     This class is guaranteed to be thread safe.
+ * </p>
  */
-public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
+public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, OpenKitObject {
 
-    protected Logger logger;
+    static final String UNKNOWN_URL =  "<unknown>";
 
-    // Dynatrace tag that has to be used for tracing the web request
+    /** {@link Logger} for tracing log message */
+    private final Logger logger;
+
+    /** Parent object of this web request tracer */
+    private OpenKitComposite parent;
+
+    /** object for synchronization */
+    private final Object lockObject = new Object();
+
+    /** Dynatrace tag that has to be used for tracing the web request */
     private final String tag;
 
-    // HTTP information: URL & response code
-    protected String url = "<unknown>";
-    private int responseCode = -1;
-    private int bytesSent = -1;
-    private int bytesReceived = -1;
-
-    // start/end time & sequence number
-    private long startTime = -1;
-    private final AtomicLong endTime = new AtomicLong(-1);
-    private final int startSequenceNo;
-    private int endSequenceNo = -1;
-
-    // Beacon and Action references
+    /** Beacon for sending data */
     private final Beacon beacon;
+    /** The parent action id */
     private final int parentActionID;
 
+    /** URL to trace (excluding query args) */
+    private final String url;
+    /** The response code received from the request */
+    private int responseCode = -1;
+    /** The number of bytes sent */
+    private int bytesSent = -1;
+    /** The number of bytes received */
+    private int bytesReceived = -1;
 
-    WebRequestTracerBaseImpl(Logger logger, Beacon beacon, int parentActionID) {
+    /** Start time of the web request, set in {@link #start()} */
+    private long startTime;
+    /** End time of the web request, set in {@link #stop()} */
+    private long endTime = - 1;
+    /** starting sequence number */
+    private final int startSequenceNo;
+    /** ending sequence number */
+    private int endSequenceNo = -1;
+
+    /**
+     * Constructor.
+     *
+     * @param logger The logger used to log information.
+     * @param parent The parent object, to which this web request tracer belongs to
+     * @param url The URL to trace
+     * @param beacon {@link Beacon} for data sending and tag creation.
+     */
+    WebRequestTracerBaseImpl(Logger logger,
+                             OpenKitComposite parent,
+                             String url,
+                             Beacon beacon) {
         this.logger = logger;
+        this.parent = parent;
+        this.url = url;
         this.beacon = beacon;
-        this.parentActionID = parentActionID;
+        parentActionID = parent.getActionID();
 
         // creating start sequence number has to be done here, because it's needed for the creation of the tag
         startSequenceNo = beacon.createSequenceNumber();
@@ -62,8 +92,6 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
         // if start is not called before using the setters the start time (e.g. load time) is not in 1970
         startTime = beacon.getCurrentTimestamp();
     }
-
-    // *** WebRequestTracer interface methods ***
 
     @Override
     public String getTag() {
@@ -75,24 +103,30 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     @Override
     public WebRequestTracer setResponseCode(int responseCode) {
-        if (!isStopped()) {
-            this.responseCode = responseCode;
+        synchronized (lockObject) {
+            if (!isStopped()) {
+                this.responseCode = responseCode;
+            }
         }
         return this;
     }
 
     @Override
     public WebRequestTracer setBytesSent(int bytesSent) {
-        if (!isStopped()) {
-            this.bytesSent = bytesSent;
+        synchronized (lockObject) {
+            if (!isStopped()) {
+                this.bytesSent = bytesSent;
+            }
         }
         return this;
     }
 
     @Override
     public WebRequestTracer setBytesReceived(int bytesReceived) {
-        if (!isStopped()) {
-            this.bytesReceived = bytesReceived;
+        synchronized (lockObject) {
+            if (!isStopped()) {
+                this.bytesReceived = bytesReceived;
+            }
         }
         return this;
     }
@@ -102,8 +136,10 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "start()");
         }
-        if (!isStopped()) {
-            startTime = beacon.getCurrentTimestamp();
+        synchronized (lockObject) {
+            if (!isStopped()) {
+                startTime = beacon.getCurrentTimestamp();
+            }
         }
         return this;
     }
@@ -113,22 +149,27 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "stop()");
         }
-        if (!endTime.compareAndSet(-1, beacon.getCurrentTimestamp())) {
-            // stop already called
-            return;
+        synchronized (lockObject) {
+            if (isStopped()) {
+                // stop has been called previously
+                return;
+            }
+            endSequenceNo = beacon.createSequenceNumber();
+            endTime = beacon.getCurrentTimestamp();
         }
-        endSequenceNo = beacon.createSequenceNumber();
 
         // add web request to beacon
         beacon.addWebRequest(parentActionID, this);
+
+        // last but not least notify the parent & detach from parent
+        parent.onChildClosed(this);
+        parent = null;
     }
 
     @Override
     public void close() {
         stop();
     }
-
-    // *** getter methods ***
 
     public String getURL() {
         return url;
@@ -141,9 +182,8 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
     public long getStartTime() {
         return startTime;
     }
-
     public long getEndTime() {
-        return endTime.get();
+        return endTime;
     }
 
     public int getStartSequenceNo() {
@@ -164,6 +204,10 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer {
 
     boolean isStopped() {
         return getEndTime() != -1;
+    }
+
+    OpenKitComposite getParent() {
+        return parent;
     }
 
     @Override

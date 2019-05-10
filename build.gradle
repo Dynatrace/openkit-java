@@ -45,8 +45,8 @@ repositories {
 def jvmsToTest = System.getenv("JVMS_TO_TEST") ?: "JAVA_HOME"
 def isGradle5OrAbove = getGradleMajorVersion() >= 5
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'

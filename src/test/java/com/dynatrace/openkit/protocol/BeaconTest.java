@@ -21,6 +21,7 @@ import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.objects.ActionImpl;
 import com.dynatrace.openkit.core.objects.Device;
+import com.dynatrace.openkit.core.objects.OpenKitComposite;
 import com.dynatrace.openkit.core.objects.RootActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
@@ -74,6 +75,7 @@ public class BeaconTest {
     private Configuration configuration;
     private ThreadIDProvider threadIDProvider;
     private TimingProvider timingProvider;
+    private OpenKitComposite parentOpenKitObject;
 
     private Logger logger;
 
@@ -110,6 +112,9 @@ public class BeaconTest {
         when(timingProvider.provideTimestampInMilliseconds()).thenReturn(0L);
 
         logger = mock(Logger.class);
+
+        parentOpenKitObject = mock(OpenKitComposite.class);
+        when(parentOpenKitObject.getActionID()).thenReturn(0);
     }
 
     @Test
@@ -484,7 +489,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
         int bytesSent = 12321;
 
         // when
@@ -493,8 +498,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String
-                .valueOf(bytesSent)
+            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + bytesSent
         })));
     }
 
@@ -503,7 +507,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
         int bytesSent = 0;
 
         // when
@@ -522,7 +526,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
 
         // when
         webRequest.start().setBytesSent(-5).stop(); // stop will add the web request to the beacon
@@ -537,7 +541,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
         int bytesReceived = 12321;
 
         // when
@@ -556,7 +560,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
         int bytesReceived = 0;
 
         // when
@@ -575,7 +579,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
 
         // when
         webRequest.start().setBytesReceived(-1).stop(); // stop will add the web request to the beacon
@@ -590,7 +594,7 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, beacon, 0, testURL);
+        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
         int bytesReceived = 12321;
         int bytesSent = 123;
 
