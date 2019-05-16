@@ -57,6 +57,15 @@ public abstract class OpenKitComposite implements OpenKitObject {
     }
 
     /**
+     * Get a shallow copy of the {@link OpenKitObject} child objects.
+     *
+     * @return Shallow copy of child objects
+     */
+    List<OpenKitObject> getCopyOfChildObjects() {
+        return new LinkedList<OpenKitObject>(children);
+    }
+
+    /**
      * Abstract method to notify the composite about closing/ending a child object.
      *
      * <p>

@@ -21,59 +21,71 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.protocol.Beacon;
 
+import java.io.IOException;
 import java.net.URLConnection;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
 /**
- * Actual implementation of the {@link Action} interface.
+ * Abstract base class implementing the {@link Action} interface.
  */
-public class ActionImpl extends OpenKitComposite implements Action {
+public abstract class BaseActionImpl extends OpenKitComposite implements Action {
 
+    /** Web request tracer returned, if this action is already closed. */
     private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
 
-    // logger
-    protected final Logger logger;
+    /** {@link Logger} for tracing log message */
+    final Logger logger;
 
-    // Action ID, name and parent ID (default: null)
-    private final int id;
-    private final String name;
+    /** Parent object of this {@link Action} */
+    private OpenKitComposite parent;
+    /** The parent action id */
+    final int parentActionID;
 
-    private final ActionImpl parentAction;
+    /** object for synchronization, internal for derived classes within this package */
+    final Object lockObject = new Object();
 
-    // start/end time & sequence number
+    /** Unique identifier of this {@link Action} */
+    final int id;
+    /** Name of this {@link Action} */
+    final String name;
+
+    /** start time when this {@link Action} has been started */
     private final long startTime;
-    private final AtomicLong endTime = new AtomicLong(-1);
+    /** end time when this {@link Action} has been ended */
+    private long endTime = -1;
+    /** Start sequence number of this {@link Action} */
     private final int startSequenceNo;
+    /** End sequence number of this {@link Action} */
     private int endSequenceNo = -1;
 
-    // Beacon reference
-    private final Beacon beacon;
+    /** Beacon for sending data */
+    final Beacon beacon;
 
-    private final SynchronizedQueue<Action> thisLevelActions;
-
-    // *** constructors ***
-
-    ActionImpl(Logger logger, Beacon beacon, String name, SynchronizedQueue<Action> thisLevelActions) {
-        this(logger, beacon, name, null, thisLevelActions);
-    }
-
-    ActionImpl(Logger logger, Beacon beacon, String name, ActionImpl parentAction, SynchronizedQueue<Action> thisLevelActions) {
+    /**
+     * Constructor for constructing the base action class.
+     *
+     * @param logger The logger used to log information
+     * @param parent The parent object, to which this web action belongs to
+     * @param name The action's name
+     * @param beacon The beacon for retrieving certain data and sending data
+     */
+    BaseActionImpl(Logger logger,
+                   OpenKitComposite parent,
+                   String name,
+                   Beacon beacon) {
         this.logger = logger;
+        this.parent = parent;
+        parentActionID = parent.getActionID();
 
-        this.beacon = beacon;
-        this.parentAction = parentAction;
 
-        this.startTime = beacon.getCurrentTimestamp();
-        this.startSequenceNo = beacon.createSequenceNumber();
-        this.id = beacon.createID();
+        id = beacon.createID();
         this.name = name;
 
-        this.thisLevelActions = thisLevelActions;
-        this.thisLevelActions.put(this);
+        startTime = beacon.getCurrentTimestamp();
+        startSequenceNo = beacon.createSequenceNumber();
+
+        this.beacon = beacon;
     }
-
-    // *** Action interface methods ***
-
 
     @Override
     public void close() {
@@ -89,8 +101,10 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportEvent(" + eventName + ")");
         }
-        if (!isActionLeft()) {
-            beacon.reportEvent(this, eventName);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportEvent(getID(), eventName);
+            }
         }
         return this;
     }
@@ -104,8 +118,10 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportValue (int) (" + valueName + ", " + value + ")");
         }
-        if (!isActionLeft()) {
-            beacon.reportValue(this, valueName, value);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportValue(getID(), valueName, value);
+            }
         }
         return this;
     }
@@ -119,8 +135,10 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportValue (double) (" + valueName + ", " + value + ")");
         }
-        if (!isActionLeft()) {
-            beacon.reportValue(this, valueName, value);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportValue(getID(), valueName, value);
+            }
         }
         return this;
     }
@@ -134,8 +152,10 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportValue (String) (" + valueName + ", " + value + ")");
         }
-        if (!isActionLeft()) {
-            beacon.reportValue(this, valueName, value);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportValue(getID(), valueName, value);
+            }
         }
         return this;
     }
@@ -149,8 +169,10 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportError(" + errorName + ", " + errorCode + ", " + reason + ")");
         }
-        if (!isActionLeft()) {
-            beacon.reportError(this, errorName, errorCode, reason);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportError(getID(), errorName, errorCode, reason);
+            }
         }
         return this;
     }
@@ -164,8 +186,13 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
-        if (!isActionLeft()) {
-            return new WebRequestTracerURLConnection(logger, this, beacon, connection);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                WebRequestTracerBaseImpl webRequestTracer = new WebRequestTracerURLConnection(logger, this, beacon, connection);
+                storeChildInList(webRequestTracer);
+
+                return webRequestTracer;
+            }
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -184,8 +211,13 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
-        if (!isActionLeft()) {
-            return new WebRequestTracerStringURL(logger, this, beacon, url);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                WebRequestTracerBaseImpl webRequestTracer = new WebRequestTracerStringURL(logger, this, beacon, url);
+                storeChildInList(webRequestTracer);
+
+                return webRequestTracer;
+            }
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -196,39 +228,58 @@ public class ActionImpl extends OpenKitComposite implements Action {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "leaveAction(" + name + ")");
         }
-        // check if leaveAction() was already called before by looking at endTime
-        if (!endTime.compareAndSet(-1, beacon.getCurrentTimestamp())) {
-            return parentAction;
+        synchronized (lockObject) {
+            if (isActionLeft()) {
+                // leaveAction has been called previously
+                return getParentAction();
+            }
+
+            // set end time and end sequence number
+            endTime = beacon.getCurrentTimestamp();
+            endSequenceNo = beacon.createSequenceNumber();
+
+            // serialize this action after setting all remaining information
+            beacon.addAction(this);
         }
 
-        return doLeaveAction();
+        // close all child object
+        // Note: at this point it's save to do any further operations outside a synchronized block
+        // after the endTime has been set, no further child objects must be added
+        List<OpenKitObject> childObjects = getCopyOfChildObjects();
+        for (OpenKitObject childObject : childObjects) {
+            try {
+                childObject.close();
+            } catch (IOException e) {
+                // should not happen, nevertheless let's log an error
+                logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
+            }
+        }
+
+        // detach from parent
+        parent.onChildClosed(this);
+        parent = null;
+
+        return getParentAction();
     }
 
-    protected Action doLeaveAction() {
-        // set end time and end sequence number
-        endTime.set(beacon.getCurrentTimestamp());
-        endSequenceNo = beacon.createSequenceNumber();
-
-        // add Action to Beacon
-        beacon.addAction(this);
-
-        // remove Action from the Actions on this level
-        thisLevelActions.remove(this);
-
-        return parentAction;            // can be null if there's no parent Action!
-    }
+    /**
+     * Get the parent {@link} Action, which might be {@code null} in case the parent does not implement {@link Action}.
+     *
+     * @return The parent action object, or {@code null} if parent does not implement {@link Action}.
+     */
+    protected abstract  Action getParentAction();
 
     @Override
     void onChildClosed(OpenKitObject childObject) {
-        removeChildFromList(childObject);
+        synchronized (lockObject) {
+            removeChildFromList(childObject);
+        }
     }
 
     @Override
     public int getActionID() {
         return getID();
     }
-
-    // *** getter methods ***
 
     public int getID() {
         return id;
@@ -239,7 +290,7 @@ public class ActionImpl extends OpenKitComposite implements Action {
     }
 
     public int getParentID() {
-        return parentAction == null ? 0 : parentAction.getID();
+        return parentActionID;
     }
 
     public long getStartTime() {
@@ -247,7 +298,7 @@ public class ActionImpl extends OpenKitComposite implements Action {
     }
 
     public long getEndTime() {
-        return endTime.get();
+        return endTime;
     }
 
     public int getStartSequenceNo() {
@@ -260,11 +311,5 @@ public class ActionImpl extends OpenKitComposite implements Action {
 
     boolean isActionLeft() {
         return getEndTime() != -1;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + id + ", name=" + name + ", pa="
-                + (parentAction != null ? parentAction.id : "no parent") + "] ";
     }
 }

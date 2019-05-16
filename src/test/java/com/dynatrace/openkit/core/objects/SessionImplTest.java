@@ -335,7 +335,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void endingASessionImplicitelyClosesAllOpenRootActions() {
+    public void endingASessionImplicitlyClosesAllOpenRootActions() {
         // given
         SessionImpl target = new SessionImpl(mockLogger, mockBeaconSender, mockBeacon);
 

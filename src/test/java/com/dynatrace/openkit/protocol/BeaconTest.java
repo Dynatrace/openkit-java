@@ -19,7 +19,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.objects.ActionImpl;
+import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
 import com.dynatrace.openkit.core.objects.RootActionImpl;
@@ -220,7 +220,7 @@ public class BeaconTest {
     public void addValidActionEvent() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
+        BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()).thenReturn(ACTION_ID);
         int parentID = 13;
         when(action.getParentID()).thenReturn(parentID);
@@ -255,13 +255,11 @@ public class BeaconTest {
     public void reportValidValueInt() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         String valueName = "IntValue";
         int value = 42;
 
         // when
-        beacon.reportValue(action, valueName, value);
+        beacon.reportValue(ACTION_ID, valueName, value);
         String[] events = beacon.getEvents();
 
         // then
@@ -274,13 +272,11 @@ public class BeaconTest {
     public void reportValidValueDouble() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         String valueName = "DoubleValue";
         double value = 3.1415;
 
         // when
-        beacon.reportValue(action, valueName, value);
+        beacon.reportValue(ACTION_ID, valueName, value);
         String[] events = beacon.getEvents();
 
         // then
@@ -293,13 +289,11 @@ public class BeaconTest {
     public void reportValidValueString() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         String valueName = "StringValue";
         String value = "HelloWorld";
 
         // when
-        beacon.reportValue(action, valueName, value);
+        beacon.reportValue(ACTION_ID, valueName, value);
         String[] events = beacon.getEvents();
 
         // then
@@ -312,12 +306,10 @@ public class BeaconTest {
     public void reportValueStringWithValueNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         String valueName = "StringValue";
 
         // when
-        beacon.reportValue(action, valueName, null);
+        beacon.reportValue(ACTION_ID, valueName, null);
         String[] events = beacon.getEvents();
 
         // then
@@ -328,11 +320,9 @@ public class BeaconTest {
     public void reportValueStringWithValueNullAndNameNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
 
         // when
-        beacon.reportValue(action, null, null);
+        beacon.reportValue(ACTION_ID, null, null);
         String[] events = beacon.getEvents();
 
         // then
@@ -343,12 +333,10 @@ public class BeaconTest {
     public void reportValidEvent() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         String eventName = "SomeEvent";
 
         // when
-        beacon.reportEvent(action, eventName);
+        beacon.reportEvent(ACTION_ID, eventName);
         String[] events = beacon.getEvents();
 
         // then
@@ -359,11 +347,9 @@ public class BeaconTest {
     public void reportEventWithNameNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
 
         // when
-        beacon.reportEvent(action, null);
+        beacon.reportEvent(ACTION_ID, null);
         String[] events = beacon.getEvents();
 
         // then
@@ -374,14 +360,12 @@ public class BeaconTest {
     public void reportError() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         String errorName = "SomeEvent";
         int errorCode = -123;
         String reason = "SomeReason";
 
         // when
-        beacon.reportError(action, errorName, errorCode, reason);
+        beacon.reportError(ACTION_ID, errorName, errorCode, reason);
         String[] events = beacon.getEvents();
 
         // then
@@ -394,12 +378,10 @@ public class BeaconTest {
     public void reportErrorNull() {
         // given
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        ActionImpl action = mock(ActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
         int errorCode = -123;
 
         // when
-        beacon.reportError(action, null, errorCode, null);
+        beacon.reportError(ACTION_ID, null, errorCode, null);
         String[] events = beacon.getEvents();
 
         // then
@@ -516,8 +498,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String
-                .valueOf(bytesSent)
+            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + bytesSent
         })));
     }
 
@@ -710,13 +691,14 @@ public class BeaconTest {
         // given
         Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         // add various data
-        ActionImpl action = mock(ActionImpl.class);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()). thenReturn(ACTION_ID);
         beacon.addAction(action);
-        beacon.reportValue(action, "IntValue", 42);
-        beacon.reportValue(action, "DoubleValue", 3.1415);
-        beacon.reportValue(action, "StringValue", "HelloWorld");
-        beacon.reportEvent(action, "SomeEvent");
-        beacon.reportError(action, "SomeError", -123, "SomeReason");
+        beacon.reportValue(ACTION_ID, "IntValue", 42);
+        beacon.reportValue(ACTION_ID, "DoubleValue", 3.1415);
+        beacon.reportValue(ACTION_ID, "StringValue", "HelloWorld");
+        beacon.reportEvent(ACTION_ID, "SomeEvent");
+        beacon.reportError(ACTION_ID, "SomeError", -123, "SomeReason");
         beacon.reportCrash("SomeCrash", "SomeReason", "SomeStacktrace");
         SessionImpl session = mock(SessionImpl.class);
         beacon.endSession(session);
@@ -752,7 +734,8 @@ public class BeaconTest {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
-        ActionImpl action = mock(ActionImpl.class);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()). thenReturn(ACTION_ID);
 
         // when
         target.addAction(action);
@@ -769,14 +752,12 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         int intValue = 42;
-        ActionImpl parentAction = mock(ActionImpl.class);
 
         // when
-        target.reportValue(parentAction, "intValue", intValue);
+        target.reportValue(ACTION_ID, "intValue", intValue);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(parentAction);
     }
 
     @Test
@@ -786,14 +767,12 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         double doubleValue = Math.E;
-        ActionImpl parentAction = mock(ActionImpl.class);
 
         // when
-        target.reportValue(parentAction, "doubleValue", doubleValue);
+        target.reportValue(ACTION_ID, "doubleValue", doubleValue);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(parentAction);
     }
 
     @Test
@@ -803,14 +782,12 @@ public class BeaconTest {
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         String stringValue = "Write once, debug everywhere";
-        ActionImpl parentAction = mock(ActionImpl.class);
 
         // when
-        target.reportValue(parentAction, "doubleValue", stringValue);
+        target.reportValue(ACTION_ID, "doubleValue", stringValue);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(parentAction);
     }
 
     @Test
@@ -819,14 +796,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
-        ActionImpl parentAction = mock(ActionImpl.class);
-
         // when
-        target.reportEvent(parentAction, "Event name");
+        target.reportEvent(ACTION_ID, "Event name");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(parentAction);
     }
 
     @Test
@@ -835,14 +809,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
-        ActionImpl parentAction = mock(ActionImpl.class);
-
         // when
-        target.reportError(parentAction, "Error name", 123, "The reason for this error");
+        target.reportError(ACTION_ID, "Error name", 123, "The reason for this error");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(parentAction);
     }
 
     @Test
@@ -1257,14 +1228,15 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()). thenReturn(ACTION_ID);
 
         //when
-        target.addAction(mockAction);
+        target.addAction(action);
 
         //then
         //verify action has not been serialized
-        verify(mockAction, times(0)).getID();
+        verify(action, times(0)).getID();
         assertThat(target.isEmpty(), is(true));
     }
 
@@ -1273,14 +1245,15 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()). thenReturn(ACTION_ID);
 
         //when
-        target.addAction(mockAction);
+        target.addAction(action);
 
         //then
         //verify action has been serialized
-        verify(mockAction, times(1)).getID();
+        verify(action, times(1)).getID();
         assertThat(target.isEmpty(), is(false));
     }
 
@@ -1289,14 +1262,15 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()). thenReturn(ACTION_ID);
 
         //when
-        target.addAction(mockAction);
+        target.addAction(action);
 
         //then
         //verify action has been serialized
-        verify(mockAction, times(1)).getID();
+        verify(action, times(1)).getID();
         assertThat(target.isEmpty(), is(false));
     }
 
@@ -1353,14 +1327,12 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
 
         //when
-        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+        target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
 
         //then
         //verify action has not been serialized
-        verify(mockAction, times(0)).getID();
         assertThat(target.isEmpty(), is(true));
     }
 
@@ -1369,14 +1341,12 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
 
         //when
-        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+        target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
 
         //then
         //verify action has been serialized
-        verify(mockAction, times(1)).getID();
         assertThat(target.isEmpty(), is(false));
     }
 
@@ -1385,14 +1355,12 @@ public class BeaconTest {
         //given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
-        ActionImpl mockAction = mock(ActionImpl.class);
 
         //when
-        target.reportError(mockAction, "DivByZeroError", 127, "out of math");
+        target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
 
         //then
         //verify action has been serialized
-        verify(mockAction, times(1)).getID();
         assertThat(target.isEmpty(), is(false));
     }
 
@@ -1402,14 +1370,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", 123);
+        target.reportValue(ACTION_ID, "test value", 123);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1418,14 +1383,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", 123);
+        target.reportValue(ACTION_ID, "test value", 123);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1434,14 +1396,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", 123);
+        target.reportValue(ACTION_ID, "test value", 123);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(mockAction, times(1)).getID();
     }
 
     @Test
@@ -1450,14 +1409,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", 2.71);
+        target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1466,14 +1422,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", 2.71);
+        target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1482,14 +1435,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", 2.71);
+        target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(mockAction, times(1)).getID();
     }
 
     @Test
@@ -1498,14 +1448,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", "test data");
+        target.reportValue(ACTION_ID, "test value", "test data");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1514,14 +1461,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", "test data");
+        target.reportValue(ACTION_ID, "test value", "test data");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1530,14 +1474,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportValue(mockAction, "test value", "test data");
+        target.reportValue(ACTION_ID, "test value", "test data");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(mockAction, times(1)).getID();
     }
 
     @Test
@@ -1546,14 +1487,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportEvent(mockAction, "test event");
+        target.reportEvent(ACTION_ID, "test event");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1562,14 +1500,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportEvent(mockAction, "test event");
+        target.reportEvent(ACTION_ID, "test event");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(true));
-        verifyZeroInteractions(mockAction);
     }
 
     @Test
@@ -1578,14 +1513,11 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
         target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
-        ActionImpl mockAction = mock(ActionImpl.class);
-
         // when
-        target.reportEvent(mockAction, "test event");
+        target.reportEvent(ACTION_ID, "test event");
 
         // then ensure nothing has been serialized
         assertThat(target.isEmpty(), is(false));
-        verify(mockAction, times(1)).getID();
     }
 
     @Test

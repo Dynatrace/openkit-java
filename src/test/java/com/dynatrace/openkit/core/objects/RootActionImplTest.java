@@ -18,21 +18,19 @@ package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.objects.ActionImpl;
-import com.dynatrace.openkit.core.objects.NullAction;
-import com.dynatrace.openkit.core.objects.RootActionImpl;
-import com.dynatrace.openkit.core.objects.SynchronizedQueue;
 import com.dynatrace.openkit.protocol.Beacon;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
+
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -41,116 +39,99 @@ import static org.mockito.Mockito.when;
 /**
  * Tests the root action having some knowledge of the internals of the underlying actions.
  */
+
 @SuppressWarnings("resource")
 public class RootActionImplTest {
 
+    private static final String ROOT_ACTION_NAME = "parent action";
+    private static final String CHILD_ACTION_NAME = "child action";
+
     private Logger logger;
+    private Beacon beacon;
+    private SessionImpl session;
 
     @Before
     public void setUp() {
         logger = mock(Logger.class);
         when(logger.isInfoEnabled()).thenReturn(true);
         when(logger.isDebugEnabled()).thenReturn(true);
+
+        beacon = mock(Beacon.class);
+
+        session = mock(SessionImpl.class);
+    }
+
+    @Test
+    public void getParentActionReturnsNull() {
+        // given
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.getParentAction();
+
+        // then
+        assertThat(obtained, is(nullValue()));
     }
 
     @Test
     public void enterActionWithNullNameGivesNullAction() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
+        // given
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
 
-        // create root action with a null child action (must be valid)
-        final String rootActionStr = "rootAction";
-        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
-        final Action childAction = rootAction.enterAction(null);
+        // when
+        Action obtained = target.enterAction(null);
 
-        // child leaves immediately
-        assertThat(childAction, is(instanceOf(NullAction.class)));
-        verify(logger, times(1)).warning(
-                "RootActionImpl [sn=0, id=0, name=rootAction] enterAction: actionName must not be null or empty");
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(NullAction.class));
+
+        verify(logger, times(1)).warning(endsWith("enterAction: actionName must not be null or empty"));
     }
 
     @Test
     public void enterActionWithEmptyNameGivesNullAction() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
+        // given
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
 
-        // create root action with a null child action (must be valid)
-        final String rootActionStr = "rootAction";
-        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
-        final Action childAction = rootAction.enterAction("");
+        // when
+        Action obtained = target.enterAction("");
 
-        // child leaves immediately
-        assertThat(childAction, is(instanceOf(NullAction.class)));
-        verify(logger, times(1)).warning(
-                "RootActionImpl [sn=0, id=0, name=rootAction] enterAction: actionName must not be null or empty");
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(NullAction.class));
+
+        verify(logger, times(1)).warning(endsWith("enterAction: actionName must not be null or empty"));
     }
 
     @Test
-    public void enterAndLeaveActions() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
+    public void enterActionGivesLeafActionInstance() {
+        // given
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
 
-        // create root action with child action
-        final String rootActionStr = "rootAction";
-        final String childActionStr = "childAction";
-        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
-        final Action childAction = rootAction.enterAction(childActionStr);
+        // when
+        Action obtained = target.enterAction(CHILD_ACTION_NAME);
 
-        // verify
-        assertThat(rootAction, is(instanceOf(ActionImpl.class)));
-        assertThat(childAction, is(instanceOf(ActionImpl.class)));
-        assertThat(rootAction.getName(), is(rootActionStr));
-        assertThat(((ActionImpl) childAction).getName(), is(childActionStr));
-
-        // child leaves
-        Action retAction = childAction.leaveAction();
-        assertThat(retAction, is(sameInstance((Action) rootAction)));
-
-        // parent leaves
-        retAction = rootAction.leaveAction();
-        assertThat(retAction, is(nullValue()));
-
-        // verify that open child actions are now empty
-        assertThat(actions.toArrayList().isEmpty(), is(true));
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(LeafActionImpl.class));
     }
 
     @Test
-    public void enterAndLeaveActionsWithMultipleChildren() {
-        // create test environment
-        final Beacon beacon = mock(Beacon.class);
-        final SynchronizedQueue<Action> actions = new SynchronizedQueue<Action>();
+    public void enterActionAddsLeafActionToListOfChildObjects() {
+        // given
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
 
-        // create root action with 2 children
-        final String rootActionStr = "rootAction";
-        final String childOneActionStr = "childOneAction";
-        final String childTwoActionStr = "childTwoAction";
-        final RootActionImpl rootAction = new RootActionImpl(logger, beacon, rootActionStr, actions);
-        final Action childAction1 = rootAction.enterAction(childOneActionStr);
-        final Action childAction2 = rootAction.enterAction(childTwoActionStr);
+        // when
+        Action obtained = target.enterAction(CHILD_ACTION_NAME);
 
-        // verify (using internally known methods)
-        assertThat(rootAction, is(instanceOf(ActionImpl.class)));
-        assertThat(childAction1, is(instanceOf(ActionImpl.class)));
-        assertThat(childAction2, is(instanceOf(ActionImpl.class)));
-        assertThat(rootAction.getName(), is(rootActionStr));
-        assertThat(((ActionImpl) childAction1).getName(), is(childOneActionStr));
-        assertThat(((ActionImpl) childAction2).getName(), is(childTwoActionStr));
-
-        // parent leaves, thus the children are also left
-        final Action retAction = rootAction.leaveAction();
-        assertThat(retAction, is(nullValue()));
-        assertThat(actions.toArrayList().isEmpty(), is(true));
+        // then
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject)obtained))));
     }
 
     @Test
     public void enterActionGivesNullActionIfAlreadyLeft() {
-
         // given
-        RootActionImpl target = new RootActionImpl(logger, mock(Beacon.class),
-            "parent action", new SynchronizedQueue<Action>());
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
         target.leaveAction();
 
         // when
@@ -159,5 +140,20 @@ public class RootActionImplTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained, is(instanceOf(NullAction.class)));
+    }
+
+    @Test
+    public void toStringReturnsAppropriateResult() {
+        // given
+        when(beacon.getSessionNumber()).thenReturn(21);
+        when(beacon.createID()).thenReturn(1, 2, 3, 100);
+
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
+
+        // when
+        String obtained = target.toString();
+
+        // then
+        assertThat(obtained, is(equalTo("RootActionImpl [sn=21, id=1, name=" + ROOT_ACTION_NAME + "] ")));
     }
 }

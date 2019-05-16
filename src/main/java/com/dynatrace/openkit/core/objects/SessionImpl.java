@@ -81,7 +81,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (isSessionEnded()) {
             return NULL_ROOT_ACTION;
         }
-        return new RootActionImpl(logger, beacon, actionName, openRootActions);
+        RootActionImpl result = new RootActionImpl(logger, this, actionName, beacon);
+        openRootActions.put(result);
+
+        return result;
     }
 
     @Override

@@ -69,10 +69,10 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
     /**
      * Constructor.
      *
-     * @param logger The logger used to log information.
+     * @param logger The logger used to log information
      * @param parent The parent object, to which this web request tracer belongs to
      * @param url The URL to trace
-     * @param beacon {@link Beacon} for data sending and tag creation.
+     * @param beacon {@link Beacon} for data sending and tag creation
      */
     WebRequestTracerBaseImpl(Logger logger,
                              OpenKitComposite parent,

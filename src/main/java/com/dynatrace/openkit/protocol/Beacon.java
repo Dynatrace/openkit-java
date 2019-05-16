@@ -19,13 +19,13 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.objects.ActionImpl;
-import com.dynatrace.openkit.core.objects.SessionImpl;
-import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.objects.BaseActionImpl;
+import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -280,7 +280,7 @@ public class Beacon {
     }
 
     /**
-     * Add {@link ActionImpl} to Beacon.
+     * Add {@link BaseActionImpl} to Beacon.
      *
      * <p>
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
@@ -288,7 +288,7 @@ public class Beacon {
      *
      * @param action The action to add.
      */
-    public void addAction(ActionImpl action) {
+    public void addAction(BaseActionImpl action) {
 
         if (isCapturingDisabled()) {
             return;
@@ -373,11 +373,11 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
      * @param valueName Value's name.
      * @param value Actual value to report.
      */
-    public void reportValue(ActionImpl parentAction, String valueName, int value) {
+    public void reportValue(int parentActionID, String valueName, int value) {
 
         if (isCapturingDisabled()) {
             return;
@@ -389,7 +389,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_INT, valueName, parentActionID);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
         addEventData(eventTimestamp, eventBuilder);
@@ -402,11 +402,11 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
      * @param valueName Value's name.
      * @param value Actual value to report.
      */
-    public void reportValue(ActionImpl parentAction, String valueName, double value) {
+    public void reportValue(int parentActionID, String valueName, double value) {
 
         if (isCapturingDisabled()) {
             return;
@@ -418,7 +418,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_DOUBLE, valueName, parentActionID);
         addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, value);
 
         addEventData(eventTimestamp, eventBuilder);
@@ -431,11 +431,11 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
      * @param valueName Value's name.
      * @param value Actual value to report.
      */
-    public void reportValue(ActionImpl parentAction, String valueName, String value) {
+    public void reportValue(int parentActionID, String valueName, String value) {
 
         if (isCapturingDisabled()) {
             return;
@@ -447,7 +447,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.VALUE_STRING, valueName, parentActionID);
         if (value != null) {
             addKeyValuePair(eventBuilder, BEACON_KEY_VALUE, truncate(value));
         }
@@ -462,10 +462,10 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this event was reported.
+     * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this event was reported.
      * @param eventName Event's name.
      */
-    public void reportEvent(ActionImpl parentAction, String eventName) {
+    public void reportEvent(int parentActionID, String eventName) {
 
         if (isCapturingDisabled()) {
             return;
@@ -477,7 +477,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        long eventTimestamp = buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentAction);
+        long eventTimestamp = buildEvent(eventBuilder, EventType.NAMED_EVENT, eventName, parentActionID);
 
         addEventData(eventTimestamp, eventBuilder);
     }
@@ -489,12 +489,12 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentAction The {@link com.dynatrace.openkit.api.Action} on which this error was reported.
+     * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this error was reported.
      * @param errorName Error's name.
      * @param errorCode Some error code.
      * @param reason Reason for that error.
      */
-    public void reportError(ActionImpl parentAction, String errorName, int errorCode, String reason) {
+    public void reportError(int parentActionID, String errorName, int errorCode, String reason) {
         // if capture errors is off -> do nothing
         if (isCapturingDisabled() || !configuration.isCaptureErrors()) {
             return;
@@ -509,7 +509,7 @@ public class Beacon {
         buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
 
         long timestamp = timingProvider.provideTimestampInMilliseconds();
-        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
+        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentActionID);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
@@ -763,15 +763,15 @@ public class Beacon {
      * @param builder String builder storing the serialzed data.
      * @param eventType The event's type.
      * @param name Event name
-     * @param parentAction The action on which this event was reported.
+     * @param parentActionID The unique Action identifier on which this event was reported.
      * @return The timestamp associated with the event (timestamp since session start time).
      */
-    private long buildEvent(StringBuilder builder, EventType eventType, String name, ActionImpl parentAction) {
+    private long buildEvent(StringBuilder builder, EventType eventType, String name, int parentActionID) {
         buildBasicEventData(builder, eventType, name);
 
         long eventTimestamp = timingProvider.provideTimestampInMilliseconds();
 
-        addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentAction.getID());
+        addKeyValuePair(builder, BEACON_KEY_PARENT_ACTION_ID, parentActionID);
         addKeyValuePair(builder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(builder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(eventTimestamp));
 

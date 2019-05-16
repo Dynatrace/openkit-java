@@ -24,21 +24,19 @@ import com.dynatrace.openkit.protocol.Beacon;
 /**
  * Actual implementation of the {@link RootAction} interface.
  */
-public class RootActionImpl extends ActionImpl implements RootAction {
+public class RootActionImpl extends BaseActionImpl implements RootAction {
 
-    // Beacon reference
-    private final Beacon beacon;
-    // data structures for managing child actions
-    private final SynchronizedQueue<Action> openChildActions = new SynchronizedQueue<Action>();
-
-    // *** constructors ***
-
-    RootActionImpl(Logger logger, Beacon beacon, String name, SynchronizedQueue<Action> parentActions) {
-        super(logger, beacon, name, parentActions);
-        this.beacon = beacon;
+    /**
+     * Constructor for constructing the root action class.
+     *
+     * @param logger The logger used to log information
+     * @param parentSession The session, to which this root action belongs to
+     * @param name The action's name
+     * @param beacon The beacon for retrieving certain data and sending data
+     */
+    RootActionImpl(Logger logger, SessionImpl parentSession, String name, Beacon beacon) {
+        super(logger, parentSession, name, beacon);
     }
-
-    // *** interface methods ***
 
     @Override
     public Action enterAction(String actionName) {
@@ -49,29 +47,25 @@ public class RootActionImpl extends ActionImpl implements RootAction {
             logger.warning(this + "enterAction: actionName must not be null or empty");
             return new NullAction(this);
         }
-        if (!isActionLeft()) {
-            return new ActionImpl(logger, beacon, actionName, this, openChildActions);
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                LeafActionImpl childAction = new LeafActionImpl(logger, this, actionName, beacon);
+                storeChildInList(childAction);
+                return childAction;
+            }
         }
 
         return new NullAction(this);
     }
 
-    // *** protected methods ***
-
     @Override
-    protected Action doLeaveAction() {
-        // leave all open Child-Actions
-        while (!openChildActions.isEmpty()) {
-            Action action = openChildActions.get();
-            action.leaveAction();
-        }
-
-        // call leaveAction in base class
-        return super.doLeaveAction();
+    protected Action getParentAction() {
+        // NOTE: root actions do not have a parent action
+        return null;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + getID() + ", name=" + getName() + "] ";
+        return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + ", id=" + id + ", name=" + name + "] ";
     }
 }
