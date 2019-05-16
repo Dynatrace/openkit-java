@@ -39,6 +39,25 @@ public final class JSONToken {
         COLON                 // :
     }
 
+    /** {@link JSONToken} to be used for boolean {@code true} literal */
+    static final JSONToken BOOLEAN_TRUE_TOKEN = new JSONToken(TokenType.LITERAL_BOOLEAN, JSONLiterals.BOOLEAN_TRUE_LITERAL);
+    /** {@link JSONToken} to be used for boolean {@code false} literal */
+    static final JSONToken BOOLEAN_FALSE_TOKEN = new JSONToken(TokenType.LITERAL_BOOLEAN, JSONLiterals.BOOLEAN_FALSE_LITERAL);
+    /** {@link JSONToken} to be used for null literal */
+    static final JSONToken NULL_TOKEN = new JSONToken(TokenType.LITERAL_NULL, JSONLiterals.NULL_LITERAL);
+    /** {@link JSONToken} to be used for left brace */
+    static final JSONToken LEFT_BRACE_TOKEN = new JSONToken(TokenType.LEFT_BRACE);
+    /** {@link JSONToken} to be used for right brace */
+    static final JSONToken RIGHT_BRACE_TOKEN = new JSONToken(TokenType.RIGHT_BRACE);
+    /** {@link JSONToken} to be used for left square bracket */
+    static final JSONToken LEFT_SQUARE_BRACKET_TOKEN = new JSONToken(TokenType.LEFT_SQUARE_BRACKET);
+    /** {@link JSONToken} to be used for right square bracket */
+    static final JSONToken RIGHT_SQUARE_BRACKET_TOKEN = new JSONToken(TokenType.RIGHT_SQUARE_BRACKET);
+    /** {@link JSONToken} to be used for comma */
+    static final JSONToken COMMA_TOKEN = new JSONToken(TokenType.COMMA);
+    /** {@link JSONToken} to be used for comma */
+    static final JSONToken COLON_TOKEN = new JSONToken(TokenType.COLON);
+
     /** Type of this token */
     private final TokenType tokenType;
     /** Token value for primitive tokens */
@@ -49,19 +68,47 @@ public final class JSONToken {
      *
      * @param tokenType Type of this token.
      */
-    JSONToken(TokenType tokenType) {
+    private JSONToken(TokenType tokenType) {
         this(tokenType, null);
     }
 
     /**
      * Construct the token with type and value.
      *
+     * <p>
+     *     Instead of using this CTOR either use one of the following
+     *     <ul>
+     *         <li>the predefined instances</li>
+     *         <li>{@link #createStringToken(String)}</li>
+     *     </ul>
+     * </p>
+     *
      * @param tokenType Type of this token.
      * @param value Value of this token, if it has a value.
      */
-    JSONToken(TokenType tokenType, String value) {
+    private JSONToken(TokenType tokenType, String value) {
         this.tokenType = tokenType;
         this.value = value;
+    }
+
+    /**
+     * Create a new {@link JSONToken} with type {@link TokenType#VALUE_STRING} and given value.
+     *
+     * @param stringValue The value to be used for the token
+     * @return The newly created token
+     */
+    static JSONToken createStringToken(String stringValue) {
+        return new JSONToken(TokenType.VALUE_STRING, stringValue);
+    }
+
+    /**
+     * Create a new {@link JSONToken} with type {@link TokenType#VALUE_NUMBER} and given value.
+     *
+     * @param numericValue The value to be used for the token
+     * @return The newly created token
+     */
+    static JSONToken createNumberToken(String numericValue) {
+        return new JSONToken(TokenType.VALUE_NUMBER, numericValue);
     }
 
     /**

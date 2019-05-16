@@ -23,7 +23,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.regex.Pattern;
 
 /**
  * Lexical analyzer for JSON, based on RFC 8259 (see also https://tools.ietf.org/html/rfc8259).
@@ -172,17 +171,17 @@ public class JSONLexer implements Closeable {
         char nextChar = (char) reader.read();
         switch (nextChar) {
             case LEFT_SQUARE_BRACKET:
-                return new JSONToken(JSONToken.TokenType.LEFT_SQUARE_BRACKET);
+                return JSONToken.LEFT_SQUARE_BRACKET_TOKEN;
             case RIGHT_SQUARE_BRACKET:
-                return new JSONToken(JSONToken.TokenType.RIGHT_SQUARE_BRACKET);
+                return JSONToken.RIGHT_SQUARE_BRACKET_TOKEN;
             case LEFT_BRACE:
-                return new JSONToken(JSONToken.TokenType.LEFT_BRACE);
+                return JSONToken.LEFT_BRACE_TOKEN;
             case RIGHT_BRACE:
-                return new JSONToken(JSONToken.TokenType.RIGHT_BRACE);
+                return JSONToken.RIGHT_BRACE_TOKEN;
             case COLON:
-                return new JSONToken(JSONToken.TokenType.COLON);
+                return JSONToken.COLON_TOKEN;
             case COMMA:
-                return new JSONToken(JSONToken.TokenType.COMMA);
+                return JSONToken.COMMA_TOKEN;
             case TRUE_LITERAL_START: // FALLTHROUGH
             case FALSE_LITERAL_START:
                 // could be a boolean literal (true|false)
@@ -220,9 +219,10 @@ public class JSONLexer implements Closeable {
      */
     private JSONToken tryParseBooleanLiteral() throws IOException, LexerException {
         String literalToken = parseLiteral();
-        if (literalToken.equals(JSONLiterals.BOOLEAN_TRUE_LITERAL) || literalToken.equals(JSONLiterals.BOOLEAN_FALSE_LITERAL)) {
-            // it's a valid boolean literal
-            return new JSONToken(JSONToken.TokenType.LITERAL_BOOLEAN, literalToken);
+        if (literalToken.equals(JSONLiterals.BOOLEAN_TRUE_LITERAL)) {
+            return JSONToken.BOOLEAN_TRUE_TOKEN;
+        } else if (literalToken.equals(JSONLiterals.BOOLEAN_FALSE_LITERAL)) {
+            return JSONToken.BOOLEAN_FALSE_TOKEN;
         }
 
         // not a valid boolean literal
@@ -243,7 +243,7 @@ public class JSONLexer implements Closeable {
         String literalToken = parseLiteral();
         if (literalToken.equals(JSONLiterals.NULL_LITERAL)) {
             // it's a valid null literal
-            return new JSONToken(JSONToken.TokenType.LITERAL_NULL, literalToken);
+            return JSONToken.NULL_TOKEN;
         }
 
         // not a valid null literal
@@ -280,7 +280,7 @@ public class JSONLexer implements Closeable {
 
         if (nextChar != EOF) {
             // string is properly terminated
-            return new JSONToken(JSONToken.TokenType.VALUE_STRING, stringValue);
+            return JSONToken.createStringToken(stringValue);
         }
 
         // string is not properly terminated, because EOF was reached
@@ -426,7 +426,7 @@ public class JSONLexer implements Closeable {
     private JSONToken tryParseNumberToken() throws IOException, LexerException {
         String literalToken = parseLiteral();
         if (JSONLiterals.NUMBER_PATTERN.matcher(literalToken).matches()) {
-            return new JSONToken(JSONToken.TokenType.VALUE_NUMBER, literalToken);
+            return JSONToken.createNumberToken(literalToken);
         }
 
         // not a valid number literal

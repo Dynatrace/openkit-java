@@ -21,37 +21,76 @@ import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class JSONTokenTest {
 
     @Test
-    public void tokenTypeSetInConstructorCanBeRetrievedAgain() {
-        // given
-        JSONToken target = new JSONToken(JSONToken.TokenType.LITERAL_NULL, "null");
-
-        // then
-        assertThat(target.getTokenType(), is(equalTo(JSONToken.TokenType.LITERAL_NULL)));
+    public void tokenTypesOfPredefinedTokensAreCorrect() {
+        // when boolean true token, then
+        assertThat(JSONToken.BOOLEAN_TRUE_TOKEN.getTokenType(), is(JSONToken.TokenType.LITERAL_BOOLEAN));
+        // when boolean false token, then
+        assertThat(JSONToken.BOOLEAN_FALSE_TOKEN.getTokenType(), is(JSONToken.TokenType.LITERAL_BOOLEAN));
+        // when null token, then
+        assertThat(JSONToken.NULL_TOKEN.getTokenType(), is(JSONToken.TokenType.LITERAL_NULL));
+        // when left braces token, then
+        assertThat(JSONToken.LEFT_BRACE_TOKEN.getTokenType(), is(JSONToken.TokenType.LEFT_BRACE));
+        // when right braces token, then
+        assertThat(JSONToken.RIGHT_BRACE_TOKEN.getTokenType(), is(JSONToken.TokenType.RIGHT_BRACE));
+        // when left square bracket token, then
+        assertThat(JSONToken.LEFT_SQUARE_BRACKET_TOKEN.getTokenType(), is(JSONToken.TokenType.LEFT_SQUARE_BRACKET));
+        // when right square bracket token, then
+        assertThat(JSONToken.RIGHT_SQUARE_BRACKET_TOKEN.getTokenType(), is(JSONToken.TokenType.RIGHT_SQUARE_BRACKET));
+        // when comma token, then
+        assertThat(JSONToken.COMMA_TOKEN.getTokenType(), is(JSONToken.TokenType.COMMA));
+        // when colon token, then
+        assertThat(JSONToken.COLON_TOKEN.getTokenType(), is(JSONToken.TokenType.COLON));
     }
 
     @Test
-    public void tokenValueSetInConstructorCanBeRetrievedAgain() {
-        // given
-        JSONToken target = new JSONToken(JSONToken.TokenType.LITERAL_NULL, "null");
-
-        // then
-        assertThat(target.getValue(), is(equalTo("null")));
+    public void tokenValuesOfPredefinedTokensAreCorrect() {
+        // when boolean true token, then
+        assertThat(JSONToken.BOOLEAN_TRUE_TOKEN.getValue(), is(JSONLiterals.BOOLEAN_TRUE_LITERAL));
+        // when boolean false token, then
+        assertThat(JSONToken.BOOLEAN_FALSE_TOKEN.getValue(), is(JSONLiterals.BOOLEAN_FALSE_LITERAL));
+        // when null token, then
+        assertThat(JSONToken.NULL_TOKEN.getValue(), is(JSONLiterals.NULL_LITERAL));
+        // when left braces token, then
+        assertThat(JSONToken.LEFT_BRACE_TOKEN.getValue(), is(nullValue()));
+        // when right braces token, then
+        assertThat(JSONToken.RIGHT_BRACE_TOKEN.getValue(), is(nullValue()));
+        // when left square bracket token, then
+        assertThat(JSONToken.LEFT_SQUARE_BRACKET_TOKEN.getValue(), is(nullValue()));
+        // when right square bracket token, then
+        assertThat(JSONToken.RIGHT_SQUARE_BRACKET_TOKEN.getValue(), is(nullValue()));
+        // when comma token, then
+        assertThat(JSONToken.COMMA_TOKEN.getValue(), is(nullValue()));
+        // when colon token, then
+        assertThat(JSONToken.COLON_TOKEN.getValue(), is(nullValue()));
     }
 
     @Test
-    public void constructorWithTokenTypeSetsValueToNull() {
-        // given
-        JSONToken target = new JSONToken(JSONToken.TokenType.LEFT_BRACE);
+    public void createStringTokenReturnsAppropriateJSONToken() {
+        // when
+        JSONToken obtained = JSONToken.createStringToken("foobar");
 
         // then
-        assertThat(target.getTokenType(), is(equalTo(JSONToken.TokenType.LEFT_BRACE)));
-        assertThat(target.getValue(), is(nullValue()));
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getTokenType(), is(JSONToken.TokenType.VALUE_STRING));
+        assertThat(obtained.getValue(), is(equalTo("foobar")));
+    }
+
+    @Test
+    public void createNumberTokenReturnsAppropriateJSONToken() {
+        // when
+        JSONToken obtained = JSONToken.createNumberToken("12345");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained.getTokenType(), is(JSONToken.TokenType.VALUE_NUMBER));
+        assertThat(obtained.getValue(), is(equalTo("12345")));
     }
 
     @Test
@@ -81,8 +120,8 @@ public class JSONTokenTest {
 
     @Test
     public void toStringForTokenWithoutValueGivesAppropriateStringRepresentation() {
-        // given
-        JSONToken target = new JSONToken(JSONToken.TokenType.COLON);
+        // given a token that does not store a value
+        JSONToken target = JSONToken.COLON_TOKEN;
 
         // when
         String obtained = target.toString();
@@ -94,7 +133,7 @@ public class JSONTokenTest {
     @Test
     public void toStringForTokenWithValueGivesAppropriateStringRepresentation() {
         // given
-        JSONToken target = new JSONToken(JSONToken.TokenType.VALUE_NUMBER, "12345");
+        JSONToken target = JSONToken.createNumberToken("12345");
 
         // when
         String obtained = target.toString();
