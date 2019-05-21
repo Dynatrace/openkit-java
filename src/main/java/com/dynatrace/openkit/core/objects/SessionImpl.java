@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.objects;
 
-import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
@@ -27,42 +26,45 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 
+import java.io.IOException;
 import java.net.URLConnection;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
 /**
  * Actual implementation of the {@link Session} interface.
  */
 public class SessionImpl extends OpenKitComposite implements Session {
 
+    /** {@link Logger} for tracing log message */
+    private final Logger logger;
+
+    /** object for synchronization */
+    private final Object lockObject = new Object();
+
+    /** Parent object of this {@link Session} */
+    private OpenKitComposite parent;
+
+    /** Root action returned in case of misconfiguration */
     private static final RootAction NULL_ROOT_ACTION = new NullRootAction();
+    /** Web request tracer returned in case of misconfiguration */
     private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
 
-    // end time of this Session
-    private final AtomicLong endTime = new AtomicLong(-1);
+    /** end time of this {@link Session} */
+    private long endTime = -1L;
 
     // BeaconSender and Beacon reference
     private final BeaconSender beaconSender;
     private final Beacon beacon;
 
-    // used for taking care to really leave all Actions at the end of this Session
-    private final SynchronizedQueue<Action> openRootActions = new SynchronizedQueue<Action>();
-
-    private final Logger logger;
-
-    // *** constructors ***
-
-    SessionImpl(Logger logger, BeaconSender beaconSender, Beacon beacon) {
+    SessionImpl(Logger logger, OpenKitComposite parent, BeaconSender beaconSender, Beacon beacon) {
         this.logger = logger;
+        this.parent = parent;
         this.beaconSender = beaconSender;
         this.beacon = beacon;
 
         beaconSender.startSession(this);
         beacon.startSession();
     }
-
-    // *** Session interface methods ***
-
 
     @Override
     public void close() {
@@ -78,13 +80,15 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "enterAction(" + actionName + ")");
         }
-        if (isSessionEnded()) {
-            return NULL_ROOT_ACTION;
+        synchronized (lockObject) {
+            if (!isSessionEnded()) {
+                RootActionImpl result = new RootActionImpl(logger, this, actionName, beacon);
+                storeChildInList(result);
+                return result;
+            }
         }
-        RootActionImpl result = new RootActionImpl(logger, this, actionName, beacon);
-        openRootActions.put(result);
 
-        return result;
+        return NULL_ROOT_ACTION;
     }
 
     @Override
@@ -96,8 +100,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "identifyUser(" + userTag + ")");
         }
-        if (!isSessionEnded()) {
-            beacon.identifyUser(userTag);
+        synchronized (lockObject) {
+            if (!isSessionEnded()) {
+                beacon.identifyUser(userTag);
+            }
         }
     }
 
@@ -110,8 +116,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportCrash(" + errorName + ", " + reason + ", " + stacktrace + ")");
         }
-        if (!isSessionEnded()) {
-            beacon.reportCrash(errorName, reason, stacktrace);
+        synchronized (lockObject) {
+            if (!isSessionEnded()) {
+                beacon.reportCrash(errorName, reason, stacktrace);
+            }
         }
     }
 
@@ -124,8 +132,12 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
-        if (!isSessionEnded()) {
-            return new WebRequestTracerURLConnection(logger, this, beacon, connection);
+        synchronized (lockObject) {
+            if (!isSessionEnded()) {
+                WebRequestTracerBaseImpl webRequestTracer = new WebRequestTracerURLConnection(logger, this, beacon, connection);
+                storeChildInList(webRequestTracer);
+                return webRequestTracer;
+            }
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -144,8 +156,12 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
-        if (!isSessionEnded()) {
-            return new WebRequestTracerStringURL(logger, this, beacon, url);
+        synchronized (lockObject) {
+            if (!isSessionEnded()) {
+                WebRequestTracerBaseImpl webRequestTracer = new WebRequestTracerStringURL(logger, this, beacon, url);
+                storeChildInList(webRequestTracer);
+                return webRequestTracer;
+            }
         }
 
         return NULL_WEB_REQUEST_TRACER;
@@ -157,15 +173,26 @@ public class SessionImpl extends OpenKitComposite implements Session {
             logger.debug(this + "end()");
         }
 
-        // check if end() was already called before by looking at endTime
-        if (!endTime.compareAndSet(-1L, beacon.getCurrentTimestamp())) {
-            return;
+        synchronized (lockObject) {
+            // check if end() was already called before by looking at endTime
+            if (isSessionEnded()) {
+                return;
+            }
+
+            endTime = beacon.getCurrentTimestamp();
         }
 
-        // leave all Root-Actions for sanity reasons
-        while (!openRootActions.isEmpty()) {
-            Action action = openRootActions.get();
-            action.leaveAction();
+        // forcefully leave all child elements
+        // Since the end time was set, no further child objects are added to the internal list
+        // so the following operations are safe outside the synchronized block
+        List<OpenKitObject> childObjects = getCopyOfChildObjects();
+        for (OpenKitObject childObject : childObjects) {
+            try {
+                childObject.close();
+            } catch (IOException e) {
+                // should not happen, nevertheless let's log an error
+                logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
+            }
         }
 
         // create end session data on beacon
@@ -173,6 +200,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
 
         // finish session and stop managing it
         beaconSender.finishSession(this);
+
+        // last but not least update parent relation
+        parent.onChildClosed(this);
+        parent = null;
     }
 
     // *** public methods ***
@@ -185,7 +216,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
     // *** getter methods ***
 
     public long getEndTime() {
-        return endTime.get();
+        return endTime;
     }
 
     /**
@@ -241,7 +272,9 @@ public class SessionImpl extends OpenKitComposite implements Session {
 
     @Override
     void onChildClosed(OpenKitObject childObject) {
-        removeChildFromList(childObject);
+        synchronized (lockObject) {
+            removeChildFromList(childObject);
+        }
     }
 
     @Override

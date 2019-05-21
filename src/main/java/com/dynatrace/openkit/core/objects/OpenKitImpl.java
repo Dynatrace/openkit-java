@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Actual implementation of the {@link OpenKit} interface.
  */
-public class OpenKitImpl implements OpenKit {
+public class OpenKitImpl extends OpenKitComposite implements OpenKit {
 
     private static final Session NULL_SESSION = new NullSession();
 
@@ -136,7 +136,7 @@ public class OpenKitImpl implements OpenKit {
         // create beacon for session
         Beacon beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
         // create session
-        return new SessionImpl(logger, beaconSender, beacon);
+        return new SessionImpl(logger, this, beaconSender, beacon);
     }
 
     @Override
@@ -147,5 +147,10 @@ public class OpenKitImpl implements OpenKit {
         isShutdown.set(true);
         beaconCacheEvictor.stop();
         beaconSender.shutdown();
+    }
+
+    @Override
+    void onChildClosed(OpenKitObject childObject) {
+        // intentionally empty for now
     }
 }

@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class BeaconSender {
 
     private static final String THREAD_NAME = BeaconSender.class.getSimpleName();
-    static final long SHUTDOWN_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
+    private static final long SHUTDOWN_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
     private final Logger logger;
 

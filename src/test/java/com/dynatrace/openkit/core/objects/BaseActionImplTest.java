@@ -32,6 +32,7 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -362,6 +363,21 @@ public class BaseActionImplTest {
         // then
         List<OpenKitObject> childObjects = target.getCopyOfChildObjects();
         assertThat(childObjects, is(equalTo(Collections.singletonList((OpenKitObject)obtained))));
+    }
+
+
+    @Test
+    public void onChildClosedRemovesChildFromList() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        OpenKitObject childObject = mock(OpenKitObject.class);
+        target.storeChildInList(childObject);
+
+        // when child gets closed
+        target.onChildClosed(childObject);
+
+        // then
+        assertThat(target.getCopyOfChildObjects(), is(empty()));
     }
 
     @Test
