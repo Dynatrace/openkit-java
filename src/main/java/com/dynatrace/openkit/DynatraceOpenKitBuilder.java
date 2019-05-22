@@ -16,11 +16,11 @@
 
 package com.dynatrace.openkit;
 
-import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
+import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
 
 /**

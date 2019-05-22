@@ -21,7 +21,6 @@ import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.test.providers.TestSessionIDProvider;
-
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;

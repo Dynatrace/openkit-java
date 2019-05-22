@@ -18,14 +18,13 @@ package com.dynatrace.openkit.test;
 
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
-import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.OpenKitType;
+import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

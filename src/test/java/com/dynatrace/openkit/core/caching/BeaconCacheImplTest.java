@@ -17,7 +17,6 @@
 package com.dynatrace.openkit.core.caching;
 
 import com.dynatrace.openkit.api.Logger;
-
 import org.junit.Before;
 import org.junit.Test;
 

@@ -21,7 +21,6 @@ import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 

@@ -24,6 +24,10 @@ import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,11 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * HTTP client helper which abstracts the 2 basic request types:

@@ -19,6 +19,10 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
@@ -27,14 +31,9 @@ import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.objects.WebRequestTracerURLConnection;
-import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 
