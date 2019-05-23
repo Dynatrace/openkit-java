@@ -28,78 +28,115 @@ import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
 import com.dynatrace.openkit.providers.DefaultThreadIDProvider;
 import com.dynatrace.openkit.providers.DefaultTimingProvider;
-import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Actual implementation of the {@link OpenKit} interface.
  */
 public class OpenKitImpl extends OpenKitComposite implements OpenKit {
 
-    private static final Session NULL_SESSION = new NullSession();
-
-    // Beacon cache
+    /** Session returned by {@link #createSession(String)}, after calling {@link #shutdown()} */
+    static final Session NULL_SESSION = new NullSession();
+    /** Cache class used to store serialized {@link Beacon} data */
     private final BeaconCacheImpl beaconCache;
-    // Cache eviction thread
+    /** Cache eviction thread */
     private final BeaconCacheEvictor beaconCacheEvictor;
-
-    // BeaconSender reference
+    /** BeaconSender reference */
     private final BeaconSender beaconSender;
-
-    // AbstractConfiguration reference
+    /** Container storing configuration given into the OpenKit builders */
     private final Configuration configuration;
+    /** Provider responsible to provide the thread id. */
     private final ThreadIDProvider threadIDProvider;
+    /** Provider responsible to provide time related functions */
     private final TimingProvider timingProvider;
-
-    //Logging context
+    /** {@link Logger} for tracing log message */
     private final Logger logger;
+    /** Boolean value, indicating whether this {@link OpenKit} instance is shutdown or not */
+    private boolean isShutdown = false;
+    /** Object for synchronizing access */
+    private final Object lockObject = new Object();
 
-    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+    /**
+     * Public constructor for creating an OpenKit instance.
+     *
+     * @param logger Logger for logging messages.
+     * @param configuration OpenKit configuration
+     */
+    public OpenKitImpl(Logger logger, Configuration configuration) {
+        logOpenKitInstanceCreation(logger, configuration);
 
-    // *** constructors ***
-
-    public OpenKitImpl(Logger logger, Configuration config) {
-        this(logger, config, new DefaultHTTPClientProvider(logger), new DefaultTimingProvider(), new DefaultThreadIDProvider());
+        this.logger = logger;
+        this.configuration = configuration;
+        timingProvider = new DefaultTimingProvider();
+        threadIDProvider = new DefaultThreadIDProvider();
+        beaconCache = new BeaconCacheImpl(logger);
+        beaconCacheEvictor = new BeaconCacheEvictor(logger, beaconCache, configuration.getBeaconCacheConfiguration(), timingProvider);
+        beaconSender = new BeaconSender(logger, configuration, new DefaultHTTPClientProvider(logger), timingProvider);
     }
 
-    protected OpenKitImpl(Logger logger, Configuration config, HTTPClientProvider httpClientProvider, TimingProvider timingProvider, ThreadIDProvider threadIDProvider) {
-        if (logger.isInfoEnabled()) {
-            // TODO: Use proper version information (incl. the build number)
-            logger.info(getClass().getSimpleName() + " - " + config.getOpenKitType() + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
-                    + " instantiated");
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug(
-                getClass().getSimpleName() + " - applicationName=" + config.getApplicationName() + ", applicationID=" + config.getApplicationID()
-                            + ", deviceID=" + config.getDeviceID() + ", endpointURL=" + config.getEndpointURL());
-        }
-        configuration = config;
+    /**
+     * Internal constructor that shall be used for testing only.
+     *
+     * @param logger Logger for logging messages.
+     * @param configuration OpenKit configuration
+     * @param timingProvider Provider for getting timing information
+     * @param threadIDProvider For getting thread identifier
+     * @param beaconCache Cache where beacon data is stored
+     * @param beaconSender Sending that is responsible for sending beacon related data
+     * @param beaconCacheEvictor Evictor to prevent OOM due to full cache
+     */
+    OpenKitImpl(Logger logger,
+                Configuration configuration,
+                TimingProvider timingProvider,
+                ThreadIDProvider threadIDProvider,
+                BeaconCacheImpl beaconCache,
+                BeaconSender beaconSender,
+                BeaconCacheEvictor beaconCacheEvictor) {
+        logOpenKitInstanceCreation(logger, configuration);
+
+        this.configuration = configuration;
         this.logger = logger;
         this.threadIDProvider = threadIDProvider;
         this.timingProvider = timingProvider;
-        beaconCache = new BeaconCacheImpl(logger);
-        beaconSender = new BeaconSender(logger, configuration, httpClientProvider, timingProvider);
-        beaconCacheEvictor = new BeaconCacheEvictor(logger, beaconCache, configuration.getBeaconCacheConfiguration(), timingProvider);
+        this.beaconCache = beaconCache;
+        this.beaconSender = beaconSender;
+        this.beaconCacheEvictor = beaconCacheEvictor;
+    }
+
+    /**
+     * Helper class to write a message upon instance creation.
+     *
+     * @param logger The logger to which to write to
+     * @param configuration OpenKit related configuration
+     */
+    private static void logOpenKitInstanceCreation(Logger logger, Configuration configuration) {
+        if (logger.isInfoEnabled()) {
+            logger.info(OpenKitImpl.class.getSimpleName() + " - " + configuration.getOpenKitType() + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
+                + " instantiated");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                OpenKitImpl.class.getSimpleName() + " - applicationName=" + configuration.getApplicationName() + ", applicationID=" + configuration.getApplicationID()
+                    + ", deviceID=" + configuration.getDeviceID() + ", endpointURL=" + configuration.getEndpointURL());
+        }
     }
 
     /**
      * Initialize this OpenKit instance.
      *
      * <p>
-     * This method starts the {@link BeaconSender} and is called directly after
-     * the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
+     *     This method starts the {@link BeaconSender} and is called directly after
+     *     the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
      * </p>
      */
     public void initialize() {
         beaconCacheEvictor.start();
         beaconSender.initialize();
     }
-
-    // *** OpenKit interface methods ***
-
 
     @Override
     public void close() {
@@ -130,13 +167,19 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit {
         if (logger.isDebugEnabled()) {
             logger.debug(getClass().getSimpleName() + " createSession(" + clientIPAddress + ")");
         }
-        if (isShutdown.get()) {
-            return NULL_SESSION;
+        synchronized (lockObject) {
+            if (!isShutdown) {
+                // create beacon for session
+                Beacon beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
+                // create session and add it to the list of children
+                SessionImpl session = new SessionImpl(logger, this, beaconSender, beacon);
+                storeChildInList(session);
+
+                return session;
+            }
         }
-        // create beacon for session
-        Beacon beacon = new Beacon(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider);
-        // create session
-        return new SessionImpl(logger, this, beaconSender, beacon);
+
+        return NULL_SESSION;
     }
 
     @Override
@@ -144,13 +187,33 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit {
         if (logger.isDebugEnabled()) {
             logger.debug(getClass().getSimpleName() + " shutdown() - shutdown requested");
         }
-        isShutdown.set(true);
+        synchronized (lockObject) {
+            if (isShutdown) {
+                // shutdown has been called before
+                return;
+            }
+            isShutdown = true;
+        }
+
+        // close all open children
+        List<OpenKitObject> childObjects = getCopyOfChildObjects();
+        for (OpenKitObject childObject : childObjects) {
+            try {
+                childObject.close();
+            } catch (IOException e) {
+                // should not happen, nevertheless let's log an error
+                logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
+            }
+        }
+
         beaconCacheEvictor.stop();
         beaconSender.shutdown();
     }
 
     @Override
     void onChildClosed(OpenKitObject childObject) {
-        // intentionally empty for now
+        synchronized (lockObject) {
+            removeChildFromList(childObject);
+        }
     }
 }

@@ -17,7 +17,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.List;
@@ -25,11 +24,10 @@ import java.util.List;
 /**
  * In this state open sessions are finished. After that all sessions are sent to the server.
  * <p>
- * <p>
- * Transition to:
- * <ul>
- * <li>{@link BeaconSendingTerminalState}</li>
- * </ul>
+ *     Transition to:
+ *     <ul>
+ *         <li>{@link BeaconSendingTerminalState}</li>
+ *     </ul>
  * </p>
  */
 class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {

@@ -28,8 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The BeaconSender is responsible for asynchronously sending the Beacons to the provided endpoint.
  * <p>
- * <p>
- * The {@code BeaconSender} manages the thread running OpenKit communication in the background.
+ *     The {@code BeaconSender} manages the thread running OpenKit communication in the background.
  * </p>
  */
 public class BeaconSender {
@@ -51,11 +50,10 @@ public class BeaconSender {
     /**
      * Create a new BeaconSender.
      * <p>
-     * <p>
-     * To start the beacon sending the {@link #initialize()} method must be called.
+     *     To start the beacon sending the {@link #initialize()} method must be called.
      * </p>
      *
-     * @param logger
+     * @param logger Logger for logging messages
      * @param configuration  OpenKit configuration.
      * @param clientProvider Used for retrieving an {@link com.dynatrace.openkit.protocol.HTTPClient} instance.
      * @param timingProvider Used for some timing related things.
@@ -68,10 +66,9 @@ public class BeaconSender {
     /**
      * Start beacon sender thread.
      * <p>
-     * <p>
-     * Note: The beacon sender has to perform some initialization code, which is done in the background,
-     * before it actually starts sending beacons.
-     * If it's a must to have OpenKit fully initialized use the {@link #waitForInit()} method to wait until initialized.
+     *     Note: The beacon sender has to perform some initialization code, which is done in the background,
+     *     before it actually starts sending beacons.
+     *     If it's necessary to have OpenKit fully initialized use the {@link #waitForInit()} method to wait until initialized.
      * </p>
      */
     public synchronized void initialize() {
@@ -97,8 +94,7 @@ public class BeaconSender {
     /**
      * Wait until OpenKit is fully initialized or a shutdown request has been made.
      * <p>
-     * <p>
-     * This method might hang forever.
+     *     This method might hang forever.
      * </p>
      *
      * @return {@code true} if OpenKit is fully initialized, or {@code false} if shutdown has been requested during init phase.
@@ -155,9 +151,8 @@ public class BeaconSender {
     /**
      * When starting a new Session, put it into open Sessions.
      * <p>
-     * <p>
-     * A session is only put into the open Sessions if capturing is enabled.
-     * In case capturing is disabled, this method has no effect.
+     *     A session is only put into the open Sessions if capturing is enabled.
+     *     In case capturing is disabled, this method has no effect.
      * </p>
      *
      * @param session Session to start.
@@ -172,8 +167,7 @@ public class BeaconSender {
     /**
      * When finishing a Session, remove it from open Sessions and put it into finished Sessions.
      * <p>
-     * <p>
-     * As soon as a session get's finished it will be transferred to the server.
+     *     As soon as a session get's finished it will be transferred to the server.
      * </p>
      *
      * @param session Session to finish.
