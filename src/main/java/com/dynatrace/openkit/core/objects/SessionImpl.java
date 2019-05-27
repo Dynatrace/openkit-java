@@ -52,6 +52,9 @@ public class SessionImpl extends OpenKitComposite implements Session {
     /** end time of this {@link Session} */
     private long endTime = -1L;
 
+    /** boolean indicating whether this session has been ended or not */
+    private boolean isSessionEnded;
+
     // BeaconSender and Beacon reference
     private final BeaconSender beaconSender;
     private final Beacon beacon;
@@ -61,6 +64,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
         this.parent = parent;
         this.beaconSender = beaconSender;
         this.beacon = beacon;
+        this.isSessionEnded = false;
 
         beaconSender.startSession(this);
         beacon.startSession();
@@ -179,7 +183,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
                 return;
             }
 
-            endTime = beacon.getCurrentTimestamp();
+            isSessionEnded = true;
         }
 
         // forcefully leave all child elements
@@ -194,6 +198,9 @@ public class SessionImpl extends OpenKitComposite implements Session {
                 logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
             }
         }
+
+        // set end time after child objects have been ended
+        endTime = beacon.getCurrentTimestamp();
 
         // create end session data on beacon
         beacon.endSession(this);
@@ -253,7 +260,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
      * @return {@code true} if the session has been ended already, {@code false} if the session is not ended yet.
      */
     boolean isSessionEnded() {
-        return getEndTime() != -1L;
+        return isSessionEnded;
     }
 
     /**

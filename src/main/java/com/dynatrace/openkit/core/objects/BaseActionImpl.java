@@ -58,6 +58,9 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
     /** End sequence number of this {@link Action} */
     private int endSequenceNo = -1;
 
+    /** boolean indicating whether this action has been left or not */
+    private boolean isActionLeft;
+
     /** Beacon for sending data */
     final Beacon beacon;
 
@@ -83,6 +86,8 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
 
         startTime = beacon.getCurrentTimestamp();
         startSequenceNo = beacon.createSequenceNumber();
+
+        isActionLeft = false;
 
         this.beacon = beacon;
     }
@@ -233,13 +238,7 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
                 // leaveAction has been called previously
                 return getParentAction();
             }
-
-            // set end time and end sequence number
-            endTime = beacon.getCurrentTimestamp();
-            endSequenceNo = beacon.createSequenceNumber();
-
-            // serialize this action after setting all remaining information
-            beacon.addAction(this);
+            isActionLeft = true;
         }
 
         // close all child object
@@ -254,6 +253,13 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
                 logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
             }
         }
+
+        // set end time and end sequence number
+        endTime = beacon.getCurrentTimestamp();
+        endSequenceNo = beacon.createSequenceNumber();
+
+        // serialize this action after setting all remaining information
+        beacon.addAction(this);
 
         // detach from parent
         parent.onChildClosed(this);
@@ -310,6 +316,6 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
     }
 
     boolean isActionLeft() {
-        return getEndTime() != -1;
+        return isActionLeft;
     }
 }
