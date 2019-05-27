@@ -16,9 +16,6 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
-
 /**
  * Configuration for a Beacon.
  *
@@ -29,8 +26,6 @@ import com.dynatrace.openkit.DataCollectionLevel;
  */
 public class BeaconConfiguration {
 
-    public static final DataCollectionLevel DEFAULT_DATA_COLLECTION_LEVEL = DataCollectionLevel.USER_BEHAVIOR;
-    public static final CrashReportingLevel DEFAULT_CRASH_REPORTING_LEVEL = CrashReportingLevel.OPT_IN_CRASHES;
     public static final int DEFAULT_MULITPLICITY = 1;
 
     /**
@@ -39,50 +34,19 @@ public class BeaconConfiguration {
     private final int multiplicity;
 
     /**
-     *  Data collection level
-     */
-    private final DataCollectionLevel dataCollectionLevel;
-
-    /**
-     * Crash reporting level
-     */
-    private final CrashReportingLevel crashReportingLevel;
-
-    /**
      * Default constructor using default values for data collection levels
      */
     public BeaconConfiguration() {
-        this(1, DEFAULT_DATA_COLLECTION_LEVEL, DEFAULT_CRASH_REPORTING_LEVEL);
+        this(DEFAULT_MULITPLICITY);
     }
 
     /**
      * Constructor
      * @param multiplicity multiplicity as returned by the server
-     * @param dataCollectionLevel data collection level ( @see com.dynatrace.configuration.DataCollectionLevel )
-     * @param crashReportingLevel crashReporting level ( @see com.dynatrace.configuration.CrashReportingLevel )
      */
-    public BeaconConfiguration(int multiplicity, DataCollectionLevel dataCollectionLevel, CrashReportingLevel crashReportingLevel) {
+    public BeaconConfiguration(int multiplicity) {
         this.multiplicity = multiplicity;
-        this.dataCollectionLevel = dataCollectionLevel;
-        this.crashReportingLevel = crashReportingLevel;
     }
-
-    /**
-     * Get the data collection level
-     * @return data collection level
-     */
-    public DataCollectionLevel getDataCollectionLevel() {
-        return this.dataCollectionLevel;
-    }
-
-    /**
-     * Get the crash reporting level
-     * @return crash reporting level
-     */
-    public CrashReportingLevel getCrashReportingLevel(){
-        return this.crashReportingLevel;
-    }
-
 
     /**
      * Get the multiplicity

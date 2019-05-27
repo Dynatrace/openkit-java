@@ -44,7 +44,6 @@ public class BeaconCacheConfiguration {
      * @param cacheSizeUpperBound upper memory limit for cache
      */
     public BeaconCacheConfiguration(long maxRecordAge, long cacheSizeLowerBound, long cacheSizeUpperBound) {
-
         this.maxRecordAge = maxRecordAge;
         this.cacheSizeLowerBound = cacheSizeLowerBound;
         this.cacheSizeUpperBound = cacheSizeUpperBound;

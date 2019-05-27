@@ -56,7 +56,8 @@ public class Configuration {
     private final AtomicBoolean captureErrors;                   // capture errors on/off; can be written/read by different threads -> atomic
     private final AtomicBoolean captureCrashes;                  // capture crashes on/off; can be written/read by different threads -> atomic
     private HTTPClientConfiguration httpClientConfiguration;     // the current http client configuration
-    private final BeaconConfiguration beaconConfiguration;             // data collection levels
+    private final BeaconConfiguration beaconConfiguration;       // multiplicity
+    private final PrivacyConfiguration privacyConfiguration;     // data collection levels
 
     // application and device settings
     private final String applicationVersion;
@@ -65,13 +66,15 @@ public class Configuration {
     // caching settings
     private final BeaconCacheConfiguration beaconCacheConfiguration;
 
+
     private final SessionIDProvider sessionIDProvider;
 
     // *** constructors ***
 
     public Configuration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL,
                          SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion,
-                         BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
+                         BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration,
+                         PrivacyConfiguration privacyConfiguration) {
 
         this.openKitType = openKitType;
 
@@ -105,6 +108,8 @@ public class Configuration {
         this.sessionIDProvider = sessionIDProvider;
 
         this.beaconConfiguration = beaconConfiguration;
+
+        this.privacyConfiguration = privacyConfiguration;
     }
 
     // *** public methods ***
@@ -265,4 +270,11 @@ public class Configuration {
      * @return
      */
     public BeaconConfiguration getBeaconConfiguration() { return beaconConfiguration; }
+
+    /**
+     * Returns the privacy configuration
+     */
+    public PrivacyConfiguration getPrivacyConfiguration() {
+        return privacyConfiguration;
+    }
 }

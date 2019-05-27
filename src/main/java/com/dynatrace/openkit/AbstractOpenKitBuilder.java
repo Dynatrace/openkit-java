@@ -22,8 +22,8 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.objects.OpenKitImpl;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
@@ -48,8 +48,8 @@ public abstract class AbstractOpenKitBuilder {
     private long beaconCacheMaxRecordAge = BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS;
     private long beaconCacheLowerMemoryBoundary = BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES;
     private long beaconCacheUpperMemoryBoundary = BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
-    private DataCollectionLevel dataCollectionLevel = BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL;
-    private CrashReportingLevel crashReportLevel = BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL;
+    private DataCollectionLevel dataCollectionLevel = PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL;
+    private CrashReportingLevel crashReportLevel = PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder

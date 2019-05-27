@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
@@ -79,6 +80,8 @@ public class OpenKitImplTest {
         when(configuration.getDevice()).thenReturn(new Device("", "", ""));
         when(configuration.isCapture()).thenReturn(true);
         when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration());
+        when(configuration.getPrivacyConfiguration()).thenReturn(
+            new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL, PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL));
 
         timingProvider = mock(TimingProvider.class);
         threadIDProvider = mock(ThreadIDProvider.class);

@@ -98,18 +98,14 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         for (SessionWrapper session : newSessions) {
             if (!session.canSendNewSessionRequest()) {
                 // already exceeded the maximum number of session requests, disable any further data collecting
-                BeaconConfiguration currentConfiguration = session.getBeaconConfiguration();
-                BeaconConfiguration newConfiguration = new BeaconConfiguration(0,
-                    currentConfiguration.getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
+                BeaconConfiguration newConfiguration = new BeaconConfiguration(0);
                 session.updateBeaconConfiguration(newConfiguration);
                 continue;
             }
 
             statusResponse = context.getHTTPClient().sendNewSessionRequest();
             if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-                BeaconConfiguration currentConfiguration = session.getBeaconConfiguration();
-                BeaconConfiguration newConfiguration = new BeaconConfiguration(statusResponse.getMultiplicity(), currentConfiguration
-                    .getDataCollectionLevel(), currentConfiguration.getCrashReportingLevel());
+                BeaconConfiguration newConfiguration = new BeaconConfiguration(statusResponse.getMultiplicity());
                 session.updateBeaconConfiguration(newConfiguration);
             } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
                 // server is currently overloaded, return immediately

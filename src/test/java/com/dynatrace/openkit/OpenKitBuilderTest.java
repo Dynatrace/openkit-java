@@ -20,8 +20,8 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.hamcrest.Matchers;
@@ -116,8 +116,8 @@ public class OpenKitBuilderTest {
         assertThat(configuration.getBeaconCacheConfiguration().getMaxRecordAge(), is(BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS));
         assertThat(configuration.getBeaconCacheConfiguration().getCacheSizeUpperBound(), is(BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES));
         assertThat(configuration.getBeaconCacheConfiguration().getCacheSizeLowerBound(), is(BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES));
-        assertThat(configuration.getBeaconConfiguration().getDataCollectionLevel(), is(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
-        assertThat(configuration.getBeaconConfiguration().getCrashReportingLevel(), is(BeaconConfiguration.DEFAULT_CRASH_REPORTING_LEVEL));
+        assertThat(configuration.getPrivacyConfiguration().getDataCollectionLevel(), is(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
+        assertThat(configuration.getPrivacyConfiguration().getCrashReportingLevel(), is(PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL));
     }
 
     @Test
@@ -367,7 +367,7 @@ public class OpenKitBuilderTest {
             .withDataCollectionLevel(DATA_COLLECTION_LEVEL)
             .buildConfiguration();
 
-        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(),
+        assertThat(target.getPrivacyConfiguration().getDataCollectionLevel(),
             is(equalTo(DATA_COLLECTION_LEVEL)));
     }
 
@@ -377,7 +377,7 @@ public class OpenKitBuilderTest {
             .withDataCollectionLevel(DATA_COLLECTION_LEVEL)
             .buildConfiguration();
 
-        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(),
+        assertThat(target.getPrivacyConfiguration().getDataCollectionLevel(),
             is(equalTo(DATA_COLLECTION_LEVEL)));
     }
 
@@ -387,7 +387,7 @@ public class OpenKitBuilderTest {
             .withCrashReportingLevel(CRASH_REPORTING_LEVEL)
             .buildConfiguration();
 
-        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(),
+        assertThat(target.getPrivacyConfiguration().getCrashReportingLevel(),
             is(equalTo(CRASH_REPORTING_LEVEL)));
     }
 
@@ -397,7 +397,7 @@ public class OpenKitBuilderTest {
             .withCrashReportingLevel(CRASH_REPORTING_LEVEL)
             .buildConfiguration();
 
-        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(),
+        assertThat(target.getPrivacyConfiguration().getCrashReportingLevel(),
             is(equalTo(CRASH_REPORTING_LEVEL)));
     }
 

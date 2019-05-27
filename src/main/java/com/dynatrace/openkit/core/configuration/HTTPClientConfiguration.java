@@ -23,7 +23,6 @@ import com.dynatrace.openkit.api.SSLTrustManager;
  */
 public class HTTPClientConfiguration {
 
-    // all fields are immutable
     private final String baseURL;
     private final int serverId;
     private final String applicationID;

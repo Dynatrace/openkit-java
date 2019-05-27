@@ -16,13 +16,12 @@
 
 package com.dynatrace.openkit.protocol;
 
-import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
@@ -131,6 +130,8 @@ public class Beacon {
 
     private final AtomicReference<BeaconConfiguration> beaconConfiguration;
 
+    private final PrivacyConfiguration privacyConfiguration;
+
     // *** constructors ***
 
     /**
@@ -184,6 +185,8 @@ public class Beacon {
 
         beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
 
+        privacyConfiguration = configuration.getPrivacyConfiguration();
+
         immutableBasicBeaconData = createImmutableBasicBeaconData();
     }
 
@@ -200,8 +203,7 @@ public class Beacon {
             return Long.toString(nextRandomPositiveLong(random));
         }
 
-        BeaconConfiguration beaconConfig = configuration.getBeaconConfiguration();
-        if (beaconConfig != null && beaconConfig.getDataCollectionLevel() == DataCollectionLevel.USER_BEHAVIOR) {
+        if (configuration.getPrivacyConfiguration().isDeviceIDSendingAllowed()) {
             // configuration is valid and user allows data tracking
             return truncate(configuration.getDeviceID());
         }
@@ -224,8 +226,8 @@ public class Beacon {
      * Create a unique identifier.
      *
      * <p>
-     * The identifier returned is only unique per Beacon.
-     * Calling this method on two different Beacon instances, might give the same result.
+     *     The identifier returned is only unique per Beacon.
+     *     Calling this method on two different Beacon instances, might give the same result.
      * </p>
      *
      * @return A unique identifier.
@@ -247,8 +249,8 @@ public class Beacon {
      * Create a unique sequence number.
      *
      * <p>
-     * The sequence number returned is only unique per Beacon.
-     * Calling this method on two different Beacon instances, might give the same result.
+     *     The sequence number returned is only unique per Beacon.
+     *     Calling this method on two different Beacon instances, might give the same result.
      * </p>
      *
      * @return A unique sequence number.
@@ -261,8 +263,8 @@ public class Beacon {
      * Create a web request tag.
      *
      * <p>
-     * Web request tags can be attached as HTTP header for web request tracing.
-     * If data collection level is 0 ({@link DataCollectionLevel#OFF}) an empty tag is returned.
+     *     Web request tags can be attached as HTTP header for web request tracing.
+     *     If {@link PrivacyConfiguration#isWebRequestTracingAllowed()} yields {@code false} an empty tag is returned.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} for which to create a web request tag
@@ -271,7 +273,7 @@ public class Beacon {
      * @return A web request tracer tag.
      */
     public String createTag(int parentActionID, int sequenceNo) {
-        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (!privacyConfiguration.isWebRequestTracingAllowed()) {
             return "";
         }
         return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
@@ -283,7 +285,7 @@ public class Beacon {
      * Add {@link BaseActionImpl} to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param action The action to add.
@@ -294,7 +296,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (!privacyConfiguration.isActionReportingAllowed()) {
             return;
         }
 
@@ -316,7 +318,7 @@ public class Beacon {
      * Add start session event to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      */
     public void startSession() {
@@ -340,7 +342,7 @@ public class Beacon {
      * Add {@link SessionImpl} to Beacon when session is ended.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param session The session to add.
@@ -351,7 +353,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (!privacyConfiguration.isSessionReportingAllowed()) {
             return;
         }
 
@@ -370,7 +372,7 @@ public class Beacon {
      * Add key-value-pair to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
@@ -383,7 +385,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (!privacyConfiguration.isValueReportingAllowed()) {
             return;
         }
 
@@ -399,7 +401,7 @@ public class Beacon {
      * Add key-value-pair to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
@@ -412,7 +414,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (!privacyConfiguration.isValueReportingAllowed()) {
             return;
         }
 
@@ -428,7 +430,7 @@ public class Beacon {
      * Add key-value-pair to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
@@ -441,7 +443,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (!privacyConfiguration.isValueReportingAllowed()) {
             return;
         }
 
@@ -459,7 +461,7 @@ public class Beacon {
      * Add event (aka. named event) to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this event was reported.
@@ -471,7 +473,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (!privacyConfiguration.isEventReportingAllowed()) {
             return;
         }
 
@@ -486,7 +488,7 @@ public class Beacon {
      * Add error to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this error was reported.
@@ -500,7 +502,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (!privacyConfiguration.isErrorReportingAllowed()) {
             return;
         }
 
@@ -522,7 +524,7 @@ public class Beacon {
      * Add crash to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param errorName Error's name.
@@ -535,7 +537,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getCrashReportingLevel() != CrashReportingLevel.OPT_IN_CRASHES) {
+        if (!privacyConfiguration.isCrashReportingAllowed()) {
             return;
         }
 
@@ -557,7 +559,7 @@ public class Beacon {
      * Add web request to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The id of the parent {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
@@ -568,7 +570,7 @@ public class Beacon {
         if (isCapturingDisabled()) {
             return;
         }
-        if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
+        if (!privacyConfiguration.isWebRequestTracingAllowed()) {
             return;
         }
 
@@ -593,7 +595,7 @@ public class Beacon {
      * Add user identification to Beacon.
      *
      * <p>
-     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param userTag User tag containing data to serialize.
@@ -604,7 +606,7 @@ public class Beacon {
             return;
         }
 
-        if (getBeaconConfiguration().getDataCollectionLevel() != DataCollectionLevel.USER_BEHAVIOR) {
+        if (!privacyConfiguration.isUserIdentificationAllowed()) {
             return;
         }
 
@@ -624,7 +626,7 @@ public class Beacon {
      * Send current state of Beacon.
      *
      * <p>
-     * This method tries to send all so far collected and serialized data.
+     *     This method tries to send all so far collected and serialized data.
      * </p>
      *
      * @param provider Provider for getting an {@link HTTPClient} required to send the data.
@@ -698,8 +700,7 @@ public class Beacon {
      * Gets all events.
      *
      * <p>
-     * This returns a shallow copy of events entries and is intended only
-     * for testing purposes.
+     *     This returns a shallow copy of events entries and is intended only for testing purposes.
      * </p>
      */
     String[] getEvents() {
@@ -710,8 +711,7 @@ public class Beacon {
      * Gets all actions.
      *
      * <p>
-     * This returns a shallow copy of all actions and is intended only
-     * for testing purposes.
+     *     This returns a shallow copy of all actions and is intended only for testing purposes.
      * </p>
      */
     String[] getActions() {
@@ -748,7 +748,7 @@ public class Beacon {
      * Clears all previously collected data for this Beacon.
      *
      * <p>
-     * This only affects the so far serialized data, which gets removed from the cache.
+     *     This only affects the so far serialized data, which gets removed from the cache.
      * </p>
      */
     public void clearData() {
@@ -822,9 +822,8 @@ public class Beacon {
                                                                                                   .getManufacturer());
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
 
-        BeaconConfiguration beaconConfig = beaconConfiguration.get();
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DATA_COLLECTION_LEVEL, beaconConfig.getDataCollectionLevel().getIntValue());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CRASH_REPORTING_LEVEL, beaconConfig.getCrashReportingLevel().getIntValue());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DATA_COLLECTION_LEVEL, privacyConfiguration.getDataCollectionLevel().getIntValue());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CRASH_REPORTING_LEVEL, privacyConfiguration.getCrashReportingLevel().getIntValue());
 
         return basicBeaconBuilder.toString();
     }
@@ -844,17 +843,18 @@ public class Beacon {
     /**
      * Get a session ID for the current data collection level
      *
-     * in case of level 2 ({@link DataCollectionLevel#USER_BEHAVIOR}) the value from the session id provider is used
-     * in case of level 1 ({@link DataCollectionLevel#PERFORMANCE}) or 0 ({@link DataCollectionLevel#OFF}) a random positive int value is used
+     * <p>
+     *     If session number reporting is allowed (see also {@link PrivacyConfiguration#isSessionNumberReportingAllowed()},
+     *     then the real session number is returned, otherwise {@code 1} is returned.
+     * </p>
      *
-     * @return Pre calculated session number or {@code 1} if data collection level is not equal to {@link DataCollectionLevel#USER_BEHAVIOR}.
+     * @return Pre calculated session number or {@code 1} if session number reporting is not allowed.
      */
     public int getSessionNumber() {
-        DataCollectionLevel dataCollectionLevel = getBeaconConfiguration().getDataCollectionLevel();
-        if (dataCollectionLevel == DataCollectionLevel.USER_BEHAVIOR) {
+        if (privacyConfiguration.isSessionNumberReportingAllowed()) {
             return sessionNumber;
         }
-        return 1;//the visitor/device id is already random, it is fine to use 1 here
+        return 1; //the visitor/device id is already random, it is fine to use 1 here
     }
 
     /**

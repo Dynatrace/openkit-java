@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
@@ -40,16 +39,6 @@ public class ConfigurationTest {
 
         // then
         assertThat(target.isCapture(), is(true));
-    }
-
-    @Test
-    public void aDefaultConstructedConfigurationIsUsingDefaultDataCollectionLevel() {
-        // given
-        TestConfiguration target = new TestConfiguration();
-
-        // then
-        assertThat(target.getBeaconConfiguration().getDataCollectionLevel(), is(BeaconConfiguration.DEFAULT_DATA_COLLECTION_LEVEL));
-        assertThat(target.getBeaconConfiguration().getCrashReportingLevel(), is(CrashReportingLevel.OPT_IN_CRASHES));
     }
 
     @Test
@@ -143,7 +132,8 @@ public class ConfigurationTest {
         // given
         BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
         BeaconConfiguration beaconConfiguration = mock(BeaconConfiguration.class);
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", "777", "", beaconCacheConfiguration, beaconConfiguration);
+        PrivacyConfiguration privacyConfiguration = mock(PrivacyConfiguration.class);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", "777", "", beaconCacheConfiguration, beaconConfiguration, privacyConfiguration);
 
         // when
         BeaconCacheConfiguration obtained = target.getBeaconCacheConfiguration();
@@ -157,7 +147,8 @@ public class ConfigurationTest {
         // given
         BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
         BeaconConfiguration beaconConfiguration = mock(BeaconConfiguration.class);
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", "777", "", beaconCacheConfiguration, beaconConfiguration);
+        PrivacyConfiguration privacyConfiguration = mock(PrivacyConfiguration.class);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", "777", "", beaconCacheConfiguration, beaconConfiguration, privacyConfiguration);
 
         //when
         BeaconConfiguration obtained = target.getBeaconConfiguration();
@@ -193,15 +184,16 @@ public class ConfigurationTest {
         private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL) {
             this(openKitType, applicationName, applicationID, deviceID, endpointURL,
                 new BeaconCacheConfiguration(-1, -1, -1),
-                new BeaconConfiguration());
+                new BeaconConfiguration(),
+                new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL, PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL));
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration, PrivacyConfiguration privacyConfiguration) {
             super(openKitType, applicationName, applicationID, deviceID, endpointURL,
                 new TestSessionIDProvider(), new SSLStrictTrustManager(),
                 new Device("", "", ""), "",
                 beaconCacheConfiguration,
-                beaconConfiguration);
+                beaconConfiguration, privacyConfiguration);
         }
     }
 }

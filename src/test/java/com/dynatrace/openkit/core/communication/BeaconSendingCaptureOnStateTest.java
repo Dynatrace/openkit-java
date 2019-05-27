@@ -16,8 +16,6 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
@@ -114,11 +112,10 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void newSessionRequestsAreMadeForAllNewSessions() {
-
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1);
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
@@ -140,24 +137,19 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockClient, times(2)).sendNewSessionRequest();
 
         // verify first has been updated, second decreased
-        verify(mockSession5New, times(1)).getBeaconConfiguration();
         verify(mockSession5New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
         assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(5)));
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getDataCollectionLevel(), is(equalTo(defaultConfiguration.getDataCollectionLevel())));
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getCrashReportingLevel(), is(equalTo(defaultConfiguration.getCrashReportingLevel())));
 
         // verify for beacon 6 only the number of tries was decreased
-        verify(mockSession6New, times(0)).getBeaconConfiguration();
         verify(mockSession6New, times(1)).decreaseNumNewSessionRequests();
     }
 
     @Test
     public void multiplicityIsSetToZeroIfNoFurtherNewSessionRequestsAreAllowed() {
-
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1);
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
@@ -179,27 +171,20 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockClient, times(0)).sendNewSessionRequest();
 
         // verify bot sessions are updated
-        verify(mockSession5New, times(1)).getBeaconConfiguration();
         verify(mockSession5New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
         assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(0)));
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getDataCollectionLevel(), is(equalTo(defaultConfiguration.getDataCollectionLevel())));
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getCrashReportingLevel(), is(equalTo(defaultConfiguration.getCrashReportingLevel())));
 
         // verify for beacon 6 only the number of tries was decreased
-        verify(mockSession6New, times(1)).getBeaconConfiguration();
         verify(mockSession6New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
         assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getMultiplicity(), is(equalTo(0)));
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getDataCollectionLevel(), is(equalTo(defaultConfiguration.getDataCollectionLevel())));
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getCrashReportingLevel(), is(equalTo(defaultConfiguration.getCrashReportingLevel())));
     }
 
     @Test
     public void newSessionRequestsAreAbortedWhenTooManyRequestsResponseIsReceived() {
-
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1);
 
         StatusResponse statusResponse = mock(StatusResponse.class);
         when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
@@ -241,7 +226,6 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void aBeaconSendingCaptureOnStateSendsFinishedSessions() {
-
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -267,7 +251,6 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void aBeaconSendingCaptureOnStateClearsFinishedSessionsIfSendingIsNotAllowed() {
-
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -289,7 +272,6 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void aBeaconSendingCaptureOnStateDoesNotRemoveFinishedSessionIfSendWasUnsuccessful() {
-
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -315,7 +297,6 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaconIsEmtpy() {
-
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -348,7 +329,6 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void sendingFinishedSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() {
-
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -418,7 +398,6 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void sendingOpenSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() {
-
         //given
         StatusResponse statusResponse = mock(StatusResponse.class);
         when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
@@ -451,11 +430,9 @@ public class BeaconSendingCaptureOnStateTest {
 
     @Test
     public void aBeaconSendingCaptureOnStateTransitionsToCaptureOffStateWhenCapturingGotDisabled() {
-
-        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
-
         //given
         when(mockContext.isCaptureOn()).thenReturn(false);
+        BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         // when calling execute
         target.execute(mockContext);

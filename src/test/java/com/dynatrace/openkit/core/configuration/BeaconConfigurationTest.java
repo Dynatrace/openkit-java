@@ -16,8 +16,6 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -27,88 +25,37 @@ import static org.junit.Assert.assertThat;
 public class BeaconConfigurationTest {
 
     @Test
-    public void getDataCollectionLevel() {
-
-        // then
-        assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF).getDataCollectionLevel(),
-            is(DataCollectionLevel.OFF));
-        assertThat(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF).getDataCollectionLevel(),
-            is(DataCollectionLevel.PERFORMANCE));
-        assertThat(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF).getDataCollectionLevel(),
-            is(DataCollectionLevel.USER_BEHAVIOR));
-    }
-
-    @Test
-    public void getCrashReportingLevel() {
-
-        // then
-        assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF).getCrashReportingLevel(),
-            is(CrashReportingLevel.OFF));
-        assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_OUT_CRASHES).getCrashReportingLevel(),
-            is(CrashReportingLevel.OPT_OUT_CRASHES));
-        assertThat(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES).getCrashReportingLevel(),
-            is(CrashReportingLevel.OPT_IN_CRASHES));
-    }
-
-    @Test
     public void getMultiplicityReturnsMultiplicitySetInConstructor() {
 
         // when multiplicity is positive, then
-        assertThat(new BeaconConfiguration(4,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .getMultiplicity(), is(equalTo(4)));
+        assertThat(new BeaconConfiguration(4).getMultiplicity(), is(equalTo(4)));
 
         // when multiplicity is zero, then
-        assertThat(new BeaconConfiguration(0,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .getMultiplicity(), is(equalTo(0)));
+        assertThat(new BeaconConfiguration(0).getMultiplicity(), is(equalTo(0)));
 
         // when multiplicity is negative, then
-        assertThat(new BeaconConfiguration(-3,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .getMultiplicity(), is(equalTo(-3)));
+        assertThat(new BeaconConfiguration(-3).getMultiplicity(), is(equalTo(-3)));
     }
 
     @Test
     public void capturingIsAllowedWhenMultiplicityIsGreaterThanZero() {
 
         // when, then
-        assertThat(new BeaconConfiguration(1,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .isCapturingAllowed(), is(true));
+        assertThat(new BeaconConfiguration(1).isCapturingAllowed(), is(true));
 
-        assertThat(new BeaconConfiguration(2,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .isCapturingAllowed(), is(true));
+        assertThat(new BeaconConfiguration(2).isCapturingAllowed(), is(true));
 
-        assertThat(new BeaconConfiguration(Integer.MAX_VALUE,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .isCapturingAllowed(), is(true));
+        assertThat(new BeaconConfiguration(Integer.MAX_VALUE).isCapturingAllowed(), is(true));
     }
 
     @Test
     public void capturingIsDisallowedWhenMultiplicityIsLessThanOrEqualToZero() {
 
         // when, then
-        assertThat(new BeaconConfiguration(0,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .isCapturingAllowed(), is(false));
+        assertThat(new BeaconConfiguration(0).isCapturingAllowed(), is(false));
 
-        assertThat(new BeaconConfiguration(-1,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .isCapturingAllowed(), is(false));
+        assertThat(new BeaconConfiguration(-1).isCapturingAllowed(), is(false));
 
-        assertThat(new BeaconConfiguration(Integer.MIN_VALUE,
-            DataCollectionLevel.OFF,
-            CrashReportingLevel.OFF)
-            .isCapturingAllowed(), is(false));
+        assertThat(new BeaconConfiguration(Integer.MIN_VALUE).isCapturingAllowed(), is(false));
     }
 }

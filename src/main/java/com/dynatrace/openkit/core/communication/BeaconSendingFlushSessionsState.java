@@ -43,10 +43,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         List<SessionWrapper> newSessions = context.getAllNewSessions();
         for (SessionWrapper newSession : newSessions) {
             // just turn on the multiplicity and send all remaining data
-            BeaconConfiguration currentConfiguration = newSession.getSession().getBeaconConfiguration();
-            newSession.updateBeaconConfiguration(new BeaconConfiguration(1,
-                currentConfiguration.getDataCollectionLevel(),
-                currentConfiguration.getCrashReportingLevel()));
+            newSession.updateBeaconConfiguration(new BeaconConfiguration(1));
         }
 
         // end open sessions -> will be flushed afterwards

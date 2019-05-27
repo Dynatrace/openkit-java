@@ -16,8 +16,6 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.CrashReportingLevel;
-import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -60,7 +58,7 @@ public class SessionWrapperTest {
 
         // given
         SessionWrapper target = new SessionWrapper(mockSessionImpl);
-        BeaconConfiguration newConfiguration = new BeaconConfiguration(42, DataCollectionLevel.OFF, CrashReportingLevel.OFF);
+        BeaconConfiguration newConfiguration = new BeaconConfiguration(42);
 
         // when updating
         target.updateBeaconConfiguration(newConfiguration);

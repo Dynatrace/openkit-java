@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.Device;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
@@ -90,19 +91,17 @@ public class BeaconTest {
         when(configuration.isCaptureErrors()).thenReturn(true);
         when(configuration.isCaptureCrashes()).thenReturn(true);
         when(configuration.getMaxBeaconSize()).thenReturn(30 * 1024); // 30kB
-        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
-        when(mockBeaconConfiguration.getMultiplicity()).thenReturn(1);
-        when(mockBeaconConfiguration.getDataCollectionLevel()).thenReturn(DataCollectionLevel.USER_BEHAVIOR);
-        when(mockBeaconConfiguration.getCrashReportingLevel()).thenReturn(CrashReportingLevel.OPT_IN_CRASHES);
-        when(mockBeaconConfiguration.isCapturingAllowed()).thenReturn(true);
-        when(configuration.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
 
         HTTPClientConfiguration mockHTTPClientConfiguration = mock(HTTPClientConfiguration.class);
         when(mockHTTPClientConfiguration.getServerID()).thenReturn(SERVER_ID);
         when(configuration.getHttpClientConfig()).thenReturn(mockHTTPClientConfiguration);
 
-        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES);
+        BeaconConfiguration beaconConfiguration = new BeaconConfiguration(1);
         when(configuration.getBeaconConfiguration()).thenReturn(beaconConfiguration);
+
+        PrivacyConfiguration privacyConfiguration = new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL,
+            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        when(configuration.getPrivacyConfiguration()).thenReturn(privacyConfiguration);
 
         threadIDProvider = mock(ThreadIDProvider.class);
         when(threadIDProvider.getThreadID()).thenReturn(THREAD_ID);
@@ -717,7 +716,7 @@ public class BeaconTest {
     public void noSessionIsAddedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
         SessionImpl session = mock(SessionImpl.class);
 
         // when
@@ -732,7 +731,7 @@ public class BeaconTest {
     public void noActionIsAddedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()). thenReturn(ACTION_ID);
 
@@ -748,7 +747,7 @@ public class BeaconTest {
     public void noIntValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         int intValue = 42;
 
@@ -763,7 +762,7 @@ public class BeaconTest {
     public void noDoubleValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         double doubleValue = Math.E;
 
@@ -778,7 +777,7 @@ public class BeaconTest {
     public void noStringValueIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         String stringValue = "Write once, debug everywhere";
 
@@ -793,7 +792,7 @@ public class BeaconTest {
     public void noEventIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         // when
         target.reportEvent(ACTION_ID, "Event name");
@@ -806,7 +805,7 @@ public class BeaconTest {
     public void noErrorIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         // when
         target.reportError(ACTION_ID, "Error name", 123, "The reason for this error");
@@ -819,7 +818,7 @@ public class BeaconTest {
     public void noCrashIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         // when
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
@@ -832,7 +831,7 @@ public class BeaconTest {
     public void noWebRequestIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
 
         // when
@@ -847,7 +846,7 @@ public class BeaconTest {
     public void noUserIdentificationIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         // when
         target.identifyUser("jane.doe@acme.com");
@@ -859,8 +858,8 @@ public class BeaconTest {
     @Test
     public void noWebRequestIsReportedForDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
         //when
         target.addWebRequest(ACTION_ID, mockWebRequestTracer);
@@ -874,8 +873,8 @@ public class BeaconTest {
     @Test
     public void webRequestIsReportedForDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
 
         //when
@@ -892,8 +891,8 @@ public class BeaconTest {
     @Test
     public void webRequestIsReportedForDataCollectionLevel2() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
 
         //when
@@ -910,8 +909,8 @@ public class BeaconTest {
     @Test
     public void beaconReturnsEmptyTagOnDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         String returnedTag = target.createTag(ACTION_ID, 1);
@@ -923,8 +922,8 @@ public class BeaconTest {
     @Test
     public void beaconReturnsValidTagOnDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
         String returnedTag = target.createTag(ACTION_ID, 1);
@@ -936,8 +935,8 @@ public class BeaconTest {
     @Test
     public void beaconReturnsValidTagOnDataCollectionLevel2() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
         String returnedTag = target.createTag(ACTION_ID, 1);
@@ -949,8 +948,8 @@ public class BeaconTest {
     @Test
     public void cannotIdentifyUserOnDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         target.identifyUser("jane@doe.com");
@@ -963,8 +962,8 @@ public class BeaconTest {
     @Test
     public void cannotIdentifyUserOnDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
         target.identifyUser("jane@doe.com");
@@ -977,8 +976,8 @@ public class BeaconTest {
     @Test
     public void canIdentifyUserOnDataCollectionLevel2() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
         target.identifyUser("jane@doe.com");
@@ -991,46 +990,44 @@ public class BeaconTest {
     @Test
     public void deviceIDIsRandomizedOnDataCollectionLevel0() {
         //given
-        Configuration mockConfiguration = mock(Configuration.class);
-        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
-        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
-        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationName()).thenReturn(APP_NAME);
+        when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
-        when(mockConfiguration.getDevice()).thenReturn(testDevice);
-        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        when(configuration.getDevice()).thenReturn(testDevice);
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
         target.getDeviceID();
 
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
-        verify(mockConfiguration, times(0)).getDeviceID();
+        verify(configuration, times(0)).getDeviceID();
         verify(mockRandom, times(1)).nextLong();
     }
 
     @Test
     public void deviceIDIsRandomizedOnDataCollectionLevel1() {
         //given
-        Configuration mockConfiguration = mock(Configuration.class);
-        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
-        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
-        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        when(configuration.getApplicationID()).thenReturn(APP_ID);
+        when(configuration.getApplicationName()).thenReturn(APP_NAME);
+        when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
-        when(mockConfiguration.getDevice()).thenReturn(testDevice);
-        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        when(configuration.getDevice()).thenReturn(testDevice);
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
         target.getDeviceID();
 
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
-        verify(mockConfiguration, times(0)).getDeviceID();
+        verify(configuration, times(0)).getDeviceID();
         verify(mockRandom, times(1)).nextLong();
     }
 
@@ -1038,23 +1035,20 @@ public class BeaconTest {
     public void givenDeviceIDIsUsedOnDataCollectionLevel2() {
         String TEST_DEVICE_ID = "1338";
         //given
-        Configuration mockConfiguration = mock(Configuration.class);
-        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
-        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
-        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
-        when(mockConfiguration.getDevice()).thenReturn(testDevice);
-        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
-        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        when(configuration.getDevice()).thenReturn(testDevice);
+        when(configuration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
         String deviceID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
-        verify(mockConfiguration, times(1)).getDeviceID();
+        verify(configuration, times(1)).getDeviceID();
         verifyNoMoreInteractions(mockRandom);
         assertThat(deviceID, is(equalTo(TEST_DEVICE_ID)));
     }
@@ -1063,18 +1057,15 @@ public class BeaconTest {
     public void randomDeviceIDCannotBeNegativeOnDataCollectionLevel0() {
         String TEST_DEVICE_ID = "1338";
         //given
-        Configuration mockConfiguration = mock(Configuration.class);
-        when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
-        when(mockConfiguration.getApplicationName()).thenReturn(APP_NAME);
-        when(mockConfiguration.getApplicationVersion()).thenReturn("v1");
+        when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
-        when(mockConfiguration.getDevice()).thenReturn(testDevice);
-        when(mockConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
-        when(mockConfiguration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
+        when(configuration.getDevice()).thenReturn(testDevice);
+        when(configuration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         when(mockRandom.nextLong()).thenReturn(-123456789L);
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
         long deviceID = Long.valueOf(target.getDeviceID());
@@ -1093,7 +1084,7 @@ public class BeaconTest {
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(configuration.getDevice()).thenReturn(testDevice);
         when(configuration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
-        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         Random mockRandom = mock(Random.class);
         when(mockRandom.nextLong()).thenReturn(-123456789L);
@@ -1110,7 +1101,6 @@ public class BeaconTest {
 
     @Test
     public void deviceIDIsTruncatedTo250Characters() {
-
         // given
         StringBuilder deviceIDBuilder = new StringBuilder();
 
@@ -1138,8 +1128,8 @@ public class BeaconTest {
     @Test
     public void sessionIDIsAlwaysValue1OnDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         int sessionNumber = target.getSessionNumber();
@@ -1151,8 +1141,8 @@ public class BeaconTest {
     @Test
     public void sessionIDIsAlwaysValue1OnDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
         int sessionNumber = target.getSessionNumber();
@@ -1169,7 +1159,7 @@ public class BeaconTest {
         Device testDevice = new Device("OS", "MAN", "MODEL");
         when(configuration.getDevice()).thenReturn(testDevice);
         when(configuration.createSessionNumber()).thenReturn(SESSION_ID);
-        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
 
@@ -1183,8 +1173,8 @@ public class BeaconTest {
     @Test
     public void reportCrashDoesNotReportOnCrashReportingLevel0() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
@@ -1197,8 +1187,8 @@ public class BeaconTest {
     @Test
     public void reportCrashDoesNotReportOnCrashReportingLevel1() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OPT_OUT_CRASHES));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_OUT_CRASHES));
 
         //when
         target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
@@ -1211,8 +1201,8 @@ public class BeaconTest {
     @Test
     public void reportCrashDoesReportOnCrashReportingLevel2() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
 
         //when
         target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
@@ -1225,8 +1215,8 @@ public class BeaconTest {
     @Test
     public void actionNotReportedForDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()). thenReturn(ACTION_ID);
 
@@ -1242,8 +1232,8 @@ public class BeaconTest {
     @Test
     public void actionReportedForDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()). thenReturn(ACTION_ID);
 
@@ -1259,8 +1249,8 @@ public class BeaconTest {
     @Test
     public void actionReportedForDataCollectionLevel2() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()). thenReturn(ACTION_ID);
 
@@ -1276,8 +1266,8 @@ public class BeaconTest {
     @Test
     public void sessionNotReportedForDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         SessionImpl mockSession = mock(SessionImpl.class);
 
         //when
@@ -1292,8 +1282,8 @@ public class BeaconTest {
     @Test
     public void sessionReportedForDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         SessionImpl mockSession = mock(SessionImpl.class);
 
         //when
@@ -1308,8 +1298,8 @@ public class BeaconTest {
     @Test
     public void sessionReportedForDataCollectionLevel2() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         SessionImpl mockSession = mock(SessionImpl.class);
 
         //when
@@ -1324,8 +1314,8 @@ public class BeaconTest {
     @Test
     public void errorNotReportedForDataCollectionLevel0() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         //when
         target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
@@ -1338,8 +1328,8 @@ public class BeaconTest {
     @Test
     public void errorReportedForDataCollectionLevel1() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         //when
         target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
@@ -1352,8 +1342,8 @@ public class BeaconTest {
     @Test
     public void errorReportedForDataCollectionLevel2() {
         //given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
         target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
@@ -1366,8 +1356,8 @@ public class BeaconTest {
     @Test
     public void IntValueIsNotReportedForDataCollectionLevel0() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", 123);
@@ -1379,8 +1369,8 @@ public class BeaconTest {
     @Test
     public void IntValueIsNotReportedForDataCollectionLevel1() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", 123);
@@ -1392,8 +1382,8 @@ public class BeaconTest {
     @Test
     public void IntValueIsReportedForDataCollectionLevel2() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", 123);
@@ -1405,8 +1395,8 @@ public class BeaconTest {
     @Test
     public void DoubleValueIsNotReportedForDataCollectionLevel0() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", 2.71);
@@ -1418,8 +1408,8 @@ public class BeaconTest {
     @Test
     public void DoubleValueIsNotReportedForDataCollectionLevel1() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", 2.71);
@@ -1431,8 +1421,8 @@ public class BeaconTest {
     @Test
     public void DoubleValueIsReportedForDataCollectionLevel2() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", 2.71);
@@ -1444,8 +1434,8 @@ public class BeaconTest {
     @Test
     public void StringValueIsNotReportedForDataCollectionLevel0() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", "test data");
@@ -1457,8 +1447,8 @@ public class BeaconTest {
     @Test
     public void StringValueIsNotReportedForDataCollectionLevel1() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", "test data");
@@ -1470,8 +1460,8 @@ public class BeaconTest {
     @Test
     public void StringValueIsReportedForDataCollectionLevel2() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         // when
         target.reportValue(ACTION_ID, "test value", "test data");
@@ -1483,8 +1473,8 @@ public class BeaconTest {
     @Test
     public void NamedEventIsNotReportedForDataCollectionLevel0() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OFF));
 
         // when
         target.reportEvent(ACTION_ID, "test event");
@@ -1496,8 +1486,8 @@ public class BeaconTest {
     @Test
     public void NamedEventIsNotReportedForDataCollectionLevel1() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
 
         // when
         target.reportEvent(ACTION_ID, "test event");
@@ -1509,8 +1499,8 @@ public class BeaconTest {
     @Test
     public void NamedEventIsReportedForDataCollectionLevel2() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         // when
         target.reportEvent(ACTION_ID, "test event");
@@ -1534,8 +1524,8 @@ public class BeaconTest {
     @Test
     public void sessionStartIsReportedForDataCollectionLevel0() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES));
 
         // when
         target.startSession();
@@ -1547,8 +1537,8 @@ public class BeaconTest {
     @Test
     public void sessionStartIsReportedForDataCollectionLevel1() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OPT_IN_CRASHES));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OPT_IN_CRASHES));
 
         // when
         target.startSession();
@@ -1560,8 +1550,8 @@ public class BeaconTest {
     @Test
     public void sessionStartIsReportedForDataCollectionLevel2() {
         // given
+        when(configuration.getPrivacyConfiguration()).thenReturn(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
 
         // when
         target.startSession();
@@ -1574,7 +1564,7 @@ public class BeaconTest {
     public void noSessionStartIsReportedIfBeaconConfigurationDisablesCapturing() {
         // given
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(0, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OPT_IN_CRASHES));
+        target.setBeaconConfiguration(new BeaconConfiguration(0));
 
         // when
         target.startSession();
