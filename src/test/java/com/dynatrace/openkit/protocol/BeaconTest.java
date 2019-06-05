@@ -473,7 +473,7 @@ public class BeaconTest {
         int bytesSent = 12321;
 
         // when
-        webRequest.start().setBytesSent(bytesSent).stop(); // stop will add the web request to the beacon
+        webRequest.start().setBytesSent(bytesSent).stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
@@ -491,7 +491,7 @@ public class BeaconTest {
         int bytesSent = 0;
 
         // when
-        webRequest.start().setBytesSent(bytesSent).stop(); // stop will add the web request to the beacon
+        webRequest.start().setBytesSent(bytesSent).stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
@@ -508,7 +508,7 @@ public class BeaconTest {
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
 
         // when
-        webRequest.start().setBytesSent(-5).stop(); // stop will add the web request to the beacon
+        webRequest.start().setBytesSent(-5).stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
@@ -524,7 +524,7 @@ public class BeaconTest {
         int bytesReceived = 12321;
 
         // when
-        webRequest.start().setBytesReceived(bytesReceived).stop(); // stop will add the web request to the beacon
+        webRequest.start().setBytesReceived(bytesReceived).stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
@@ -543,7 +543,7 @@ public class BeaconTest {
         int bytesReceived = 0;
 
         // when
-        webRequest.start().setBytesReceived(bytesReceived).stop(); // stop will add the web request to the beacon
+        webRequest.start().setBytesReceived(bytesReceived).stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
@@ -561,7 +561,7 @@ public class BeaconTest {
         WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(logger, parentOpenKitObject, beacon, testURL);
 
         // when
-        webRequest.start().setBytesReceived(-1).stop(); // stop will add the web request to the beacon
+        webRequest.start().setBytesReceived(-1).stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
@@ -581,13 +581,13 @@ public class BeaconTest {
         webRequest.start()
                   .setBytesSent(bytesSent)
                   .setBytesReceived(bytesReceived)
-                  .stop(); // stop will add the web request to the beacon
+                  .stop(-1); // stop will add the web request to the beacon
         String[] events = beacon.getEvents();
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs=" + String
-                .valueOf(bytesSent) + "&br=" + String.valueOf(bytesReceived)
+            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&bs="
+                    + bytesSent + "&br=" + bytesReceived
         })));
     }
 

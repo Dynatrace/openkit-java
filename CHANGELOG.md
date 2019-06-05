@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.0...HEAD)
 
+### Changed
+- Response code is now a parameter of WebRequestTracer's stop method.
+  Existing methods for stopping and setting the response code have been deprecated.
+
 ## 1.4.0 [Release date: 2018-12-19]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.0)
 

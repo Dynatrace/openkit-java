@@ -101,6 +101,10 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
         return tag;
     }
 
+    /**
+     * @deprecated see {@link WebRequestTracer#setResponseCode(int)}
+     */
+    @Deprecated
     @Override
     public WebRequestTracer setResponseCode(int responseCode) {
         synchronized (lockObject) {
@@ -145,15 +149,16 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
     }
 
     @Override
-    public void stop() {
+    public void stop(int responseCode) {
         if (logger.isDebugEnabled()) {
-            logger.debug(this + "stop()");
+            logger.debug(this + "stop(rc='" + responseCode + "')");
         }
         synchronized (lockObject) {
             if (isStopped()) {
                 // stop has been called previously
                 return;
             }
+            this.responseCode = responseCode;
             endSequenceNo = beacon.createSequenceNumber();
             endTime = beacon.getCurrentTimestamp();
         }
@@ -166,9 +171,18 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
         parent = null;
     }
 
+    /**
+     * @deprecated see {@link WebRequestTracer#stop()}
+     */
+    @Deprecated
+    @Override
+    public void stop() {
+        stop(responseCode);
+    }
+
     @Override
     public void close() {
-        stop();
+        stop(responseCode);
     }
 
     public String getURL() {

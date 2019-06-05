@@ -36,18 +36,21 @@ public interface WebRequestTracer extends Closeable {
      * Sets the response code of this web request. Has to be called before {@link WebRequestTracer#stop()}.
      *
      * @param responseCode response code of this web request
+     *
+     * @deprecated  use {@link #stop(int)} instead
      */
+    @Deprecated
     WebRequestTracer setResponseCode(int responseCode);
 
     /**
-     * Sets the amount of sent data of this web request. Has to be called before {@link WebRequestTracer#stop()}.
+     * Sets the amount of sent data of this web request. Has to be called before {@link WebRequestTracer#stop(int)}.
      *
      * @param bytesSent number of bytes
      */
     WebRequestTracer setBytesSent(int bytesSent);
 
     /**
-     * Sets the amount of received data of this web request. Has to be called before {@link WebRequestTracer#stop()}.
+     * Sets the amount of received data of this web request. Has to be called before {@link WebRequestTracer#stop(int)}.
      *
      * @param bytesReceived number of bytes
      */
@@ -60,6 +63,16 @@ public interface WebRequestTracer extends Closeable {
 
     /**
      * Stops the web request timing. Should be called when the web request is finished.
+     *
+     * @deprecated use {@link #stop(int)} instead
      */
+    @Deprecated
     void stop();
+
+    /**
+     * Stops the web request timing with the given response code. Should be called when the web request is finished.
+     *
+     * @param respondeCode response code of this web request
+     */
+    void stop(int respondeCode);
 }

@@ -121,6 +121,18 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
+    public void aWebRequestTracerIsStoppedWithResponceCodeAfterStopHasBeenCalled() {
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+
+        // when calling the stop method with response code
+        target.stop(200);
+
+        // then
+        assertThat(target.isStopped(), is(true));
+    }
+
+    @Test
     public void setResponseCodeSetsTheResponseCode() {
 
         // given
@@ -132,6 +144,18 @@ public class WebRequestTracerBaseImplTest {
         // then
         assertThat(target.getResponseCode(), is(418));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void stopWithResponseCodeSetsTheResponseCode() {
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+
+        // when setting response code via stop
+       target.stop(418);
+
+        // then
+        assertThat(target.getResponseCode(), is(418));
     }
 
     @Test
@@ -147,6 +171,21 @@ public class WebRequestTracerBaseImplTest {
         // then
         assertThat(target.getResponseCode(), is(-1));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void stopWithResponseCodeDoesNotSetTheResponseCodeIfStopped() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        target.stop(200);
+
+        // when setting stopping with response code
+        target.stop(404);
+
+
+        // then
+        assertThat(target.getResponseCode(), is(200));
     }
 
     @Test
@@ -179,6 +218,21 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
+    public void setBytesSentDoesNotSetAnythingIfStoppedWithResponseCode() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        target.stop(200);
+
+        // when setting the sent bytes
+        WebRequestTracer obtained = target.setBytesSent(1234);
+
+        // then
+        assertThat(target.getBytesSent(), is(-1));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
     public void setBytesReceivedSetsTheNumberOfReceivedBytes() {
 
         // given
@@ -198,6 +252,20 @@ public class WebRequestTracerBaseImplTest {
         // given
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
         target.stop();
+
+        // when setting the received bytes
+        WebRequestTracer obtained = target.setBytesReceived(4321);
+
+        // then
+        assertThat(target.getBytesReceived(), is(-1));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void setBytesReceivedDoesNotSetAnythingIfStoppedWithResponseCode() {
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        target.stop(200);
 
         // when setting the received bytes
         WebRequestTracer obtained = target.setBytesReceived(4321);
@@ -239,6 +307,22 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
+    public void startDoesNothingIfAlreadyStoppedWithResponseCode() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(123456789L);
+        target.stop(200);
+
+        // when starting web request tracing
+        WebRequestTracer obtained = target.start();
+
+        // then
+        assertThat(target.getStartTime(), is(0L));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
     public void stopCanOnlyBeExecutedOnce() {
 
         // given
@@ -262,8 +346,45 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
-    public void stopNotifiesParentAndDetachesFromParent() {
+    public void stopWithResponseCodeCanOnlyBeExecutedOnce() {
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
+        // when executed the first time
+        target.stop(200);
+
+        // then
+        assertThat(target.getEndSequenceNo(), is(42));
+        verify(mockBeacon, times(2)).createSequenceNumber();
+        verify(mockBeacon, times(1)).addWebRequest(0, target);
+
+        // and when executed the second time
+        target.stop(200);
+
+        // then
+        verify(mockBeacon, times(2)).createSequenceNumber();
+        verify(mockBeacon, times(1)).addWebRequest(0, target);
+    }
+
+    @Test
+    public void stopWithResponseCodeNotifiesParentAndDetachesFromParent() {
+
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        when(mockBeacon.createSequenceNumber()).thenReturn(42);
+
+        // when
+        target.stop(200);
+
+        // then
+        assertThat(target.getParent(), is(nullValue()));
+        verify(parentOpenKitObject, times(1)).onChildClosed(target);
+        verify(parentOpenKitObject, times(1)).getActionID();
+        verifyNoMoreInteractions(parentOpenKitObject);
+    }
+
+    @Test
+    public void stopNotifiesParentAndDetachesFromParent() {
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
@@ -275,6 +396,20 @@ public class WebRequestTracerBaseImplTest {
         verify(parentOpenKitObject, times(1)).onChildClosed(target);
         verify(parentOpenKitObject, times(1)).getActionID();
         verifyNoMoreInteractions(parentOpenKitObject);
+    }
+
+    @Test
+    public void stopUsesSetResponseCode() {
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+
+        // when setting response code and stopping
+        WebRequestTracer obtained = target.setResponseCode(418);
+        target.stop();
+
+        // then
+        assertThat(target.getResponseCode(), is(418));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
     @Test

@@ -19,6 +19,8 @@ package com.dynatrace.openkit.core.objects;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.WebRequestTracer;
 
+import java.net.HttpURLConnection;
+
 /**
  * This class is returned as WebRequestTracer by {@link Action#traceWebRequest(String)} or
  * {@link Action#traceWebRequest(java.net.URLConnection)} when the {@link Action#leaveAction()} ()}
@@ -31,6 +33,10 @@ public class NullWebRequestTracer implements WebRequestTracer {
         return "";
     }
 
+    /**
+     * @deprecated see {@link WebRequestTracer#setResponseCode(int)}
+     */
+    @Deprecated
     @Override
     public WebRequestTracer setResponseCode(int responseCode) {
         return this;
@@ -51,13 +57,22 @@ public class NullWebRequestTracer implements WebRequestTracer {
         return this;
     }
 
+    /**
+     * @deprecated see {@link WebRequestTracer#stop()}
+     */
+    @Deprecated
     @Override
     public void stop() {
         // intentionally left empty, due to NullObject pattern
     }
 
     @Override
+    public void stop(int respondeCode) {
+        // nothing, NullObject pattern
+    }
+
+    @Override
     public void close() {
-        stop();
+        // nothing, NullObject pattern
     }
 }

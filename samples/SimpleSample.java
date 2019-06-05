@@ -131,11 +131,8 @@ public class SimpleSample {
 
         // set bytesSent, bytesReceived and response code
         tracer.setBytesSent(payload != null ? payload.getBytes().length : 0)    // we assume default encoding here
-              .setBytesReceived(bytesReceived)                                  // bytes processed
-              .setResponseCode(urlConnection.getResponseCode());
-
-        // stop the tracer
-        tracer.stop();
+              .setBytesReceived(bytesReceived);                                 // bytes processed
+              .stop(urlConnection.getResponseCode());                           // stop the tracer
     }
 
     /**
