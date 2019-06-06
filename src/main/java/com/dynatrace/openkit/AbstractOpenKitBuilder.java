@@ -267,57 +267,188 @@ public abstract class AbstractOpenKitBuilder {
         return openKit;
     }
 
-    // ** internal getter **
+    /**
+     * Get a string identifying the OpenKit type that gets created by this builder.
+     *
+     * <p>
+     *     The only real purpose is for logging reasons.
+     * </p>
+     *
+     * @return Some identification string identifying the OpenKit's type.
+     */
+    public abstract String getOpenKitType();
 
-    String getApplicationVersion() {
+    /**
+     * Get the application id for which the OpenKit reports data.
+     *
+     * @return Application id for which data will be reported.
+     */
+    public abstract String getApplicationID();
+
+    /**
+     * Get the application name.
+     *
+     * <p>
+     *     It depends on the concrete builder whether the application name is configurable or not.
+     *     In any case the derived classes have to return a string that is neither {@code null} nor empty.
+     * </p>
+     *
+     * @return The application's name
+     */
+    public abstract String getApplicationName();
+
+    /**
+     * Get the default server ID to communicate with.
+     *
+     * <p>
+     *     This might change based on the OpenKit type.
+     * </p>
+     *
+     * @return Default server id to communicate with.
+     */
+    public abstract int getDefaultServerID();
+
+    /**
+     * Get the application version that has been set with {@link #withApplicationVersion(String)}.
+     *
+     * @return Previously set application version or {@link OpenKitConstants#DEFAULT_APPLICATION_VERSION} if none
+     *         has been set.
+     */
+    public String getApplicationVersion() {
         return applicationVersion;
     }
 
-    String getOperatingSystem() {
+    /**
+     * Get the operating system that has been set with {@link #withOperatingSystem(String)}.
+     *
+     * @return Previously set operating system or {@link OpenKitConstants#DEFAULT_OPERATING_SYSTEM} if none
+     *         has been set.
+     */
+    public String getOperatingSystem() {
         return operatingSystem;
     }
 
-    String getManufacturer() {
+    /**
+     * Get the manufacturer that has been set with {@link #withManufacturer(String)}.
+     *
+     * @return Previously set manufacturer or {@link OpenKitConstants#DEFAULT_MANUFACTURER} if none
+     *         has been set.
+     */
+    public String getManufacturer() {
         return manufacturer;
     }
 
-    String getModelID() {
+    /**
+     * Get the model identifier that has been set with {@link #withModelID(String)}.
+     *
+     * @return Previously set model ID or {@link OpenKitConstants#DEFAULT_MODEL_ID} if none
+     *         has been set.
+     */
+    public String getModelID() {
         return modelID;
     }
 
-    String getEndpointURL() {
+    /**
+     * Get the endpoint URL that has been set in the constructor.
+     *
+     * <p>
+     *     The endpoint URL is used to send beacon data to.
+     * </p>
+     *
+     * @return Endpoint URL that has been configured in constructor.
+     */
+    public String getEndpointURL() {
         return endpointURL;
     }
 
-    String getDeviceID() {
+    /**
+     * Get this device identifier that has been set in the constructor.
+     *
+     * <p>
+     *     The device identifier is a unique numeric value that identifies this device or installation.
+     *     The user of the OpenKit library is responsible for providing a unique value per device/installation,
+     *     which stays consistent per device/installation.
+     * </p>
+     *
+     * @return Device identifier set in the constructor.
+     */
+    public String getDeviceID() {
         return deviceID;
     }
 
-    SSLTrustManager getTrustManager() {
+    /**
+     * Get the SSL trust manager that has been set with {@link #withTrustManager(SSLTrustManager)}.
+     *
+     * <p>
+     *     {@link SSLTrustManager} implementation are responsible for checking the X509 certificate chain
+     *     and rejecting untrusted/invalid certificates.
+     *     The default implementation rejects every untrusted/invalid (including self-signed) certificate.
+     * </p>
+     *
+     * @return Previously set SSL trust manager or a default implementation.
+     */
+    public SSLTrustManager getTrustManager() {
         return trustManager;
     }
 
-    long getBeaconCacheMaxRecordAge() {
+    /**
+     * Get the maximum beacon cache record age that has been set with {@link #withBeaconCacheMaxRecordAge(long)}.
+     *
+     * @return Previously set maximum beacon cache record age or
+     *         {@link BeaconCacheConfiguration#DEFAULT_MAX_RECORD_AGE_IN_MILLIS} if none has been set.
+     */
+    public long getBeaconCacheMaxRecordAge() {
         return beaconCacheMaxRecordAge;
     }
 
-    long getBeaconCacheLowerMemoryBoundary() {
+    /**
+     * Get the beacon cache lower memory boundary that has been set with
+     * {@link #withBeaconCacheLowerMemoryBoundary(long)}.
+     *
+     * @return Previously set lower memory boundary or
+     *         {@link BeaconCacheConfiguration#DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES} if none has been set.
+     */
+    public long getBeaconCacheLowerMemoryBoundary() {
         return beaconCacheLowerMemoryBoundary;
     }
 
-    long getBeaconCacheUpperMemoryBoundary() {
+    /**
+     * Get the beacon cache upper memory boundary that has been set with
+     * {@link #withBeaconCacheUpperMemoryBoundary(long)}.
+     *
+     * @return Previously set upper memory boundary or
+     *         {@link BeaconCacheConfiguration#DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES} if none has been set.
+     */
+    public long getBeaconCacheUpperMemoryBoundary() {
         return beaconCacheUpperMemoryBoundary;
     }
 
-    DataCollectionLevel getDataCollectionLevel() {
+    /**
+     * Get data collection level that has been set with {@link #withDataCollectionLevel(DataCollectionLevel)}.
+     *
+     * @return Previously set data collection level or {@link PrivacyConfiguration#DEFAULT_DATA_COLLECTION_LEVEL}
+     *         if nothing has been set.
+     */
+    public DataCollectionLevel getDataCollectionLevel() {
         return dataCollectionLevel;
     }
 
-    CrashReportingLevel getCrashReportLevel() {
+    /**
+     * Get crash reporting level that has been set with {@link #withCrashReportingLevel(CrashReportingLevel)}.
+     *
+     * @return Previously set crash reporting level or {@link PrivacyConfiguration#DEFAULT_CRASH_REPORTING_LEVEL}
+     *         if nothing has been set.
+     */
+    public CrashReportingLevel getCrashReportLevel() {
         return crashReportLevel;
     }
 
-    Logger getLogger() {
+    /**
+     * Get {@link Logger} that has been set with {@link #withLogger(Logger)}.
+     *
+     * @return Previously set logger or {@link DefaultLogger} if none has been set.
+     */
+    public Logger getLogger() {
         if (logger != null) {
             return logger;
         }

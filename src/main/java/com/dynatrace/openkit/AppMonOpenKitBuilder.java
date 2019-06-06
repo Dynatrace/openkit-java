@@ -29,6 +29,16 @@ import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
  */
 public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
 
+    /**
+     * A string, identifying the type of OpenKit this builder is made for.
+     */
+    public static final String OPENKIT_TYPE = "AppMonOpenKit";
+
+    /**
+     * The default server ID to communicate with.
+     */
+    public static final int DEFAULT_SERVER_ID = 1;
+
     private final String applicationName;
 
     /**
@@ -81,5 +91,26 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
             beaconCacheConfiguration,
             beaconConfiguration,
             privacyConfiguration);
+    }
+
+    @Override
+    public String getOpenKitType() {
+        return OPENKIT_TYPE;
+    }
+
+    @Override
+    public String getApplicationID() {
+        // in AppMon application name and ID are the same
+        return getApplicationName();
+    }
+
+    @Override
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    @Override
+    public int getDefaultServerID() {
+        return DEFAULT_SERVER_ID;
     }
 }
