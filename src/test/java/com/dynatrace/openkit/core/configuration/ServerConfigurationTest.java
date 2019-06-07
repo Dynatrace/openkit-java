@@ -175,4 +175,142 @@ public class ServerConfigurationTest {
 
         verify(statusResponse, times(1)).getMultiplicity();
     }
+
+    @Test
+    public void sendingDataToTheServerIsAllowedIfCapturingIsEnabledAndMultiplicityIsGreaterThanZero() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(true);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingDataAllowed();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void sendingDataToTheServerIsNotAllowedIfCapturingIsDisabled() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(false);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingDataAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void sendingDataToTheServerIsNotAllowedIfCapturingIsEnabledButMultiplicityIsZero() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(true);
+        when(statusResponse.getMultiplicity()).thenReturn(0);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingDataAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void sendingCrashesToTheServerIsAllowedIfDataSendingIsAllowedAndCaptureCrashesIsEnabled() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(true);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        when(statusResponse.isCaptureCrashes()).thenReturn(true);
+
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingCrashesAllowed();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void sendingCrashesToTheServerIsNotAllowedIfDataSendingIsNotAllowed() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(false);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        when(statusResponse.isCaptureCrashes()).thenReturn(true);
+
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingCrashesAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void sendingCrashesToTheServerIsNotAllowedIfDataSendingIsAllowedButCaptureCrashesIsDisabled() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(true);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        when(statusResponse.isCaptureCrashes()).thenReturn(false);
+
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingCrashesAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void sendingErrorToTheServerIsAllowedIfDataSendingIsAllowedAndCaptureErrorIsEnabled() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(true);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        when(statusResponse.isCaptureErrors()).thenReturn(true);
+
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingErrorsAllowed();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void sendingErrorToTheServerIsNotAllowedIfDataSendingIsNotAllowed() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(false);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        when(statusResponse.isCaptureErrors()).thenReturn(true);
+
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingErrorsAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void sendingErrorsToTheServerIsNotAllowedIfDataSendingIsAllowedButCaptureErrorsDisabled() {
+        // given
+        when(statusResponse.isCapture()).thenReturn(true);
+        when(statusResponse.getMultiplicity()).thenReturn(1);
+        when(statusResponse.isCaptureErrors()).thenReturn(false);
+
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // when
+        boolean obtained = target.isSendingErrorsAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
 }

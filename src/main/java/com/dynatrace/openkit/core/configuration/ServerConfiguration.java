@@ -172,4 +172,52 @@ public class ServerConfiguration {
     public int getMultiplicity() {
         return multiplicity;
     }
+
+    /**
+     * Get a boolean indicating whether sending arbitrary data to the server is allowed or not.
+     *
+     * <p>
+     *     Sending data is only allowed if all of the following conditions evaluate to true.
+     *     * {@link #isCaptureEnabled()} is {@code true}
+     *     * {@link #getMultiplicity()} is greater than {@code 0}
+     *
+     *     To check if sending errors is allowed, use {@link #isSendingErrorsAllowed()}.
+     *     To check if sending crashes is allowed, use {@link #isSendingCrashesAllowed()}.
+     * </p>
+     *
+     * @return {@code true} if data sending is allowed, {@code false} otherwise.
+     */
+    public boolean isSendingDataAllowed() {
+        return isCaptureEnabled() && getMultiplicity() > 0;
+    }
+
+    /**
+     * Get a boolean indicating whether sending crashes to the server is allowed or not.
+     *
+     * <p>
+     *     Sending crashes is only allowed if all of the following conditions evaluate to true.
+     *     * {@link #isSendingDataAllowed()} yields {@code true}
+     *     * {@link #isCrashReportingEnabled()} is {@code true}
+     * </p>
+     *
+     * @return {@code true} if sending crashes is allowed, {@code false} otherwise.
+     */
+    public boolean isSendingCrashesAllowed() {
+        return isSendingDataAllowed() && isCrashReportingEnabled();
+    }
+
+    /**
+     * Get a boolean indicating whether sending errors to the server is allowed or not.
+     *
+     * <p>
+     *     Sending errors is only allowed if all of the following conditions evaluate to true.
+     *     * {@link #isSendingDataAllowed()} yields {@code true}
+     *     * {@link #isErrorReportingEnabled()} is {@code true}
+     * </p>
+     *
+     * @return {@code true} if sending errors is allowed, {@code false} otherwise.
+     */
+    public boolean isSendingErrorsAllowed() {
+        return isSendingDataAllowed() && isErrorReportingEnabled();
+    }
 }
