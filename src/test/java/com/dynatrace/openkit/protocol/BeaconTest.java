@@ -50,7 +50,7 @@ public class BeaconTest {
     private static final String APP_NAME = "appName";
     private static final int ACTION_ID = 17;
     private static final int SERVER_ID = 123;
-    private static final String DEVICE_ID = "456";
+    private static long DEVICE_ID = 456;
     private static final int THREAD_ID = 1234567;
 
     private Configuration configuration;
@@ -180,7 +180,7 @@ public class BeaconTest {
     @Test
     public void createWebRequestTagEncodesDeviceIDPropperly() {
         // given
-        when(configuration.getDeviceID()).thenReturn("device_id/");
+        when(configuration.getDeviceID()).thenReturn(-42L);
         final Beacon beacon = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
 
         // when
@@ -188,7 +188,7 @@ public class BeaconTest {
         String tag = beacon.createTag(ACTION_ID, sequenceNo);
 
         // then
-        assertThat(tag, is(equalTo("MT_3_" + SERVER_ID + "_device%5Fid%2F_0_" + APP_ID + "_" + ACTION_ID + "_" + THREAD_ID + "_" + sequenceNo)));
+        assertThat(tag, is(equalTo("MT_3_" + SERVER_ID + "_-42_0_" + APP_ID + "_" + ACTION_ID + "_" + THREAD_ID + "_" + sequenceNo)));
 
         // also ensure that the application ID is the encoded one
         verify(configuration, times(1)).getApplicationIDPercentEncoded();
@@ -244,7 +244,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=12&na=" + valueName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&vl=" + String.valueOf(value)
+            "et=12&na=" + valueName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&vl=" + value
         })));
     }
 
@@ -263,7 +263,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=13&na=" + valueName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&vl=" + String.valueOf(value)
+            "et=13&na=" + valueName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&vl=" + value
         })));
     }
 
@@ -529,8 +529,8 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String
-                .valueOf(bytesReceived)
+            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&br=" +
+                bytesReceived
         })));
     }
 
@@ -548,8 +548,8 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&br=" + String
-                .valueOf(bytesReceived)
+            "et=30&na=" + URLEncoder.encode(testURL, "UTF-8") + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&s1=2&t1=0&br=" +
+                bytesReceived
         })));
     }
 
@@ -1045,7 +1045,7 @@ public class BeaconTest {
 
     @Test
     public void givenDeviceIDIsUsedOnDataCollectionLevel2() {
-        String TEST_DEVICE_ID = "1338";
+        long TEST_DEVICE_ID = 1338;
         //given
         Configuration mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
@@ -1060,7 +1060,7 @@ public class BeaconTest {
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), mockConfiguration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
-        String deviceID = target.getDeviceID();
+        long deviceID = target.getDeviceID();
 
         //then verify that device id is taken from configuration
         verify(mockConfiguration, times(1)).getDeviceID();
@@ -1070,7 +1070,7 @@ public class BeaconTest {
 
     @Test
     public void randomDeviceIDCannotBeNegativeOnDataCollectionLevel0() {
-        String TEST_DEVICE_ID = "1338";
+        long TEST_DEVICE_ID = 1338;
         //given
         Configuration mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApplicationID()).thenReturn(APP_ID);
@@ -1096,7 +1096,7 @@ public class BeaconTest {
 
     @Test
     public void randomDeviceIDCannotBeNegativeOnDataCollectionLevel1() {
-        String TEST_DEVICE_ID = "1338";
+        long TEST_DEVICE_ID = 1338;
         //given
         when(configuration.getApplicationVersion()).thenReturn("v1");
         Device testDevice = new Device("OS", "MAN", "MODEL");
@@ -1115,33 +1115,6 @@ public class BeaconTest {
         verify(mockRandom, times(1)).nextLong();
         assertThat(deviceID, is(greaterThanOrEqualTo(0L)));
         assertThat(deviceID, is(equalTo(-123456789L & Long.MAX_VALUE)));
-    }
-
-    @Test
-    public void deviceIDIsTruncatedTo250Characters() {
-
-        // given
-        StringBuilder deviceIDBuilder = new StringBuilder();
-
-        // append 249 times the character 'a'
-        for (int i = 0; i < Beacon.MAX_NAME_LEN - 1; i++) {
-            deviceIDBuilder.append('a');
-        }
-        // append character 'b' and 'c'
-        deviceIDBuilder.append('b').append('c');
-
-        String deviceID = deviceIDBuilder.toString();
-
-        when(configuration.getDeviceID()).thenReturn(deviceID);
-
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-
-        // when
-        String obtained = target.getDeviceID();
-
-        // then
-        assertThat(obtained.length(), is(equalTo(Beacon.MAX_NAME_LEN)));
-        assertThat(obtained, is(equalTo(deviceID.substring(0, deviceID.length() - 1))));
     }
 
     @Test

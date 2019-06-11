@@ -67,8 +67,9 @@ public class OpenKitImpl implements OpenKit {
         }
         if (logger.isDebugEnabled()) {
             logger.debug(
-                getClass().getSimpleName() + " - applicationName=" + config.getApplicationName() + ", applicationID=" + config.getApplicationID()
-                            + ", deviceID=" + config.getDeviceID() + ", endpointURL=" + config.getEndpointURL());
+                getClass().getSimpleName() + " - applicationName=" + config.getApplicationName() + ", applicationID="
+                        + config.getApplicationID() + ", deviceID=" + config.getDeviceID() + ", origDeviceID="
+                        + config.getOrigDeviceID() + ", endpointURL=" + config.getEndpointURL());
         }
         configuration = config;
         this.logger = logger;

@@ -25,6 +25,7 @@ import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.util.DefaultLogger;
+import com.dynatrace.openkit.core.util.StringUtil;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 /**
@@ -34,7 +35,8 @@ public abstract class AbstractOpenKitBuilder {
 
     // immutable fields
     private final String endpointURL;
-    private final String deviceID;
+    private final long deviceID;
+    private final String origDeviceID;
 
     // mutable fields
     private Logger logger;
@@ -57,7 +59,7 @@ public abstract class AbstractOpenKitBuilder {
      * @param deviceID    unique device id
      */
     AbstractOpenKitBuilder(String endpointURL, long deviceID) {
-        this(endpointURL, Long.toString(deviceID));
+        this(endpointURL, deviceID, String.valueOf(deviceID));
     }
 
     /**
@@ -65,10 +67,31 @@ public abstract class AbstractOpenKitBuilder {
      *
      * @param endpointURL endpoint OpenKit connects to
      * @param deviceID    unique device id
+     *
+     * @deprecated  use {@link #AbstractOpenKitBuilder(String, long)} instead.
      */
+    @Deprecated
     AbstractOpenKitBuilder(String endpointURL, String deviceID) {
+        this(endpointURL, deviceIdFromString(deviceID), deviceID);
+    }
+
+    private AbstractOpenKitBuilder(String endpointURL, long deviceID, String origDeviceID) {
         this.endpointURL = endpointURL;
         this.deviceID = deviceID;
+        this.origDeviceID = origDeviceID;
+    }
+
+    protected static long deviceIdFromString(String deviceId) {
+        if (deviceId != null) {
+            deviceId = deviceId.trim();
+        }
+
+        try {
+            return Long.parseLong(deviceId);
+        } catch(NumberFormatException nex) {
+            // given ID is not a valid number, calculate a corresponding hash
+            return StringUtil.to64BitHash(deviceId);
+        }
     }
 
     // ** public methods **
@@ -283,8 +306,12 @@ public abstract class AbstractOpenKitBuilder {
         return endpointURL;
     }
 
-    String getDeviceID() {
+    long getDeviceID() {
         return deviceID;
+    }
+
+    String getOrigDeviceID() {
+        return origDeviceID;
     }
 
     SSLTrustManager getTrustManager() {

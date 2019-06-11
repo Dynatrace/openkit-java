@@ -112,7 +112,7 @@ public class Beacon {
     private final long sessionStartTime;
 
     // unique device identifier
-    private final String deviceID;
+    private final long deviceID;
 
     // client IP address
     private final String clientIPAddress;
@@ -199,20 +199,20 @@ public class Beacon {
      * @param configuration Configuration.
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
-    private static String createDeviceID(Random random, Configuration configuration) {
+    private static long createDeviceID(Random random, Configuration configuration) {
 
         if (configuration == null) {
-            return Long.toString(nextRandomPositiveLong(random));
+            return nextRandomPositiveLong(random);
         }
 
         BeaconConfiguration beaconConfig = configuration.getBeaconConfiguration();
         if (beaconConfig != null && beaconConfig.getDataCollectionLevel() == DataCollectionLevel.USER_BEHAVIOR) {
             // configuration is valid and user allows data tracking
-            return truncate(configuration.getDeviceID());
+            return configuration.getDeviceID();
         }
 
         // no user tracking allowed
-        return Long.toString(nextRandomPositiveLong(random));
+        return nextRandomPositiveLong(random);
     }
 
     /**
@@ -279,9 +279,9 @@ public class Beacon {
         if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
-        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
-            + "_" + sessionNumber + "_" + configuration.getApplicationIDPercentEncoded() + "_" + parentActionID + "_" + threadIDProvider
-            .getThreadID() + "_" + sequenceNo;
+        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_"
+                + getDeviceID() + "_" + sessionNumber + "_" + configuration.getApplicationIDPercentEncoded() + "_"
+                + parentActionID + "_" + threadIDProvider.getThreadID() + "_" + sequenceNo;
     }
 
     /**
@@ -840,9 +840,9 @@ public class Beacon {
      * in case of level 2 (USER_BEHAVIOR) the value from the configuration is used
      * in case of level 1 (PERFORMANCE) or 0 (OFF) a random number in the positive Long range is used
      *
-     * @return The device identifier, which is truncated to 250 characters if level 2 (USER_BEHAVIOR) is used.
+     * @return The device identifier
      */
-    public String getDeviceID() {
+    public long getDeviceID() {
         return deviceID;
     }
 

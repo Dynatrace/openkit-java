@@ -35,7 +35,7 @@ public class Configuration {
     /** Underscore is a reserved character in the server, therefore it also needs to be encoded */
     private static final char[] RESERVED_CHARACTERS = {'_'};
 
-    private static final boolean DEFAULT_CAPTURE = true;                           // default: capture on
+    private static final boolean DEFAULT_CAPTURE = true;                            // default: capture on
     private static final int DEFAULT_SEND_INTERVAL = 2 * 60 * 1000;                 // default: wait 2m (in ms) to send beacon
     private static final int DEFAULT_MAX_BEACON_SIZE = 30 * 1024;                   // default: max 30KB (in B) to send in one beacon
     private static final boolean DEFAULT_CAPTURE_ERRORS = true;                     // default: capture errors on
@@ -46,7 +46,8 @@ public class Configuration {
     private final String applicationID;
     private final String applicationIDPercentEncoded;
     private final OpenKitType openKitType;
-    private final String deviceID;
+    private final long deviceID;
+    private final String origDeviceID;
     private final String endpointURL;
 
     // mutable settings
@@ -56,7 +57,7 @@ public class Configuration {
     private final AtomicBoolean captureErrors;                   // capture errors on/off; can be written/read by different threads -> atomic
     private final AtomicBoolean captureCrashes;                  // capture crashes on/off; can be written/read by different threads -> atomic
     private HTTPClientConfiguration httpClientConfiguration;     // the current http client configuration
-    private final BeaconConfiguration beaconConfiguration;             // data collection levels
+    private final BeaconConfiguration beaconConfiguration;       // data collection levels
 
     // application and device settings
     private final String applicationVersion;
@@ -69,8 +70,9 @@ public class Configuration {
 
     // *** constructors ***
 
-    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL,
-                         SessionIDProvider sessionIDProvider, SSLTrustManager trustManager, Device device, String applicationVersion,
+    public Configuration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID,
+                         String origDeviceID, String endpointURL, SessionIDProvider sessionIDProvider,
+                         SSLTrustManager trustManager, Device device, String applicationVersion,
                          BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
 
         this.openKitType = openKitType;
@@ -80,6 +82,7 @@ public class Configuration {
         this.applicationID = applicationID;
         applicationIDPercentEncoded = PercentEncoder.encode(applicationID, ENCODING_CHARSET, RESERVED_CHARACTERS);
         this.deviceID = deviceID;
+        this.origDeviceID = origDeviceID;
         this.endpointURL = endpointURL;
 
         // mutable settings
@@ -186,8 +189,12 @@ public class Configuration {
         return applicationIDPercentEncoded;
     }
 
-    public String getDeviceID() {
+    public long getDeviceID() {
         return deviceID;
+    }
+
+    public String getOrigDeviceID() {
+        return origDeviceID;
     }
 
     public String getEndpointURL() {

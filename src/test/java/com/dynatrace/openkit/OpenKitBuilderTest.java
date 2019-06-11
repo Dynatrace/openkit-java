@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
 import com.dynatrace.openkit.core.util.DefaultLogger;
+import com.dynatrace.openkit.core.util.StringUtil;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class OpenKitBuilderTest {
 
         // then
         assertThat(obtained.getEndpointURL(), is(equalTo(ENDPOINT)));
-        assertThat(obtained.getDeviceID(), is(equalTo("1234")));
+        assertThat(obtained.getDeviceID(), is(equalTo(1234L)));
         assertThat(obtained.getApplicationName(), is(equalTo(APP_NAME)));
         assertThat(obtained.getApplicationID(), is(equalTo(APP_NAME)));
 
@@ -61,12 +62,43 @@ public class OpenKitBuilderTest {
 
     @Test
     public void appMonOpenKitBuilderTakesStringDeviceID() {
-
         // given
-        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, "stringDeviceID");
+        String deviceIdAsString = "stringDeviceID";
+        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, deviceIdAsString);
 
         // when, then
-        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo("stringDeviceID")));
+        long hashedDeviceId = StringUtil.to64BitHash(deviceIdAsString);
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(hashedDeviceId)));
+    }
+
+    @Test
+    public void appMonOpenKitBuilderTakesOverNumericDeviceIdString() {
+        // given
+        long deviceId = 42;
+        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, String.valueOf(deviceId));
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(deviceId)));
+    }
+
+    @Test
+    public void appMonOpenKitBuilderTrimsDeviceIdString() {
+        // given
+        String deviceIdString = " 42 ";
+        AbstractOpenKitBuilder target =  new AppMonOpenKitBuilder(ENDPOINT, APP_ID, deviceIdString);
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(42L)));
+    }
+
+    @Test
+    public void appMonOpenKitBuilderTakesNumericDeviceId() {
+        // given
+        long deviceId = 42;
+        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT, APP_NAME, deviceId);
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(deviceId)));
     }
 
     @Test
@@ -77,7 +109,7 @@ public class OpenKitBuilderTest {
 
         // then
         assertThat(obtained.getEndpointURL(), is(equalTo(ENDPOINT)));
-        assertThat(obtained.getDeviceID(), is(equalTo("1234")));
+        assertThat(obtained.getDeviceID(), is(equalTo(1234L)));
         assertThat(obtained.getApplicationName(), is(equalTo("")));
         assertThat(obtained.getApplicationID(), is(equalTo(APP_ID)));
 
@@ -87,12 +119,43 @@ public class OpenKitBuilderTest {
 
     @Test
     public void dynatraceOpenKitBuilderTakesStringDeviceID() {
-
         // given
-        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, "stringDeviceID");
+        String deviceIdAsString = "stringDeviceID";
+        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, deviceIdAsString);
 
         // when, then
-        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo("stringDeviceID")));
+        long hashedDeviceId = StringUtil.to64BitHash(deviceIdAsString);
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(hashedDeviceId)));
+    }
+
+    @Test
+    public void dynatraceOpenKitBuilderTakesOverNumericDeviceIdString() {
+        // given
+        long deviceId = 42;
+        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, String.valueOf(deviceId));
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(deviceId)));
+    }
+
+    @Test
+    public void dynatraceOpenKitBuilderTrimsDeviceIdString() {
+        // given
+        String deviceIdString = " 42 ";
+        AbstractOpenKitBuilder target =  new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, deviceIdString);
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(42L)));
+    }
+
+    @Test
+    public void dynatraceOpenKitBuilderTakesNumericDeviceId() {
+        // given
+        long deviceId = 42;
+        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT, APP_ID, deviceId);
+
+        // when, then
+        assertThat(target.buildConfiguration().getDeviceID(), is(equalTo(deviceId)));
     }
 
     private void verifyDefaultsAreSet(Configuration configuration) {

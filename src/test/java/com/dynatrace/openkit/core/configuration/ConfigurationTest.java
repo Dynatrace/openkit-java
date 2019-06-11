@@ -144,7 +144,7 @@ public class ConfigurationTest {
         // given
         BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
         BeaconConfiguration beaconConfiguration = mock(BeaconConfiguration.class);
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", "777", "", beaconCacheConfiguration, beaconConfiguration);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", 777, "", beaconCacheConfiguration, beaconConfiguration);
 
         // when
         BeaconCacheConfiguration obtained = target.getBeaconCacheConfiguration();
@@ -158,7 +158,7 @@ public class ConfigurationTest {
         // given
         BeaconCacheConfiguration beaconCacheConfiguration = mock(BeaconCacheConfiguration.class);
         BeaconConfiguration beaconConfiguration = mock(BeaconConfiguration.class);
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", "777", "", beaconCacheConfiguration, beaconConfiguration);
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "", 777, "", beaconCacheConfiguration, beaconConfiguration);
 
         //when
         BeaconConfiguration obtained = target.getBeaconConfiguration();
@@ -170,7 +170,7 @@ public class ConfigurationTest {
     @Test
     public void getApplicationID() {
         // given
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", "777", "");
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", 777, "");
 
         // then
         assertThat(target.getApplicationID(), is(equalTo("/App_ID%")));
@@ -179,7 +179,7 @@ public class ConfigurationTest {
     @Test
     public void getApplicationIDPercentEncodedDoesProperEncoding() {
         // given
-        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", "777", "");
+        TestConfiguration target = new TestConfiguration(OpenKitType.DYNATRACE, "", "/App_ID%", 777, "");
 
         // then
         assertThat(target.getApplicationIDPercentEncoded(), is(equalTo("%2FApp%5FID%25")));
@@ -188,17 +188,17 @@ public class ConfigurationTest {
     private final class TestConfiguration extends Configuration {
 
         private TestConfiguration() {
-            this(OpenKitType.DYNATRACE, "", "", "42", "");
+            this(OpenKitType.DYNATRACE, "", "", 42, "");
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL) {
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL) {
             this(openKitType, applicationName, applicationID, deviceID, endpointURL,
                 new BeaconCacheConfiguration(-1, -1, -1),
                 new BeaconConfiguration());
         }
 
-        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, String deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
-            super(openKitType, applicationName, applicationID, deviceID, endpointURL,
+        private TestConfiguration(OpenKitType openKitType, String applicationName, String applicationID, long deviceID, String endpointURL, BeaconCacheConfiguration beaconCacheConfiguration, BeaconConfiguration beaconConfiguration) {
+            super(openKitType, applicationName, applicationID, deviceID, String.valueOf(deviceID), endpointURL,
                 new TestSessionIDProvider(), new SSLStrictTrustManager(),
                 new Device("", "", ""), "",
                 beaconCacheConfiguration,

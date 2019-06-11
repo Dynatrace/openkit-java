@@ -38,21 +38,25 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
      * @param deviceID        unique device id
      */
     public AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID) {
-        this(endpointURL, applicationName, Long.toString(deviceID));
+        super(endpointURL, deviceID);
+        this.applicationName = applicationName;
     }
 
     /**
      * Creates a new instance of type AppMonOpenKitBuilder
      *
      * <p>
-     *     If the given {@code deviceID} is longer than 250 characters,
-     *     only the first 250 characters are used.
+     *     If the given {@code deviceID} does not correspond to a numeric value it will be hashed accordingly to a
+     *     64 bit number.
      * </p>
      *
      * @param endpointURL     endpoint OpenKit connects to
      * @param applicationName unique application id
      * @param deviceID        unique device id
+     *
+     * @deprecated use {@link #AppMonOpenKitBuilder(String, String, long)} instead
      */
+    @Deprecated
     public AppMonOpenKitBuilder(String endpointURL, String applicationName, String deviceID) {
         super(endpointURL, deviceID);
         this.applicationName = applicationName;
@@ -73,6 +77,7 @@ public class AppMonOpenKitBuilder extends AbstractOpenKitBuilder {
             applicationName,
             applicationName,
             getDeviceID(),
+            getOrigDeviceID(),
             getEndpointURL(),
             new DefaultSessionIDProvider(),
             getTrustManager(),

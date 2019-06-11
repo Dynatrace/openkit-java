@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 public class OpenKitImplTest {
 
     private static final String APP_ID = "appID";
-    private static final String DEVICE_ID = "deviceID";
+    private static final long DEVICE_ID = 1234;
     private static final String APP_NAME = "appName";
 
     private Logger logger;
