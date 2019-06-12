@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.1...release/1.4)
 
+### Changed
+- On OpenKitBuilder creation device ID is parsed from the given string. Non-numeric
+  device IDs are hashed to a corresponding numeric value. Internally a numeric
+  type is used for the device ID.
+
 ## 1.4.1 [Release date: 2018-03-04]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.1)
 
