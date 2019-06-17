@@ -296,8 +296,7 @@ while ((inputLine = in.readLine()) != null) {
 in.close();
 
 // stop web request tracing when done
-webRequestTracer.setResponseCode(200); // would use the HTTP response code normally.
-webRequestTracer.stop();
+webRequestTracer.stop(200);     // would use the HTTP response code normally.
 ```
 
 If a third party lib is used for HTTP requests, the developer has the possibility to use an overloaded
@@ -322,8 +321,7 @@ webRequestTracer.start();
 
 webRequestTracer.setBytesSent(12345);     // 12345 bytes sent
 webRequestTracer.setBytesReceived(67890); // 67890 bytes received
-webRequestTracer.setResponseCode(200);    // 200 was the response code
-webRequestTracer.stop();
+webRequestTracer.stop(200);               // 200 was the response code
 ```
 
 
