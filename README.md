@@ -39,6 +39,10 @@ This repository contains the reference implementation in pure Java. Other implem
 * Avoid usage of too much Java-specific APIs to allow rather easy porting to other languages
 * Design reentrant APIs and document them
 
+## General Remarks
+
+* All non binary files within the repository are formatted with unix style (LF) line endings.
+
 ## Prerequisites
 
 ### Running the OpenKit
