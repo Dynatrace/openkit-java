@@ -6,6 +6,10 @@
 - Response code is now a parameter of WebRequestTracer's stop method.
   Existing methods for stopping and setting the response code have been deprecated.
 
+### Improved
+- Fixed some javadoc/comments in the JSON parser
+- Adapt some JSON lexer unit tests to make them consistent with the test's name.
+
 ### Improvements
 - Reformatted text files to unix style line endings.
 

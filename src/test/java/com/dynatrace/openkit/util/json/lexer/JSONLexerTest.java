@@ -471,7 +471,7 @@ public class JSONLexerTest {
     @Test
     public void lexingNumberWithOnlyZerosInDecimalPartGivesAppropriateToken() throws LexerException {
         // given
-        JSONLexer target = new JSONLexer("-123.45");
+        JSONLexer target = new JSONLexer("123.00");
 
         // when
         JSONToken obtained = target.nextToken();
@@ -479,7 +479,7 @@ public class JSONLexerTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained.getTokenType(), is(equalTo(JSONToken.TokenType.VALUE_NUMBER)));
-        assertThat(obtained.getValue(), is(equalTo("-123.45")));
+        assertThat(obtained.getValue(), is(equalTo("123.00")));
     }
 
     @Test
@@ -649,7 +649,7 @@ public class JSONLexerTest {
     @Test
     public void lexingNumberWithFractionAndUpperExponentGivesAppropriateToken() throws LexerException {
         // given
-        JSONLexer target = new JSONLexer("1.25e-3");
+        JSONLexer target = new JSONLexer("1.25E-3");
 
         // when
         JSONToken obtained = target.nextToken();
@@ -657,7 +657,7 @@ public class JSONLexerTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained.getTokenType(), is(equalTo(JSONToken.TokenType.VALUE_NUMBER)));
-        assertThat(obtained.getValue(), is(equalTo("1.25e-3")));
+        assertThat(obtained.getValue(), is(equalTo("1.25E-3")));
     }
 
     @Test
@@ -797,7 +797,7 @@ public class JSONLexerTest {
     }
 
     @Test
-    public void lexingStringStringWithSurrogatePairGivesAppropriateToken() throws LexerException {
+    public void lexingStringWithSurrogatePairGivesAppropriateToken() throws LexerException {
         // given
         JSONLexer target = new JSONLexer("\"\\u0048\\u0065\\u006C\\u006C\\u006F\\u0020\\uD834\\uDD1E\\u0021\"");
 
@@ -811,7 +811,7 @@ public class JSONLexerTest {
     }
 
     @Test
-    public void lexingStringStringWithHighSurrogateOnlyThrowsAnException() throws LexerException {
+    public void lexingStringWithHighSurrogateOnlyThrowsAnException() throws LexerException {
         // given
         JSONLexer target = new JSONLexer("\"\\u0048\\u0065\\u006C\\u006C\\u006F\\u0020\\uD834\\u0021\"");
         expectedException.expect(LexerException.class);
@@ -822,7 +822,7 @@ public class JSONLexerTest {
     }
 
     @Test
-    public void lexingStringStringWithLowSurrogateOnlyThrowsAnException() throws LexerException {
+    public void lexingStringWithLowSurrogateOnlyThrowsAnException() throws LexerException {
         // given
         JSONLexer target = new JSONLexer("\"\\u0048\\u0065\\u006C\\u006C\\u006F\\u0020\\uDD1E\\u0021\"");
         expectedException.expect(LexerException.class);

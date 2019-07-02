@@ -198,7 +198,7 @@ public class JSONNumberValueTest {
 
     @Test
     public void fromNumberLiteralReturnsDoubleIfLiteralContainsFractionPart() {
-        // when constructed from positive integer literal
+        // when constructed from positive floating point literal
         JSONNumberValue obtained = JSONNumberValue.fromNumberLiteral("1.25");
 
         // then
@@ -209,7 +209,7 @@ public class JSONNumberValueTest {
 
     @Test
     public void fromNumberLiteralReturnsDoubleIfLiteralContainsExponentPart() {
-        // when constructed from positive integer literal
+        // when constructed from positive floating point literal
         JSONNumberValue obtained = JSONNumberValue.fromNumberLiteral("15E-1");
 
         // then

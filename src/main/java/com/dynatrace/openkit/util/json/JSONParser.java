@@ -125,7 +125,7 @@ public class JSONParser {
      *
      * @return Parsed JSON value object.
      *
-     * @throws LexerException If there is an error while during lexical analysis if the JSON string.
+     * @throws LexerException If there is an error during lexical analysis of the JSON string.
      */
     private JSONValue doParse() throws LexerException, ParserException {
         JSONToken token;
@@ -346,7 +346,7 @@ public class JSONParser {
 
         switch (token.getTokenType()) {
             case RIGHT_BRACE:
-                // object is cosed, right after it was started
+                // object is closed, right after it was started
                 closeCompositeJSONValueAndRestoreState();
                 break;
             case VALUE_STRING:

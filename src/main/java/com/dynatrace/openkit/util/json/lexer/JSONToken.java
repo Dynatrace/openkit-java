@@ -55,7 +55,7 @@ public final class JSONToken {
     static final JSONToken RIGHT_SQUARE_BRACKET_TOKEN = new JSONToken(TokenType.RIGHT_SQUARE_BRACKET);
     /** {@link JSONToken} to be used for comma */
     static final JSONToken COMMA_TOKEN = new JSONToken(TokenType.COMMA);
-    /** {@link JSONToken} to be used for comma */
+    /** {@link JSONToken} to be used for colon */
     static final JSONToken COLON_TOKEN = new JSONToken(TokenType.COLON);
 
     /** Type of this token */

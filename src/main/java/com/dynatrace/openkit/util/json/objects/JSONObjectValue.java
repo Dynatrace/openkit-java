@@ -77,7 +77,7 @@ public class JSONObjectValue extends JSONValue {
      * Returns {@code true} if and only if the given key is present in this JSON object.
      *
      * @param key The key to test whether it's present or not in this JSON object.
-     * @return {@code true} if the key is present in this JSON object, {@code false otherwise}.
+     * @return {@code true} if the key is present in this JSON object, {@code false} otherwise.
      */
     public boolean containsKey(String key) {
         return jsonObjectMap.containsKey(key);

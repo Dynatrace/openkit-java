@@ -232,7 +232,7 @@ public class JSONLexer implements Closeable {
     /**
      * Try to parse a null literal.
      *
-     * The definition of a boolean literal follows the specs from https://tools.ietf.org/html/rfc8259#section-3
+     * The definition of a null literal follows the specs from https://tools.ietf.org/html/rfc8259#section-3
      *
      * @return The parsed {@link JSONToken}
      *
@@ -409,14 +409,14 @@ public class JSONLexer implements Closeable {
         }
 
 
-        // 4 hex characters where parsed
+        // 4 hex characters were parsed
         reader.reset();
 
         return sb;
     }
 
     /**
-     * Try to parse the a number token.
+     * Try to parse a number token.
      *
      * @return Returns the parsed number token.
      *
