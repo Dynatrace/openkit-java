@@ -5,6 +5,7 @@
 ### Changed
 - Response code is now a parameter of WebRequestTracer's stop method.
   Existing methods for stopping and setting the response code have been deprecated.
+- Fix wrong value for Content-Length HTTP header that was added when sending beacon data.
 
 ### Improved
 - Fixed some javadoc/comments in the JSON parser

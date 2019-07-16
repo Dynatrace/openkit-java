@@ -38,9 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -279,6 +281,37 @@ public class HTTPClientTest {
         assertThat(gunzip(os.toByteArray()), is(data));
     }
 
+    @Test
+    public void sendBeaconRequestAndEnsureContentLengthIsLengthOfCompressedSize() throws IOException {
+        // given
+        byte[] uncompressedText = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut "
+            + "labore et dolore magna aliqua.").getBytes("UTF-8");
+        byte[] compressedText = gzip(uncompressedText);
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        when(connection.getOutputStream()).thenReturn(os);
+
+        // when
+        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", uncompressedText, "POST");
+
+        // then
+        // first ensure text length and compressed text length are not equal
+        assertThat(uncompressedText.length, is(not(equalTo(compressedText.length))));
+
+        // ensure that Content-Type and Content-Length were set
+        verify(connection, times(1)).setRequestProperty("Content-Encoding", "gzip");
+        verify(connection, times(1)).setRequestProperty("Content-Length", Integer.toString(compressedText.length));
+
+        // ensure that the message body is as expected
+        assertThat(os.toByteArray(), is(equalTo(compressedText)));
+        assertThat(response.isErroneousResponse(), is(false));
+    }
+
     /**
      * Local helper function to decompress a GZIP compressed byte array
      */
@@ -295,6 +328,16 @@ public class HTTPClientTest {
         gis.close();
         bis.close();
         return sb.toString();
+    }
+
+    private static byte[] gzip(byte[] uncompressed) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        GZIPOutputStream gos = new GZIPOutputStream(bos);
+        gos.write(uncompressed);
+        gos.close();
+        bos.close();
+
+        return bos.toByteArray();
     }
 
     @Test
