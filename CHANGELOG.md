@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.1.4...release/1.1)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.1.5...release/1.1)
+
+## 1.1.5 [Release date: 2019-07-17]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.1.5)
 
 ### Changed
 - Fix wrong value for Content-Length HTTP header that was added when sending beacon data.
