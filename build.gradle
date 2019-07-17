@@ -1,5 +1,5 @@
 group 'com.dynatrace.openkit'
-version '1.0.4-SNAPSHOT'
+version '1.0.4'
 
 apply plugin: 'java'
 
