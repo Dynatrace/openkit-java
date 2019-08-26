@@ -35,6 +35,10 @@ matrix:
       jdk: oraclejdk11
       env:
         - INCLUDE_IN_COVERAGE=false
+    - name: "Java 12 compatible"
+      jdk: openjdk12
+      env:
+        - INCLUDE_IN_COVERAGE=false
 
 install:
 - |
@@ -47,7 +51,7 @@ install:
   # next assemble
   ./gradlew assemble
 
-# Runs tests thatcheck the implementation (unit tests)
+# Runs tests that check the implementation (unit tests)
 script:
 - |
   # run tests

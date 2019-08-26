@@ -45,8 +45,9 @@ repositories {
 def jvmsToTest = System.getenv("JVMS_TO_TEST") ?: "JAVA_HOME"
 def isGradle5OrAbove = getGradleMajorVersion() >= 5
 
-sourceCompatibility = JavaVersion.VERSION_1_6
-targetCompatibility = JavaVersion.VERSION_1_6
+def minJavaCompatibilityVersion = getMinJavaCompatibilityVersion()
+sourceCompatibility = minJavaCompatibilityVersion
+targetCompatibility = minJavaCompatibilityVersion
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
@@ -184,4 +185,26 @@ def getGradleMajorVersion() {
     } else {
         return Integer.parseInt(gradle.gradleVersion)
     }
+}
+
+def getMinJavaCompatibilityVersion() {
+    def currentJavaVersion = JavaVersion.current()
+    switch (currentJavaVersion) {
+        case JavaVersion.VERSION_1_1:
+        case JavaVersion.VERSION_1_2:
+        case JavaVersion.VERSION_1_3:
+        case JavaVersion.VERSION_1_4:
+        case JavaVersion.VERSION_1_5:
+        case JavaVersion.VERSION_1_6:
+        case JavaVersion.VERSION_1_7:
+        case JavaVersion.VERSION_1_8:
+        case JavaVersion.VERSION_1_9:
+        case JavaVersion.VERSION_1_10:
+        case JavaVersion.VERSION_11:
+            return JavaVersion.VERSION_1_6
+        case JavaVersion.VERSION_12:
+            // JAVA 6 support was dropped in JDK 12 (see https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8206877)
+            return JavaVersion.VERSION_1_7
+    }
+    throw new IllegalStateException("Unhandled JAVA version " + currentJavaVersion)
 }
