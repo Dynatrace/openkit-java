@@ -6,6 +6,8 @@
 - Response code is now a parameter of WebRequestTracer's stop method.
   Existing methods for stopping and setting the response code have been deprecated.
 - Fix wrong value for Content-Length HTTP header that was added when sending beacon data.
+- Fix sending of session number in web request tracer tag to honor the data collection level.
+  The session number will only be sent with data collection level 'User Behavior'.
 
 ### Improved
 - Fixed some javadoc/comments in the JSON parser

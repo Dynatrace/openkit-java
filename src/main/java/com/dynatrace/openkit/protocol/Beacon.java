@@ -276,9 +276,15 @@ public class Beacon {
         if (!privacyConfiguration.isWebRequestTracingAllowed()) {
             return "";
         }
-        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
-            + "_" + sessionNumber + "_" + configuration.getApplicationIDPercentEncoded() + "_" + parentActionID + "_" + threadIDProvider
-            .getThreadID() + "_" + sequenceNo;
+        return TAG_PREFIX
+                + "_" + ProtocolConstants.PROTOCOL_VERSION
+                + "_" + httpConfiguration.getServerID()
+                + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
+                + "_" + getSessionNumber()
+                + "_" + configuration.getApplicationIDPercentEncoded()
+                + "_" + parentActionID
+                + "_" + threadIDProvider.getThreadID()
+                + "_" + sequenceNo;
     }
 
     /**
