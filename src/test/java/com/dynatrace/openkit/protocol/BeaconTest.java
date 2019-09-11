@@ -932,27 +932,52 @@ public class BeaconTest {
     @Test
     public void beaconReturnsValidTagOnDataCollectionLevel1() {
         //given
-        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        long deviceId = 37;
+        Random mockRandom = mock(Random.class);
+        when(mockRandom.nextLong()).thenReturn(deviceId);
+        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF));
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider, mockRandom);
 
         //when
         String returnedTag = target.createTag(ACTION_ID, 1);
 
         //then
-        assertThat(returnedTag.isEmpty(), is(false));
+        assertThat(returnedTag, is(
+            "MT" +                      // tag prefix
+            "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
+            "_" + SERVER_ID +           // server ID
+            "_" + deviceId +            // device ID
+            "_1" +                      // session number (must always 1 for data collection level performance)
+            "_" + APP_ID +              // application ID
+            "_" + ACTION_ID +           // parent action ID
+            "_" + THREAD_ID +           // thread ID
+            "_1"                        // sequence number
+        ));
     }
 
     @Test
     public void beaconReturnsValidTagOnDataCollectionLevel2() {
         //given
+        int sessionId = 73;
+        when(configuration.createSessionNumber()).thenReturn(sessionId);
+        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
         Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, "127.0.0.1", threadIDProvider, timingProvider);
-        target.setBeaconConfiguration(new BeaconConfiguration(1, DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF));
 
         //when
         String returnedTag = target.createTag(ACTION_ID, 1);
 
         //then
-        assertThat(returnedTag, not(isEmptyString()));
+        assertThat(returnedTag, is(
+            "MT" +                      // tag prefix
+            "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
+            "_" + SERVER_ID +           // server ID
+            "_" + DEVICE_ID +           // device ID
+            "_" + sessionId +           // session number
+            "_" + APP_ID +              // application ID
+            "_" + ACTION_ID +           // parent action ID
+            "_" + THREAD_ID +           // thread ID
+            "_1"                        // sequence number
+        ));
     }
 
     @Test

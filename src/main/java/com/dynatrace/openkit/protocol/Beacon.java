@@ -279,9 +279,15 @@ public class Beacon {
         if (getBeaconConfiguration().getDataCollectionLevel() == DataCollectionLevel.OFF) {
             return "";
         }
-        return TAG_PREFIX + "_" + ProtocolConstants.PROTOCOL_VERSION + "_" + httpConfiguration.getServerID() + "_"
-                + getDeviceID() + "_" + sessionNumber + "_" + configuration.getApplicationIDPercentEncoded() + "_"
-                + parentActionID + "_" + threadIDProvider.getThreadID() + "_" + sequenceNo;
+        return TAG_PREFIX
+                + "_" + ProtocolConstants.PROTOCOL_VERSION
+                + "_" + httpConfiguration.getServerID()
+                + "_" + getDeviceID()
+                + "_" + getSessionNumber()
+                + "_" + configuration.getApplicationIDPercentEncoded()
+                + "_" + parentActionID
+                + "_" + threadIDProvider.getThreadID()
+                + "_" + sequenceNo;
     }
 
     /**
