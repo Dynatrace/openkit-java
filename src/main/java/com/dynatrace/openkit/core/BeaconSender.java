@@ -18,7 +18,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
-import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -54,13 +54,13 @@ public class BeaconSender {
      * </p>
      *
      * @param logger Logger for logging messages
-     * @param configuration  OpenKit configuration.
+     * @param httpClientConfiguration  Initial HTTP client configuration.
      * @param clientProvider Used for retrieving an {@link com.dynatrace.openkit.protocol.HTTPClient} instance.
      * @param timingProvider Used for some timing related things.
      */
-    public BeaconSender(Logger logger, Configuration configuration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
+    public BeaconSender(Logger logger, HTTPClientConfiguration httpClientConfiguration, HTTPClientProvider clientProvider, TimingProvider timingProvider) {
         this.logger = logger;
-        context = new BeaconSendingContext(logger, configuration, clientProvider, timingProvider);
+        this.context = new BeaconSendingContext(logger, httpClientConfiguration, clientProvider, timingProvider);
     }
 
     /**
@@ -149,33 +149,25 @@ public class BeaconSender {
     }
 
     /**
-     * When starting a new Session, put it into open Sessions.
-     * <p>
-     *     A session is only put into the open Sessions if capturing is enabled.
-     *     In case capturing is disabled, this method has no effect.
-     * </p>
-     *
-     * @param session Session to start.
+     * Returns the current server ID to be used for creating new sessions
      */
-    public void startSession(SessionImpl session) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " startSession()");
-        }
-        context.startSession(session);
+    public int getCurrentServerId() {
+        return context.getCurrentServerId();
     }
 
     /**
-     * When finishing a Session, remove it from open Sessions and put it into finished Sessions.
+     * Adds the given session to the known sessions of this {@link BeaconSender}.
+     *
      * <p>
-     *     As soon as a session get's finished it will be transferred to the server.
+     *     This method should be called when creating a new session.
      * </p>
      *
-     * @param session Session to finish.
+     * @param session the session to start.
      */
-    public void finishSession(SessionImpl session) {
+    public void addSession(SessionImpl session) {
         if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " finishSession()");
+            logger.debug(getClass().getSimpleName() + " addSession()");
         }
-        context.finishSession(session);
+        context.addSession(session);
     }
 }

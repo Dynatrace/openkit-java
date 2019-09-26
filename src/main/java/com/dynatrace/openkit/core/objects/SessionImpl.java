@@ -20,8 +20,7 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
-import com.dynatrace.openkit.core.BeaconSender;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -35,38 +34,32 @@ import java.util.List;
  */
 public class SessionImpl extends OpenKitComposite implements Session {
 
+    /**
+     * The maximum number of "new session requests" to send per session.
+     */
+    public static final int MAX_NEW_SESSION_REQUESTS = 4;
+
     /** {@link Logger} for tracing log message */
     private final Logger logger;
-
-    /** object for synchronization */
-    private final Object lockObject = new Object();
 
     /** Parent object of this {@link Session} */
     private OpenKitComposite parent;
 
-    /** Root action returned in case of misconfiguration */
-    private static final RootAction NULL_ROOT_ACTION = new NullRootAction();
-    /** Web request tracer returned in case of misconfiguration */
-    private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
-
-    /** end time of this {@link Session} */
-    private long endTime = -1L;
-
-    /** boolean indicating whether this session has been ended or not */
-    private boolean isSessionEnded;
-
-    // BeaconSender and Beacon reference
-    private final BeaconSender beaconSender;
+    /** Beacon reference */
     private final Beacon beacon;
 
-    SessionImpl(Logger logger, OpenKitComposite parent, BeaconSender beaconSender, Beacon beacon) {
+    /** current state of the session (also used for synchronization  */
+    private final SessionStateImpl state;
+
+    /** the number of tries for new session requests */
+    private int numRemainingNewSessionRequests = MAX_NEW_SESSION_REQUESTS;
+
+    SessionImpl(Logger logger, OpenKitComposite parent, Beacon beacon) {
+        this.state = new SessionStateImpl(this);
         this.logger = logger;
         this.parent = parent;
-        this.beaconSender = beaconSender;
         this.beacon = beacon;
-        this.isSessionEnded = false;
 
-        beaconSender.startSession(this);
         beacon.startSession();
     }
 
@@ -79,20 +72,20 @@ public class SessionImpl extends OpenKitComposite implements Session {
     public RootAction enterAction(String actionName) {
         if (actionName == null || actionName.isEmpty()) {
             logger.warning(this + "enterAction: actionName must not be null or empty");
-            return NULL_ROOT_ACTION;
+            return NullRootAction.INSTANCE;
         }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "enterAction(" + actionName + ")");
         }
-        synchronized (lockObject) {
-            if (!isSessionEnded()) {
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
                 RootActionImpl result = new RootActionImpl(logger, this, actionName, beacon);
                 storeChildInList(result);
                 return result;
             }
         }
 
-        return NULL_ROOT_ACTION;
+        return NullRootAction.INSTANCE;
     }
 
     @Override
@@ -104,8 +97,8 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "identifyUser(" + userTag + ")");
         }
-        synchronized (lockObject) {
-            if (!isSessionEnded()) {
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
                 beacon.identifyUser(userTag);
             }
         }
@@ -120,8 +113,8 @@ public class SessionImpl extends OpenKitComposite implements Session {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "reportCrash(" + errorName + ", " + reason + ", " + stacktrace + ")");
         }
-        synchronized (lockObject) {
-            if (!isSessionEnded()) {
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
                 beacon.reportCrash(errorName, reason, stacktrace);
             }
         }
@@ -131,44 +124,44 @@ public class SessionImpl extends OpenKitComposite implements Session {
     public WebRequestTracer traceWebRequest(URLConnection connection) {
         if (connection == null) {
             logger.warning(this + "traceWebRequest (URLConnection): connection must not be null");
-            return NULL_WEB_REQUEST_TRACER;
+            return NullWebRequestTracer.INSTANCE;
         }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
         }
-        synchronized (lockObject) {
-            if (!isSessionEnded()) {
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
                 WebRequestTracerBaseImpl webRequestTracer = new WebRequestTracerURLConnection(logger, this, beacon, connection);
                 storeChildInList(webRequestTracer);
                 return webRequestTracer;
             }
         }
 
-        return NULL_WEB_REQUEST_TRACER;
+        return NullWebRequestTracer.INSTANCE;
     }
 
     @Override
     public WebRequestTracer traceWebRequest(String url) {
         if (url == null || url.isEmpty()) {
             logger.warning(this + "traceWebRequest (String): url must not be null or empty");
-            return NULL_WEB_REQUEST_TRACER;
+            return NullWebRequestTracer.INSTANCE;
         }
         if (!WebRequestTracerStringURL.isValidURLScheme(url)) {
             logger.warning(this + "traceWebRequest (String): url \"" + url + "\" does not have a valid scheme");
-            return NULL_WEB_REQUEST_TRACER;
+            return NullWebRequestTracer.INSTANCE;
         }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
         }
-        synchronized (lockObject) {
-            if (!isSessionEnded()) {
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
                 WebRequestTracerBaseImpl webRequestTracer = new WebRequestTracerStringURL(logger, this, beacon, url);
                 storeChildInList(webRequestTracer);
                 return webRequestTracer;
             }
         }
 
-        return NULL_WEB_REQUEST_TRACER;
+        return NullWebRequestTracer.INSTANCE;
     }
 
     @Override
@@ -177,13 +170,8 @@ public class SessionImpl extends OpenKitComposite implements Session {
             logger.debug(this + "end()");
         }
 
-        synchronized (lockObject) {
-            // check if end() was already called before by looking at endTime
-            if (isSessionEnded()) {
-                return;
-            }
-
-            isSessionEnded = true;
+        if (!state.markAsIsFinishing()) {
+            return; // end() was already called before
         }
 
         // forcefully leave all child elements
@@ -199,31 +187,25 @@ public class SessionImpl extends OpenKitComposite implements Session {
             }
         }
 
-        // set end time after child objects have been ended
-        endTime = beacon.getCurrentTimestamp();
-
         // create end session data on beacon
-        beacon.endSession(this);
+        beacon.endSession();
 
-        // finish session and stop managing it
-        beaconSender.finishSession(this);
+        state.markAsFinished();
 
         // last but not least update parent relation
         parent.onChildClosed(this);
         parent = null;
     }
 
-    // *** public methods ***
-
-    // sends the current Beacon state
+    /**
+     * Sends the current beacon state.
+     *
+     * @param clientProvider Provider class providing the client for data transmission.
+     *
+     * @return Response from client.
+     */
     public StatusResponse sendBeacon(HTTPClientProvider clientProvider) {
         return beacon.send(clientProvider);
-    }
-
-    // *** getter methods ***
-
-    public long getEndTime() {
-        return endTime;
     }
 
     /**
@@ -251,41 +233,133 @@ public class SessionImpl extends OpenKitComposite implements Session {
     }
 
     /**
-     * Test if the session has already been ended.
-     *
-     * <p>
-     * A session is considered as ended, if the endTime is set to something other than minus 1.
-     * </p>
-     *
-     * @return {@code true} if the session has been ended already, {@code false} if the session is not ended yet.
+     * Update the {@link Beacon} with the given {@link ServerConfiguration}
      */
-    boolean isSessionEnded() {
-        return isSessionEnded;
+    public void updateServerConfiguration(ServerConfiguration serverConfiguration) {
+        beacon.updateServerConfiguration(serverConfiguration);
     }
 
-    /**
-     * Set the {@link BeaconConfiguration}
-     */
-    public void setBeaconConfiguration(BeaconConfiguration beaconConfiguration) {
-        beacon.setBeaconConfiguration(beaconConfiguration);
-    }
-
-    /**
-     * Get the {@link BeaconConfiguration}
-     */
-    public BeaconConfiguration getBeaconConfiguration() {
-        return beacon.getBeaconConfiguration();
+    public SessionState getState() {
+        return state;
     }
 
     @Override
     void onChildClosed(OpenKitObject childObject) {
-        synchronized (lockObject) {
+        synchronized (state) {
             removeChildFromList(childObject);
         }
+    }
+
+    /**
+     * Indicates whether sending data for this session is allowed or not.
+     */
+    public boolean isDataSendingAllowed() {
+        return state.isConfigured() && beacon.isCaptureEnabled();
+    }
+
+    /**
+     * Enables capturing for this session.
+     *
+     * <p>
+     *     Will implicitly also set the {@link #getState() session state} to {@link SessionState#isConfigured() configured}.
+     * </p>
+     */
+    public void enableCapture() {
+        beacon.enableCapture();
+    }
+
+    /**
+     * Disables capturing for this session.
+     *
+     * <p>
+     *     Will implicitly also set the {@link #getState() session state} to {@link SessionState#isConfigured() configured}.
+     * </p>
+     */
+    public void disableCapture() {
+        beacon.disableCapture();
+    }
+
+    /**
+     * Indicates whether new session requests can be sent or not.
+     *
+     * <p>
+     *     This is directly related to {@link #decreaseNumRemainingSessionRequests()}.
+     * </p>
+     */
+    public boolean canSendNewSessionRequest() {
+        return numRemainingNewSessionRequests > 0;
+    }
+
+    /**
+     * Decreases the number of remaining new session requests.
+     *
+     * <p>
+     *     In case no more new session requests remain, {@link #canSendNewSessionRequest()} will return {@code false}
+     * </p>
+     */
+    public void decreaseNumRemainingSessionRequests() {
+        numRemainingNewSessionRequests--;
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + "] ";
+    }
+
+    /**
+     * Implements the internal state of the {@link Session}
+     */
+    private static class SessionStateImpl implements SessionState {
+
+        private final SessionImpl session;
+        private boolean isFinishing = false;
+        private boolean isFinished = false;
+
+        private SessionStateImpl(SessionImpl session) {
+            this.session = session;
+        }
+
+        @Override
+        public synchronized boolean isNew() {
+            return !session.beacon.isServerConfigurationSet() && !isFinishingOrFinished();
+        }
+
+        @Override
+        public synchronized boolean isConfigured() {
+            return session.beacon.isServerConfigurationSet();
+        }
+
+        @Override
+        public synchronized boolean isConfiguredAndFinished() {
+            return isConfigured() && isFinished;
+        }
+
+        @Override
+        public synchronized boolean isConfiguredAndOpen() {
+            return isConfigured() && !isFinished;
+        }
+
+        @Override
+        public synchronized boolean isFinished() {
+            return isFinished;
+        }
+
+
+        private synchronized boolean isFinishingOrFinished() {
+            return isFinishing || isFinished;
+        }
+
+        private synchronized  boolean markAsIsFinishing() {
+            if (isFinishingOrFinished()) {
+                return false;
+            }
+
+            isFinishing = true;
+            return true;
+        }
+
+        private synchronized void markAsFinished() {
+            isFinished = true;
+        }
     }
 }

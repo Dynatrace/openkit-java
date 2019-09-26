@@ -16,21 +16,12 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import java.util.concurrent.TimeUnit;
+import com.dynatrace.openkit.AbstractOpenKitBuilder;
 
 /**
  * Configuration for beacon cache.
  */
 public class BeaconCacheConfiguration {
-
-    /**
-     * The default {@link BeaconCacheConfiguration} when user does not override it.
-     *
-     * Default settings allow beacons which are max 2 hours old and unbounded memory limits.
-     */
-    public static final long DEFAULT_MAX_RECORD_AGE_IN_MILLIS = TimeUnit.MINUTES.toMillis(105); // 1hour and 45 minutes
-    public static final long DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES = 100 * 1024 * 1024;                // 100 MiB
-    public static final long DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES = 80 * 1024 * 1024;                 // 80 MiB
 
     private final long maxRecordAge;
     private final long cacheSizeLowerBound;
@@ -39,14 +30,25 @@ public class BeaconCacheConfiguration {
     /**
      * Constructor
      *
-     * @param maxRecordAge Maximum record age
-     * @param cacheSizeLowerBound lower memory limit for cache
-     * @param cacheSizeUpperBound upper memory limit for cache
+     * @param builder OpenKit builder storing all necessary configuration information.
      */
-    public BeaconCacheConfiguration(long maxRecordAge, long cacheSizeLowerBound, long cacheSizeUpperBound) {
-        this.maxRecordAge = maxRecordAge;
-        this.cacheSizeLowerBound = cacheSizeLowerBound;
-        this.cacheSizeUpperBound = cacheSizeUpperBound;
+    private BeaconCacheConfiguration(AbstractOpenKitBuilder builder) {
+        this.maxRecordAge = builder.getBeaconCacheMaxRecordAge();
+        this.cacheSizeLowerBound = builder.getBeaconCacheLowerMemoryBoundary();
+        this.cacheSizeUpperBound = builder.getBeaconCacheUpperMemoryBoundary();
+    }
+
+    /**
+     * Create a {@link BeaconCacheConfiguration} from given {@link AbstractOpenKitBuilder}.
+     *
+     * @param builder The OpenKit builder for which to create a {@link BeaconCacheConfiguration}.
+     * @return Newly created {@link BeaconCacheConfiguration} or {@code null} if given argument is {@code null}
+     */
+    public static BeaconCacheConfiguration from(AbstractOpenKitBuilder builder) {
+        if (builder == null) {
+            return null;
+        }
+        return new BeaconCacheConfiguration(builder);
     }
 
     /**

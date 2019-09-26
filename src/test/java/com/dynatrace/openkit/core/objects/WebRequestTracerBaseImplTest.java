@@ -48,6 +48,8 @@ public class WebRequestTracerBaseImplTest {
     @Before
     public void setUp() {
         logger = mock(Logger.class);
+        when(logger.isDebugEnabled()).thenReturn(true);
+
         mockBeacon = mock(Beacon.class);
         parentOpenKitObject = mock(OpenKitComposite.class);
         when(parentOpenKitObject.getActionID()).thenReturn(0);

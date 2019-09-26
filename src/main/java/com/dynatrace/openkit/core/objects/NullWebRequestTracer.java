@@ -19,14 +19,17 @@ package com.dynatrace.openkit.core.objects;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.WebRequestTracer;
 
-import java.net.HttpURLConnection;
-
 /**
- * This class is returned as WebRequestTracer by {@link Action#traceWebRequest(String)} or
+ * This implementation of {@link WebRequestTracer} is returned by {@link Action#traceWebRequest(String)} or
  * {@link Action#traceWebRequest(java.net.URLConnection)} when the {@link Action#leaveAction()} ()}
  * has been called before.
  */
-public class NullWebRequestTracer implements WebRequestTracer {
+public enum NullWebRequestTracer implements WebRequestTracer {
+
+    /**
+     * The sole {@link NullWebRequestTracer} instance
+     */
+    INSTANCE;
 
     @Override
     public String getTag() {

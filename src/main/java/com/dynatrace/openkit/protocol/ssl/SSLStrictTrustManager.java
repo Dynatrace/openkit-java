@@ -30,8 +30,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Implementation of {@link SSLTrustManager} trusting only valid certificates.
  * <p>
- * <p>
- * This is the default strategy in SSL certificate validation and should NOT be changed.
+ *     This is the default strategy in SSL certificate validation and should NOT be changed.
  * </p>
  */
 public class SSLStrictTrustManager implements SSLTrustManager {

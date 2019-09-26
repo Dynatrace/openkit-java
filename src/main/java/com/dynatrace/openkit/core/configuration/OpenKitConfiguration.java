@@ -17,6 +17,8 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.core.util.PercentEncoder;
 
 /**
  * Configuration class storing all configuration parameters that have been configured via
@@ -24,6 +26,15 @@ import com.dynatrace.openkit.AbstractOpenKitBuilder;
  */
 public class OpenKitConfiguration {
 
+    /** Character set used to encode application & device ID */
+    private static final String ENCODING_CHARSET = "UTF-8";
+    /** Underscore is a reserved character in the server, therefore it also needs to be encoded */
+    private static final char[] RESERVED_CHARACTERS = {'_'};
+
+    /** The endpoint URL to send data to. */
+    private final String endpointURL;
+    /** Unique device/installation identifier */
+    private final String deviceID;
     /**
      * OpenKit's type string
      *
@@ -34,6 +45,8 @@ public class OpenKitConfiguration {
     private final String openKitType;
     /** Application identifier for which to report data */
     private final String applicationID;
+    /** Percent encoded {@link #applicationID} */
+    private final String percentEncodedApplicationID;
     /** Application's name */
     private final String applicationName;
     /** Application's version */
@@ -46,18 +59,35 @@ public class OpenKitConfiguration {
     private final String modelID;
     /** Default server id to communicate with */
     private final int defaultServerID;
+    /** SSL trust manager configured in OpenKit builder */
+    private final SSLTrustManager sslTrustManager;
 
+    /**
+     * Initialize this configuration.
+     *
+     * @param builder The OpenKit builder storing all configuration relevant data.
+     */
     private OpenKitConfiguration(AbstractOpenKitBuilder builder) {
+        endpointURL = builder.getEndpointURL();
+        deviceID = builder.getDeviceID();
         openKitType = builder.getOpenKitType();
         applicationID = builder.getApplicationID();
+        percentEncodedApplicationID = PercentEncoder.encode(applicationID, ENCODING_CHARSET, RESERVED_CHARACTERS);
         applicationName = builder.getApplicationName();
         applicationVersion = builder.getApplicationVersion();
         operatingSystem = builder.getOperatingSystem();
         manufacturer = builder.getManufacturer();
         modelID = builder.getModelID();
         defaultServerID = builder.getDefaultServerID();
+        sslTrustManager = builder.getTrustManager();
     }
 
+    /**
+     * Create a {@link OpenKitConfiguration} from given {@link AbstractOpenKitBuilder}.
+     *
+     * @param builder The OpenKit builder for which to create a {@link PrivacyConfiguration}.
+     * @return Newly created {@link PrivacyConfiguration} or {@code null} if given argument is {@code null}
+     */
     public static OpenKitConfiguration from(AbstractOpenKitBuilder builder) {
         if (builder == null) {
             return null;
@@ -65,35 +95,111 @@ public class OpenKitConfiguration {
         return new OpenKitConfiguration(builder);
     }
 
+    /**
+     * Get the Beacon endpoint URL to communicate with.
+     *
+     * @return Beacon endpoint URL
+     */
+    public String getEndpointURL() {
+        return endpointURL;
+    }
+
+    /**
+     * Get the unique device identifier.
+     *
+     * @return Unique device identifier.
+     */
+    public String getDeviceID() {
+        return deviceID;
+    }
+
+    /**
+     * Get the OpenKit type.
+     *
+     * @return OpenKit type.
+     */
     public String getOpenKitType() {
         return openKitType;
     }
 
+    /**
+     * Get application identifier.
+     *
+     * @return Custom application identifier.
+     */
     public String getApplicationID() {
         return applicationID;
     }
 
+    /**
+     * Get percent encoded application identifier.
+     *
+     * @return Custom application identifier, percent encoded.
+     */
+    public String getPercentEncodedApplicationID() {
+        return percentEncodedApplicationID;
+    }
+
+    /**
+     * Get application name.
+     *
+     * @return Custom application name.
+     */
     public String getApplicationName() {
         return applicationName;
     }
 
+    /**
+     * Get application version.
+     *
+     * @return Application version.
+     */
     public String getApplicationVersion() {
         return applicationVersion;
     }
 
+    /**
+     * Get device operating system.
+     *
+     * @return Device's operating system.
+     */
     public String getOperatingSystem() {
         return operatingSystem;
     }
 
+    /**
+     * Get device manufacturer.
+     *
+     * @return Device's manufacturer
+     */
     public String getManufacturer() {
         return manufacturer;
     }
 
+    /**
+     * Get device model identifier.
+     *
+     * @return Device's model identifier.
+     */
     public String getModelID() {
         return modelID;
     }
 
+    /**
+     * Get default Dynatrace/AppMon server id to communicate with.
+     *
+     * @return Default Dynatrace/AppMon server id.
+     */
     public int getDefaultServerID() {
         return defaultServerID;
+    }
+
+    /**
+     * Get {@link SSLTrustManager}.
+     *
+     * @return {@link SSLTrustManager}.
+     */
+    public SSLTrustManager getSSLTrustManager() {
+        return sslTrustManager;
     }
 }

@@ -313,4 +313,222 @@ public class ServerConfigurationTest {
         // then
         assertThat(obtained, is(false));
     }
+
+    @Test
+    public void mergeTakesOverEnabledCapture() {
+        // given
+        ServerConfiguration target = new ServerConfiguration.Builder().withCapture(false).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withCapture(true).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isCaptureEnabled(), is(true));
+    }
+
+    @Test
+    public void mergeTakesOverDisabledCapture() {
+        // given
+        ServerConfiguration target = new ServerConfiguration.Builder().withCapture(true).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withCapture(false).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isCaptureEnabled(), is(false));
+    }
+
+    @Test
+    public void mergeTakesOverEnabledCrashReporting() {
+        // given
+        ServerConfiguration target = new ServerConfiguration.Builder().withCrashReporting(false).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withCrashReporting(true).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isCrashReportingEnabled(), is(true));
+    }
+
+    @Test
+    public void mergeTakesOverDisabledCrashReporting() {
+        // given
+        ServerConfiguration target = new ServerConfiguration.Builder().withCrashReporting(true).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withCrashReporting(false).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isCrashReportingEnabled(), is(false));
+    }
+
+    @Test
+    public void mergeTakesOverEnabledErrorReporting() {
+        // given
+        ServerConfiguration target = new ServerConfiguration.Builder().withErrorReporting(false).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withErrorReporting(true).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isErrorReportingEnabled(), is(true));
+    }
+
+    @Test
+    public void mergeTakesOverDisabledErrorReporting() {
+        // given
+        ServerConfiguration target = new ServerConfiguration.Builder().withErrorReporting(true).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withErrorReporting(false).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isErrorReportingEnabled(), is(false));
+    }
+
+    @Test
+    public void mergeTakesOverSendInterval() {
+        // given
+        int sendInterval = 73;
+        ServerConfiguration target = new ServerConfiguration.Builder().withSendIntervalInMilliseconds(37).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withSendIntervalInMilliseconds(sendInterval).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.getSendIntervalInMilliseconds(), is(sendInterval));
+    }
+
+    @Test
+    public void mergeTakesOverBeaconSize() {
+        // given
+        int beaconSize = 73;
+        ServerConfiguration target = new ServerConfiguration.Builder().withBeaconSizeInBytes(37).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withBeaconSizeInBytes(beaconSize).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.getBeaconSizeInBytes(), is(beaconSize));
+    }
+
+    @Test
+    public void mergeIgnoresMultiplicity() {
+        // given
+        int multiplicity = 73;
+        ServerConfiguration target = new ServerConfiguration.Builder().withMultiplicity(multiplicity).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withMultiplicity(37).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.getMultiplicity(), is(multiplicity));
+    }
+
+    @Test
+    public void mergeIgnoresServerId() {
+        // given
+        int serverId = 73;
+        ServerConfiguration target = new ServerConfiguration.Builder().withServerID(serverId).build();
+        ServerConfiguration other = new ServerConfiguration.Builder().withServerID(37).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.getServerID(), is(serverId));
+    }
+
+    @Test
+    public void buildPropagatesCaptureEnabledToInstance() {
+        // given
+        boolean capture = !ServerConfiguration.DEFAULT_CAPTURE_ENABLED;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withCapture(capture).build();
+
+        // then
+        assertThat(obtained.isCaptureEnabled(), is(capture));
+    }
+
+    @Test
+    public void buildPropagatesCrashReportingEnabledToInstance() {
+        // given
+        boolean crashReporting = !ServerConfiguration.DEFAULT_CRASH_REPORTING_ENABLED;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withCrashReporting(crashReporting).build();
+
+        // then
+        assertThat(obtained.isCrashReportingEnabled(), is(crashReporting));
+    }
+
+    @Test
+    public void buildPropagatesErrorReportingEnabledToInstance() {
+        // given
+        boolean errorReporting = !ServerConfiguration.DEFAULT_ERROR_REPORTING_ENABLED;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withErrorReporting(errorReporting).build();
+
+        // then
+        assertThat(obtained.isErrorReportingEnabled(), is(errorReporting));
+    }
+
+    @Test
+    public void buildPropagatesSendIntervalToInstance() {
+        // given
+        int sendInterval = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withSendIntervalInMilliseconds(sendInterval).build();
+
+        // then
+        assertThat(obtained.getSendIntervalInMilliseconds(), is(sendInterval));
+    }
+
+    @Test
+    public void buildPropagatesServerIdToInstance() {
+        // given
+        int serverId = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withServerID(serverId).build();
+
+        // then
+        assertThat(obtained.getServerID(), is(serverId));
+    }
+
+    @Test
+    public void buildPropagatesBeaconSizeToInstance() {
+        // given
+        int beaconSize = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withBeaconSizeInBytes(beaconSize).build();
+
+        // then
+        assertThat(obtained.getBeaconSizeInBytes(), is(beaconSize));
+    }
+
+    @Test
+    public void buildPropagatesMultiplicityToInstance() {
+        // given
+        int multiplicity = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder().withMultiplicity(multiplicity).build();
+
+        // then
+        assertThat(obtained.getMultiplicity(), is(multiplicity));
+    }
 }

@@ -128,7 +128,7 @@ class BeaconSendingInitState extends AbstractBeaconSendingState {
                 sleepTime = statusResponse.getRetryAfterInMilliseconds();
 
                 // also temporarily disable capturing to avoid further server overloading
-                context.disableCapture();
+                context.disableCaptureAndClear();
             }
 
             // status request needs to be sent again after some delay

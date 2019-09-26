@@ -71,7 +71,7 @@ class BeaconSendingCaptureOffState extends AbstractBeaconSendingState {
     void doExecute(BeaconSendingContext context) throws InterruptedException {
 
         // disable capturing - avoid collecting further data
-        context.disableCapture();
+        context.disableCaptureAndClear();
 
         long currentTime = context.getCurrentTimestamp();
 

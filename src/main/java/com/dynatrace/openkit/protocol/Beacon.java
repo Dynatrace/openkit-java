@@ -17,24 +17,24 @@
 package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The Beacon class holds all the beacon data and the beacon protocol implementation.
@@ -118,21 +118,12 @@ public class Beacon {
     // basic beacon data which does not change over time
     private final String immutableBasicBeaconData;
 
-    // AbstractConfiguration reference
-    private final Configuration configuration;
-
-    // HTTPClientConfiguration reference
-    private final HTTPClientConfiguration httpConfiguration;
+    // Configuration object required for this Beacon
+    private final BeaconConfiguration configuration;
 
     private final Logger logger;
 
-    private final BeaconCacheImpl beaconCache;
-
-    private final AtomicReference<BeaconConfiguration> beaconConfiguration;
-
-    private final PrivacyConfiguration privacyConfiguration;
-
-    // *** constructors ***
+    private final BeaconCache beaconCache;
 
     /**
      * Constructor.
@@ -141,11 +132,18 @@ public class Beacon {
      * @param beaconCache Cache storing beacon related data.
      * @param configuration OpenKit related configuration.
      * @param clientIPAddress The client's IP address.
+     * @param sessionIDProvider Provider for retrieving a unique session number.
      * @param threadIDProvider Provider for retrieving thread id.
      * @param timingProvider Provider for time related methods.
      */
-    public Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider) {
-        this(logger, beaconCache, configuration, clientIPAddress, threadIDProvider, timingProvider, new Random());
+    public Beacon(Logger logger,
+                  BeaconCache beaconCache,
+                  BeaconConfiguration configuration,
+                  String clientIPAddress,
+                  SessionIDProvider sessionIDProvider,
+                  ThreadIDProvider threadIDProvider,
+                  TimingProvider timingProvider) {
+        this(logger, beaconCache, configuration, clientIPAddress, sessionIDProvider, threadIDProvider, timingProvider, new Random());
     }
 
     /**
@@ -155,14 +153,23 @@ public class Beacon {
      * @param beaconCache Cache storing beacon related data.
      * @param configuration OpenKit related configuration.
      * @param clientIPAddress The client's IP address.
+     * @param sessionIDProvider Provider for retrieving a unique session number.
      * @param threadIDProvider Provider for retrieving thread id.
      * @param timingProvider Provider for time related methods.
      * @param random Random that can be mocked for tests
      */
-    Beacon(Logger logger, BeaconCacheImpl beaconCache, Configuration configuration, String clientIPAddress, ThreadIDProvider threadIDProvider, TimingProvider timingProvider, Random random) {
+    Beacon(Logger logger,
+           BeaconCache beaconCache,
+           BeaconConfiguration configuration,
+           String clientIPAddress,
+           SessionIDProvider sessionIDProvider,
+           ThreadIDProvider threadIDProvider,
+           TimingProvider timingProvider,
+           Random random) {
+
         this.logger = logger;
         this.beaconCache = beaconCache;
-        this.sessionNumber = configuration.createSessionNumber();
+        this.sessionNumber = sessionIDProvider.getNextSessionID();
         this.timingProvider = timingProvider;
 
         this.configuration = configuration;
@@ -175,17 +182,10 @@ public class Beacon {
             this.clientIPAddress = clientIPAddress;
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warning(getClass().getSimpleName() + " Client IP address validation failed: " + clientIPAddress);
+                logger.warning(getClass().getSimpleName() + ": Client IP address validation failed: " + clientIPAddress);
             }
             this.clientIPAddress = "";
         }
-
-        // store the current configuration
-        this.httpConfiguration = configuration.getHttpClientConfig();
-
-        beaconConfiguration = new AtomicReference<BeaconConfiguration>(configuration.getBeaconConfiguration());
-
-        privacyConfiguration = configuration.getPrivacyConfiguration();
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
     }
@@ -197,15 +197,11 @@ public class Beacon {
      * @param configuration Configuration.
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
-    private static String createDeviceID(Random random, Configuration configuration) {
-
-        if (configuration == null) {
-            return Long.toString(nextRandomPositiveLong(random));
-        }
+    private static String createDeviceID(Random random, BeaconConfiguration configuration) {
 
         if (configuration.getPrivacyConfiguration().isDeviceIDSendingAllowed()) {
             // configuration is valid and user allows data tracking
-            return truncate(configuration.getDeviceID());
+            return truncate(configuration.getOpenKitConfiguration().getDeviceID());
         }
 
         // no user tracking allowed
@@ -273,15 +269,16 @@ public class Beacon {
      * @return A web request tracer tag.
      */
     public String createTag(int parentActionID, int sequenceNo) {
-        if (!privacyConfiguration.isWebRequestTracingAllowed()) {
+        if (!configuration.getPrivacyConfiguration().isWebRequestTracingAllowed()) {
             return "";
         }
+        int serverId = configuration.getHTTPClientConfiguration().getServerID();
         return TAG_PREFIX
                 + "_" + ProtocolConstants.PROTOCOL_VERSION
-                + "_" + httpConfiguration.getServerID()
+                + "_" + serverId
                 + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
                 + "_" + getSessionNumber()
-                + "_" + configuration.getApplicationIDPercentEncoded()
+                + "_" + configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()
                 + "_" + parentActionID
                 + "_" + threadIDProvider.getThreadID()
                 + "_" + sequenceNo;
@@ -298,11 +295,11 @@ public class Beacon {
      */
     public void addAction(BaseActionImpl action) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isActionReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isActionReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
             return;
         }
 
@@ -329,7 +326,7 @@ public class Beacon {
      */
     public void startSession() {
 
-        if (isCapturingDisabled()) {
+        if (!isCaptureEnabled()) {
             return;
         }
 
@@ -350,16 +347,14 @@ public class Beacon {
      * <p>
      *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
-     *
-     * @param session The session to add.
      */
-    public void endSession(SessionImpl session) {
+    public void endSession() {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isSessionReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isSessionReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
             return;
         }
 
@@ -367,11 +362,12 @@ public class Beacon {
 
         buildBasicEventData(eventBuilder, EventType.SESSION_END, null);
 
+        long sessionEndTime = getCurrentTimestamp();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
-        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(session.getEndTime()));
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(sessionEndTime));
 
-        addEventData(session.getEndTime(), eventBuilder);
+        addEventData(sessionEndTime, eventBuilder);
     }
 
     /**
@@ -387,11 +383,11 @@ public class Beacon {
      */
     public void reportValue(int parentActionID, String valueName, int value) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isValueReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
             return;
         }
 
@@ -416,11 +412,11 @@ public class Beacon {
      */
     public void reportValue(int parentActionID, String valueName, double value) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isValueReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
             return;
         }
 
@@ -445,11 +441,11 @@ public class Beacon {
      */
     public void reportValue(int parentActionID, String valueName, String value) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isValueReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
             return;
         }
 
@@ -475,11 +471,11 @@ public class Beacon {
      */
     public void reportEvent(int parentActionID, String eventName) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isEventReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
             return;
         }
 
@@ -503,12 +499,12 @@ public class Beacon {
      * @param reason Reason for that error.
      */
     public void reportError(int parentActionID, String errorName, int errorCode, String reason) {
-        // if capture errors is off -> do nothing
-        if (isCapturingDisabled() || !configuration.isCaptureErrors()) {
+
+        if (!configuration.getPrivacyConfiguration().isErrorReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isErrorReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingErrorsAllowed()) {
             return;
         }
 
@@ -538,12 +534,12 @@ public class Beacon {
      * @param stacktrace Crash stacktrace.
      */
     public void reportCrash(String errorName, String reason, String stacktrace) {
-        // if capture crashes is off -> do nothing
-        if (isCapturingDisabled() || !configuration.isCaptureCrashes()) {
+
+        if (!configuration.getPrivacyConfiguration().isCrashReportingAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isCrashReportingAllowed()) {
+        if (!configuration.getServerConfiguration().isSendingCrashesAllowed()) {
             return;
         }
 
@@ -573,16 +569,17 @@ public class Beacon {
      */
     public void addWebRequest(int parentActionID, WebRequestTracerBaseImpl webRequestTracer) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isWebRequestTracingAllowed()) {
             return;
         }
-        if (!privacyConfiguration.isWebRequestTracingAllowed()) {
+
+        if (!isCaptureEnabled()) {
             return;
         }
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildBasicEventData(eventBuilder, EventType.WEBREQUEST, webRequestTracer.getURL());
+        buildBasicEventData(eventBuilder, EventType.WEB_REQUEST, webRequestTracer.getURL());
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentActionID);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, webRequestTracer.getStartSequenceNo());
@@ -608,11 +605,11 @@ public class Beacon {
      */
     public void identifyUser(String userTag) {
 
-        if (isCapturingDisabled()) {
+        if (!configuration.getPrivacyConfiguration().isUserIdentificationAllowed()) {
             return;
         }
 
-        if (!privacyConfiguration.isUserIdentificationAllowed()) {
+        if (!isCaptureEnabled()) {
             return;
         }
 
@@ -641,7 +638,7 @@ public class Beacon {
      */
     public StatusResponse send(HTTPClientProvider provider) {
 
-        HTTPClient httpClient = provider.createClient(httpConfiguration);
+        HTTPClient httpClient = provider.createClient(configuration.getHTTPClientConfiguration());
         StatusResponse response = null;
 
         while (true) {
@@ -651,7 +648,7 @@ public class Beacon {
             // subtract 1024 to ensure that the chunk does not exceed the send size configured on server side?
             // i guess that was the original intention, but i'm not sure about this
             // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
-            String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getMaxBeaconSize() - 1024, BEACON_DATA_DELIMITER);
+            String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getServerConfiguration().getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
             if (chunk == null || chunk.isEmpty()) {
                 // no data added so far or no data to send
                 return response;
@@ -659,10 +656,10 @@ public class Beacon {
 
             byte[] encodedBeacon;
             try {
-                encodedBeacon = chunk.getBytes(CHARSET);
+                encodedBeacon = encodeBeaconChunk(chunk);
             } catch (UnsupportedEncodingException e) {
                 // must not happen, as UTF-8 should *really* be supported
-                logger.error(getClass().getSimpleName() + "Required charset \"" + CHARSET + "\" is not supported.", e);
+                logger.error(getClass().getSimpleName() + ": Required charset \"" + CHARSET + "\" is not supported.", e);
                 beaconCache.resetChunkedData(sessionNumber);
                 return response;
             }
@@ -683,15 +680,24 @@ public class Beacon {
         return response;
     }
 
+    /**
+     * Encodes the given chunk to an {@link #CHARSET} byte array.
+     *
+     * <p>
+     *     This method should only be used by tests.
+     * </p>
+     *
+     * @param chunkToEncode the beacon chunk to encode
+     * @return the encoded beacon chunk
+     */
+    protected byte[] encodeBeaconChunk(String chunkToEncode) throws UnsupportedEncodingException {
+        return chunkToEncode.getBytes(CHARSET);
+    }
+
     private String appendMutableBeaconData(String immutableBasicBeaconData) {
 
-        StringBuilder mutableBeaconDataBuilder;
-        if (immutableBasicBeaconData != null && !immutableBasicBeaconData.isEmpty()) {
-            mutableBeaconDataBuilder = new StringBuilder(immutableBasicBeaconData);
-            mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER);
-        } else {
-            mutableBeaconDataBuilder = new StringBuilder();
-        }
+        StringBuilder mutableBeaconDataBuilder = new StringBuilder(immutableBasicBeaconData);
+        mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER);
 
         // append timestamp data
         mutableBeaconDataBuilder.append(createTimestampData());
@@ -703,36 +709,13 @@ public class Beacon {
     }
 
     /**
-     * Gets all events.
-     *
-     * <p>
-     *     This returns a shallow copy of events entries and is intended only for testing purposes.
-     * </p>
-     */
-    String[] getEvents() {
-        return beaconCache.getEvents(sessionNumber);
-    }
-
-    /**
-     * Gets all actions.
-     *
-     * <p>
-     *     This returns a shallow copy of all actions and is intended only for testing purposes.
-     * </p>
-     */
-    String[] getActions() {
-        return beaconCache.getActions(sessionNumber);
-    }
-
-    /**
      * Add previously serialized action data to the beacon cache.
      *
      * @param timestamp The timestamp when the action data occurred.
      * @param actionBuilder Contains the serialized action data.
      */
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
-
-        if (configuration.isCapture()) {
+        if (isCaptureEnabled()) {
             beaconCache.addActionData(sessionNumber, timestamp, actionBuilder.toString());
         }
     }
@@ -744,8 +727,7 @@ public class Beacon {
      * @param eventBuilder Contains the serialized event data.
      */
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
-
-        if (configuration.isCapture()) {
+        if (isCaptureEnabled()) {
             beaconCache.addEventData(sessionNumber, timestamp, eventBuilder.toString());
         }
     }
@@ -758,7 +740,6 @@ public class Beacon {
      * </p>
      */
     public void clearData() {
-
         // remove all cached data for this Beacon from the cache
         beaconCache.deleteCacheEntry(sessionNumber);
     }
@@ -766,7 +747,7 @@ public class Beacon {
     /**
      * Serialization helper for event data.
      *
-     * @param builder String builder storing the serialzed data.
+     * @param builder String builder storing the serialized data.
      * @param eventType The event's type.
      * @param name Event name
      * @param parentActionID The unique Action identifier on which this event was reported.
@@ -805,14 +786,15 @@ public class Beacon {
      * @return Serialized data.
      */
     private String createImmutableBasicBeaconData() {
+        OpenKitConfiguration openKitConfiguration = configuration.getOpenKitConfiguration();
         StringBuilder basicBeaconBuilder = new StringBuilder();
 
         // version and application information
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PROTOCOL_VERSION, ProtocolConstants.PROTOCOL_VERSION);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, ProtocolConstants.OPENKIT_VERSION);
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, configuration.getApplicationID());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, configuration.getApplicationName());
-        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, configuration.getApplicationVersion());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, openKitConfiguration.getApplicationID());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, openKitConfiguration.getApplicationName());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, openKitConfiguration.getApplicationVersion());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, ProtocolConstants.PLATFORM_TYPE_OPENKIT);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
 
@@ -822,14 +804,13 @@ public class Beacon {
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
-        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, configuration.getDevice()
-                                                                                        .getOperatingSystem());
-        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, configuration.getDevice()
-                                                                                                  .getManufacturer());
-        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, configuration.getDevice().getModelID());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, openKitConfiguration.getOperatingSystem());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MANUFACTURER, openKitConfiguration.getManufacturer());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_MODEL, openKitConfiguration.getModelID());
 
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DATA_COLLECTION_LEVEL, privacyConfiguration.getDataCollectionLevel().getIntValue());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CRASH_REPORTING_LEVEL, privacyConfiguration.getCrashReportingLevel().getIntValue());
+        PrivacyConfiguration privacyConfiguration = configuration.getPrivacyConfiguration();
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_DATA_COLLECTION_LEVEL, privacyConfiguration.getDataCollectionLevel());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CRASH_REPORTING_LEVEL, privacyConfiguration.getCrashReportingLevel());
 
         return basicBeaconBuilder.toString();
     }
@@ -857,6 +838,7 @@ public class Beacon {
      * @return Pre calculated session number or {@code 1} if session number reporting is not allowed.
      */
     public int getSessionNumber() {
+        PrivacyConfiguration privacyConfiguration = configuration.getPrivacyConfiguration();
         if (privacyConfiguration.isSessionNumberReportingAllowed()) {
             return sessionNumber;
         }
@@ -887,8 +869,8 @@ public class Beacon {
 
         StringBuilder multiplicityBuilder = new StringBuilder();
 
-        // timestamp information
-        addKeyValuePair(multiplicityBuilder, BEACON_KEY_MULTIPLICITY, getMultiplicity());
+        int multiplicity = configuration.getServerConfiguration().getMultiplicity();
+        addKeyValuePair(multiplicityBuilder, BEACON_KEY_MULTIPLICITY, multiplicity);
 
         return multiplicityBuilder.toString();
     }
@@ -904,7 +886,7 @@ public class Beacon {
         String encodedValue = PercentEncoder.encode(stringValue, CHARSET, RESERVED_CHARACTERS);
         if (encodedValue == null) {
             // if encoding fails, skip this key/value pair
-            logger.error(getClass().getSimpleName() + "Skipped encoding of Key/Value: " + key + "/" + stringValue);
+            logger.error(getClass().getSimpleName() + ": Skipped encoding of Key/Value: " + key + "/" + stringValue);
             return;
         }
 
@@ -953,6 +935,21 @@ public class Beacon {
     }
 
     /**
+     * Serialization helper method for adding key/value pairs with values implementing the
+     * {@link SerializableBeaconValue} interface.
+     *
+     * @param builder the string builder storing the serialized data.
+     * @param key the key to add.
+     * @param value the value to add.
+     */
+    private void addKeyValuePair(StringBuilder builder, String key, SerializableBeaconValue value) {
+        if (value == null) {
+            return;
+        }
+        addKeyValuePair(builder, key, value.asBeaconValue());
+    }
+
+    /**
      * Serialization helper method for adding key/value pairs with int values
      *
      * the key value pair is only added to the string builder when the int is not negative
@@ -987,7 +984,7 @@ public class Beacon {
      * @param key The key to add.
      */
     private void appendKey(StringBuilder builder, String key) {
-        if (!builder.toString().isEmpty()) {
+        if (builder.length() > 0) {
             builder.append('&');
         }
         builder.append(key);
@@ -1029,44 +1026,47 @@ public class Beacon {
     }
 
     /**
-     * Sets the Beacon configuration.
+     * Updates this beacon with the given {@link ServerConfiguration}
      *
-     * @param beaconConfiguration The new beacon configuration to set.
+     * @param serverConfiguration the server configuration which will be used to update this beacon.
      */
-    public void setBeaconConfiguration(BeaconConfiguration beaconConfiguration) {
-        if (beaconConfiguration != null) {
-            this.beaconConfiguration.set(beaconConfiguration);
-        }
+    public void updateServerConfiguration(ServerConfiguration serverConfiguration) {
+        configuration.updateServerConfiguration(serverConfiguration);
     }
 
     /**
-     * Get the Beacon configuration.
-     * @return Currently set beacon configuration.
+     * Indicates whether a server configuration is set on this beacon's configuration or not.
      */
-    public BeaconConfiguration getBeaconConfiguration() {
-        return beaconConfiguration.get();
+    public boolean isServerConfigurationSet() {
+        return configuration.isServerConfigurationSet();
     }
 
     /**
-     * Tests if capturing is allowed.
+     * Indicates whether data capturing for this beacon is currently enabled or not.
+     */
+    public boolean isCaptureEnabled() {
+        return configuration.getServerConfiguration().isCaptureEnabled();
+    }
+
+    /**
+     * Enables capturing for this beacon.
      *
      * <p>
-     *     Note: Due to multithreading this behaviour could already change,
-     *     when evaluating the result of this call.
+     *     This will implicitly cause {@link #isServerConfigurationSet()} to return {@code true}.
      * </p>
-     *
-     * @return {@code true} if capturing is allowed, {@code false} otherwise.
      */
-    boolean isCapturingDisabled() {
-        return !getBeaconConfiguration().isCapturingAllowed();
+    public void enableCapture() {
+        configuration.enableCapture();
     }
 
     /**
-     * Get multiplicity from {@link BeaconConfiguration}.
+     * Disables capturing for this session
      *
-     * @return Multiplicity received from the server.
+     * <p>
+     *     This will implicitly cause {@link #isServerConfigurationSet()} to return {@code true}.
+     * </p>
      */
-    int getMultiplicity() {
-        return getBeaconConfiguration().getMultiplicity();
+    public void disableCapture() {
+        configuration.disableCapture();
     }
 }

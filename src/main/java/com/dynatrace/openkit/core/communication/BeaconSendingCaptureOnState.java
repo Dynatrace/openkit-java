@@ -16,7 +16,8 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
+import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.List;
@@ -93,26 +94,25 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
     private StatusResponse sendNewSessionRequests(BeaconSendingContext context) {
 
         StatusResponse statusResponse = null;
-        List<SessionWrapper> newSessions = context.getAllNewSessions();
+        List<SessionImpl> newSessions = context.getAllNewSessions();
 
-        for (SessionWrapper session : newSessions) {
+        for (SessionImpl session : newSessions) {
             if (!session.canSendNewSessionRequest()) {
                 // already exceeded the maximum number of session requests, disable any further data collecting
-                BeaconConfiguration newConfiguration = new BeaconConfiguration(0);
-                session.updateBeaconConfiguration(newConfiguration);
+                session.disableCapture();
                 continue;
             }
 
             statusResponse = context.getHTTPClient().sendNewSessionRequest();
             if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-                BeaconConfiguration newConfiguration = new BeaconConfiguration(statusResponse.getMultiplicity());
-                session.updateBeaconConfiguration(newConfiguration);
+                ServerConfiguration newServerConfig = ServerConfiguration.from(statusResponse);
+                session.updateServerConfiguration(newServerConfig);
             } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
                 // server is currently overloaded, return immediately
                 break;
             } else {
                 // any other unsuccessful response
-                session.decreaseNumNewSessionRequests();
+                session.decreaseNumRemainingSessionRequests();
             }
         }
 
@@ -129,9 +129,9 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
         StatusResponse statusResponse = null;
         // check if there's finished Sessions to be sent -> immediately send beacon(s) of finished Sessions
-        List<SessionWrapper> finishedSessions = context.getAllFinishedAndConfiguredSessions();
+        List<SessionImpl> finishedSessions = context.getAllFinishedAndConfiguredSessions();
 
-        for (SessionWrapper finishedSession : finishedSessions) {
+        for (SessionImpl finishedSession : finishedSessions) {
             if (finishedSession.isDataSendingAllowed()) {
                 statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
                 if (!BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
@@ -145,7 +145,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             // session was sent/is not allowed to be sent - so remove it from beacon cache
             context.removeSession(finishedSession); // remove the finished session from the cache
             finishedSession.clearCapturedData();
-            finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
+            finishedSession.close(); // The session is already closed/ended at this point. This call avoids a static code warning.
         }
 
         return statusResponse;
@@ -166,8 +166,8 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
             return null;
         }
 
-        List<SessionWrapper> openSessions = context.getAllOpenAndConfiguredSessions();
-        for (SessionWrapper session : openSessions) {
+        List<SessionImpl> openSessions = context.getAllOpenAndConfiguredSessions();
+        for (SessionImpl session : openSessions) {
             if (session.isDataSendingAllowed()) {
                 statusResponse = session.sendBeacon(context.getHTTPClientProvider());
                 if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {

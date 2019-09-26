@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.caching;
 
+import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import org.junit.Before;
@@ -44,16 +45,14 @@ public class SpaceEvictionStrategyTest {
 
     @Before
     public void setUp() {
-
         mockLogger = mock(Logger.class);
         mockBeaconCache = mock(BeaconCache.class);
     }
 
     @Test
     public void theStrategyIsDisabledIfCacheSizeLowerBoundIsLessThanZero() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, -1L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, -1L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         // then
@@ -62,9 +61,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void theStrategyIsDisabledIfCacheSizeLowerBoundIsEqualToZero() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 0L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 0L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         // then
@@ -73,9 +71,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void theStrategyIsDisabledIfCacheSizeUpperBoundIsLessThanZero() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, -1L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, -1L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         // then
@@ -84,9 +81,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void theStrategyIsDisabledIfCacheSizeUpperBoundIsEqualToZero() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 0L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 0L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         // then
@@ -95,9 +91,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void theStrategyIsDisabledIfCacheSizeUpperBoundIsLessThanLowerBound() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 999L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 999L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         // then
@@ -106,9 +101,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void shouldRunGivesTrueIfNumBytesInCacheIsGreaterThanUpperBoundLimit() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1);
@@ -119,9 +113,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void shouldRunGivesFalseIfNumBytesInCacheIsEqualToUpperBoundLimit() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound());
@@ -132,9 +125,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void shouldRunGivesFalseIfNumBytesInCacheIsLessThanUpperBoundLimit() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() - 1);
@@ -145,9 +137,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionLogsAMessageOnceAndReturnsIfStrategyIsDisabled() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, -1L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, -1L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         when(mockLogger.isInfoEnabled()).thenReturn(true);
@@ -171,9 +162,8 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionDoesNotLogIfStrategyIsDisabledAndInfoIsDisabledInLogger() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, -1L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, -1L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
         when(mockLogger.isInfoEnabled()).thenReturn(false);
@@ -195,16 +185,17 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionCallsCacheMethodForEachBeacon() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
-        when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1,
+        when(mockBeaconCache.getNumBytesInCache()).thenReturn(
             configuration.getCacheSizeUpperBound() + 1,
             configuration.getCacheSizeUpperBound() + 1,
             configuration.getCacheSizeUpperBound() + 1,
-            0L);
+            configuration.getCacheSizeUpperBound() + 1,
+            0L
+        );
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
 
 
@@ -219,16 +210,17 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionLogsEvictionResultIfDebugIsEnabled() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
-        when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1,
+        when(mockBeaconCache.getNumBytesInCache()).thenReturn(
             configuration.getCacheSizeUpperBound() + 1,
             configuration.getCacheSizeUpperBound() + 1,
             configuration.getCacheSizeUpperBound() + 1,
-            0L);
+            configuration.getCacheSizeUpperBound() + 1,
+            0L
+        );
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
         when(mockBeaconCache.evictRecordsByNumber(eq(1), anyInt())).thenReturn(5);
         when(mockBeaconCache.evictRecordsByNumber(eq(42), anyInt())).thenReturn(1);
@@ -247,16 +239,17 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionDoesNotLogEvictionResultIfDebugIsDisabled() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
-        when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1,
+        when(mockBeaconCache.getNumBytesInCache()).thenReturn(
             configuration.getCacheSizeUpperBound() + 1,
             configuration.getCacheSizeUpperBound() + 1,
             configuration.getCacheSizeUpperBound() + 1,
-            0L);
+            configuration.getCacheSizeUpperBound() + 1,
+            0L
+        );
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
         when(mockBeaconCache.evictRecordsByNumber(eq(1), anyInt())).thenReturn(5);
         when(mockBeaconCache.evictRecordsByNumber(eq(42), anyInt())).thenReturn(1);
@@ -273,12 +266,12 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionRunsUntilTheCacheSizeIsLessThanOrEqualToLowerBound() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
-        when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1, // shouldRun method
+        when(mockBeaconCache.getNumBytesInCache()).thenReturn(
+            configuration.getCacheSizeUpperBound() + 1, // shouldRun method
             configuration.getCacheSizeUpperBound(), // first iteration
             configuration.getCacheSizeUpperBound(), // first iteration
             configuration.getCacheSizeUpperBound(), // first iteration
@@ -286,9 +279,9 @@ public class SpaceEvictionStrategyTest {
             (configuration.getCacheSizeUpperBound() + configuration.getCacheSizeLowerBound()) / 2, // second iteration
             (configuration.getCacheSizeUpperBound() + configuration.getCacheSizeLowerBound()) / 2, // second iteration
             configuration.getCacheSizeLowerBound(), // stops already
-            0L); // just for safety
+            0L // just for safety
+        );
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
-
 
         // when executing the first time
         target.execute();
@@ -301,12 +294,12 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionStopsIfThreadGetsInterruptedBetweenTwoBeacons() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
-        when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1, // shouldRun method
+        when(mockBeaconCache.getNumBytesInCache()).thenReturn(
+            configuration.getCacheSizeUpperBound() + 1, // shouldRun method
             configuration.getCacheSizeUpperBound(), // first iteration
             configuration.getCacheSizeUpperBound(), // first iteration
             configuration.getCacheSizeUpperBound(), // first iteration
@@ -314,7 +307,8 @@ public class SpaceEvictionStrategyTest {
             (configuration.getCacheSizeUpperBound() + configuration.getCacheSizeLowerBound()) / 2, // second iteration
             (configuration.getCacheSizeUpperBound() + configuration.getCacheSizeLowerBound()) / 2, // second iteration
             configuration.getCacheSizeLowerBound(), // stops already
-            0L); // just for safety
+            0L // just for safety
+        );
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
         when(mockBeaconCache.evictRecordsByNumber(anyInt(), eq(1))).then(new Answer<Integer>() {
             @Override
@@ -337,19 +331,20 @@ public class SpaceEvictionStrategyTest {
 
     @Test
     public void executeEvictionStopsIfNumBytesInCacheFallsBelowLowerBoundBetweenTwoBeacons() {
-
         // given
-        BeaconCacheConfiguration configuration = new BeaconCacheConfiguration(1000L, 1000L, 2000L);
+        BeaconCacheConfiguration configuration = mockBeaconCacheConfig(1000L, 1000L, 2000L);
         SpaceEvictionStrategy target = new SpaceEvictionStrategy(mockLogger, mockBeaconCache, configuration);
 
-        when(mockBeaconCache.getNumBytesInCache()).thenReturn(configuration.getCacheSizeUpperBound() + 1, // shouldRun method
+        when(mockBeaconCache.getNumBytesInCache()).thenReturn(
+            configuration.getCacheSizeUpperBound() + 1, // shouldRun method
             configuration.getCacheSizeUpperBound(), // first iteration
             configuration.getCacheSizeUpperBound(), // first iteration
             configuration.getCacheSizeUpperBound(), // first iteration
             (configuration.getCacheSizeUpperBound() + configuration.getCacheSizeLowerBound()) / 2, // second iteration
             (configuration.getCacheSizeUpperBound() + configuration.getCacheSizeLowerBound()) / 2, // second iteration
             configuration.getCacheSizeLowerBound(), // second iteration
-            0L); // just for safety
+            0L // just for safety
+        );
         when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
 
         // when executing the first time
@@ -358,5 +353,15 @@ public class SpaceEvictionStrategyTest {
         // then
         verify(mockBeaconCache, times(8)).getNumBytesInCache();
         verify(mockBeaconCache, times(3)).evictRecordsByNumber(anyInt(), eq(1));
+    }
+
+    private BeaconCacheConfiguration mockBeaconCacheConfig(long maxRecordAge, long lowerSizeBound, long upperSizeBound) {
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
+        when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerSizeBound);
+        when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperSizeBound);
+
+        BeaconCacheConfiguration config = BeaconCacheConfiguration.from(builder);mock(BeaconCacheConfiguration.class);
+        return config;
     }
 }

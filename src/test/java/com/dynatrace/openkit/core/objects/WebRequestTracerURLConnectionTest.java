@@ -30,6 +30,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,7 +61,7 @@ public class WebRequestTracerURLConnectionTest {
     @Test
     public void passingNullURLConnectionLeavesUnknownURLString() {
         // given
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, null);
+        WebRequestTracerURLConnection target = createConnectionUrl();
 
         // then
         assertThat(target.getURL(), is(equalTo(UNKNOWN_URL_STRING)));
@@ -70,7 +72,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(null);
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+        WebRequestTracerURLConnection target = createConnectionUrl();
 
         // then
         assertThat(target.getURL(), is(equalTo(UNKNOWN_URL_STRING)));
@@ -81,7 +83,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(null);
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+        WebRequestTracerURLConnection target = createConnectionUrl();
 
         // then verify
         verify(mockURLConnection, times(1)).getURL();
@@ -96,7 +98,7 @@ public class WebRequestTracerURLConnectionTest {
         when(mockURLConnection.getURL()).thenReturn(null);
         when(mockURLConnection.getRequestProperty(OpenKitConstants.WEBREQUEST_TAG_HEADER)).thenReturn("");
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+        createConnectionUrl();
 
         // then verify
         verify(mockURLConnection, times(1)).getURL();
@@ -109,7 +111,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(new URL("https://www.google.com"));
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+        WebRequestTracerURLConnection target = createConnectionUrl();
 
         // then
         assertThat(target.getURL(), is(equalTo("https://www.google.com")));
@@ -120,7 +122,7 @@ public class WebRequestTracerURLConnectionTest {
         // given
         when(mockURLConnection.getURL()).thenReturn(new URL("https://www.google.com/foo/bar?foo=bar&asdf=jklo"));
 
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+        WebRequestTracerURLConnection target = createConnectionUrl();
 
         // then
         assertThat(target.getURL(), is(equalTo("https://www.google.com/foo/bar")));
@@ -128,9 +130,8 @@ public class WebRequestTracerURLConnectionTest {
 
     @Test
     public void aNewlyCreatedWebRequestTracerDoesNotAttachToTheParent() {
-
         // given
-        WebRequestTracerURLConnection target = new WebRequestTracerURLConnection(mockLogger, parentOpenKitObject, mockBeacon, mockURLConnection);
+        WebRequestTracerURLConnection target = createConnectionUrl();
 
         // then parent is stored, but no interaction with parent happened
         assertThat(target.getParent(), is(sameInstance(parentOpenKitObject)));
@@ -138,4 +139,29 @@ public class WebRequestTracerURLConnectionTest {
         verifyNoMoreInteractions(parentOpenKitObject);
     }
 
+    @Test
+    public void connectionTagIsIgnoredIfSettingRequestPropertyFails() throws Exception {
+        // given
+        doThrow(new RuntimeException()).when(mockURLConnection).setRequestProperty(anyString(), anyString());
+
+        // when
+        createConnectionUrl();
+
+        // then
+        verify(mockURLConnection, times(1)).setRequestProperty(anyString(), anyString());
+    }
+
+    @Test
+    public void createInstanceWithNullConnectionUrl() {
+
+    }
+
+    private WebRequestTracerURLConnection createConnectionUrl() {
+        return new WebRequestTracerURLConnection(
+                mockLogger,
+                parentOpenKitObject,
+                mockBeacon,
+                mockURLConnection
+        );
+    }
 }

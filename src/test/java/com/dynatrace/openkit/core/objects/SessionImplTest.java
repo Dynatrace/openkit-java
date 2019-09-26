@@ -19,8 +19,7 @@ package com.dynatrace.openkit.core.objects;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
-import com.dynatrace.openkit.core.BeaconSender;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
@@ -44,6 +43,8 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -59,7 +60,6 @@ public class SessionImplTest {
     private Logger mockLogger;
     private OpenKitComposite mockParent;
     private Beacon mockBeacon;
-    private BeaconSender mockBeaconSender;
 
     @Before
     public void setUp() {
@@ -73,24 +73,12 @@ public class SessionImplTest {
 
         // mock Beacon
         mockBeacon = mock(Beacon.class);
-
-        // mock BeaconSender
-        mockBeaconSender = mock(BeaconSender.class);
-    }
-
-    @Test
-    public void defaultEndTimeIsSetToMinusOne() {
-        // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
-
-        // then
-        assertThat(target.getEndTime(), is(equalTo(-1L)));
     }
 
     @Test
     public void enterActionWithNullActionNameGivesNullRootActionObject() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         RootAction obtained = target.enterAction(null);
@@ -105,7 +93,7 @@ public class SessionImplTest {
     @Test
     public void enterActionWithEmptyActionNameGivesNullRootActionObject() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         RootAction obtained = target.enterAction("");
@@ -120,7 +108,7 @@ public class SessionImplTest {
     @Test
     public void enterActionWithNonEmptyNamesGivesRootAction() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         RootAction obtained = target.enterAction("Some action");
@@ -132,7 +120,7 @@ public class SessionImplTest {
     @Test
     public void enterActionAlwaysGivesANewInstance() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         RootAction obtainedOne = target.enterAction("Some action");
@@ -147,7 +135,7 @@ public class SessionImplTest {
     @Test
     public void enterActionAddsNewlyCreatedActionToTheListOfChildObjects() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when entering the first time
         RootAction obtainedOne = target.enterAction("Some action");
@@ -165,7 +153,7 @@ public class SessionImplTest {
     @Test
     public void identifyUserWithNullTagDoesNothing() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.identifyUser(null);
@@ -180,7 +168,7 @@ public class SessionImplTest {
     @Test
     public void identifyUserWithEmptyTagDoesNothing() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.identifyUser("");
@@ -195,7 +183,7 @@ public class SessionImplTest {
     @Test
     public void identifyUserWithNonEmptyTagReportsUser() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.identifyUser("user");
@@ -211,7 +199,7 @@ public class SessionImplTest {
     @Test
     public void identifyUserMultipleTimesAlwaysCallsBeacon() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.identifyUser("user");
@@ -228,7 +216,7 @@ public class SessionImplTest {
     @Test
     public void reportingCrashWithNullErrorNameDoesNotReportAnything() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when reporting a crash, passing null values
         target.reportCrash(null, "some reason", "some stack trace");
@@ -243,7 +231,7 @@ public class SessionImplTest {
     @Test
     public void reportingCrashWithEmptyErrorNameDoesNotReportAnything() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when reporting a crash, passing empty errorName
         target.reportCrash("", "some reason", "some stack trace");
@@ -258,7 +246,7 @@ public class SessionImplTest {
     @Test
     public void reportingCrashWithNullReasonAndStacktraceWorks() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when reporting a crash, passing null values
         target.reportCrash("errorName", null, null);
@@ -270,7 +258,7 @@ public class SessionImplTest {
     @Test
     public void reportingCrashWithEmptyReasonAndStacktraceStringWorks() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when reporting a crash, passing null values
         target.reportCrash("errorName", "", "" );
@@ -282,7 +270,7 @@ public class SessionImplTest {
     @Test
     public void reportingCrashWithSameDataMultipleTimesForwardsEachCallToBeacon() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         String errorName = "error name";
         String reason = "error reason";
@@ -297,61 +285,38 @@ public class SessionImplTest {
     }
 
     @Test
-    public void endSessionSetsTheSessionsEndTime() {
-        // given
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
-
-        // when
-        target.end();
-
-        // then
-        assertThat(target.getEndTime(), is(equalTo(1234L)));
-        verify(mockBeacon, times(1)).getCurrentTimestamp();
-    }
-
-    @Test
     public void endSessionFinishesSessionOnBeacon() {
         // given
         when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.end();
 
         // then
-        verify(mockBeacon, times(1)).endSession(target);
-    }
-
-    @Test
-    public void endSessionFinishesSessionOnBeaconSender() {
-        // given
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
-
-        // when
-        target.end();
-
-        // then
-        verify(mockBeaconSender, times(1)).finishSession(target);
+        verify(mockBeacon, times(1)).endSession();
     }
 
     @Test
     public void endingAnAlreadyEndedSessionDoesNothing() {
         // given
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L, 4242L);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when ending a session twice
         target.end();
+
+        // then
+        verify(mockBeacon, times(1)).endSession();
+        assertThat(target.getState().isFinished(),  is(true));
+
+        reset(mockBeacon);
+
+        // and when
         target.end();
 
         // then
-        assertThat(target.getEndTime(), is(equalTo(1234L)));
-        verify(mockBeacon, times(1)).getCurrentTimestamp();
-
-        verify(mockBeacon, times(1)).endSession(target);
-        verify(mockBeaconSender, times(1)).finishSession(target);
+        verify(mockBeacon, times(0)).endSession();
+        assertThat(target.getState().isFinished(), is(true));
     }
 
     @Test
@@ -359,7 +324,7 @@ public class SessionImplTest {
         // given
         final OpenKitObject childObjectOne = mock(OpenKitObject.class);
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         target.storeChildInList(childObjectOne);
         target.storeChildInList(childObjectTwo);
@@ -382,7 +347,7 @@ public class SessionImplTest {
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
         doThrow(exception).when(childObjectTwo).close();
 
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         target.storeChildInList(childObjectOne);
         target.storeChildInList(childObjectTwo);
 
@@ -399,7 +364,7 @@ public class SessionImplTest {
     @Test
     public void sendBeaconForwardsCallToBeacon() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
 
         // when
@@ -414,7 +379,7 @@ public class SessionImplTest {
     @Test
     public void clearCapturedDataForwardsCallToBeacon() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.clearCapturedData();
@@ -428,7 +393,7 @@ public class SessionImplTest {
     @Test
     public void isEmptyForwardsCallToBeacon() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         target.isEmpty();
@@ -440,64 +405,110 @@ public class SessionImplTest {
     }
 
     @Test
-    public void setBeaconConfigurationForwardsCallToBeacon() {
+    public void updateServerConfigurationForwardsCallToBeacon() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
-        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
+        SessionImpl target = createSession().build();
+        ServerConfiguration mockServerConfiguration = mock(ServerConfiguration.class);
 
         // when
-        target.setBeaconConfiguration(mockBeaconConfiguration);
+        target.updateServerConfiguration(mockServerConfiguration);
 
         // then verify the proper methods being called
         verify(mockBeacon, times(1)).startSession();
-        verify(mockBeacon, times(1)).setBeaconConfiguration(mockBeaconConfiguration);
+        verify(mockBeacon, times(1)).updateServerConfiguration(mockServerConfiguration);
         verifyNoMoreInteractions(mockBeacon);
     }
 
     @Test
-    public void getBeaconConfigurationForwardsCallToBeacon() {
+    public void aNewlyCreatedSessionIsNotFinished() {
         // given
-        BeaconConfiguration mockBeaconConfiguration = mock(BeaconConfiguration.class);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
-        when(target.getBeaconConfiguration()).thenReturn(mockBeaconConfiguration);
-
-        // when
-        BeaconConfiguration obtained = target.getBeaconConfiguration();
-
-        // then verify obtained value
-        assertThat(obtained, is(sameInstance(mockBeaconConfiguration)));
-
-        // then verify the proper methods being called
-        verify(mockBeacon, times(1)).startSession();
-        verify(mockBeacon, times(1)).getBeaconConfiguration();
-        verifyNoMoreInteractions(mockBeacon);
-    }
-
-    @Test
-    public void aNewlyConstructedSessionIsNotEnded() {
-        // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when, then
-        assertThat(target.isSessionEnded(), is(false));
+        assertThat(target.getState().isFinished(), is(false));
     }
 
     @Test
-    public void aSessionIsEndedIfEndIsCalled() {
+    public void aNewlyCreatedSessionIsInStateNew() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
+
+        // when, then
+        assertThat(target.getState().isNew(), is(true));
+    }
+
+    @Test
+    public void aNewlyCreatedSessionIsNotInStateConfigured() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when, then
+        assertThat(target.getState().isConfigured(), is(false));
+        assertThat(target.getState().isConfiguredAndFinished(), is(false));
+        assertThat(target.getState().isConfiguredAndOpen(), is(false));
+    }
+
+    @Test
+    public void aConfiguredSessionIsNotInStateNew() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+
+        // then
+        assertThat(target.getState().isNew(), is(false));
+        assertThat(target.getState().isConfiguredAndOpen(), is(true));
+    }
+
+    @Test
+    public void aNotConfiguredFinishedSessionIsNotInStateNew() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.end();
+
+        // then
+        assertThat(target.getState().isNew(), is(false));
+        assertThat(target.getState().isConfigured(), is(false));
+        assertThat(target.getState().isFinished(), is(true));
+        assertThat(target.getState().isConfiguredAndFinished(), is(false));
+    }
+
+    @Test
+    public void aConfiguredFinishedSessionIsNotNew() {
+        // given
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+        SessionImpl target = createSession().build();
+        target.end();
+
+        // when
+        target.updateServerConfiguration(mock(ServerConfiguration.class));
+
+        // then
+        assertThat(target.getState().isNew(), is(false));
+        assertThat(target.getState().isConfigured(), is(true));
+        assertThat(target.getState().isFinished(), is(true));
+        assertThat(target.getState().isConfiguredAndFinished(), is(true));
+    }
+
+    @Test
+    public void aSessionIsFinishedIfEndIsCalled() {
+        // given
+        SessionImpl target = createSession().build();
 
         // when end is called
         target.end();
 
         // then the session is ended
-        assertThat(target.isSessionEnded(), is(true));
+        assertThat(target.getState().isFinished(), is(true));
     }
 
     @Test
     public void enterActionGivesNullRootActionIfSessionIsAlreadyEnded() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         target.end();
 
         // when entering an action on already ended session
@@ -511,7 +522,7 @@ public class SessionImplTest {
     @Test
     public void identifyUserDoesNothingIfSessionIsEnded() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         target.end();
 
         // when trying to identify a user on an ended session
@@ -524,7 +535,7 @@ public class SessionImplTest {
     @Test
     public void reportCrashDoesNothingIfSessionIsEnded() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         target.end();
 
         // when trying to identify a user on an ended session
@@ -538,21 +549,20 @@ public class SessionImplTest {
     public void closeSessionEndsTheSession() {
         // given
         when(mockBeacon.getCurrentTimestamp()).thenReturn(4321L);
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = spy(createSession().build());
 
         // when
         target.close();
 
         // then
-        assertThat(target.getEndTime(), is(equalTo(4321L)));
-        verify(mockBeacon, times(1)).endSession(target);
-        verify(mockBeaconSender, times(1)).finishSession(target);
+        verify(target, times(1)).end();
+        verify(mockBeacon, times(1)).endSession();
     }
 
     @Test
     public void traceWebRequestWithValidUrlStringGivesAppropriateTracer() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest("https://www.google.com");
@@ -564,7 +574,7 @@ public class SessionImplTest {
     @Test
     public void traceWebRequestWithValidUrlStringAddsTracerToListOfChildren() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest("https://www.google.com");
@@ -576,7 +586,7 @@ public class SessionImplTest {
     @Test
     public void tracingANullStringWebRequestIsNotAllowed() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest((String) null);
@@ -592,7 +602,7 @@ public class SessionImplTest {
     @Test
     public void tracingAnEmptyStringWebRequestIsNotAllowed() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest("");
@@ -608,7 +618,7 @@ public class SessionImplTest {
     @Test
     public void tracingAStringWebRequestWithInvalidURLIsNotAllowed() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest("foobar/://");
@@ -625,7 +635,7 @@ public class SessionImplTest {
     @Test
     public void traceWebRequestWithValidURLConnectionGivesAppropriateTracer() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest(mock(URLConnection.class));
@@ -637,7 +647,7 @@ public class SessionImplTest {
     @Test
     public void traceWebRequestWithValidURLConnectionAddsTracerToListOfChildren() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest(mock(URLConnection.class));
@@ -650,7 +660,7 @@ public class SessionImplTest {
     public void tracingANullURLConnectionWebRequestIsNotAllowed() {
 
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         WebRequestTracer obtained = target.traceWebRequest((URLConnection) null);
@@ -668,7 +678,7 @@ public class SessionImplTest {
     public void traceWebRequestWithURLConnectionArgumentGivesNullTracerIfSessionIsEnded() {
 
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         target.end();
 
         // when
@@ -683,7 +693,7 @@ public class SessionImplTest {
     public void traceWebRequestWithStringArgumentGivesNullTracerIfSessionIsEnded() {
 
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         target.end();
 
         // when
@@ -697,7 +707,7 @@ public class SessionImplTest {
     @Test
     public void onChildClosedRemovesChildFromList() {
         // given
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
         OpenKitObject childObject = mock(OpenKitObject.class);
         target.storeChildInList(childObject);
 
@@ -713,12 +723,159 @@ public class SessionImplTest {
         // given
         when(mockBeacon.getSessionNumber()).thenReturn(21);
 
-        SessionImpl target = new SessionImpl(mockLogger, mockParent, mockBeaconSender, mockBeacon);
+        SessionImpl target = createSession().build();
 
         // when
         String obtained = target.toString();
 
         // then
         assertThat(obtained, is(equalTo("SessionImpl [sn=21] ")));
+    }
+
+    @Test
+    public void aNewSessionCanSendNewSessionRequests() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        boolean obtained = target.canSendNewSessionRequest();
+
+        // then
+        assertThat(obtained, is(equalTo(true)));
+    }
+
+    @Test
+    public void canSendNewSessionRequestIsFalseIfAllRequestsAreUsedUp() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when, then
+        for(int i = SessionImpl.MAX_NEW_SESSION_REQUESTS; i > 0; i--) {
+            assertThat(target.canSendNewSessionRequest(), is(true));
+
+            target.decreaseNumRemainingSessionRequests();
+        }
+
+        // then
+        assertThat(target.canSendNewSessionRequest(), is(false));
+    }
+
+    @Test
+    public void isDataSendingAllowedReturnsTrueForConfiguredAndCaptureEnabledSession() {
+        // given
+        when(mockBeacon.isCaptureEnabled()).thenReturn(true);
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+
+        SessionImpl target = createSession().build();
+
+        // when
+        boolean obtained = target.isDataSendingAllowed();
+
+        // then
+        assertThat(obtained, is(equalTo(true)));
+    }
+
+    @Test
+    public void isDataSendingAllowedReturnsFalseForNotConfiguredSession() {
+        // given
+        when(mockBeacon.isCaptureEnabled()).thenReturn(true);
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
+        SessionImpl target = createSession().build();
+
+        // when
+        boolean obtained = target.isDataSendingAllowed();
+
+        // then
+        assertThat(obtained, is(equalTo(false)));
+    }
+
+    @Test
+    public void isDataSendingAllowedReturnsFalseForCaptureDisabledSession() {
+        // given
+        when(mockBeacon.isCaptureEnabled()).thenReturn(false);
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+        SessionImpl target = createSession().build();
+
+        // when
+        boolean obtained = target.isDataSendingAllowed();
+
+        // then
+        assertThat(obtained, is(equalTo(false)));
+    }
+
+    @Test
+    public void isDataSendingAllowedReturnsFalseForNotConfiguredAndCaptureDisabledSession() {
+        // given
+        when(mockBeacon.isCaptureEnabled()).thenReturn(false);
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+        SessionImpl target = createSession().build();
+
+        // when
+        boolean obtained = target.isDataSendingAllowed();
+
+        // then
+        assertThat(obtained, is(equalTo(false)));
+    }
+
+    @Test
+    public void enableCaptureDelegatesToBeacon() {
+        // given
+        SessionImpl target = createSession().build();
+        reset(mockBeacon);
+
+        // when
+        target.enableCapture();
+
+        // then
+        verify(mockBeacon, times(1)).enableCapture();
+        verifyNoMoreInteractions(mockBeacon);
+    }
+
+    @Test
+    public void disableCaptureDelegatesToBeacon() {
+        // given
+        SessionImpl target = createSession().build();
+        reset(mockBeacon);
+
+        // when
+        target.disableCapture();
+
+        // then
+        verify(mockBeacon, times(1)).disableCapture();
+        verifyNoMoreInteractions(mockBeacon);
+    }
+
+    private SessionBuilder createSession() {
+        SessionBuilder builder = new SessionBuilder();
+        builder.logger = mockLogger;
+        builder.parent = mockParent;
+        builder.beacon = mockBeacon;
+
+        return builder;
+    }
+
+    private static class SessionBuilder {
+        private Logger logger;
+        private OpenKitComposite parent;
+        private Beacon beacon;
+
+        private SessionBuilder with(Logger logger) {
+            this.logger = logger;
+            return this;
+        }
+
+        private SessionBuilder with(OpenKitComposite parent) {
+            this.parent = parent;
+            return this;
+        }
+
+        private SessionBuilder with(Beacon beacon) {
+            this.beacon = beacon;
+            return this;
+        }
+
+        private SessionImpl build() {
+            return new SessionImpl(logger, parent, beacon);
+        }
     }
 }

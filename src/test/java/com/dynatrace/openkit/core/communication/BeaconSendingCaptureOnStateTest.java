@@ -17,7 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.Response;
@@ -47,36 +47,30 @@ import static org.mockito.Mockito.when;
 public class BeaconSendingCaptureOnStateTest {
 
     private BeaconSendingContext mockContext;
-    private SessionWrapper mockSession1Open;
-    private SessionWrapper mockSession2Open;
-    private SessionWrapper mockSession3Finished;
-    private SessionWrapper mockSession4Finished;
-    private SessionWrapper mockSession5New;
-    private SessionWrapper mockSession6New;
+    private SessionImpl mockSession1Open;
+    private SessionImpl mockSession2Open;
+    private SessionImpl mockSession3Finished;
+    private SessionImpl mockSession4Finished;
+    private SessionImpl mockSession5New;
+    private SessionImpl mockSession6New;
 
     @Before
     public void setUp() {
-        mockSession1Open = mock(SessionWrapper.class);
-        mockSession2Open = mock(SessionWrapper.class);
-        mockSession3Finished = mock(SessionWrapper.class);
-        mockSession4Finished = mock(SessionWrapper.class);
-        mockSession5New = mock(SessionWrapper.class);
-        mockSession6New = mock(SessionWrapper.class);
+        mockSession1Open = mock(SessionImpl.class);
+        mockSession2Open = mock(SessionImpl.class);
+        mockSession3Finished = mock(SessionImpl.class);
+        mockSession4Finished = mock(SessionImpl.class);
+        mockSession5New = mock(SessionImpl.class);
+        mockSession6New = mock(SessionImpl.class);
         when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse(mock(Logger.class), "", 200, Collections.<String, List<String>>emptyMap()));
         when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(new StatusResponse(mock(Logger.class), "", 404, Collections.<String, List<String>>emptyMap()));
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
-        when(mockSession1Open.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession2Open.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession3Finished.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession4Finished.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession5New.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession6New.getSession()).thenReturn(mock(SessionImpl.class));
 
         HTTPClientProvider mockHTTPClientProvider = mock(HTTPClientProvider.class);
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.getCurrentTimestamp()).thenReturn(42L);
-        when(mockContext.getAllNewSessions()).thenReturn(Collections.<SessionWrapper>emptyList());
+        when(mockContext.getAllNewSessions()).thenReturn(Collections.<SessionImpl>emptyList());
         when(mockContext.getAllOpenAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession1Open, mockSession2Open));
         when(mockContext.getAllFinishedAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession3Finished, mockSession4Finished));
         when(mockContext.getHTTPClientProvider()).thenReturn(mockHTTPClientProvider);
@@ -115,8 +109,6 @@ public class BeaconSendingCaptureOnStateTest {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1);
-
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
@@ -124,11 +116,9 @@ public class BeaconSendingCaptureOnStateTest {
             .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(new StatusResponse(mock(Logger.class), "", Response.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
-        when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
         when(mockSession6New.canSendNewSessionRequest()).thenReturn(true);
-        when(mockSession6New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
 
-        ArgumentCaptor<BeaconConfiguration> beaconConfigurationArgumentCaptor = ArgumentCaptor.forClass(BeaconConfiguration.class);
+        ArgumentCaptor<ServerConfiguration> serverConfigCaptor = ArgumentCaptor.forClass(ServerConfiguration.class);
 
         // when
         target.execute(mockContext);
@@ -137,19 +127,17 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockClient, times(2)).sendNewSessionRequest();
 
         // verify first has been updated, second decreased
-        verify(mockSession5New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(5)));
+        verify(mockSession5New, times(1)).updateServerConfiguration(serverConfigCaptor.capture());
+        assertThat(serverConfigCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(5)));
 
         // verify for beacon 6 only the number of tries was decreased
-        verify(mockSession6New, times(1)).decreaseNumNewSessionRequests();
+        verify(mockSession6New, times(1)).decreaseNumRemainingSessionRequests();
     }
 
     @Test
-    public void multiplicityIsSetToZeroIfNoFurtherNewSessionRequestsAreAllowed() {
+    public void captureIsDisabledIfNoFurtherNewSessionRequestsAreAllowed() {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
-
-        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1);
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
@@ -158,11 +146,7 @@ public class BeaconSendingCaptureOnStateTest {
             .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(new StatusResponse(mock(Logger.class), "", Response.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(false);
-        when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
         when(mockSession6New.canSendNewSessionRequest()).thenReturn(false);
-        when(mockSession6New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
-
-        ArgumentCaptor<BeaconConfiguration> beaconConfigurationArgumentCaptor = ArgumentCaptor.forClass(BeaconConfiguration.class);
 
         // when
         target.execute(mockContext);
@@ -170,21 +154,15 @@ public class BeaconSendingCaptureOnStateTest {
         // verify for no session a new session request has been made
         verify(mockClient, times(0)).sendNewSessionRequest();
 
-        // verify bot sessions are updated
-        verify(mockSession5New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(0).getMultiplicity(), is(equalTo(0)));
-
-        // verify for beacon 6 only the number of tries was decreased
-        verify(mockSession6New, times(1)).updateBeaconConfiguration(beaconConfigurationArgumentCaptor.capture());
-        assertThat(beaconConfigurationArgumentCaptor.getAllValues().get(1).getMultiplicity(), is(equalTo(0)));
+        // verify both sessions disabled capture
+        verify(mockSession5New, times(1)).disableCapture();
+        verify(mockSession6New, times(1)).disableCapture();
     }
 
     @Test
     public void newSessionRequestsAreAbortedWhenTooManyRequestsResponseIsReceived() {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
-
-        BeaconConfiguration defaultConfiguration = new BeaconConfiguration(1);
 
         StatusResponse statusResponse = mock(StatusResponse.class);
         when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
@@ -197,9 +175,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockClient.sendNewSessionRequest())
             .thenReturn(statusResponse); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
-        when(mockSession5New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
         when(mockSession6New.canSendNewSessionRequest()).thenReturn(true);
-        when(mockSession6New.getBeaconConfiguration()).thenReturn(defaultConfiguration);
 
         // when
         target.execute(mockContext);
@@ -292,7 +268,7 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockSession4Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
 
         verify(mockContext, times(1)).getAllFinishedAndConfiguredSessions();
-        verify(mockContext, times(0)).removeSession(any(SessionWrapper.class));
+        verify(mockContext, times(0)).removeSession(any(SessionImpl.class));
     }
 
     @Test
@@ -355,7 +331,7 @@ public class BeaconSendingCaptureOnStateTest {
         verifyZeroInteractions(mockSession1Open, mockSession2Open);
 
         verify(mockContext, times(1)).getAllFinishedAndConfiguredSessions();
-        verify(mockContext, times(0)).removeSession(any(SessionWrapper.class));
+        verify(mockContext, times(0)).removeSession(any(SessionImpl.class));
 
         // ensure also transition to CaptureOffState
         ArgumentCaptor<BeaconSendingCaptureOffState> argumentCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);

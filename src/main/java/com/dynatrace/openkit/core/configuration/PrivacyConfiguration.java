@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 
@@ -24,23 +25,31 @@ import com.dynatrace.openkit.DataCollectionLevel;
  */
 public class PrivacyConfiguration {
 
-    /** Default data collection level used, if no other value was specified */
-    public static final DataCollectionLevel DEFAULT_DATA_COLLECTION_LEVEL = DataCollectionLevel.USER_BEHAVIOR;
-    /** Default crash reporting level used, if no other value was specified */
-    public static final CrashReportingLevel DEFAULT_CRASH_REPORTING_LEVEL = CrashReportingLevel.OPT_IN_CRASHES;
-
     private final DataCollectionLevel dataCollectionLevel;
     private final CrashReportingLevel crashReportingLevel;
 
     /**
      * Construct the privacy configuration
      *
-     * @param dataCollectionLevel Data collection level as configured in OpenKit builder
-     * @param crashReportingLevel Crash reporting level as configured in OpenKit builder
+     * @param builder Builder class used to configure all configuration related options.
      */
-    public PrivacyConfiguration(DataCollectionLevel dataCollectionLevel, CrashReportingLevel crashReportingLevel) {
-        this.dataCollectionLevel = dataCollectionLevel != null ? dataCollectionLevel : DEFAULT_DATA_COLLECTION_LEVEL;
-        this.crashReportingLevel = crashReportingLevel != null ? crashReportingLevel : DEFAULT_CRASH_REPORTING_LEVEL;
+    private PrivacyConfiguration(AbstractOpenKitBuilder builder) {
+
+        this.dataCollectionLevel = builder.getDataCollectionLevel();
+        this.crashReportingLevel = builder.getCrashReportLevel();
+    }
+
+    /**
+     * Create a {@link PrivacyConfiguration} from given {@link AbstractOpenKitBuilder}.
+     *
+     * @param builder The OpenKit builder for which to create a {@link PrivacyConfiguration}.
+     * @return Newly created {@link PrivacyConfiguration} or {@code null} if given argument is {@code null}
+     */
+    public static PrivacyConfiguration from(AbstractOpenKitBuilder builder) {
+        if (builder == null) {
+            return null;
+        }
+        return new PrivacyConfiguration(builder);
     }
 
     /**

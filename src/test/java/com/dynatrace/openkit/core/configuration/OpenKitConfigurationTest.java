@@ -17,12 +17,15 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.api.SSLTrustManager;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -31,6 +34,8 @@ import static org.mockito.Mockito.when;
 
 public class OpenKitConfigurationTest {
 
+    private static final String ENDPOINT_URL = "https://localhost:9999/1";
+    private static final String DEVICE_ID = "37";
     private static final String OPENKIT_TYPE = "Dynatrace NextGen";
     private static final String APPLICATION_ID = "Application-ID";
     private static final String APPLICATION_NAME = "Application Name";
@@ -45,6 +50,8 @@ public class OpenKitConfigurationTest {
     @Before
     public void setUp() {
         abstractOpenKitBuilder = mock(AbstractOpenKitBuilder.class);
+        when(abstractOpenKitBuilder.getEndpointURL()).thenReturn(ENDPOINT_URL);
+        when(abstractOpenKitBuilder.getDeviceID()).thenReturn(DEVICE_ID);
         when(abstractOpenKitBuilder.getOpenKitType()).thenReturn(OPENKIT_TYPE);
         when(abstractOpenKitBuilder.getApplicationID()).thenReturn(APPLICATION_ID);
         when(abstractOpenKitBuilder.getApplicationName()).thenReturn(APPLICATION_NAME);
@@ -71,6 +78,26 @@ public class OpenKitConfigurationTest {
     }
 
     @Test
+    public void creatingAnOpenKitConfigurationFromBuilderCopiesEndpointUrl() {
+        // given, when
+        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+
+        // then
+        assertThat(target.getEndpointURL(), is(ENDPOINT_URL));
+        verify(abstractOpenKitBuilder, times(1)).getEndpointURL();
+    }
+
+    @Test
+    public void creatingAnOpenKitConfigurationFromBuilderCopiesDeviceId() {
+        // given, when
+        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+
+        // then
+        assertThat(target.getDeviceID(), is(DEVICE_ID));
+        verify(abstractOpenKitBuilder, times(1)).getDeviceID();
+    }
+
+    @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesType() {
         // given
         OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
@@ -88,6 +115,19 @@ public class OpenKitConfigurationTest {
         // then
         assertThat(target.getApplicationID(), is(APPLICATION_ID));
         verify(abstractOpenKitBuilder, times(1)).getApplicationID();
+    }
+
+    @Test
+    public void creatingAnOpenKitConfigurationFromBuilderPercentEncodesApplicationId() {
+        // given
+        when(abstractOpenKitBuilder.getApplicationID()).thenReturn("/App_ID%");
+        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+
+        // when
+        String obtained = target.getPercentEncodedApplicationID();
+
+        // then
+        assertThat(obtained, is(equalTo("%2FApp%5FID%25")));
     }
 
     @Test
@@ -148,5 +188,19 @@ public class OpenKitConfigurationTest {
         // then
         assertThat(target.getDefaultServerID(), is(DEFAULT_SERVER_ID));
         verify(abstractOpenKitBuilder, times(1)).getDefaultServerID();
+    }
+
+    @Test
+    public void creatingAnOpenKitConfigurationFromBuilderCopiesTrustManager() {
+        // given
+        SSLTrustManager trustManager = mock(SSLTrustManager.class);
+        when(abstractOpenKitBuilder.getTrustManager()).thenReturn(trustManager);
+
+        // when
+        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+
+        // then
+        assertThat(target.getSSLTrustManager(), is(sameInstance(trustManager)));
+        verify(abstractOpenKitBuilder, times(1)).getTrustManager();
     }
 }

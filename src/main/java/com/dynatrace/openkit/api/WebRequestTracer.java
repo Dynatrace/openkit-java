@@ -72,7 +72,7 @@ public interface WebRequestTracer extends Closeable {
     /**
      * Stops the web request timing with the given response code. Should be called when the web request is finished.
      *
-     * @param respondeCode response code of this web request
+     * @param responseCode response code of this web request
      */
-    void stop(int respondeCode);
+    void stop(int responseCode);
 }

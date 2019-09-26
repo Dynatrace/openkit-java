@@ -413,6 +413,6 @@ public class BeaconSendingInitStateTest {
         target.execute(stateContext);
 
         // verify sleep was performed accordingly
-        verify(stateContext, times(1)).disableCapture();
+        verify(stateContext, times(1)).disableCaptureAndClear();
     }
 }

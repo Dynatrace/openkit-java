@@ -39,19 +39,16 @@ import static org.mockito.Mockito.when;
 public class BeaconSendingFlushSessionsStateTest {
 
     private BeaconSendingContext mockContext;
-    private SessionWrapper mockSession1Open;
-    private SessionWrapper mockSession2Open;
-    private SessionWrapper mockSession3Closed;
+    private SessionImpl mockSession1Open;
+    private SessionImpl mockSession2Open;
+    private SessionImpl mockSession3Closed;
 
     @Before
     public void setUp() {
 
-        mockSession1Open = mock(SessionWrapper.class);
-        mockSession2Open = mock(SessionWrapper.class);
-        mockSession3Closed = mock(SessionWrapper.class);
-        when(mockSession1Open.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession2Open.getSession()).thenReturn(mock(SessionImpl.class));
-        when(mockSession3Closed.getSession()).thenReturn(mock(SessionImpl.class));
+        mockSession1Open = mock(SessionImpl.class);
+        mockSession2Open = mock(SessionImpl.class);
+        mockSession3Closed = mock(SessionImpl.class);
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession2Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession3Closed.isDataSendingAllowed()).thenReturn(true);

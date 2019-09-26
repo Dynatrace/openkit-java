@@ -16,46 +16,160 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BeaconCacheConfigurationTest {
 
     @Test
-    public void getMaxRecordAge() {
+    public void beaconCacheConfigFromNullReturnsNull() {
+        // given, when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(null);
 
         // then
-        assertThat(new BeaconCacheConfiguration(-100L, 1, 2).getMaxRecordAge(),
-            is(-100L));
-        assertThat(new BeaconCacheConfiguration(0L, 1, 2).getMaxRecordAge(),
-            is(0L));
-        assertThat(new BeaconCacheConfiguration(200L, 1, 2).getMaxRecordAge(),
-            is(200L));
+        assertThat(obtained, is(nullValue()));
     }
 
     @Test
-    public void getCacheSizeLowerBound() {
+    public void positiveMaxOrderAgeIsTakenOverFromOpenKitBuilder() {
+        // given
+        long maxRecordAge = 73;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
 
         // then
-        assertThat(new BeaconCacheConfiguration(0L, -1, 2).getCacheSizeLowerBound(),
-            is(-1L));
-        assertThat(new BeaconCacheConfiguration(-1L, 0, 2).getCacheSizeLowerBound(),
-            is(0L));
-        assertThat(new BeaconCacheConfiguration(0L, 1, 2).getCacheSizeLowerBound(),
-            is(1L));
+        verify(builder, times(1)).getBeaconCacheMaxRecordAge();
+        assertThat(obtained.getMaxRecordAge(), is(maxRecordAge));
     }
 
     @Test
-    public void getCacheSizeUpperBound() {
+    public void negativeMaxOrderAgeIsTakenOverFromOpenKitBuilder() {
+        // given
+        long maxRecordAge = -73;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
 
         // then
-        assertThat(new BeaconCacheConfiguration(0L, -1, -2).getCacheSizeUpperBound(),
-            is(-2L));
-        assertThat(new BeaconCacheConfiguration(-1L, 1, 0).getCacheSizeUpperBound(),
-            is(0L));
-        assertThat(new BeaconCacheConfiguration(0L, 1, 2).getCacheSizeUpperBound(),
-            is(2L));
+        verify(builder, times(1)).getBeaconCacheMaxRecordAge();
+        assertThat(obtained.getMaxRecordAge(), is(maxRecordAge));
+    }
+
+    @Test
+    public void zeroMaxOrderAgeIsTakenOverFromOpenKitBuilder() {
+        // given
+        long maxRecordAge = 0;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheMaxRecordAge();
+        assertThat(obtained.getMaxRecordAge(), is(maxRecordAge));
+    }
+
+    @Test
+    public void positiveLowerCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
+        // given
+        long lowerBound = 73;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerBound);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheLowerMemoryBoundary();
+        assertThat(obtained.getCacheSizeLowerBound(), is(lowerBound));
+    }
+
+    @Test
+    public void negativeLowerCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
+        // given
+        long lowerBound = -73;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerBound);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheLowerMemoryBoundary();
+        assertThat(obtained.getCacheSizeLowerBound(), is(lowerBound));
+    }
+
+    @Test
+    public void zeroLowerCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
+        // given
+        long lowerBound = 0;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerBound);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheLowerMemoryBoundary();
+        assertThat(obtained.getCacheSizeLowerBound(), is(lowerBound));
+    }
+
+    @Test
+    public void positiveUpperCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
+        // given
+        long upperBound = 73;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperBound);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheUpperMemoryBoundary();
+        assertThat(obtained.getCacheSizeUpperBound(), is(upperBound));
+    }
+
+    @Test
+    public void negativeUpperCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
+        // given
+        long upperBound = -73;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperBound);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheUpperMemoryBoundary();
+        assertThat(obtained.getCacheSizeUpperBound(), is(upperBound));
+    }
+
+    @Test
+    public void zeroUpperCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
+        // given
+        long upperBound = 0;
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperBound);
+
+        // when
+        BeaconCacheConfiguration obtained = BeaconCacheConfiguration.from(builder);
+
+        // then
+        verify(builder, times(1)).getBeaconCacheUpperMemoryBoundary();
+        assertThat(obtained.getCacheSizeUpperBound(), is(upperBound));
     }
 }

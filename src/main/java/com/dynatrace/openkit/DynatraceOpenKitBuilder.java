@@ -16,14 +16,6 @@
 
 package com.dynatrace.openkit;
 
-import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.OpenKitType;
-import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
-import com.dynatrace.openkit.core.objects.Device;
-import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
-
 /**
  * Concrete builder that creates an {@code OpenKit} instance for Dynatrace Saas/Managed
  */
@@ -33,11 +25,6 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
      * A string, identifying the type of OpenKit this builder is made for.
      */
     public static final String OPENKIT_TYPE = "DynatraceOpenKit";
-
-    /**
-     * The default server ID to communicate with.
-     */
-    public static final int DEFAULT_SERVER_ID = 1;
 
     private final String applicationID;
     private String applicationName = "";
@@ -84,30 +71,6 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
     }
 
     @Override
-    Configuration buildConfiguration() {
-        Device device = new Device(getOperatingSystem(), getManufacturer(), getModelID());
-
-        BeaconCacheConfiguration beaconCacheConfiguration = new BeaconCacheConfiguration(getBeaconCacheMaxRecordAge(),
-            getBeaconCacheLowerMemoryBoundary(),
-            getBeaconCacheUpperMemoryBoundary());
-        BeaconConfiguration beaconConfiguration = new BeaconConfiguration();
-        PrivacyConfiguration privacyConfiguration = new PrivacyConfiguration(getDataCollectionLevel(), getCrashReportLevel());
-        return new Configuration(
-            OpenKitType.DYNATRACE,
-            applicationName,
-            applicationID,
-            getDeviceID(),
-            getEndpointURL(),
-            new DefaultSessionIDProvider(),
-            getTrustManager(),
-            device,
-            getApplicationVersion(),
-            beaconCacheConfiguration,
-            beaconConfiguration,
-            privacyConfiguration);
-    }
-
-    @Override
     public String getOpenKitType() {
         return OPENKIT_TYPE;
     }
@@ -120,10 +83,5 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
     @Override
     public String getApplicationName() {
         return applicationName;
-    }
-
-    @Override
-    public int getDefaultServerID() {
-        return DEFAULT_SERVER_ID;
     }
 }

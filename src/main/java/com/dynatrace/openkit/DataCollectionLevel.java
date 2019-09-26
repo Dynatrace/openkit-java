@@ -16,9 +16,23 @@
 
 package com.dynatrace.openkit;
 
-public enum DataCollectionLevel {
+import com.dynatrace.openkit.protocol.SerializableBeaconValue;
+
+/**
+ * Specifies the granularity of which/how much data is collected/sent.
+ */
+public enum DataCollectionLevel implements SerializableBeaconValue {
+    /**
+     * No data will be collected at all
+     */
     OFF(0),
+    /**
+     * Only performance related data will be collected
+     */
     PERFORMANCE(1),
+    /**
+     * All available RUM (real user monitoring) data, including performance related data, is collected.
+     */
     USER_BEHAVIOR(2);
 
     private final int intValue;
@@ -29,6 +43,15 @@ public enum DataCollectionLevel {
 
     public int getIntValue() {
         return intValue;
+    }
+
+    @Override
+    public String asBeaconValue() {
+        return String.valueOf(intValue);
+    }
+
+    public static DataCollectionLevel defaultValue() {
+        return USER_BEHAVIOR;
     }
 }
 

@@ -24,7 +24,7 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 public class ServerConfiguration {
 
     /** Default server configuration */
-    public static final ServerConfiguration DEFAULT = new ServerConfiguration();
+    public static final ServerConfiguration DEFAULT = new ServerConfiguration.Builder().build();
 
     /** by default capturing is enabled */
     static final boolean DEFAULT_CAPTURE_ENABLED = true;
@@ -57,52 +57,31 @@ public class ServerConfiguration {
     private final int multiplicity;
 
     /**
-     * Create a default server configuration.
+     * Create a server configuration from a builder.
      *
-     * <p>
-     *     To access the default server configuration use the {@link ServerConfiguration#DEFAULT}.
-     * </p>
+     * @param builder The builder used to configure this instance.
      */
-    private ServerConfiguration() {
-        isCaptureEnabled = DEFAULT_CAPTURE_ENABLED;
-        isCrashReportingEnabled = DEFAULT_CRASH_REPORTING_ENABLED;
-        isErrorReportingEnabled = DEFAULT_ERROR_REPORTING_ENABLED;
-        sendIntervalInMilliseconds = DEFAULT_SEND_INTERVAL;
-        serverID = DEFAULT_SERVER_ID;
-        beaconSizeInBytes = DEFAULT_BEACON_SIZE;
-        multiplicity = DEFAULT_MULTIPLICITY;
+    private ServerConfiguration(Builder builder) {
+        isCaptureEnabled = builder.isCaptureEnabled;
+        isCrashReportingEnabled = builder.isCrashReportingEnabled;
+        isErrorReportingEnabled = builder.isErrorReportingEnabled;
+        sendIntervalInMilliseconds = builder.sendIntervalInMilliseconds;
+        serverID = builder.serverID;
+        beaconSizeInBytes = builder.beaconSizeInBytes;
+        multiplicity = builder.multiplicity;
     }
 
     /**
-     * Create a server configuration from a status response.
+     * Creates a new server configuration from the given {@link StatusResponse}
      *
-     * <p>
-     *     Use the {@link ServerConfiguration#from(StatusResponse)} to get a {@link ServerConfiguration}.
-     * </p>
-     *
-     * @param statusResponse The status response from Dynatrace or AppMon.
-     */
-    private ServerConfiguration(StatusResponse statusResponse) {
-        isCaptureEnabled = statusResponse.isCapture();
-        isCrashReportingEnabled = statusResponse.isCaptureCrashes();
-        isErrorReportingEnabled = statusResponse.isCaptureErrors();
-        sendIntervalInMilliseconds = statusResponse.getSendInterval();
-        serverID = statusResponse.getServerID();
-        beaconSizeInBytes = statusResponse.getMaxBeaconSize();
-        multiplicity = statusResponse.getMultiplicity();
-    }
-
-    /**
-     * Create a {@link ServerConfiguration} from given {@link StatusResponse}.
-     *
-     * @param statusResponse The status response for which to create a {@link ServerConfiguration}.
-     * @return Newly created {@link ServerConfiguration} or {@code null} if given argument is {@code null}
+     * @param statusResponse the status response from which to create the server configuration.
+     * @return the newly created server configuration.
      */
     public static ServerConfiguration from(StatusResponse statusResponse) {
         if (statusResponse == null) {
             return null;
         }
-        return new ServerConfiguration(statusResponse);
+        return new ServerConfiguration.Builder(statusResponse).build();
     }
 
     /**
@@ -219,5 +198,165 @@ public class ServerConfiguration {
      */
     public boolean isSendingErrorsAllowed() {
         return isSendingDataAllowed() && isErrorReportingEnabled();
+    }
+
+    /**
+     * Merges given {@code other} with {@code this} instance and return the merged instance.
+     *
+     * <p>
+     *     Most fields are taken from {@code other}, except for {@link #multiplicity} and {@link #serverID}
+     *     which doe not change.
+     * </p>
+     *
+     * @param other The other instance to merge with.
+     * @return New {@link ServerConfiguration} instance with merged values.
+     */
+    public ServerConfiguration merge(ServerConfiguration other) {
+
+        Builder builder = new Builder();
+
+        // settings from this
+        builder.withMultiplicity(this.getMultiplicity())
+               .withServerID(this.getServerID());
+
+        // settings from other
+        builder.withCapture(other.isCaptureEnabled);
+        builder.withCrashReporting(other.isCrashReportingEnabled);
+        builder.withErrorReporting(other.isErrorReportingEnabled);
+
+        return builder.withSendIntervalInMilliseconds(other.getSendIntervalInMilliseconds())
+                      .withBeaconSizeInBytes(other.getBeaconSizeInBytes())
+                      .build();
+    }
+
+    /**
+     * Builder class for creating a custom instance of {@link ServerConfiguration}.
+     */
+    public static final class Builder {
+        private boolean isCaptureEnabled = DEFAULT_CAPTURE_ENABLED;
+        private boolean isCrashReportingEnabled = DEFAULT_CRASH_REPORTING_ENABLED;
+        private boolean isErrorReportingEnabled = DEFAULT_ERROR_REPORTING_ENABLED;
+        private int sendIntervalInMilliseconds = DEFAULT_SEND_INTERVAL;
+        private int serverID = DEFAULT_SERVER_ID;
+        private int beaconSizeInBytes = DEFAULT_BEACON_SIZE;
+        private int multiplicity = DEFAULT_MULTIPLICITY;
+
+        /**
+         * Default constructor.
+         */
+        public Builder() {
+        }
+
+        /**
+         * Construct and initialize fields from given {@link StatusResponse}.
+         *
+         * @param statusResponse Status response used for initializing the fields.
+         */
+        public Builder(StatusResponse statusResponse) {
+            isCaptureEnabled = statusResponse.isCapture();
+            isCrashReportingEnabled = statusResponse.isCaptureCrashes();
+            isErrorReportingEnabled = statusResponse.isCaptureErrors();
+            sendIntervalInMilliseconds = statusResponse.getSendInterval();
+            serverID = statusResponse.getServerID();
+            beaconSizeInBytes = statusResponse.getMaxBeaconSize();
+            multiplicity = statusResponse.getMultiplicity();
+        }
+
+        /**
+         * Construct and initialize fields from given {@link ServerConfiguration}.
+         */
+        public Builder(ServerConfiguration serverConfiguration) {
+            isCaptureEnabled = serverConfiguration.isCaptureEnabled();
+            isCrashReportingEnabled = serverConfiguration.isCrashReportingEnabled();
+            isErrorReportingEnabled = serverConfiguration.isErrorReportingEnabled();
+            sendIntervalInMilliseconds = serverConfiguration.getSendIntervalInMilliseconds();
+            serverID = serverConfiguration.getServerID();
+            beaconSizeInBytes = serverConfiguration.getBeaconSizeInBytes();
+            multiplicity = serverConfiguration.getMultiplicity();
+        }
+
+        /**
+         * Enables/disables capturing by setting {@link #isCaptureEnabled} to the corresponding value.
+         *
+         * @return {@code this}
+         */
+        public Builder withCapture(boolean captureState) {
+            this.isCaptureEnabled = captureState;
+            return this;
+        }
+
+        /**
+         * Enables/disables crash reporting by setting {@link #isCrashReportingEnabled} to the corresponding value.
+         *
+         * @return {@code this}
+         */
+        public Builder withCrashReporting(boolean crashReportingState) {
+            isCrashReportingEnabled = crashReportingState;
+            return this;
+        }
+
+
+        /**
+         * Enables/disables error reporting by setting {@link #isErrorReportingEnabled} to the corresponding value.
+         *
+         * @return {@code this}
+         */
+        public Builder withErrorReporting(boolean errorReportingState) {
+            isErrorReportingEnabled = errorReportingState;
+            return this;
+        }
+
+        /**
+         * Configures the send interval.
+         *
+         * @param sendIntervalInMilliseconds Send interval in milliseconds.
+         * @return {@code this}
+         */
+        public Builder withSendIntervalInMilliseconds(int sendIntervalInMilliseconds) {
+            this.sendIntervalInMilliseconds = sendIntervalInMilliseconds;
+            return this;
+        }
+
+        /**
+         * Configures the server ID.
+         *
+         * @param serverID The server ID to communicate with.
+         * @return {@code this}
+         */
+        public Builder withServerID(int serverID) {
+            this.serverID = serverID;
+            return this;
+        }
+
+        /**
+         * Configures the beacon size in Bytes.
+         *
+         * @param beaconSizeInBytes Maximum allowed beacon size in bytes.
+         * @return {@code this}
+         */
+        public Builder withBeaconSizeInBytes(int beaconSizeInBytes) {
+            this.beaconSizeInBytes = beaconSizeInBytes;
+            return this;
+        }
+
+        /**
+         * Configures the multiplicity factor.
+         *
+         * @param multiplicity Multiplicity factor.
+         * @return {@code this}
+         */
+        public Builder withMultiplicity(int multiplicity) {
+            this.multiplicity = multiplicity;
+            return this;
+        }
+
+        /**
+         * Build the {@link ServerConfiguration} and return the new instance.
+         *
+         * @return Newly created {@link ServerConfiguration} instance.
+         */
+        public ServerConfiguration build() {
+            return new ServerConfiguration(this);
+        }
     }
 }

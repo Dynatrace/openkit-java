@@ -16,9 +16,23 @@
 
 package com.dynatrace.openkit;
 
-public enum CrashReportingLevel {
+import com.dynatrace.openkit.protocol.SerializableBeaconValue;
+
+/**
+ * Specifies the level at which crashes are reported to the server.
+ */
+public enum CrashReportingLevel implements SerializableBeaconValue {
+    /**
+     * Crashes are not sent to the server
+     */
     OFF(0),
+    /**
+     * Crashes are not sent to the server
+     */
     OPT_OUT_CRASHES(1),
+    /**
+     * Crashes are sent to the server
+     */
     OPT_IN_CRASHES(2);
 
     private final int intValue;
@@ -29,5 +43,14 @@ public enum CrashReportingLevel {
 
     public int getIntValue() {
         return intValue;
+    }
+
+    @Override
+    public String asBeaconValue() {
+        return String.valueOf(intValue);
+    }
+
+    public static CrashReportingLevel defaultValue() {
+        return OPT_IN_CRASHES;
     }
 }

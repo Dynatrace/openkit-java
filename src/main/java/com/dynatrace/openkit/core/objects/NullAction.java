@@ -28,16 +28,7 @@ import java.net.URLConnection;
  */
 class NullAction implements Action {
 
-    private static final WebRequestTracer NULL_TRACER = new NullWebRequestTracer();
-
     private final Action parentAction;
-
-    /**
-     * Construct null action without parent.
-     */
-    NullAction() {
-        this(null);
-    }
 
     /**
      * Construct null action with parent action.
@@ -74,12 +65,12 @@ class NullAction implements Action {
 
     @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
-        return NULL_TRACER;
+        return NullWebRequestTracer.INSTANCE;
     }
 
     @Override
     public WebRequestTracer traceWebRequest(String url) {
-        return NULL_TRACER;
+        return NullWebRequestTracer.INSTANCE;
     }
 
     @Override
@@ -89,6 +80,6 @@ class NullAction implements Action {
 
     @Override
     public void close() {
-        leaveAction();
+        // nothing
     }
 }

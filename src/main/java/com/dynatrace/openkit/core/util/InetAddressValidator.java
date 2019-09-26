@@ -159,7 +159,7 @@ public class InetAddressValidator {
         boolean ipv4PartValid = isIPv4Address(input.substring(splitIndex + 1 ));
 
         String ipV6Part = input.substring(0, splitIndex + 1 );
-        if(ipV6Part == "::") {
+        if("::".equals(ipV6Part)) {
             return ipv4PartValid;
         }
 
@@ -171,7 +171,7 @@ public class InetAddressValidator {
 
     /**
      * Check if <code>input</code> is an IPv4 address mapped into a IPv6 address. These are
-     * starting with "::fff:" followed by the IPv4 address in a dot-seperated notation.
+     * starting with "::ffff:" followed by the IPv4 address in a dot-seperated notation.
      * <p>
      * The format is '::ffff:d.d.d.d'
      * </p>

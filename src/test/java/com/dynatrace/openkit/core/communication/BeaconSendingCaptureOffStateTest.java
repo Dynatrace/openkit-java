@@ -91,7 +91,7 @@ public class BeaconSendingCaptureOffStateTest {
         target.execute(mockContext);
 
         // then verify that capturing is set to disabled
-        verify(mockContext, times(1)).disableCapture();
+        verify(mockContext, times(1)).disableCaptureAndClear();
 
         // also verify that lastStatusCheckTime was updated
         verify(mockContext, times(1)).setLastStatusCheckTime(org.mockito.Matchers.anyLong());

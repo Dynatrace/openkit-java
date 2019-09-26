@@ -24,15 +24,53 @@ import com.dynatrace.openkit.api.SSLTrustManager;
 public class HTTPClientConfiguration {
 
     private final String baseURL;
-    private final int serverId;
+    private final int serverID;
     private final String applicationID;
     private final SSLTrustManager sslTrustManager;
 
-    public HTTPClientConfiguration(String baseURL, int serverID, String applicationID, SSLTrustManager sslTrustManager) {
-        this.baseURL = baseURL;
-        this.serverId = serverID;
-        this.applicationID = applicationID;
-        this.sslTrustManager = sslTrustManager;
+    private HTTPClientConfiguration(Builder builder) {
+        this.baseURL = builder.baseURL;
+        this.serverID = builder.serverID;
+        this.applicationID = builder.applicationID;
+        this.sslTrustManager = builder.sslTrustManager;
+    }
+
+    /**
+     * Creates a new builder instance and initializes it from the given {@link OpenKitConfiguration}
+     *
+     * @param openKitConfig the openKit configuration from which the builder will be initialized.
+     * @return a pre initialized builder instance for creating a new {@link HTTPClientConfiguration}
+     */
+    public static HTTPClientConfiguration from(OpenKitConfiguration openKitConfig) {
+        return modifyWith(openKitConfig).build();
+    }
+
+    /**
+     * Creates a new builder instance and initializes it from the given {@link OpenKitConfiguration}
+     *
+     * @param openKitConfig the {@link OpenKitConfiguration} form which the builder will be initialized.
+     * @return a pre initialized builder instance for creating a new {@link HTTPClientConfiguration}
+     */
+    public static Builder modifyWith(OpenKitConfiguration openKitConfig) {
+        return new Builder()
+                .withBaseURL(openKitConfig.getEndpointURL())
+                .withApplicationID(openKitConfig.getApplicationID())
+                .withSSLTrustManager(openKitConfig.getSSLTrustManager())
+                .withServerID(openKitConfig.getDefaultServerID());
+    }
+
+    /**
+     * Creates a new builder instance and initializes it from the given {@link HTTPClientConfiguration}
+     *
+     * @param httpClientConfig the {@link HTTPClientConfiguration} form which the builder will be initialized.
+     * @return a pre initialized builder instance for creating a new {@link HTTPClientConfiguration}
+     */
+    public static Builder modifyWith(HTTPClientConfiguration httpClientConfig) {
+        return new Builder()
+                .withBaseURL(httpClientConfig.getBaseURL())
+                .withApplicationID(httpClientConfig.getApplicationID())
+                .withSSLTrustManager(httpClientConfig.getSSLTrustManager())
+                .withServerID(httpClientConfig.getServerID());
     }
 
     /**
@@ -50,7 +88,7 @@ public class HTTPClientConfiguration {
      * @return the server id
      */
     public int getServerID() {
-        return serverId;
+        return serverID;
     }
 
     /**
@@ -67,5 +105,40 @@ public class HTTPClientConfiguration {
      */
     public SSLTrustManager getSSLTrustManager() {
         return sslTrustManager;
+    }
+
+    /**
+     * Builder class for building {@link HTTPClientConfiguration}.
+     */
+    public static final class Builder {
+
+        private String baseURL = null;
+        private int serverID = -1;
+        private String applicationID = null;
+        private SSLTrustManager sslTrustManager = null;
+
+        public Builder withBaseURL(String baseURL) {
+            this.baseURL = baseURL;
+            return this;
+        }
+
+        public Builder withServerID(int serverID) {
+            this.serverID = serverID;
+            return this;
+        }
+
+        public Builder withApplicationID(String applicationID) {
+            this.applicationID = applicationID;
+            return this;
+        }
+
+        public Builder withSSLTrustManager(SSLTrustManager sslTrustManager) {
+            this.sslTrustManager = sslTrustManager;
+            return this;
+        }
+
+        public HTTPClientConfiguration build() {
+            return new HTTPClientConfiguration(this);
+        }
     }
 }

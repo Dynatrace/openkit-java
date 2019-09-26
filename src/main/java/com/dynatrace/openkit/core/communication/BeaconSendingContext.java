@@ -17,9 +17,12 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -34,6 +37,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * State context for beacon sending states.
+ *
+ * <p>
+ *     All package-private methods in this class shall only be accessed from the beacon sending thread,
+ *     since they are not thread safe.
+ *     All public methods are thread safe, unless explicitly stated.
+ * </p>
  */
 public class BeaconSendingContext {
 
@@ -43,14 +52,27 @@ public class BeaconSendingContext {
     static final long DEFAULT_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     private final Logger logger;
-    private final Configuration configuration;
+    /**
+     * Configuration storing last valid server side configuration.
+     *
+     * This field is initialized in the CTOR and must only be modified within the context of the
+     * BeaconSending thread.
+     */
+    private ServerConfiguration serverConfiguration;
+    /**
+     * Configuration storing last valid HTTP client configuration, independent of a session.
+     *
+     * This field is initialized in the CTOR and must only be modified within the context of the
+     * BeaconSending thread.
+     */
+    private HTTPClientConfiguration httpClientConfiguration;
     private final HTTPClientProvider httpClientProvider;
     private final TimingProvider timingProvider;
 
     /**
      * container storing all sessions
      */
-    private final LinkedBlockingQueue<SessionWrapper> sessions = new LinkedBlockingQueue<SessionWrapper>();
+    private final LinkedBlockingQueue<SessionImpl> sessions = new LinkedBlockingQueue<SessionImpl>();
 
     /**
      * boolean indicating whether shutdown was requested or not
@@ -79,7 +101,7 @@ public class BeaconSendingContext {
     /**
      * boolean indicating whether init was successful or not
      */
-    private final AtomicBoolean initSucceeded = new AtomicBoolean(false);
+    private volatile boolean initSucceeded = false;
 
     /**
      * Constructor.
@@ -88,10 +110,11 @@ public class BeaconSendingContext {
      *     The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
-    public BeaconSendingContext(Logger logger, Configuration configuration,
+    public BeaconSendingContext(Logger logger,
+                                HTTPClientConfiguration httpClientConfiguration,
                                 HTTPClientProvider httpClientProvider,
                                 TimingProvider timingProvider) {
-        this(logger, configuration, httpClientProvider, timingProvider, new BeaconSendingInitState());
+        this(logger, httpClientConfiguration, httpClientProvider, timingProvider, new BeaconSendingInitState());
     }
 
     /**
@@ -101,10 +124,14 @@ public class BeaconSendingContext {
      *     The initial state is provided. This constructor is intended for unit testing.
      * </p>
      */
-    public BeaconSendingContext(Logger logger, Configuration configuration, HTTPClientProvider httpClientProvider,
-            TimingProvider timingProvider, AbstractBeaconSendingState initialState) {
+    BeaconSendingContext(Logger logger,
+                                HTTPClientConfiguration httpClientConfiguration,
+                                HTTPClientProvider httpClientProvider,
+                                TimingProvider timingProvider,
+                                AbstractBeaconSendingState initialState) {
         this.logger = logger;
-        this.configuration = configuration;
+        this.httpClientConfiguration = httpClientConfiguration;
+        this.serverConfiguration = ServerConfiguration.DEFAULT;
         this.httpClientProvider = httpClientProvider;
         this.timingProvider = timingProvider;
 
@@ -113,6 +140,10 @@ public class BeaconSendingContext {
 
     /**
      * Executes the current state.
+     *
+     * <p>
+     *     This method must only be called from the beacon sending thread, since it's not thread safe.
+     * </p>
      */
     public void executeCurrentState() {
         nextState = null;
@@ -156,7 +187,7 @@ public class BeaconSendingContext {
             requestShutdown();
             Thread.currentThread().interrupt();
         }
-        return initSucceeded.get();
+        return initSucceeded;
     }
 
     /**
@@ -180,7 +211,7 @@ public class BeaconSendingContext {
             Thread.currentThread().interrupt();
         }
 
-        return initSucceeded.get();
+        return initSucceeded;
     }
 
     /**
@@ -189,11 +220,15 @@ public class BeaconSendingContext {
      * @return {@code true} if OpenKit is initialized, {@code false} otherwise.
      */
     public boolean isInitialized() {
-        return initSucceeded.get();
+        return initSucceeded;
     }
 
     /**
      * Gets a boolean indicating whether the current state is a terminal state or not.
+     *
+     * <p>
+     *     This method must only be called from the beacon sending thread, since it's not thread safe.
+     * </p>
      *
      * @return {@code true} if the current state is a terminal state, {@code false} otherwise.
      */
@@ -207,7 +242,7 @@ public class BeaconSendingContext {
      * @return {@code true} if capturing is turned on, {@code false} otherwise.
      */
     boolean isCaptureOn() {
-        return configuration.isCapture();
+        return serverConfiguration.isCaptureEnabled();
     }
 
     /**
@@ -247,7 +282,7 @@ public class BeaconSendingContext {
      * @param success {@code true} if OpenKit was successfully initialized, {@code false} if it was interrupted.
      */
     void initCompleted(boolean success) {
-        initSucceeded.set(success);
+        initSucceeded = success;
         initCountDownLatch.countDown();
     }
 
@@ -261,12 +296,25 @@ public class BeaconSendingContext {
     }
 
     /**
-     * Convenience method to retrieve an HTTP client.
+     * Convenience method to retrieve an {@link HTTPClient} instance with {@link #httpClientConfiguration}
+     *
+     * <p>
+     *     This method is only allowed to be called from within the beacon sending thread.
+     * </p>
      *
      * @return HTTP client received from {@link HTTPClientProvider}.
      */
     HTTPClient getHTTPClient() {
-        return httpClientProvider.createClient(configuration.getHttpClientConfig());
+        return getHTTPClient(httpClientConfiguration);
+    }
+
+    /**
+     * Convenience method to retrieve an HTTP client.
+     *
+     * @return HTTP client received from {@link HTTPClientProvider}.
+     */
+    HTTPClient getHTTPClient(HTTPClientConfiguration httpClientConfiguration) {
+        return httpClientProvider.createClient(httpClientConfiguration);
     }
 
     /**
@@ -329,28 +377,50 @@ public class BeaconSendingContext {
      * Get the send interval for open sessions.
      */
     int getSendInterval() {
-        return configuration.getSendInterval();
+        return serverConfiguration.getSendIntervalInMilliseconds();
     }
 
     /**
-     * Disable data capturing.
+     * Disable data capturing and clears all session data. Finished sessions are removed from the beacon.
      */
-    void disableCapture() {
+    void disableCaptureAndClear() {
         // first disable in configuration, so no further data will get collected
-        configuration.disableCapture();
+        disableCapture();
         clearAllSessionData();
+    }
+
+    /**
+     * Disables data capturing
+     */
+    private void disableCapture() {
+        serverConfiguration = new ServerConfiguration.Builder(serverConfiguration)
+            .withCapture(false)
+            .build();
     }
 
     /**
      * Handle the status response received from the server.
      */
     void handleStatusResponse(StatusResponse statusResponse) {
-        configuration.updateSettings(statusResponse);
+        if (statusResponse == null || (statusResponse.getResponseCode() != Response.HTTP_OK)) {
+            disableCaptureAndClear();
+            return;
+        }
 
+        serverConfiguration = new ServerConfiguration.Builder(statusResponse).build();
         if (!isCaptureOn()) {
             // capturing was turned off
             clearAllSessionData();
         }
+
+        int serverId = serverConfiguration.getServerID();
+        if (serverId != httpClientConfiguration.getServerID()) {
+            httpClientConfiguration = createHttpClientConfigurationWith(serverId);
+        }
+    }
+
+    HTTPClientConfiguration createHttpClientConfigurationWith(int serverId) {
+        return HTTPClientConfiguration.modifyWith(httpClientConfiguration).withServerID(serverId).build();
     }
 
     /**
@@ -359,27 +429,15 @@ public class BeaconSendingContext {
     private void clearAllSessionData() {
 
         // iterate over the elements
-        Iterator<SessionWrapper> iterator = sessions.iterator();
+        Iterator<SessionImpl> iterator = sessions.iterator();
         while (iterator.hasNext()) {
-            SessionWrapper wrapper = iterator.next();
-            wrapper.clearCapturedData();
-            if (wrapper.isSessionFinished()) {
+            SessionImpl session = iterator.next();
+            session.clearCapturedData();
+            SessionState state = session.getState();
+            if (state.isFinished()) {
                 iterator.remove();
             }
         }
-    }
-
-    /**
-     * Start a new session.
-     *
-     * <p>
-     *     This add the {@code session} to the internal container of sessions.
-     * </p>
-     *
-     * @param session The new session to start.
-     */
-    public void startSession(SessionImpl session) {
-        sessions.add(new SessionWrapper(session));
     }
 
     /**
@@ -391,13 +449,14 @@ public class BeaconSendingContext {
      *
      * @return A list of new sessions.
      */
-    List<SessionWrapper> getAllNewSessions() {
+    List<SessionImpl> getAllNewSessions() {
 
-        List<SessionWrapper> newSessions = new LinkedList<SessionWrapper>();
+        List<SessionImpl> newSessions = new LinkedList<SessionImpl>();
 
-        for (SessionWrapper sessionWrapper : sessions) {
-            if (!sessionWrapper.isBeaconConfigurationSet()) {
-                newSessions.add(sessionWrapper);
+        for (SessionImpl session : sessions) {
+            SessionState state = session.getState();
+            if (state.isNew()) {
+                newSessions.add(session);
             }
         }
 
@@ -407,13 +466,14 @@ public class BeaconSendingContext {
     /**
      * Get a list of all sessions that have been configured and are currently open.
      */
-    List<SessionWrapper> getAllOpenAndConfiguredSessions() {
+    List<SessionImpl> getAllOpenAndConfiguredSessions() {
 
-        List<SessionWrapper> openSessions = new LinkedList<SessionWrapper>();
+        List<SessionImpl> openSessions = new LinkedList<SessionImpl>();
 
-        for (SessionWrapper sessionWrapper : sessions) {
-            if (sessionWrapper.isBeaconConfigurationSet() && !sessionWrapper.isSessionFinished()) {
-                openSessions.add(sessionWrapper);
+        for (SessionImpl session : sessions) {
+            SessionState state = session.getState();
+            if (state.isConfiguredAndOpen()) {
+                openSessions.add(session);
             }
         }
 
@@ -423,13 +483,14 @@ public class BeaconSendingContext {
     /**
      * Get a list of all sessions that have been configured and are currently finished.
      */
-    List<SessionWrapper> getAllFinishedAndConfiguredSessions() {
+    List<SessionImpl> getAllFinishedAndConfiguredSessions() {
 
-        List<SessionWrapper> finishedSessions = new LinkedList<SessionWrapper>();
+        List<SessionImpl> finishedSessions = new LinkedList<SessionImpl>();
 
-        for (SessionWrapper sessionWrapper : sessions) {
-            if (sessionWrapper.isBeaconConfigurationSet() && sessionWrapper.isSessionFinished()) {
-                finishedSessions.add(sessionWrapper);
+        for (SessionImpl session : sessions) {
+            SessionState state = session.getState();
+            if (state.isConfiguredAndFinished()) {
+                finishedSessions.add(session);
             }
         }
 
@@ -437,41 +498,34 @@ public class BeaconSendingContext {
     }
 
     /**
-     * Finish a session which has been started previously using {@link #startSession(SessionImpl)}.
-     *
-     * @param session The session to finish.
+     * Returns the number of sessions currently known to this context
      */
-    public void finishSession(SessionImpl session) {
-
-        SessionWrapper sessionWrapper = findSessionWrapper(session);
-        if (sessionWrapper != null) {
-            sessionWrapper.finishSession();
-        }
+    int getSessionCount() {
+        return sessions.size();
     }
 
     /**
-     * Search and find {@link SessionWrapper} for given {@link SessionImpl}.
-     *
-     * @param session The session for which to search for appropriate wrapper.
-     * @return Appropriate wrapper or {@code null} if not found.
+     * Returns the current server ID to be used for creating new sessions
      */
-    private SessionWrapper findSessionWrapper(SessionImpl session) {
-
-        for (SessionWrapper sessionWrapper : sessions) {
-            if (sessionWrapper.getSession().equals(session)) {
-                return sessionWrapper;
-            }
-        }
-
-        return null;
+    public int getCurrentServerId() {
+        return httpClientConfiguration.getServerID();
     }
 
     /**
-     * Remove {@link SessionWrapper} from list of all wrappers.
+     * Adds the given session to the internal container of sessions.
      *
-     * @param sessionWrapper The wrapper to remove.
+     * @param session The new session to add.
      */
-    boolean removeSession(SessionWrapper sessionWrapper) {
-        return sessions.remove(sessionWrapper);
+    public void addSession(SessionImpl session) {
+        sessions.add(session);
+    }
+
+    /**
+     * Removes the given {@link SessionImpl session} from the sessions known by this context.
+     *
+     * @param session the session to be removed.
+     */
+    boolean removeSession(SessionImpl session) {
+        return sessions.remove(session);
     }
 }

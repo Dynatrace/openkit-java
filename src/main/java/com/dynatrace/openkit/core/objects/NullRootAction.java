@@ -19,15 +19,67 @@ package com.dynatrace.openkit.core.objects;
 import com.dynatrace.openkit.api.Action;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
+import com.dynatrace.openkit.api.WebRequestTracer;
+
+import java.net.URLConnection;
 
 /**
- * This class is returned as RootAction by {@link Session#enterAction(String)} when the {@link Session#end()}
- * has been called before.
+ * This implementation of {@link RootAction} is returned by {@link Session#enterAction(String)} when the
+ * {@link Session#end()}has been called before.
  */
-public class NullRootAction extends NullAction implements RootAction {
+public enum NullRootAction implements RootAction {
+
+    /**
+     * The sole {@link NullRootAction} instance
+     */
+    INSTANCE;
 
     @Override
     public Action enterAction(String actionName) {
         return new NullAction(this);
+    }
+
+    @Override
+    public Action reportEvent(String eventName) {
+        return this;
+    }
+
+    @Override
+    public Action reportValue(String valueName, int value) {
+        return this;
+    }
+
+    @Override
+    public Action reportValue(String valueName, double value) {
+        return this;
+    }
+
+    @Override
+    public Action reportValue(String valueName, String value) {
+        return this;
+    }
+
+    @Override
+    public Action reportError(String errorName, int errorCode, String reason) {
+        return this;
+    }
+
+    @Override
+    public WebRequestTracer traceWebRequest(URLConnection connection) {
+        return NullWebRequestTracer.INSTANCE;
+    }
+
+    @Override
+    public WebRequestTracer traceWebRequest(String url) {
+        return NullWebRequestTracer.INSTANCE;
+    }
+
+    @Override
+    public Action leaveAction() {
+        return null; // no parent action
+    }
+
+    @Override
+    public void close() {
     }
 }

@@ -24,8 +24,7 @@ import static org.junit.Assert.assertThat;
 public class InetAddressValidatorTest {
 
     @Test
-    public void ipV4AddressIsValid()
-    {
+    public void ipV4AddressIsValid() {
         //given
         String ipv4TestString = "122.133.55.22";
 
@@ -34,8 +33,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsValidAllZero()
-    {
+    public void ipV4AddressIsValidAllZero() {
         //given
         String ipv4TestString = "0.0.0.0";
 
@@ -44,8 +42,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsValidAllEigtht()
-    {
+    public void ipV4AddressIsValidAllEight() {
         //given
         String ipv4TestString = "8.8.8.8";
 
@@ -54,8 +51,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsValidHighestPossible()
-    {
+    public void ipV4AddressIsValidHighestPossible() {
         //given
         String ipv4TestString = "255.255.255.255";
 
@@ -64,8 +60,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidBecauseOfOverflow()
-    {
+    public void ipV4AddressIsInvalidBecauseOfOverflow() {
         //given
         String ipv4TestString = "255.255.255.256";
 
@@ -74,8 +69,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDoubleColonsInsteadOfPoints()
-    {
+    public void ipV4AddressIsInvalidDoubleColonsInsteadOfPoints() {
         //given
         String ipv4TestString = "255:255:255:255";
 
@@ -84,8 +78,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDueToAdditionalCharacterInFirstBlock()
-    {
+    public void ipV4AddressIsInvalidDueToAdditionalCharacterInFirstBlock() {
         //given
         String ipv4TestString = "122x.133.55.22";
 
@@ -94,8 +87,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDueToAdditionalCharacterInSecondBlock()
-    {
+    public void ipV4AddressIsInvalidDueToAdditionalCharacterInSecondBlock() {
         //given
         String ipv4TestString = "122.133x.55.22";
 
@@ -104,8 +96,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDueToAdditionalCharacterInThirdBlock()
-    {
+    public void ipV4AddressIsInvalidDueToAdditionalCharacterInThirdBlock() {
         //given
         String ipv4TestString = "122.133.55x.22";
 
@@ -114,8 +105,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDueToAdditionalCharacterInFourthBlock()
-    {
+    public void ipV4AddressIsInvalidDueToAdditionalCharacterInFourthBlock() {
         //given
         String ipv4TestString = "122.133.55.22x";
 
@@ -124,8 +114,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDueToIllegalValueOverrun()
-    {
+    public void ipV4AddressIsInvalidDueToIllegalValueOverrun() {
         //given
         String ipv4TestString = "122.133.256.22";
 
@@ -134,8 +123,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV4AddressIsInvalidDueToIllegalValueNegative()
-    {
+    public void ipV4AddressIsInvalidDueToIllegalValueNegative() {
         //given
         String ipv4TestString = "122.133.256.-22";
 
@@ -144,8 +132,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressIsValid()
-    {
+    public void ipV6AddressIsValid() {
         //given
         String ipv6TestString = "23fe:33af:1232:5522:abcd:2532:1a2b:1";
 
@@ -154,8 +141,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressIsInvalidOverflow()
-    {
+    public void ipV6AddressIsInvalidOverflow() {
         //given
         String ipv6TestString = "23fec:33af:1232:5522:abcd:2532:1a2b:1";
 
@@ -164,8 +150,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressIsInvalidIllegalCharacter()
-    {
+    public void ipV6AddressIsInvalidIllegalCharacter() {
         //given
         String ipv6TestString = "23fl:33af:1232:5522:abcd:2532:1a2b:1";
 
@@ -174,8 +159,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressIsInvalidTooManyBlocks()
-    {
+    public void ipV6AddressIsInvalidTooManyBlocks() {
         //given
         String ipv6TestString = "23fl:33af:1232:5522:abcd:2532:1a2b:1:2:3";
 
@@ -184,8 +168,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsValidBlock4()
-    {
+    public void ipV6AddressHexCompressedIsValidBlock4() {
         //given
         String ipv6TestString = "2001:db:85:b::1A";
 
@@ -194,8 +177,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsValidBlock3()
-    {
+    public void ipV6AddressHexCompressedIsValidBlock3() {
         //given
         String ipv6TestString = "2001:db:85::b:1A";
 
@@ -204,8 +186,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsValidBlock2()
-    {
+    public void ipV6AddressHexCompressedIsValidBlock2() {
         //given
         String ipv6TestString = "2001:db::85:b:1A";
 
@@ -214,8 +195,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsValidBlock1()
-    {
+    public void ipV6AddressHexCompressedIsValidBlock1() {
         //given
         String ipv6TestString = "2001::db:85:b:1A";
 
@@ -224,8 +204,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsValidShortestPossible()
-    {
+    public void ipV6AddressHexCompressedIsValidShortestPossible() {
         //given
         String ipv6TestString = "2001::b1A";
 
@@ -234,8 +213,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsInvalidTwoCompressedBlocks()
-    {
+    public void ipV6AddressHexCompressedIsInvalidTwoCompressedBlocks() {
         //given
         String ipv6TestString = "2001::db:85::b1A";
 
@@ -244,8 +222,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressHexCompressedIsInvalidFirstBlockMissing()
-    {
+    public void ipV6AddressHexCompressedIsInvalidFirstBlockMissing() {
         //given
         String ipv6TestString = ":4::5:6";
 
@@ -254,8 +231,7 @@ public class InetAddressValidatorTest {
     }
 
    @Test
-    public void ipV6AddressMixedNotationIsValid_ZerosIPv6NonCompressed()
-    {
+    public void ipV6AddressMixedNotationIsValid_ZerosIPv6NonCompressed() {
         //given
         String ipv6TestString = "0:0:0:0:0:0:172.12.55.18";
 
@@ -264,8 +240,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsValid_ZerosIPv6Compressed()
-    {
+    public void ipV6AddressMixedNotationIsValid_ZerosIPv6Compressed() {
         //given
         String ipv6TestString = "::172.12.55.18";
 
@@ -274,8 +249,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsValid_NonZeroIPv6NonCompressed()
-    {
+    public void ipV6AddressMixedNotationIsValid_NonZeroIPv6NonCompressed() {
         //given
         String ipv6TestString = "1:2:3:4:5:6:172.12.55.18";
 
@@ -284,8 +258,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsValid_NonZeroIPv6Compressed()
-    {
+    public void ipV6AddressMixedNotationIsValid_NonZeroIPv6Compressed() {
         //given
         String ipv6TestString = "2018:f::172.12.55.18";
 
@@ -294,8 +267,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsInvalidOnly3IPv4Blocks()
-    {
+    public void ipV6AddressMixedNotationIsInvalidOnly3IPv4Blocks() {
         //given
         String ipv6TestString = "0::FF:FF:172.12.55";
 
@@ -304,8 +276,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsValidIPV6PartInvalid()
-    {
+    public void ipV6AddressMixedNotationIsValidIPV6PartInvalid() {
         //given
         String ipv6TestString = "0::FF::FF:172.12.55.34";
 
@@ -314,8 +285,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsValidIPV6()
-    {
+    public void ipV6AddressMixedNotationIsValidIPV6() {
         //given
         String ipv6TestString = "0::FF:FF:FF:172.12.55.34";
 
@@ -324,8 +294,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationIsValidStartingWithDoubleColon()
-    {
+    public void ipV6AddressMixedNotationIsValidStartingWithDoubleColon() {
         //given
         String ipv6TestString = "::FF:FF:172.12.55.43";
 
@@ -334,8 +303,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressMixedNotationInvalid_Compressed3Colon()
-    {
+    public void ipV6AddressMixedNotationInvalid_Compressed3Colon() {
         //given
         String ipv6TestString = "123:::172.12.55.43";
 
@@ -344,8 +312,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressLinkLocalIsValid()
-    {
+    public void ipV6AddressLinkLocalIsValid() {
         //given
         String ipv6TestStringLinkLocal = "fe80::208:74ff:feda:625c%5";
 
@@ -354,8 +321,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressLinkLocalIsValidVeryShortLinkLocal()
-    {
+    public void ipV6AddressLinkLocalIsValidVeryShortLinkLocal() {
         //given
         String ipv6TestStringLinkLocal = "fe80::625c%5";
 
@@ -364,8 +330,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressLinkLocalIsInvalidTooManyBlocks()
-    {
+    public void ipV6AddressLinkLocalIsInvalidTooManyBlocks() {
         //given
         String ipv6TestStringLinkLocal = "fe80:34:208:74ff:feda:dada:625c:8976:abcd%5";
 
@@ -374,8 +339,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressLinkLocalIsInvalidIllegalNonHexCharacter()
-    {
+    public void ipV6AddressLinkLocalIsInvalidIllegalNonHexCharacter() {
         //given
         String ipv6TestStringLinkLocal = "fe80::208t:74ff:feda:dada:625c%5";
 
@@ -384,8 +348,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressLinkLocalIsInvalidDueToTwoDoubleColonsInAddress()
-    {
+    public void ipV6AddressLinkLocalIsInvalidDueToTwoDoubleColonsInAddress() {
         //given
         String ipv6TestStringLinkLocal = "fe80::208:74ff::dada:625c%5";
 
@@ -394,8 +357,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressLinkLocalIsInvalidZoneIndexUsedWithInvalidPrefix()
-    {
+    public void ipV6AddressLinkLocalIsInvalidZoneIndexUsedWithInvalidPrefix() {
         //given
         String ipv6TestStringLinkLocal = "fedd::208:74ff::dada:625c%5";
 
@@ -406,8 +368,7 @@ public class InetAddressValidatorTest {
     // the following two addresses are not valid according to RFC5952 but are accepted by glibc's implementation and also ours
 
     @Test
-    public void ipV6AddressValid_RFCLeadingZeros()
-    {
+    public void ipV6AddressValid_RFCLeadingZeros() {
         //given
         String ipv6TestString = "2001:0db8::0001";
 
@@ -416,8 +377,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressValid_RFCEmptyBlockNotShortened()
-    {
+    public void ipV6AddressValid_RFCEmptyBlockNotShortened() {
         //given
         String ipv6TestString = "2001:db8::0:1";
 
@@ -426,8 +386,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressValid_RFCExample()
-    {
+    public void ipV6AddressValid_RFCExample() {
         //given
         String ipv6TestString = "2001:db8::1:0:0:1";
 
@@ -436,8 +395,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressValid_CharactersOnlyLowerCase()
-    {
+    public void ipV6AddressValid_CharactersOnlyLowerCase() {
         //given
         String ipv6TestString = "20ae:db8::1f:4edd:344f:1abc";
 
@@ -446,8 +404,7 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressValid_CharactersMixedCase()
-    {
+    public void ipV6AddressValid_CharactersMixedCase() {
         //given
         String ipv6TestString = "20aE:Db8::1f:4EDd:344f:1aBc";
 
@@ -456,13 +413,60 @@ public class InetAddressValidatorTest {
     }
 
     @Test
-    public void ipV6AddressValid_CharactersUpperCase()
-    {
+    public void ipV6AddressValid_CharactersUpperCase() {
         //given
         String ipv6TestString = "20AE:DB8::1F:4EDD:344F:1ABC";
 
         //then 
         assertThat(InetAddressValidator.isValidIP(ipv6TestString), is(true));
+    }
+
+    @Test
+    public void ipV6AddressMappedWithValidIpV4Address() {
+        // given
+        String ipAddress = "::ffff:127.0.0.1";
+
+        // when
+        boolean obtained = InetAddressValidator.isValidIP(ipAddress);
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void ipV6AddressMappedWithInvalidIpV4Address() {
+        // given
+        String ipAddress = "::ffff:127.0.0.300";
+
+        // when
+        boolean obtained = InetAddressValidator.isValidIP(ipAddress);
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void nullIpAddressIsInvalid() {
+        // given
+        String ipAddress = null;
+
+        // when
+        boolean obtained = InetAddressValidator.isValidIP(ipAddress);
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void emptyIpAddressIsInvalid() {
+        // given
+        String ipAddress = "";
+
+        // when
+        boolean obtained = InetAddressValidator.isValidIP(ipAddress);
+
+        // then
+        assertThat(obtained, is(false));
     }
 
 }

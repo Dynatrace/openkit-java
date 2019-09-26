@@ -19,11 +19,13 @@ package com.dynatrace.openkit.core.objects;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.BeaconSender;
+import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
+import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
+import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
+import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -59,32 +62,36 @@ public class OpenKitImplTest {
     private static final String APP_NAME = "appName";
 
     private Logger logger;
-    private Configuration configuration;
+    private PrivacyConfiguration privacyConfiguration;
+    private OpenKitConfiguration openKitConfiguration;
     private TimingProvider timingProvider;
-    private ThreadIDProvider threadIDProvider;
+    private ThreadIDProvider threadIdProvider;
+    private SessionIDProvider sessionIdProvider;
     private BeaconCacheImpl beaconCache;
     private BeaconSender beaconSender;
     private BeaconCacheEvictor beaconCacheEvictor;
 
     @Before
     public void setUp() {
-
         logger = mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
         when(logger.isInfoEnabled()).thenReturn(true);
 
-        configuration = mock(Configuration.class);
-        when(configuration.getApplicationID()).thenReturn(APP_ID);
-        when(configuration.getDeviceID()).thenReturn(DEVICE_ID);
-        when(configuration.getApplicationName()).thenReturn(APP_NAME);
-        when(configuration.getDevice()).thenReturn(new Device("", "", ""));
-        when(configuration.isCapture()).thenReturn(true);
-        when(configuration.getBeaconConfiguration()).thenReturn(new BeaconConfiguration());
-        when(configuration.getPrivacyConfiguration()).thenReturn(
-            new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL, PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL));
+        privacyConfiguration = mock(PrivacyConfiguration.class);
+        when(privacyConfiguration.getDataCollectionLevel()).thenReturn(ConfigurationDefaults.DEFAULT_DATA_COLLECTION_LEVEL);
+        when(privacyConfiguration.getCrashReportingLevel()).thenReturn(ConfigurationDefaults.DEFAULT_CRASH_REPORTING_LEVEL);
+
+        openKitConfiguration = mock(OpenKitConfiguration.class);
+        when(openKitConfiguration.getApplicationID()).thenReturn(APP_ID);
+        when(openKitConfiguration.getDeviceID()).thenReturn(DEVICE_ID);
+        when(openKitConfiguration.getApplicationName()).thenReturn(APP_NAME);
+        when(openKitConfiguration.getOperatingSystem()).thenReturn("");
+        when(openKitConfiguration.getManufacturer()).thenReturn("");
+        when(openKitConfiguration.getModelID()).thenReturn("");
 
         timingProvider = mock(TimingProvider.class);
-        threadIDProvider = mock(ThreadIDProvider.class);
+        threadIdProvider = mock(ThreadIDProvider.class);
+        sessionIdProvider = mock(SessionIDProvider.class);
         beaconCache = mock(BeaconCacheImpl.class);
         beaconSender = mock(BeaconSender.class);
         beaconCacheEvictor = mock(BeaconCacheEvictor.class);
@@ -93,7 +100,7 @@ public class OpenKitImplTest {
     @Test
     public void initializeStartsTheBeaconCacheEvictor() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when
         target.initialize();
@@ -106,7 +113,7 @@ public class OpenKitImplTest {
     @Test
     public void initializeInitializesBeaconSender() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when
         target.initialize();
@@ -120,7 +127,7 @@ public class OpenKitImplTest {
     public void waitForInitCompletionForwardsTheCallToTheBeaconSender() {
         // given
         when(beaconSender.waitForInit()).thenReturn(false, true);
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when called first time
         boolean obtained = target.waitForInitCompletion();
@@ -142,7 +149,7 @@ public class OpenKitImplTest {
     public void waitForInitCompletionWithTimeoutForwardsTheCallToTheBeaconSender() {
         // given
         when(beaconSender.waitForInit(anyInt())).thenReturn(false, true);
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when called first time
         boolean obtained = target.waitForInitCompletion(100L);
@@ -165,7 +172,7 @@ public class OpenKitImplTest {
     public void isInitializedForwardsCallToTheBeaconSender() {
         // given
         when(beaconSender.isInitialized()).thenReturn(false, true);
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when called first time
         boolean obtained = target.isInitialized();
@@ -184,21 +191,9 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void getConfigurationReturnsConfigurationPassedInConstructor() {
-        // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
-
-        // when
-        Configuration obtained = target.getConfiguration();
-
-        // then
-        assertThat(obtained, is(sameInstance(configuration)));
-    }
-
-    @Test
     public void shutdownStopsTheBeaconCacheEvictor() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when
         target.shutdown();
@@ -211,7 +206,7 @@ public class OpenKitImplTest {
     @Test
     public void shutdownShutsDownBeaconSender() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when
         target.shutdown();
@@ -224,7 +219,7 @@ public class OpenKitImplTest {
     @Test
     public void shutdownClosesAllChildObjects() throws IOException {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         OpenKitObject childObjectOne = mock(OpenKitObject.class);
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
@@ -240,9 +235,21 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void closingChildObjectsCatchesIOExceptiuon() throws IOException {
+    public void closeCallsShutdown() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = spy(createOpenKit().build());
+
+        // when
+        target.close();
+
+        // then
+        verify(target, times(1)).shutdown();
+    }
+
+    @Test
+    public void closingChildObjectsCatchesIOException() throws IOException {
+        // given
+        OpenKitImpl target = createOpenKit().build();
 
         IOException exception = new IOException("oops");
         OpenKitObject childObjectOne = mock(OpenKitObject.class);
@@ -263,7 +270,7 @@ public class OpenKitImplTest {
     @Test
     public void callingShutdownASecondTimeReturnsImmediately() throws IOException {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         OpenKitObject childObjectOne = mock(OpenKitObject.class);
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
@@ -286,7 +293,7 @@ public class OpenKitImplTest {
     @Test
     public void createSessionReturnsSessionObject() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when
         Session obtained = target.createSession("127.0.0.1");
@@ -299,7 +306,7 @@ public class OpenKitImplTest {
     @Test
     public void createSessionAddsNewlyCreatedSessionToListOfChildren() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         // when first session is created
         Session sessionOne = target.createSession("127.0.0.1");
@@ -319,7 +326,7 @@ public class OpenKitImplTest {
     @Test
     public void createSessionAfterShutdownHasBeenCalledReturnsNullSession() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
         target.shutdown();
 
         // when
@@ -328,13 +335,13 @@ public class OpenKitImplTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained, is(instanceOf(NullSession.class)));
-        assertThat(obtained, sameInstance(OpenKitImpl.NULL_SESSION));
+        assertThat((NullSession)obtained, sameInstance(NullSession.INSTANCE));
     }
 
     @Test
     public void onChildClosedRemovesArgumentFromListOfChildren() {
         // given
-        OpenKitImpl target = new OpenKitImpl(logger, configuration, timingProvider, threadIDProvider, beaconCache, beaconSender, beaconCacheEvictor);
+        OpenKitImpl target = createOpenKit().build();
 
         OpenKitObject childObjectOne = mock(OpenKitObject.class);
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
@@ -348,5 +355,56 @@ public class OpenKitImplTest {
         // when second child is removed
         target.onChildClosed(childObjectTwo);
         assertThat(target.getCopyOfChildObjects(), is(empty()));
+    }
+
+    private OpenKitImplBuilder createOpenKit() {
+        OpenKitImplBuilder builder = new OpenKitImplBuilder();
+        builder.logger = logger;
+        builder.privacyConfiguration = privacyConfiguration;
+        builder.openKitConfiguration = openKitConfiguration;
+        builder.threadIdProvider = threadIdProvider;
+        builder.timingProvider = timingProvider;
+        builder.sessionIdProvider = sessionIdProvider;
+        builder.beaconCache = beaconCache;
+        builder.beaconSender = beaconSender;
+        builder.beaconCacheEvictor = beaconCacheEvictor;
+
+        return builder;
+    }
+
+    private static class OpenKitImplBuilder {
+        private Logger logger;
+        private PrivacyConfiguration privacyConfiguration;
+        private OpenKitConfiguration openKitConfiguration;
+        private ThreadIDProvider threadIdProvider;
+        private TimingProvider timingProvider;
+        private SessionIDProvider sessionIdProvider;
+        private BeaconCache beaconCache;
+        private BeaconSender beaconSender;
+        private BeaconCacheEvictor beaconCacheEvictor;
+
+        private OpenKitImplBuilder with(PrivacyConfiguration privacyConfiguration) {
+            this.privacyConfiguration = privacyConfiguration;
+            return this;
+        }
+
+        private OpenKitImplBuilder with(OpenKitConfiguration openKitConfiguration) {
+            this.openKitConfiguration = openKitConfiguration;
+            return this;
+        }
+
+        private OpenKitImpl build() {
+            return new OpenKitImpl(
+                    logger,
+                    privacyConfiguration,
+                    openKitConfiguration,
+                    timingProvider,
+                    threadIdProvider,
+                    sessionIdProvider,
+                    beaconCache,
+                    beaconSender,
+                    beaconCacheEvictor
+            );
+        }
     }
 }

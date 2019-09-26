@@ -16,43 +16,55 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class PrivacyConfigurationTest {
 
     @Test
+    public void fromWithNullBuilderReturnsNull() {
+        // given, when
+        PrivacyConfiguration obtained = PrivacyConfiguration.from(null);
+
+        // then
+        assertThat(obtained, is(nullValue()));
+    }
+
+    @Test
     public void getDataCollectionLevelReturnsLevelPassedInConstructor() {
         // when data collection level , then
-        assertThat(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES).getDataCollectionLevel(),
-            is(equalTo(DataCollectionLevel.OFF)));
-        assertThat(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF).getDataCollectionLevel(),
-            is(equalTo(DataCollectionLevel.PERFORMANCE)));
-        assertThat(new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR, CrashReportingLevel.OFF).getDataCollectionLevel(),
+        assertThat(newConfigWith(DataCollectionLevel.OFF).getDataCollectionLevel(),
+                is(equalTo(DataCollectionLevel.OFF)));
+        assertThat(newConfigWith(DataCollectionLevel.PERFORMANCE).getDataCollectionLevel(),
+                is(equalTo(DataCollectionLevel.PERFORMANCE)));
+        assertThat(newConfigWith(DataCollectionLevel.USER_BEHAVIOR).getDataCollectionLevel(),
             is(equalTo(DataCollectionLevel.USER_BEHAVIOR)));
     }
 
     @Test
     public void getCrashReportingLevelReturnsLevelPassedInConstructor() {
         // when data collection level , then
-        assertThat(new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE, CrashReportingLevel.OFF).getCrashReportingLevel(),
+        assertThat(newConfigWith(CrashReportingLevel.OFF).getCrashReportingLevel(),
             is(equalTo(CrashReportingLevel.OFF)));
-        assertThat(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OPT_OUT_CRASHES).getCrashReportingLevel(),
+        assertThat(newConfigWith(CrashReportingLevel.OPT_OUT_CRASHES).getCrashReportingLevel(),
             is(equalTo(CrashReportingLevel.OPT_OUT_CRASHES)));
-        assertThat(new PrivacyConfiguration(DataCollectionLevel.OFF, CrashReportingLevel.OPT_IN_CRASHES).getCrashReportingLevel(),
+        assertThat(newConfigWith(CrashReportingLevel.OPT_IN_CRASHES).getCrashReportingLevel(),
             is(equalTo(CrashReportingLevel.OPT_IN_CRASHES)));
     }
 
     @Test
     public void sessionNumberReportingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isSessionNumberReportingAllowed(), is(true));
@@ -61,8 +73,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void sessionNumberReportingIsNotAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isSessionNumberReportingAllowed(), is(false));
@@ -71,8 +82,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void sessionNumberReportingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isSessionNumberReportingAllowed(), is(false));
@@ -81,8 +91,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void deviceIDSendingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-                                                               PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isDeviceIDSendingAllowed(), is(true));
@@ -91,8 +100,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void deviceIDSendingIsNotAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isDeviceIDSendingAllowed(), is(false));
@@ -101,8 +109,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void deviceIDSendingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isDeviceIDSendingAllowed(), is(false));
@@ -111,8 +118,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void webRequestTracingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isWebRequestTracingAllowed(), is(true));
@@ -121,8 +127,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void webRequestTracingIsAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isWebRequestTracingAllowed(), is(true));
@@ -131,8 +136,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void webRequestTracingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isWebRequestTracingAllowed(), is(false));
@@ -141,8 +145,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void sessionReportingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isSessionReportingAllowed(), is(true));
@@ -151,8 +154,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void sessionReportingIsAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isSessionReportingAllowed(), is(true));
@@ -161,8 +163,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void sessionReportingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isSessionReportingAllowed(), is(false));
@@ -171,8 +172,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void actionReportingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isActionReportingAllowed(), is(true));
@@ -181,8 +181,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void actionReportingIsAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isActionReportingAllowed(), is(true));
@@ -191,8 +190,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void actionReportingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isActionReportingAllowed(), is(false));
@@ -201,8 +199,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void valueReportingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isValueReportingAllowed(), is(true));
@@ -211,8 +208,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void valueReportingIsNotAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isValueReportingAllowed(), is(false));
@@ -221,8 +217,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void valueReportingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isValueReportingAllowed(), is(false));
@@ -231,8 +226,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void eventReportingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isEventReportingAllowed(), is(true));
@@ -241,8 +235,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void eventReportingIsNotAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isEventReportingAllowed(), is(false));
@@ -251,8 +244,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void eventReportingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isEventReportingAllowed(), is(false));
@@ -261,8 +253,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void errorReportingIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isErrorReportingAllowed(), is(true));
@@ -271,8 +262,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void errorReportingIsAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isErrorReportingAllowed(), is(true));
@@ -281,8 +271,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void errorReportingIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target =  newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isErrorReportingAllowed(), is(false));
@@ -291,8 +280,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void crashReportingIsAllowedIfCrashReportingLevelIsEqualToOptInCrashes() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL,
-            CrashReportingLevel.OPT_IN_CRASHES);
+        PrivacyConfiguration target = newConfigWith(CrashReportingLevel.OPT_IN_CRASHES);
 
         // when, then
         assertThat(target.isCrashReportingAllowed(), is(true));
@@ -301,8 +289,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void crashReportingIsNotAllowedIfCrashReportingLevelIsEqualToOptOutCrashes() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL,
-            CrashReportingLevel.OPT_OUT_CRASHES);
+        PrivacyConfiguration target = newConfigWith(CrashReportingLevel.OPT_OUT_CRASHES);
 
         // when, then
         assertThat(target.isCrashReportingAllowed(), is(false));
@@ -311,8 +298,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void crashReportingIsNotAllowedIfCrashReportingLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL,
-            CrashReportingLevel.OFF);
+        PrivacyConfiguration target = newConfigWith(CrashReportingLevel.OFF);
 
         // when, then
         assertThat(target.isCrashReportingAllowed(), is(false));
@@ -321,8 +307,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void userIdentificationIsAllowedIfDataCollectionLevelIsEqualToUserBehavior() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.USER_BEHAVIOR,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.USER_BEHAVIOR);
 
         // when, then
         assertThat(target.isUserIdentificationAllowed(), is(true));
@@ -331,8 +316,7 @@ public class PrivacyConfigurationTest {
     @Test
     public void userIdentificationIsNotAllowedIfDataCollectionLevelIsEqualToPerformance() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.PERFORMANCE,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.PERFORMANCE);
 
         // when, then
         assertThat(target.isUserIdentificationAllowed(), is(false));
@@ -341,10 +325,25 @@ public class PrivacyConfigurationTest {
     @Test
     public void userIdentificationIsNotAllowedIfDataCollectionLevelIsEqualToOff() {
         // given
-        PrivacyConfiguration target = new PrivacyConfiguration(DataCollectionLevel.OFF,
-            PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL);
+        PrivacyConfiguration target = newConfigWith(DataCollectionLevel.OFF);
 
         // when, then
         assertThat(target.isUserIdentificationAllowed(), is(false));
+    }
+
+    private PrivacyConfiguration newConfigWith(DataCollectionLevel dataCollectionLevel) {
+        return newConfigWith(dataCollectionLevel, ConfigurationDefaults.DEFAULT_CRASH_REPORTING_LEVEL);
+    }
+
+    private PrivacyConfiguration newConfigWith(CrashReportingLevel crashReportingLevel) {
+        return newConfigWith(ConfigurationDefaults.DEFAULT_DATA_COLLECTION_LEVEL, crashReportingLevel);
+    }
+
+    private PrivacyConfiguration newConfigWith(DataCollectionLevel dataCollectionLevel, CrashReportingLevel crashReportingLevel) {
+        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        when(builder.getDataCollectionLevel()).thenReturn(dataCollectionLevel);
+        when(builder.getCrashReportLevel()).thenReturn(crashReportingLevel);
+
+        return PrivacyConfiguration.from(builder);
     }
 }

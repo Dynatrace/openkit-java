@@ -21,9 +21,7 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
-import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
-import com.dynatrace.openkit.core.configuration.Configuration;
-import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
+import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
 import com.dynatrace.openkit.core.objects.OpenKitImpl;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
@@ -32,6 +30,11 @@ import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
  * Abstract base class for concrete builder. Using the builder a OpenKit instance can be created
  */
 public abstract class AbstractOpenKitBuilder {
+
+    /**
+     * The default server ID to communicate with.
+     */
+    public static final int DEFAULT_SERVER_ID = 1;
 
     // immutable fields
     private final String endpointURL;
@@ -45,11 +48,11 @@ public abstract class AbstractOpenKitBuilder {
     private String manufacturer = OpenKitConstants.DEFAULT_MANUFACTURER;
     private String modelID = OpenKitConstants.DEFAULT_MODEL_ID;
     private String applicationVersion = OpenKitConstants.DEFAULT_APPLICATION_VERSION;
-    private long beaconCacheMaxRecordAge = BeaconCacheConfiguration.DEFAULT_MAX_RECORD_AGE_IN_MILLIS;
-    private long beaconCacheLowerMemoryBoundary = BeaconCacheConfiguration.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES;
-    private long beaconCacheUpperMemoryBoundary = BeaconCacheConfiguration.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
-    private DataCollectionLevel dataCollectionLevel = PrivacyConfiguration.DEFAULT_DATA_COLLECTION_LEVEL;
-    private CrashReportingLevel crashReportLevel = PrivacyConfiguration.DEFAULT_CRASH_REPORTING_LEVEL;
+    private long beaconCacheMaxRecordAge = ConfigurationDefaults.DEFAULT_MAX_RECORD_AGE_IN_MILLIS;
+    private long beaconCacheLowerMemoryBoundary = ConfigurationDefaults.DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES;
+    private long beaconCacheUpperMemoryBoundary = ConfigurationDefaults.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
+    private DataCollectionLevel dataCollectionLevel = ConfigurationDefaults.DEFAULT_DATA_COLLECTION_LEVEL;
+    private CrashReportingLevel crashReportLevel = ConfigurationDefaults.DEFAULT_CRASH_REPORTING_LEVEL;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
@@ -86,7 +89,9 @@ public abstract class AbstractOpenKitBuilder {
      * @return {@link AbstractOpenKitBuilder}
      */
     public AbstractOpenKitBuilder withLogLevel(LogLevel level) {
-        logLevel = level;
+        if (level != null) {
+            logLevel = level;
+        }
         return this;
     }
 
@@ -116,13 +121,13 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Sets the trust manager. Overrides the default trust manager which is {@code SSLStrictTrustmanager} by default-
+     * Sets the trust manager. Overrides the default trust manager which is {@code SSLStrictTrustManager} by default-
      *
      * @param trustManager trust manager implementation
      * @return {@code this}
      */
     public AbstractOpenKitBuilder withTrustManager(SSLTrustManager trustManager) {
-        this.trustManager = trustManager;
+        this.trustManager = trustManager == null ? new SSLStrictTrustManager() : trustManager;
         return this;
     }
 
@@ -248,20 +253,13 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
-     * Builds the configuration for the OpenKit instance
-     *
-     * @return
-     */
-    abstract Configuration buildConfiguration();
-
-    /**
      * Builds a new {@code OpenKit} instance
      *
-     * @return retursn an {@code OpenKit} instance
+     * @return returns an {@code OpenKit} instance
      */
     public OpenKit build() {
         // create and initialize OpenKit instance
-        OpenKitImpl openKit = new OpenKitImpl(getLogger(), buildConfiguration());
+        OpenKitImpl openKit = new OpenKitImpl(this);
         openKit.initialize();
 
         return openKit;
@@ -301,12 +299,15 @@ public abstract class AbstractOpenKitBuilder {
      * Get the default server ID to communicate with.
      *
      * <p>
-     *     This might change based on the OpenKit type.
+     *     Specific {@link AbstractOpenKitBuilder OpenKit builder} implementors might return a different default
+     *     server ID by overriding this method.
      * </p>
      *
      * @return Default server id to communicate with.
      */
-    public abstract int getDefaultServerID();
+    public int getDefaultServerID() {
+        return DEFAULT_SERVER_ID;
+    }
 
     /**
      * Get the application version that has been set with {@link #withApplicationVersion(String)}.
@@ -395,7 +396,7 @@ public abstract class AbstractOpenKitBuilder {
      * Get the maximum beacon cache record age that has been set with {@link #withBeaconCacheMaxRecordAge(long)}.
      *
      * @return Previously set maximum beacon cache record age or
-     *         {@link BeaconCacheConfiguration#DEFAULT_MAX_RECORD_AGE_IN_MILLIS} if none has been set.
+     *         {@link ConfigurationDefaults#DEFAULT_MAX_RECORD_AGE_IN_MILLIS} if none has been set.
      */
     public long getBeaconCacheMaxRecordAge() {
         return beaconCacheMaxRecordAge;
@@ -406,7 +407,7 @@ public abstract class AbstractOpenKitBuilder {
      * {@link #withBeaconCacheLowerMemoryBoundary(long)}.
      *
      * @return Previously set lower memory boundary or
-     *         {@link BeaconCacheConfiguration#DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES} if none has been set.
+     *         {@link ConfigurationDefaults#DEFAULT_LOWER_MEMORY_BOUNDARY_IN_BYTES} if none has been set.
      */
     public long getBeaconCacheLowerMemoryBoundary() {
         return beaconCacheLowerMemoryBoundary;
@@ -417,7 +418,7 @@ public abstract class AbstractOpenKitBuilder {
      * {@link #withBeaconCacheUpperMemoryBoundary(long)}.
      *
      * @return Previously set upper memory boundary or
-     *         {@link BeaconCacheConfiguration#DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES} if none has been set.
+     *         {@link ConfigurationDefaults#DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES} if none has been set.
      */
     public long getBeaconCacheUpperMemoryBoundary() {
         return beaconCacheUpperMemoryBoundary;
@@ -426,7 +427,7 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Get data collection level that has been set with {@link #withDataCollectionLevel(DataCollectionLevel)}.
      *
-     * @return Previously set data collection level or {@link PrivacyConfiguration#DEFAULT_DATA_COLLECTION_LEVEL}
+     * @return Previously set data collection level or {@link ConfigurationDefaults#DEFAULT_DATA_COLLECTION_LEVEL}
      *         if nothing has been set.
      */
     public DataCollectionLevel getDataCollectionLevel() {
@@ -436,7 +437,7 @@ public abstract class AbstractOpenKitBuilder {
     /**
      * Get crash reporting level that has been set with {@link #withCrashReportingLevel(CrashReportingLevel)}.
      *
-     * @return Previously set crash reporting level or {@link PrivacyConfiguration#DEFAULT_CRASH_REPORTING_LEVEL}
+     * @return Previously set crash reporting level or {@link ConfigurationDefaults#DEFAULT_CRASH_REPORTING_LEVEL}
      *         if nothing has been set.
      */
     public CrashReportingLevel getCrashReportLevel() {

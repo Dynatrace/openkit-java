@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
+import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.List;
@@ -39,23 +39,23 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
     @Override
     void doExecute(BeaconSendingContext context) {
 
-        // first get all sessions that do not have any multiplicity set
-        List<SessionWrapper> newSessions = context.getAllNewSessions();
-        for (SessionWrapper newSession : newSessions) {
-            // just turn on the multiplicity and send all remaining data
-            newSession.updateBeaconConfiguration(new BeaconConfiguration(1));
+        // first get all sessions that were not yet configured
+        List<SessionImpl> newSessions = context.getAllNewSessions();
+        for (SessionImpl newSession : newSessions) {
+            // just turn on the capturing and send all remaining data
+            newSession.enableCapture();
         }
 
         // end open sessions -> will be flushed afterwards
-        List<SessionWrapper> openSessions = context.getAllOpenAndConfiguredSessions();
-        for (SessionWrapper openSession : openSessions) {
+        List<SessionImpl> openSessions = context.getAllOpenAndConfiguredSessions();
+        for (SessionImpl openSession : openSessions) {
             openSession.end();
         }
 
         // flush already finished (and previously ended) sessions
         boolean tooManyRequestsReceived = false;
-        List<SessionWrapper> finishedSessions = context.getAllFinishedAndConfiguredSessions();
-        for (SessionWrapper finishedSession : finishedSessions) {
+        List<SessionImpl> finishedSessions = context.getAllFinishedAndConfiguredSessions();
+        for (SessionImpl finishedSession : finishedSessions) {
             if (!tooManyRequestsReceived && finishedSession.isDataSendingAllowed()) {
                 StatusResponse response = finishedSession.sendBeacon(context.getHTTPClientProvider());
                 if (BeaconSendingResponseUtil.isTooManyRequestsResponse(response)) {
@@ -63,7 +63,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
                 }
             }
             finishedSession.clearCapturedData();
-            finishedSession.getSession().close(); // The session is already closed/ended at this point. This call avoids a static code warning.
+            finishedSession.close(); // The session is already closed/ended at this point. This call avoids a static code warning.
             context.removeSession(finishedSession);
         }
 

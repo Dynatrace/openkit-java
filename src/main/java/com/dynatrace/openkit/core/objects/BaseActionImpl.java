@@ -30,9 +30,6 @@ import java.util.List;
  */
 public abstract class BaseActionImpl extends OpenKitComposite implements Action {
 
-    /** Web request tracer returned, if this action is already closed. */
-    private static final WebRequestTracer NULL_WEB_REQUEST_TRACER = new NullWebRequestTracer();
-
     /** {@link Logger} for tracing log message */
     final Logger logger;
 
@@ -186,7 +183,7 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
     public WebRequestTracer traceWebRequest(URLConnection connection) {
         if (connection == null) {
             logger.warning(this + "traceWebRequest (URLConnection): connection must not be null");
-            return NULL_WEB_REQUEST_TRACER;
+            return NullWebRequestTracer.INSTANCE;
         }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (URLConnection) (" + connection + ")");
@@ -200,18 +197,18 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
             }
         }
 
-        return NULL_WEB_REQUEST_TRACER;
+        return NullWebRequestTracer.INSTANCE;
     }
 
     @Override
     public WebRequestTracer traceWebRequest(String url) {
         if (url == null || url.isEmpty()) {
             logger.warning(this + "traceWebRequest (String): url must not be null or empty");
-            return NULL_WEB_REQUEST_TRACER;
+            return NullWebRequestTracer.INSTANCE;
         }
         if (!WebRequestTracerStringURL.isValidURLScheme(url)) {
             logger.warning(this + "traceWebRequest (String): url \"" + url + "\" does not have a valid scheme");
-            return NULL_WEB_REQUEST_TRACER;
+            return NullWebRequestTracer.INSTANCE;
         }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "traceWebRequest (String) (" + url + ")");
@@ -225,7 +222,7 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
             }
         }
 
-        return NULL_WEB_REQUEST_TRACER;
+        return NullWebRequestTracer.INSTANCE;
     }
 
     @Override
