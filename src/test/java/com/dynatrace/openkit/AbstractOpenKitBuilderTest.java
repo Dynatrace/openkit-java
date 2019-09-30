@@ -316,7 +316,7 @@ public class AbstractOpenKitBuilderTest {
     }
 
     @Test
-    public void getManufacturerGivesChangedOperatingSystem() {
+    public void getManufacturerGivesChangedManufacturer() {
         // given
         AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
 
@@ -368,7 +368,7 @@ public class AbstractOpenKitBuilderTest {
     }
 
     @Test
-    public void getModelIDGivesChangedOperatingSystem() {
+    public void getModelIDGivesChangedModelID() {
         // given
         AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
 
@@ -457,7 +457,7 @@ public class AbstractOpenKitBuilderTest {
     }
 
     @Test
-    public void getBeaconCacheLowerUpperBoundaryReturnsADefaultValue() {
+    public void getBeaconCacheUpperMemoryBoundaryReturnsADefaultValue() {
         // given
         AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
 

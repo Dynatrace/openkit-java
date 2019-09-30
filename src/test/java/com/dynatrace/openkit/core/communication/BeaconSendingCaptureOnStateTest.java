@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -272,7 +273,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaconIsEmtpy() {
+    public void aBeaconSendingCaptureOnStateContinuesWithNextFinishedSessionIfSendingWasUnsuccessfulButBeaconIsEmpty() {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -417,6 +418,6 @@ public class BeaconSendingCaptureOnStateTest {
         verify(mockContext, times(1)).handleStatusResponse(org.mockito.Matchers.any(StatusResponse.class));
         verify(mockContext, times(1)).isCaptureOn();
 
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
+        verify(mockContext, times(1)).setNextState(isA(BeaconSendingCaptureOffState.class));
     }
 }

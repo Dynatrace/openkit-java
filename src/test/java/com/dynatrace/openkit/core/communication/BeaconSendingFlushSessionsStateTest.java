@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -109,7 +110,7 @@ public class BeaconSendingFlushSessionsStateTest {
         target.doExecute(mockContext);
 
         // verify transition to terminal state
-        verify(mockContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTerminalState.class));
+        verify(mockContext, times(1)).setNextState(isA(BeaconSendingTerminalState.class));
     }
 
     @Test

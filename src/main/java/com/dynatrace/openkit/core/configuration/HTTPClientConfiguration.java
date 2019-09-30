@@ -36,10 +36,11 @@ public class HTTPClientConfiguration {
     }
 
     /**
-     * Creates a new builder instance and initializes it from the given {@link OpenKitConfiguration}
+     * Creates a new {@link HTTPClientConfiguration} instance and initializes it from the given
+     * {@link OpenKitConfiguration}.
      *
-     * @param openKitConfig the openKit configuration from which the builder will be initialized.
-     * @return a pre initialized builder instance for creating a new {@link HTTPClientConfiguration}
+     * @param openKitConfig the openKit configuration from which the instance will be initialized.
+     * @return a new {@link HTTPClientConfiguration} instance initialized from the given configuration.
      */
     public static HTTPClientConfiguration from(OpenKitConfiguration openKitConfig) {
         return modifyWith(openKitConfig).build();

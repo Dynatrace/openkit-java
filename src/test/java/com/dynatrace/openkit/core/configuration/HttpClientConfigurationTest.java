@@ -81,7 +81,6 @@ public class HttpClientConfigurationTest {
         assertThat(obtained, sameInstance(trustManager));
     }
 
-
     @Test
     public void instanceFromOpenKitConfigTakesOverDefaultServerId() {
         // given
@@ -225,5 +224,4 @@ public class HttpClientConfigurationTest {
         // then
         assertThat(obtained.getServerID(), is(equalTo(serverId)));
     }
-
 }

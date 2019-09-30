@@ -295,7 +295,6 @@ public class ServerConfiguration {
             return this;
         }
 
-
         /**
          * Enables/disables error reporting by setting {@link #isErrorReportingEnabled} to the corresponding value.
          *

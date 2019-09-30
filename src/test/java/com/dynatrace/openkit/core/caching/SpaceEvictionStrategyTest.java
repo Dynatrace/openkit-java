@@ -361,7 +361,7 @@ public class SpaceEvictionStrategyTest {
         when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerSizeBound);
         when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperSizeBound);
 
-        BeaconCacheConfiguration config = BeaconCacheConfiguration.from(builder);mock(BeaconCacheConfiguration.class);
+        BeaconCacheConfiguration config = BeaconCacheConfiguration.from(builder);
         return config;
     }
 }

@@ -199,7 +199,6 @@ public class BeaconConfigurationTest {
         HTTPClientConfiguration httpConfig = target.getHTTPClientConfiguration();
 
         // when
-
         target.updateServerConfiguration(serverConfig);
         HTTPClientConfiguration obtained = target.getHTTPClientConfiguration();
 
@@ -275,7 +274,7 @@ public class BeaconConfigurationTest {
     @Test
     public void enableCaptureDoesOnlyModifyCaptureFlag() {
         // given
-       ServerConfiguration initialServerConfig = mockServerConfig(false);
+        ServerConfiguration initialServerConfig = mockServerConfig(false);
 
         BeaconConfiguration target = createBeaconConfig();
         target.updateServerConfiguration(initialServerConfig);
@@ -297,7 +296,7 @@ public class BeaconConfigurationTest {
     }
 
     @Test
-    public void disableCaptureDoesSetsIsServerConfigurationSet() {
+    public void disableCaptureSetsIsServerConfigurationSet() {
         // given
         BeaconConfiguration target = createBeaconConfig();
 
@@ -349,18 +348,6 @@ public class BeaconConfigurationTest {
         assertThat(obtained.getServerID(), is(equalTo(initialServerConfig.getServerID())));
         assertThat(obtained.getBeaconSizeInBytes(), is(equalTo(initialServerConfig.getBeaconSizeInBytes())));
         assertThat(obtained.getMultiplicity(), is(equalTo(initialServerConfig.getMultiplicity())));
-    }
-
-    @Test
-    public void disableCaptureSetsIsServerConfigurationSet() {
-        // given
-        BeaconConfiguration target = createBeaconConfig();
-
-        // when
-        target.disableCapture();
-
-        // then
-        assertThat(target.isServerConfigurationSet(), is(true));
     }
 
     private BeaconConfiguration createBeaconConfig() {

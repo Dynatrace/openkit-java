@@ -123,7 +123,7 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
-    public void aWebRequestTracerIsStoppedWithResponceCodeAfterStopHasBeenCalled() {
+    public void aWebRequestTracerIsStoppedWithResponseCodeAfterStopHasBeenCalled() {
         // given
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
 

@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -174,7 +175,7 @@ public class BeaconSendingInitStateTest {
 
         // then
         verify(stateContext, times(1)).initCompleted(false);
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTerminalState.class));
+        verify(stateContext, times(1)).setNextState(isA(BeaconSendingTerminalState.class));
 
     }
 
@@ -308,7 +309,7 @@ public class BeaconSendingInitStateTest {
 
         // then
         verify(stateContext, times(1)).initCompleted(false); // int completed with error
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingTerminalState.class)); // state transition to terminal state
+        verify(stateContext, times(1)).setNextState(isA(BeaconSendingTerminalState.class)); // state transition to terminal state
 
         // verify that the requests where sent N times - defined as constants in the state itself
         verify(stateContext, times(3)).getHTTPClient();
@@ -351,14 +352,14 @@ public class BeaconSendingInitStateTest {
 
         // given
         BeaconSendingInitState target = new BeaconSendingInitState();
-        when(statusResponse.isCapture()).thenReturn(true);
+        when(stateContext.isCaptureOn()).thenReturn(true);
 
         // when
         target.execute(stateContext);
 
         // verify state transition
         verify(stateContext, times(1)).handleStatusResponse(statusResponse);
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOnState.class));
+        verify(stateContext, times(1)).setNextState(isA(BeaconSendingCaptureOnState.class));
     }
 
     @Test
@@ -366,14 +367,14 @@ public class BeaconSendingInitStateTest {
 
         // given
         BeaconSendingInitState target = new BeaconSendingInitState();
-        when(statusResponse.isCapture()).thenReturn(false);
+        when(stateContext.isCaptureOn()).thenReturn(false);
 
         // when
         target.execute(stateContext);
 
         // verify state transition
         verify(stateContext, times(1)).handleStatusResponse(statusResponse);
-        verify(stateContext, times(1)).setNextState(org.mockito.Matchers.any(BeaconSendingCaptureOffState.class));
+        verify(stateContext, times(1)).setNextState(isA(BeaconSendingCaptureOffState.class));
     }
 
     @Test

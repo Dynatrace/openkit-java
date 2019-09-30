@@ -24,7 +24,6 @@ public enum EventType implements SerializableBeaconValue {
      * Action event
      */
     ACTION(1),
-
     /**
      * Report string value event
      */
