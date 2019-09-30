@@ -38,6 +38,16 @@ public class AppMonOpenKitBuilderTest {
     }
 
     @Test
+    public void constructorInitializesDeviceIdString() {
+        // given, when
+        AbstractOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT_URL, APPLICATION_NAME, String.valueOf(DEVICE_ID));
+
+        // then
+        assertThat(target.getDeviceID(), is(DEVICE_ID));
+        assertThat(target.getOrigDeviceID(), is(String.valueOf(DEVICE_ID)));
+    }
+
+    @Test
     public void getApplicationIDGivesSameValueAsApplicationName() {
         // given
         AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT_URL, APPLICATION_NAME, DEVICE_ID);

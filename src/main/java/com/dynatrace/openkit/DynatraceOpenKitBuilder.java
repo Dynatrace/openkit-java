@@ -37,21 +37,25 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
      * @param deviceID      unique device id
      */
     public DynatraceOpenKitBuilder(String endpointURL, String applicationID, long deviceID) {
-        this(endpointURL, applicationID, Long.toString(deviceID));
+        super(endpointURL, deviceID);
+        this.applicationID = applicationID;
     }
 
     /**
      * Creates a new instance of type DynatraceOpenKitBuilder
      *
      * <p>
-     *     If the given {@code deviceID} is longer than 250 characters,
-     *     only the first 250 characters are used.
+     *     If the given {@code deviceID} does not correspond to a numeric value it will be hashed accordingly to a
+     *     64 bit number.
      * </p>
      *
      * @param endpointURL   endpoint OpenKit connects to
      * @param applicationID unique application id
      * @param deviceID      unique device id
+     *
+     * @deprecated  use {@link #DynatraceOpenKitBuilder(String, String, long)} instead
      */
+    @Deprecated
     public DynatraceOpenKitBuilder(String endpointURL, String applicationID, String deviceID) {
         super(endpointURL, deviceID);
         this.applicationID = applicationID;

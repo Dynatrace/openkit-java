@@ -34,7 +34,9 @@ public class OpenKitConfiguration {
     /** The endpoint URL to send data to. */
     private final String endpointURL;
     /** Unique device/installation identifier */
-    private final String deviceID;
+    private final long deviceID;
+    /** Unique device/installation identifier in an not-hashed representation as it as passed to the OpenKit builder */
+    private final String origDeviceID;
     /**
      * OpenKit's type string
      *
@@ -70,6 +72,7 @@ public class OpenKitConfiguration {
     private OpenKitConfiguration(AbstractOpenKitBuilder builder) {
         endpointURL = builder.getEndpointURL();
         deviceID = builder.getDeviceID();
+        origDeviceID = builder.getOrigDeviceID();
         openKitType = builder.getOpenKitType();
         applicationID = builder.getApplicationID();
         percentEncodedApplicationID = PercentEncoder.encode(applicationID, ENCODING_CHARSET, RESERVED_CHARACTERS);
@@ -109,8 +112,17 @@ public class OpenKitConfiguration {
      *
      * @return Unique device identifier.
      */
-    public String getDeviceID() {
+    public long getDeviceID() {
         return deviceID;
+    }
+
+    /**
+     * Returns the {@link #getDeviceID() device ID} in a not-hashed representation.
+     *
+     * @return the device identifier as it was originally passed to OpenKit.
+     */
+    public String getOrigDeviceID() {
+        return origDeviceID;
     }
 
     /**

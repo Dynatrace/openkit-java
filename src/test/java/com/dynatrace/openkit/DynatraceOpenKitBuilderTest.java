@@ -40,6 +40,16 @@ public class DynatraceOpenKitBuilderTest {
     }
 
     @Test
+    public void constructorInitializesDeviceIdString() {
+        // given, when
+        AbstractOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_NAME, String.valueOf(DEVICE_ID));
+
+        // then
+        assertThat(target.getDeviceID(), is(DEVICE_ID));
+        assertThat(target.getOrigDeviceID(), is(String.valueOf(DEVICE_ID)));
+    }
+
+    @Test
     public void getOpenKitTypeGivesAppropriateValue() {
         // given
         DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);

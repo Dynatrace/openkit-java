@@ -8,6 +8,9 @@
 - Fix wrong value for Content-Length HTTP header that was added when sending beacon data.
 - Fix sending of session number in web request tracer tag to honor the data collection level.
   The session number will only be sent with data collection level 'User Behavior'.
+- On OpenKitBuilder creation device ID is parsed from the given string. Non-numeric
+  device IDs are hashed to a corresponding numeric value. Internally a numeric
+  type is used for the device ID.
 
 ### Improved
 - Fixed some javadoc/comments in the JSON parser

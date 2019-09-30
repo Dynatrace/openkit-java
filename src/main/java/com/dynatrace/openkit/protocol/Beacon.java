@@ -110,7 +110,7 @@ public class Beacon {
     private final long sessionStartTime;
 
     // unique device identifier
-    private final String deviceID;
+    private final long deviceID;
 
     // client IP address
     private final String clientIPAddress;
@@ -197,15 +197,15 @@ public class Beacon {
      * @param configuration Configuration.
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
-    private static String createDeviceID(Random random, BeaconConfiguration configuration) {
+    private static long createDeviceID(Random random, BeaconConfiguration configuration) {
 
         if (configuration.getPrivacyConfiguration().isDeviceIDSendingAllowed()) {
             // configuration is valid and user allows data tracking
-            return truncate(configuration.getOpenKitConfiguration().getDeviceID());
+            return configuration.getOpenKitConfiguration().getDeviceID();
         }
 
         // no user tracking allowed
-        return Long.toString(nextRandomPositiveLong(random));
+        return nextRandomPositiveLong(random);
     }
 
     /**
@@ -276,7 +276,7 @@ public class Beacon {
         return TAG_PREFIX
                 + "_" + ProtocolConstants.PROTOCOL_VERSION
                 + "_" + serverId
-                + "_" + PercentEncoder.encode(getDeviceID(), CHARSET, RESERVED_CHARACTERS)
+                + "_" + getDeviceID()
                 + "_" + getSessionNumber()
                 + "_" + configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()
                 + "_" + parentActionID
@@ -823,7 +823,7 @@ public class Beacon {
      *
      * @return The device identifier, which is truncated to 250 characters if level 2 (USER_BEHAVIOR) is used.
      */
-    public String getDeviceID() {
+    public long getDeviceID() {
         return deviceID;
     }
 

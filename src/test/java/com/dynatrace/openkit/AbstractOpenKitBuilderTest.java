@@ -22,7 +22,9 @@ import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
 import com.dynatrace.openkit.core.util.DefaultLogger;
+import com.dynatrace.openkit.core.util.StringUtil;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -41,7 +43,7 @@ import static org.mockito.Mockito.mock;
 public class AbstractOpenKitBuilderTest {
 
     private static final String ENDPOINT_URL = "https://www.google.at";
-    private static final String DEVICE_ID = "777";
+    private static final long DEVICE_ID = 777;
     private static final String APPLICATION_VERSION = "application-version";
     private static final String OPERATING_SYSTEM = "ultimate-operating-system";
     private static final String MANUFACTURER = "ACME Inc.";
@@ -66,6 +68,39 @@ public class AbstractOpenKitBuilderTest {
 
         // then
         assertThat(target.getDeviceID(), is(equalTo(DEVICE_ID)));
+    }
+
+    @Test
+    public void constructorInitializesAndHashesDeviceIdString() {
+        // given
+        final String deviceIdAsString = "stringDeviceID";
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, deviceIdAsString);
+
+        // when, then
+        long hashedDeviceId = StringUtil.to64BitHash(deviceIdAsString);
+        assertThat(target.getDeviceID(), is(hashedDeviceId));
+        assertThat(target.getOrigDeviceID(), is(deviceIdAsString));
+    }
+
+    @Test
+    public void constructorInitializesNumericDeviceIdString() {
+        // given
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, String.valueOf(DEVICE_ID));
+
+        // when, then
+        Assert.assertThat(target.getDeviceID(), is(DEVICE_ID));
+        Assert.assertThat(target.getOrigDeviceID(), is(String.valueOf(DEVICE_ID)));
+    }
+
+    @Test
+    public void constructorTrimsDeviceIdString() {
+        // given
+        final String deviceIdString = " 42 ";
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, deviceIdString);
+
+        // when, then
+        assertThat(target.getDeviceID(), is(42L));
+        assertThat(target.getOrigDeviceID(), is(deviceIdString));
     }
 
     @Test
@@ -561,6 +596,11 @@ public class AbstractOpenKitBuilderTest {
      * Stub class for testing purposes only.
      */
     private static final class StubOpenKitBuilder extends AbstractOpenKitBuilder {
+
+        StubOpenKitBuilder(String endpointURL, long deviceID) {
+            super(endpointURL, deviceID);
+        }
+
         StubOpenKitBuilder(String endpointURL, String deviceID) {
             super(endpointURL, deviceID);
         }

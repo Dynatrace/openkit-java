@@ -72,7 +72,7 @@ public class BeaconTest {
     private static final String APP_NAME = "appName";
     private static final int ACTION_ID = 17;
     private static final int SERVER_ID = 123;
-    private static final String DEVICE_ID = "456";
+    private static final long DEVICE_ID = 456;
     private static final int THREAD_ID = 1234567;
     private static final int SESSION_ID = 73;
 
@@ -262,7 +262,8 @@ public class BeaconTest {
     @Test
     public void createWebRequestTagEncodesDeviceIDProperly() {
         // given
-        when(mockOpenKitConfiguration.getDeviceID()).thenReturn("device_id/");
+        long deviceId = -42;
+        when(mockOpenKitConfiguration.getDeviceID()).thenReturn(deviceId);
         final Beacon beacon = createBeacon().build();
 
         // when
@@ -274,7 +275,7 @@ public class BeaconTest {
             "MT" +                      // tag prefix
             "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
             "_" + SERVER_ID +           // server ID
-            "_device%5Fid%2F" +         // device ID percent encoded
+            "_" + deviceId +            // device ID percent encoded
             "_" + SESSION_ID +          // session number
             "_" + APP_ID +              // application ID
             "_" + ACTION_ID +           // parent action ID
@@ -1372,20 +1373,20 @@ public class BeaconTest {
 
     @Test
     public void givenDeviceIDIsUsedIfDeviceIdSendingIsAllowed() {
-        String TEST_DEVICE_ID = "1338";
+        long testDeviceId = 1338;
         //given
         when(mockPrivacyConfiguration.isDeviceIDSendingAllowed()).thenReturn(true);
-        when(mockOpenKitConfiguration.getDeviceID()).thenReturn(TEST_DEVICE_ID);
+        when(mockOpenKitConfiguration.getDeviceID()).thenReturn(testDeviceId);
         Random mockRandom = mock(Random.class);
 
         //when
         Beacon target = createBeacon().with(mockRandom).build();
-        String obtained = target.getDeviceID();
+        long obtained = target.getDeviceID();
 
         //then verify that device id is taken from configuration
         verify(mockOpenKitConfiguration, times(1)).getDeviceID();
         verifyNoMoreInteractions(mockRandom);
-        assertThat(obtained, is(TEST_DEVICE_ID));
+        assertThat(obtained, is(testDeviceId));
     }
 
     @Test
@@ -1398,37 +1399,12 @@ public class BeaconTest {
 
         //when
         Beacon target = createBeacon().with(mockRandom).build();
-        long deviceID = Long.parseLong(target.getDeviceID());
+        long deviceID = target.getDeviceID();
 
         //then verify that the id is positive regardless of the data collection level
         verify(mockRandom, times(1)).nextLong();
         assertThat(deviceID, is(greaterThanOrEqualTo(0L)));
         assertThat(deviceID, is(equalTo(-123456789L & Long.MAX_VALUE)));
-    }
-
-    @Test
-    public void deviceIDIsTruncatedTo250Characters() {
-        // given
-        StringBuilder deviceIDBuilder = new StringBuilder();
-
-        // append 249 times the character 'a'
-        for (int i = 0; i < Beacon.MAX_NAME_LEN - 1; i++) {
-            deviceIDBuilder.append('a');
-        }
-        // append character 'b' and 'c'
-        deviceIDBuilder.append('b').append('c');
-
-        String deviceID = deviceIDBuilder.toString();
-        when(mockOpenKitConfiguration.getDeviceID()).thenReturn(deviceID);
-
-
-        // when
-        Beacon target = createBeacon().build();
-        String obtained = target.getDeviceID();
-
-        // then
-        assertThat(obtained.length(), is(equalTo(Beacon.MAX_NAME_LEN)));
-        assertThat(obtained, is(equalTo(deviceID.substring(0, deviceID.length() - 1))));
     }
 
     @Test

@@ -24,6 +24,7 @@ import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
 import com.dynatrace.openkit.core.objects.OpenKitImpl;
 import com.dynatrace.openkit.core.util.DefaultLogger;
+import com.dynatrace.openkit.core.util.StringUtil;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 
 /**
@@ -38,7 +39,8 @@ public abstract class AbstractOpenKitBuilder {
 
     // immutable fields
     private final String endpointURL;
-    private final String deviceID;
+    private final long deviceID;
+    private final String origDeviceID;
 
     // mutable fields
     private Logger logger;
@@ -60,9 +62,40 @@ public abstract class AbstractOpenKitBuilder {
      * @param endpointURL endpoint OpenKit connects to
      * @param deviceID    unique device id
      */
+    AbstractOpenKitBuilder(String endpointURL, long deviceID) {
+        this(endpointURL, deviceID, String.valueOf(deviceID));
+    }
+
+    /**
+     * Creates a new instance of type AbstractOpenKitBuilder
+     *
+     * @param endpointURL endpoint OpenKit connects to
+     * @param deviceID    unique device id
+     *
+     * @deprecated  use {@link #AbstractOpenKitBuilder(String, long)} instead.
+     */
+    @Deprecated
     AbstractOpenKitBuilder(String endpointURL, String deviceID) {
+        this(endpointURL, deviceIdFromString(deviceID), deviceID);
+    }
+
+    private AbstractOpenKitBuilder(String endpointURL, long deviceID, String origDeviceID) {
         this.endpointURL = endpointURL;
         this.deviceID = deviceID;
+        this.origDeviceID = origDeviceID;
+    }
+
+    protected static long deviceIdFromString(String deviceId) {
+        if (deviceId != null) {
+            deviceId = deviceId.trim();
+        }
+
+        try {
+            return Long.parseLong(deviceId);
+        } catch(NumberFormatException nex) {
+            // given ID is not a valid number, calculate a corresponding hash
+            return StringUtil.to64BitHash(deviceId);
+        }
     }
 
     // ** public methods **
@@ -373,8 +406,18 @@ public abstract class AbstractOpenKitBuilder {
      *
      * @return Device identifier set in the constructor.
      */
-    public String getDeviceID() {
+    public long getDeviceID() {
         return deviceID;
+    }
+
+    /**
+     * Returns the {@link #getDeviceID() device identifier} in the representation before it was hashed (in case the
+     * original device ID was a non numeric string).
+     *
+     * @return Device identifier in the representation as it was originally passed to the constructor.
+     */
+    public String getOrigDeviceID() {
+        return origDeviceID;
     }
 
     /**

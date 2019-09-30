@@ -150,6 +150,7 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit {
                 + " - applicationName=" + openKitConfiguration.getApplicationName()
                 + ", applicationID=" + openKitConfiguration.getApplicationID()
                 + ", deviceID=" + openKitConfiguration.getDeviceID()
+                + ", origDeviceID=" + openKitConfiguration.getOrigDeviceID()
                 + ", endpointURL=" + openKitConfiguration.getEndpointURL());
         }
     }

@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 public class OpenKitConfigurationTest {
 
     private static final String ENDPOINT_URL = "https://localhost:9999/1";
-    private static final String DEVICE_ID = "37";
+    private static final long DEVICE_ID = 37;
     private static final String OPENKIT_TYPE = "Dynatrace NextGen";
     private static final String APPLICATION_ID = "Application-ID";
     private static final String APPLICATION_NAME = "Application Name";
