@@ -89,7 +89,7 @@ public class Beacon {
     static final String CHARSET = "UTF-8";
 
     // max name length
-    static final int MAX_NAME_LEN = 250;
+    private static final int MAX_NAME_LEN = 250;
 
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
@@ -178,7 +178,11 @@ public class Beacon {
 
         this.deviceID = createDeviceID(random, configuration);
 
-        if (InetAddressValidator.isValidIP(clientIPAddress)) {
+        if (clientIPAddress == null) {
+            // A client IP address, which is a null, is valid.
+            // The real IP address is determined on the server side.
+            this.clientIPAddress = "";
+        } else if (InetAddressValidator.isValidIP(clientIPAddress)) {
             this.clientIPAddress = clientIPAddress;
         } else {
             if (logger.isWarnEnabled()) {

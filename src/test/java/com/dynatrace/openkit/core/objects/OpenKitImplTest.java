@@ -304,6 +304,19 @@ public class OpenKitImplTest {
     }
 
     @Test
+    public void createSessionWithoutIpAddressReturnsSessionObject() {
+        // given
+        OpenKitImpl target = createOpenKit().build();
+
+        // when
+        Session obtained = target.createSession();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(SessionImpl.class));
+    }
+
+    @Test
     public void createSessionAddsNewlyCreatedSessionToListOfChildren() {
         // given
         OpenKitImpl target = createOpenKit().build();
@@ -324,6 +337,26 @@ public class OpenKitImplTest {
     }
 
     @Test
+    public void createSessionWithoutIpAddsNewlyCreatedSessionToListOfChildren() {
+        // given
+        OpenKitImpl target = createOpenKit().build();
+
+        // when first session is created
+        Session sessionOne = target.createSession();
+
+        // then
+        assertThat(sessionOne, is(notNullValue()));
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject)sessionOne))));
+
+        // when second session is created
+        Session sessionTwo = target.createSession();
+
+        // then
+        assertThat(sessionTwo, is(notNullValue()));
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Arrays.asList((OpenKitObject) sessionOne, (OpenKitObject) sessionTwo))));
+    }
+
+    @Test
     public void createSessionAfterShutdownHasBeenCalledReturnsNullSession() {
         // given
         OpenKitImpl target = createOpenKit().build();
@@ -331,6 +364,21 @@ public class OpenKitImplTest {
 
         // when
         Session obtained = target.createSession("10.0.0.1");
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, is(instanceOf(NullSession.class)));
+        assertThat((NullSession)obtained, sameInstance(NullSession.INSTANCE));
+    }
+
+    @Test
+    public void createSessionWithoutIpAfterShutdownHasBeenCalledReturnsNullSession() {
+        // given
+        OpenKitImpl target = createOpenKit().build();
+        target.shutdown();
+
+        // when
+        Session obtained = target.createSession();
 
         // then
         assertThat(obtained, is(notNullValue()));

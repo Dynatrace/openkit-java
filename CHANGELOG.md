@@ -11,6 +11,8 @@
 - On OpenKitBuilder creation device ID is parsed from the given string. Non-numeric
   device IDs are hashed to a corresponding numeric value. Internally a numeric
   type is used for the device ID.
+- Add OpenKit.createSession overload without IP address parameter.  
+  The IP address is determined in this case on the server side.
 
 ### Improved
 - Fixed some javadoc/comments in the JSON parser

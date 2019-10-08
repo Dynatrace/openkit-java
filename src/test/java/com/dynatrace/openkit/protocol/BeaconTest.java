@@ -156,7 +156,6 @@ public class BeaconTest {
         assertThat(target.isCaptureEnabled(), is(true));
     }
 
-
     @Test
     public void testCreateInstanceWithInvalidIpAddress() {
         // given, when
@@ -173,6 +172,35 @@ public class BeaconTest {
 
         // then
         verify(mockLogger, times(1)).warning("Beacon: Client IP address validation failed: " + ipAddress);
+
+        // and when
+        when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn("dummy");
+
+        target.send(httpClientProvider);
+
+        // then
+        ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
+        verify(httpClient, times(1)).sendBeaconRequest(ipCaptor.capture(), any(byte[].class));
+
+        String capturedIp = ipCaptor.getValue();
+        assertThat(capturedIp, is(""));
+    }
+
+    @Test
+    public void testCreateInstanceWithNullIpAddress() {
+        // given, when
+        when(mockLogger.isWarnEnabled()).thenReturn(true);
+        HTTPClient httpClient = mock(HTTPClient.class);
+
+        HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
+        when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
+
+        Beacon target = createBeacon()
+            .withIpAddress(null)
+            .build();
+
+        // then
+        verify(mockLogger, times(0)).warning(any(String.class));
 
         // and when
         when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn("dummy");
@@ -205,7 +233,6 @@ public class BeaconTest {
 
     @Test
     public void getCurrentTimestamp() {
-
         // given
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(42L);
         Beacon beacon = createBeacon().build();
