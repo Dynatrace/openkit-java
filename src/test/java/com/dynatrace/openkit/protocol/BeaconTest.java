@@ -19,7 +19,13 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.core.*;
+import com.dynatrace.openkit.core.ActionImpl;
+import com.dynatrace.openkit.core.Device;
+import com.dynatrace.openkit.core.RootActionImpl;
+import com.dynatrace.openkit.core.SessionImpl;
+import com.dynatrace.openkit.core.WebRequestTracerBaseImpl;
+import com.dynatrace.openkit.core.WebRequestTracerStringURL;
+import com.dynatrace.openkit.core.WebRequestTracerURLConnection;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.Configuration;
@@ -27,7 +33,6 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,11 +42,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.emptyArray;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 
 public class BeaconTest {
@@ -113,6 +130,37 @@ public class BeaconTest {
 
         // then
         assertThat(target.getMultiplicity(), is(equalTo(1)));
+    }
+
+    @Test
+    public void testCreateInstanceWithInvalidIpAddress() {
+        // given, when
+        when(logger.isWarnEnabled()).thenReturn(true);
+        HTTPClient httpClient = mock(HTTPClient.class);
+
+        HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
+        when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
+
+        String ipAddress = "invalid";
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, ipAddress, threadIDProvider, timingProvider);
+
+        // then
+        verify(logger, times(1)).warning("Beacon Client IP address validation failed: " + ipAddress);
+    }
+
+    @Test
+    public void testCreateInstanceWithNullIpAddress() {
+        // given, when
+        when(logger.isWarnEnabled()).thenReturn(true);
+        HTTPClient httpClient = mock(HTTPClient.class);
+
+        HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
+        when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
+
+        Beacon target = new Beacon(logger, new BeaconCacheImpl(logger), configuration, null, threadIDProvider, timingProvider);
+
+        // then
+        verifyZeroInteractions(logger);
     }
 
     @Test

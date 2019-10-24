@@ -135,6 +135,11 @@ public class OpenKitImpl implements OpenKit {
     }
 
     @Override
+    public Session createSession() {
+        return createSession(null);
+    }
+
+    @Override
     public void shutdown() {
         if (logger.isDebugEnabled()) {
             logger.debug(getClass().getSimpleName() + " shutdown() - shutdown requested");

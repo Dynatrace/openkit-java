@@ -5,6 +5,8 @@
 ### Changed
 - Fix sending of session number in web request tracer tag to honor the data collection level.
   The session number will only be sent with data collection level 'User Behavior'.
+- Add OpenKit.createSession overload without IP address parameter.  
+  The IP address is determined in this case on the server side.
 
 ## 1.4.2 [Release date: 2019-07-17]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.2)

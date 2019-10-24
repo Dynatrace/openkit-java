@@ -70,6 +70,18 @@ public interface OpenKit extends Closeable {
     Session createSession(String clientIPAddress);
 
     /**
+     * Creates a Session instance which can then be used to create Actions.
+     *
+     * <p>
+     *     This is similar to the method {@link #createSession(String)}, except that
+     *     the client's IP address is determined on the server side.
+     * </p>
+     *
+     * @return Session instance to work with
+     */
+    Session createSession();
+
+    /**
      * Shuts down OpenKit, ending all open Sessions and waiting for them to be sent.
      */
     void shutdown();
