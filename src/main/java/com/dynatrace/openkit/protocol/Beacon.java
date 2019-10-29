@@ -81,6 +81,9 @@ public class Beacon {
     private static final String BEACON_KEY_ERROR_CODE = "ev";
     private static final String BEACON_KEY_ERROR_REASON = "rs";
     private static final String BEACON_KEY_ERROR_STACKTRACE = "st";
+    private static final String BEACON_KEY_ERROR_TECHNOLOGY_TYPE = "tt";
+
+    // web request constants
     private static final String BEACON_KEY_WEBREQUEST_RESPONSECODE = "rc";
     private static final String BEACON_KEY_WEBREQUEST_BYTES_SENT = "bs";
     private static final String BEACON_KEY_WEBREQUEST_BYTES_RECEIVED = "br";
@@ -522,6 +525,7 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
         addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, ProtocolConstants.ERROR_TECHNOLOGY_TYPE);
 
         addEventData(timestamp, eventBuilder);
     }
@@ -557,6 +561,7 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
         addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
+        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, ProtocolConstants.ERROR_TECHNOLOGY_TYPE);
 
         addEventData(timestamp, eventBuilder);
     }

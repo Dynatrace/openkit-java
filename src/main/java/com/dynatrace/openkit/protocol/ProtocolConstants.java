@@ -23,4 +23,5 @@ public class ProtocolConstants {
     public static final int PROTOCOL_VERSION = 3;
     public static final int PLATFORM_TYPE_OPENKIT = 1;
     public static final String AGENT_TECHNOLOGY_TYPE = "okjava";
+    public static final String ERROR_TECHNOLOGY_TYPE = "c";
 }

@@ -534,15 +534,16 @@ public class BeaconTest {
         // then
         verify(mockBeaconCache, times(1)).addEventData(
                 SESSION_ID,                     // session number
-                0,                              // error event timestamp
-                "et=40&" +                      // event type
+                0,                    // error event timestamp
+                "et=40&" +                // event type
                 "na=" + errorName + "&" +       // name of error event
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of error event
                 "t0=0&" +                       // timestamp of error event since session start
                 "ev=" + errorCode + "&" +       // reported error value
-                "rs=" + reason                  // reported reason
+                "rs=" + reason + "&" +          // reported reason
+                "tt=c"                          // error technology type
         );
     }
 
@@ -558,13 +559,14 @@ public class BeaconTest {
         // then
         verify(mockBeaconCache, times(1)).addEventData(
                 SESSION_ID,                     // session number
-                0,                              // error event timestamp
-                "et=40&" +                      // event type
+                0,                    // error event timestamp
+                "et=40&" +                // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported event
                 "t0=0&" +                       // timestamp of error event since session start
-                "ev=" + errorCode               // reported error value
+                "ev=" + errorCode + "&" +       // reported error value
+                "tt=c"                          // error technology type
         );
     }
 
@@ -582,15 +584,16 @@ public class BeaconTest {
         // then
         verify(mockBeaconCache, times(1)).addEventData(
                 SESSION_ID,                 // session number
-                0,                          // crash event timestamp
-                "et=50&" +                  // event type
+                0,                // crash event timestamp
+                "et=50&" +            // event type
                 "na=" + errorName + "&" +   // reported crash name
                 "it=" + THREAD_ID + "&" +   // thread ID
                 "pa=0&" +                   // parent action ID
                 "s0=1&" +                   // sequence number of reported crash
                 "t0=0&" +                   // timestamp of crash since session start
                 "rs=" + reason + "&" +      // reported reason
-                "st=" + stacktrace          // reported stacktrace
+                "st=" + stacktrace + "&" +  // reported stacktrace
+                "tt=c"                      // crash technology type
         );
     }
 
@@ -606,13 +609,14 @@ public class BeaconTest {
         // then
         verify(mockBeaconCache, times(1)).addEventData(
                 SESSION_ID,                 // session number
-                0,                          // crash event timestamp
-                "et=50&" +                  // event type
+                0,                // crash event timestamp
+                "et=50&" +            // event type
                 "na=" + errorName + "&" +   // reported crash name
                 "it=" + THREAD_ID + "&" +   // thread ID
                 "pa=0&" +                   // parent action ID
                 "s0=1&" +                   // sequence number of reported crash
-                "t0=0"                      // timestamp of crash since session start
+                "t0=0&" +                   // timestamp of crash since session start
+                "tt=c"                      // crash technology type
         );
     }
 
