@@ -412,7 +412,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=40&na=" + errorName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&ev=" + errorCode + "&rs=" + reason
+            "et=40&na=" + errorName + "&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&ev=" + errorCode + "&rs=" + reason + "&tt=c"
         })));
     }
 
@@ -429,7 +429,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[]{"et=40&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&ev=" + errorCode})));
+        assertThat(events, is(equalTo(new String[]{"et=40&it=" + THREAD_ID + "&pa=" + ACTION_ID + "&s0=1&t0=0&ev=" + errorCode + "&tt=c"})));
     }
 
     @Test
@@ -446,7 +446,7 @@ public class BeaconTest {
 
         // then
         assertThat(events, is(equalTo(new String[]{
-            "et=50&na=" + errorName + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&rs=" + reason + "&st=" + stacktrace
+            "et=50&na=" + errorName + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0&rs=" + reason + "&st=" + stacktrace + "&tt=c"
         })));
     }
 
@@ -461,7 +461,7 @@ public class BeaconTest {
         String[] events = beacon.getEvents();
 
         // then
-        assertThat(events, is(equalTo(new String[]{"et=50&na=" + errorName + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0"})));
+        assertThat(events, is(equalTo(new String[]{"et=50&na=" + errorName + "&it=" + THREAD_ID + "&pa=0&s0=1&t0=0" + "&tt=c"})));
     }
 
     @Test

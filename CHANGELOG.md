@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.2...release/1.4)
 
+### Added
+- Technology type support for error and crashes
+
 ### Changed
 - Fix sending of session number in web request tracer tag to honor the data collection level.
   The session number will only be sent with data collection level 'User Behavior'.
