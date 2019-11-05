@@ -71,7 +71,7 @@ public class BeaconSendingCaptureOnStateTest {
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.getCurrentTimestamp()).thenReturn(42L);
-        when(mockContext.getAllNewSessions()).thenReturn(Collections.<SessionImpl>emptyList());
+        when(mockContext.getAllNotConfiguredSessions()).thenReturn(Collections.<SessionImpl>emptyList());
         when(mockContext.getAllOpenAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession1Open, mockSession2Open));
         when(mockContext.getAllFinishedAndConfiguredSessions()).thenReturn(Arrays.asList(mockSession3Finished, mockSession4Finished));
         when(mockContext.getHTTPClientProvider()).thenReturn(mockHTTPClientProvider);
@@ -106,13 +106,13 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void newSessionRequestsAreMadeForAllNewSessions() {
+    public void newSessionRequestsAreMadeForNotConfiguredNewSessions() {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
+        when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
             .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(new StatusResponse(mock(Logger.class), "", Response.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
@@ -142,7 +142,7 @@ public class BeaconSendingCaptureOnStateTest {
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
+        when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
             .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
             .thenReturn(new StatusResponse(mock(Logger.class), "", Response.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
@@ -172,7 +172,7 @@ public class BeaconSendingCaptureOnStateTest {
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getAllNewSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
+        when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
             .thenReturn(statusResponse); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);

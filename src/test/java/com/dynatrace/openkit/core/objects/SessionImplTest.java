@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
+import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
@@ -426,15 +427,7 @@ public class SessionImplTest {
 
         // when, then
         assertThat(target.getState().isFinished(), is(false));
-    }
-
-    @Test
-    public void aNewlyCreatedSessionIsInStateNew() {
-        // given
-        SessionImpl target = createSession().build();
-
-        // when, then
-        assertThat(target.getState().isNew(), is(true));
+        assertThat(target.getState().isConfiguredAndFinished(), is(false));
     }
 
     @Test
@@ -449,48 +442,61 @@ public class SessionImplTest {
     }
 
     @Test
-    public void aConfiguredSessionIsNotInStateNew() {
+    public void aNotConfiguredNotFinishedSessionHasCorrectState()
+    {
         // given
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
         SessionImpl target = createSession().build();
 
-        // when
-        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
-
-        // then
-        assertThat(target.getState().isNew(), is(false));
-        assertThat(target.getState().isConfiguredAndOpen(), is(true));
-    }
-
-    @Test
-    public void aNotConfiguredFinishedSessionIsNotInStateNew() {
-        // given
-        SessionImpl target = createSession().build();
-
-        // when
-        target.end();
-
-        // then
-        assertThat(target.getState().isNew(), is(false));
+        // when, then
         assertThat(target.getState().isConfigured(), is(false));
-        assertThat(target.getState().isFinished(), is(true));
+        assertThat(target.getState().isConfiguredAndOpen(), is(false));
         assertThat(target.getState().isConfiguredAndFinished(), is(false));
+        assertThat(target.getState().isFinished(), is(false));
     }
 
     @Test
-    public void aConfiguredFinishedSessionIsNotNew() {
+    public void aConfiguredNotFinishedSessionHasCorrectState()
+    {
+        // given
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+        SessionImpl target = createSession().build();
+
+        // when, then
+        assertThat(target.getState().isConfigured(), is(true));
+        assertThat(target.getState().isConfiguredAndOpen(), is(true));
+        assertThat(target.getState().isConfiguredAndFinished(), is(false));
+        assertThat(target.getState().isFinished(), is(false));
+    }
+
+    @Test
+    public void aNotConfiguredFinishedSessionHasCorrectState()
+    {
+        // given
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
+        SessionImpl target = createSession().build();
+        target.end();
+
+        // when, then
+        assertThat(target.getState().isConfigured(), is(false));
+        assertThat(target.getState().isConfiguredAndOpen(), is(false));
+        assertThat(target.getState().isConfiguredAndFinished(), is(false));
+        assertThat(target.getState().isFinished(), is(true));
+    }
+
+    @Test
+    public void aConfiguredFinishedSessionHasCorrectState()
+    {
         // given
         when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
         SessionImpl target = createSession().build();
         target.end();
 
-        // when
-        target.updateServerConfiguration(mock(ServerConfiguration.class));
-
         // then
-        assertThat(target.getState().isNew(), is(false));
         assertThat(target.getState().isConfigured(), is(true));
-        assertThat(target.getState().isFinished(), is(true));
+        assertThat(target.getState().isConfiguredAndOpen(), is(false));
         assertThat(target.getState().isConfiguredAndFinished(), is(true));
+        assertThat(target.getState().isFinished(), is(true));
     }
 
     @Test
@@ -807,7 +813,7 @@ public class SessionImplTest {
     public void isDataSendingAllowedReturnsFalseForNotConfiguredAndCaptureDisabledSession() {
         // given
         when(mockBeacon.isCaptureEnabled()).thenReturn(false);
-        when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
+        when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
         SessionImpl target = createSession().build();
 
         // when

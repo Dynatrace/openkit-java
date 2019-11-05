@@ -441,7 +441,13 @@ public class BeaconSendingContext {
     }
 
     /**
-     * Get all sessions that are considered new.
+     * Get all sessions that are not yet configured.
+     *
+     * <p>
+     *     A session is considered as not configured if it did not receive a server configuration update (either
+     *     when receiving a successful for the first new session request or when capturing for the session got
+     *     disabled due to an unsuccessful response).
+     * </p>
      *
      * <p>
      *     The returned list is a snapshot and might change during traversal.
@@ -449,18 +455,18 @@ public class BeaconSendingContext {
      *
      * @return A list of new sessions.
      */
-    List<SessionImpl> getAllNewSessions() {
+    List<SessionImpl> getAllNotConfiguredSessions() {
 
-        List<SessionImpl> newSessions = new LinkedList<SessionImpl>();
+        List<SessionImpl> notConfiguredSessions = new LinkedList<SessionImpl>();
 
         for (SessionImpl session : sessions) {
             SessionState state = session.getState();
-            if (state.isNew()) {
-                newSessions.add(session);
+            if (!state.isConfigured()) {
+                notConfiguredSessions.add(session);
             }
         }
 
-        return newSessions;
+        return notConfiguredSessions;
     }
 
     /**

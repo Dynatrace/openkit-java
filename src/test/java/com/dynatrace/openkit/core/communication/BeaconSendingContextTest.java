@@ -372,7 +372,7 @@ public class BeaconSendingContextTest {
         BeaconSendingContext target = createBeaconSendingContext().build();
 
         // then
-        assertThat(target.getAllNewSessions(), is(empty()));
+        assertThat(target.getAllNotConfiguredSessions(), is(empty()));
         assertThat(target.getAllOpenAndConfiguredSessions(), is(empty()));
         assertThat(target.getAllFinishedAndConfiguredSessions(), is(empty()));
     }
@@ -762,15 +762,15 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void getAllNewSessionsReturnsOnlyNewSessions() {
+    public void getAllNotConfiguredSessionsReturnsOnlyNotConfiguredSessions() {
         // given
         SessionState relevantSessionState = mock(SessionState.class);
-        when(relevantSessionState.isNew()).thenReturn(true);
+        when(relevantSessionState.isConfigured()).thenReturn(false);
         SessionImpl relevantSession  = mock(SessionImpl.class);
         when(relevantSession.getState()).thenReturn(relevantSessionState);
 
         SessionState ignoredSessionState = mock(SessionState.class);
-        when(ignoredSessionState.isNew()).thenReturn(false);
+        when(ignoredSessionState.isConfigured()).thenReturn(true);
         SessionImpl ignoredSession = mock(SessionImpl.class);
         when(ignoredSession.getState()).thenReturn(ignoredSessionState);
 
@@ -781,7 +781,7 @@ public class BeaconSendingContextTest {
         assertThat(target.getSessionCount(), is(2));
 
         // when
-        List<SessionImpl> obtained = target.getAllNewSessions();
+        List<SessionImpl> obtained = target.getAllNotConfiguredSessions();
 
         // then
         assertThat(obtained, containsInAnyOrder(relevantSession));

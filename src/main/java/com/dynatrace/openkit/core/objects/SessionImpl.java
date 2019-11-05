@@ -320,11 +320,6 @@ public class SessionImpl extends OpenKitComposite implements Session {
         }
 
         @Override
-        public synchronized boolean isNew() {
-            return !session.beacon.isServerConfigurationSet() && !isFinishingOrFinished();
-        }
-
-        @Override
         public synchronized boolean isConfigured() {
             return session.beacon.isServerConfigurationSet();
         }

@@ -94,9 +94,9 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
     private StatusResponse sendNewSessionRequests(BeaconSendingContext context) {
 
         StatusResponse statusResponse = null;
-        List<SessionImpl> newSessions = context.getAllNewSessions();
+        List<SessionImpl> notConfiguredSessions = context.getAllNotConfiguredSessions();
 
-        for (SessionImpl session : newSessions) {
+        for (SessionImpl session : notConfiguredSessions) {
             if (!session.canSendNewSessionRequest()) {
                 // already exceeded the maximum number of session requests, disable any further data collecting
                 session.disableCapture();

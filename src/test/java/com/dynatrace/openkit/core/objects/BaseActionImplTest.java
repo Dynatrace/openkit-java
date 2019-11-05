@@ -212,7 +212,6 @@ public class BaseActionImplTest {
         verify(logger, times(1)).warning(endsWith("reportValue (double): valueName must not be null or empty"));
     }
 
-
     @Test
     public void reportValueDoubleWithValidValue() {
         // given
@@ -225,7 +224,6 @@ public class BaseActionImplTest {
         verify(beacon, times(1)).reportValue(ID_BASE_OFFSET, "DoubleValue", 12.3456);
         assertThat(obtained, is(sameInstance((Action) target)));
     }
-
 
     @Test
     public void reportValueStringWithValidValue() {

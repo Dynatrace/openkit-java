@@ -40,8 +40,8 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
     void doExecute(BeaconSendingContext context) {
 
         // first get all sessions that were not yet configured
-        List<SessionImpl> newSessions = context.getAllNewSessions();
-        for (SessionImpl newSession : newSessions) {
+        List<SessionImpl> notConfiguredSessions = context.getAllNotConfiguredSessions();
+        for (SessionImpl newSession : notConfiguredSessions) {
             // just turn on the capturing and send all remaining data
             newSession.enableCapture();
         }

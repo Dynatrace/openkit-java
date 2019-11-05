@@ -103,7 +103,7 @@ public class SimpleSample {
      * If the payload is null or empty a GET request is performed. Otherwise, a POST request is performed
      *
      * @param action the parent action for the web request tracer
-     * @param endpoint the entpoint
+     * @param endpoint the endpoint
      * @param payload the payload
      * @throws Exception
      */

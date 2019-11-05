@@ -24,16 +24,6 @@ import com.dynatrace.openkit.api.Session;
 public interface SessionState {
 
     /**
-     * Indicates whether the {@link com.dynatrace.openkit.api.Session} is still new.
-     *
-     * <p>
-     *     A {@link com.dynatrace.openkit.api.Session} is considered as new if it has not yet received any configuration
-     *     updates from the server and it if it also is not finished.
-     * </p>
-     */
-    boolean isNew();
-
-    /**
      * Indicates whether the {@link com.dynatrace.openkit.api.Session} is configured or not.
      *
      * <p>
