@@ -89,6 +89,7 @@ public class SessionImplTest {
 
         // ensure that some log message has been written
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -104,6 +105,7 @@ public class SessionImplTest {
 
         // ensure that some log message has been written
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] enterAction: actionName must not be null or empty");
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -152,6 +154,21 @@ public class SessionImplTest {
     }
 
     @Test
+    public void enterActionLogsInvocation() {
+        // given
+        String actionName = "Some action";
+        SessionImpl target = createSession().build();
+
+        // when
+        RootAction obtained = target.enterAction(actionName);
+
+        // then
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] enterAction(" + actionName + ")");
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verifyNoMoreInteractions(mockLogger);
+    }
+
+    @Test
     public void identifyUserWithNullTagDoesNothing() {
         // given
         SessionImpl target = createSession().build();
@@ -164,6 +181,7 @@ public class SessionImplTest {
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
         verifyNoMoreInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -179,6 +197,7 @@ public class SessionImplTest {
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
         verifyNoMoreInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -215,6 +234,21 @@ public class SessionImplTest {
     }
 
     @Test
+    public void identifyUserLogsInvocation() {
+        // given
+        String userTag = "user";
+        SessionImpl target = createSession().build();
+
+        // when
+        target.identifyUser(userTag);
+
+        // then
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] identifyUser(" + userTag + ")");
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verifyNoMoreInteractions(mockLogger);
+    }
+
+    @Test
     public void reportingCrashWithNullErrorNameDoesNotReportAnything() {
         // given
         SessionImpl target = createSession().build();
@@ -227,6 +261,7 @@ public class SessionImplTest {
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
         verifyZeroInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -242,6 +277,7 @@ public class SessionImplTest {
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
         verifyZeroInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -283,6 +319,24 @@ public class SessionImplTest {
 
         // verify the correct methods being called
         verify(mockBeacon, times(2)).reportCrash(errorName, reason, stacktrace);
+    }
+
+    @Test
+    public void reportCrashLogsInvocation() {
+        // given
+        SessionImpl target = createSession().build();
+
+        String errorName = "error name";
+        String reason = "error reason";
+        String stacktrace = "the stacktrace causing the error";
+
+        // when
+        target.reportCrash(errorName, reason, stacktrace);
+
+        // verify the correct methods being called
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportCrash(" + errorName + ", " + reason + ", " + stacktrace + ")");
     }
 
     @Test
@@ -360,6 +414,18 @@ public class SessionImplTest {
         verify(childObjectTwo, times(1)).close();
 
         verify(mockLogger, times(2)).error(contains("Caught IOException while closing OpenKitObject"), eq(exception));
+    }
+
+    @Test
+    public void endLogsInvocation() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.end();
+
+        // then
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] end()");
     }
 
     @Test
@@ -603,6 +669,7 @@ public class SessionImplTest {
 
         // and a warning message has been generated
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] traceWebRequest (String): url must not be null or empty");
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -619,6 +686,7 @@ public class SessionImplTest {
 
         // and a warning message has been generated
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] traceWebRequest (String): url must not be null or empty");
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
@@ -636,6 +704,37 @@ public class SessionImplTest {
         // and a warning message has been generated
         verify(mockLogger, times(1)).warning(
             "SessionImpl [sn=0] traceWebRequest (String): url \"foobar/://\" does not have a valid scheme");
+    }
+
+    @Test
+    public void traceWebRequestWithStringLogsInvocation() {
+        // given
+        String url = "https://localhost";
+        SessionImpl target = createSession().build();
+
+        // when
+        target.traceWebRequest(url);
+
+        // then
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] traceWebRequest (String) (" + url + ")");
+        verifyNoMoreInteractions(mockLogger);
+    }
+
+    @Test
+    public void traceWebRequestWithUrlConnectionLogsInvocation() {
+        // given
+        String connectionString = "connection";
+        URLConnection connection = mock(URLConnection.class);
+        when(connection.toString()).thenReturn(connectionString);
+        SessionImpl target = createSession().build();
+
+        // when
+        target.traceWebRequest(connection);
+
+        // then
+        verify(mockLogger, times(2)).isDebugEnabled(); // 1 on invocation + 1 in getTag when setting tag on connection
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] traceWebRequest (URLConnection) (" + connection + ")");
     }
 
     @Test
@@ -678,6 +777,7 @@ public class SessionImplTest {
         // and a warning message has been generated
         verify(mockLogger, times(1)).warning(
             "SessionImpl [sn=0] traceWebRequest (URLConnection): connection must not be null");
+        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test

@@ -40,12 +40,12 @@ public class RootActionImpl extends BaseActionImpl implements RootAction {
 
     @Override
     public Action enterAction(String actionName) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(this + "enterAction(" + actionName + ")");
-        }
         if (actionName == null || actionName.isEmpty()) {
             logger.warning(this + "enterAction: actionName must not be null or empty");
             return new NullAction(this);
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "enterAction(" + actionName + ")");
         }
         synchronized (lockObject) {
             if (!isActionLeft()) {

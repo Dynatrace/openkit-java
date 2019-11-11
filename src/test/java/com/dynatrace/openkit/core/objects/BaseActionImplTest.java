@@ -114,6 +114,7 @@ public class BaseActionImplTest {
         // then
         assertThat(obtained, is(sameInstance((Action) target)));
         verify(logger, times(1)).warning(endsWith("reportEvent: eventName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
         verify(beacon, times(0)).reportEvent(anyInt(), anyString());
     }
 
@@ -126,10 +127,25 @@ public class BaseActionImplTest {
         Action obtained = target.reportEvent("");
 
         // then
-        // then
         assertThat(obtained, is(sameInstance((Action) target)));
         verify(logger, times(1)).warning(endsWith("reportEvent: eventName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
         verify(beacon, times(0)).reportEvent(anyInt(), anyString());
+    }
+
+    @Test
+    public void reportEventLogsInvocation() {
+        // given
+        String eventName = "event name";
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.reportEvent(eventName);
+
+        // then
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportEvent(" + eventName +")"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -146,6 +162,7 @@ public class BaseActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(endsWith("reportValue (int): valueName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -162,6 +179,7 @@ public class BaseActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(endsWith("reportValue (int): valueName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -181,6 +199,23 @@ public class BaseActionImplTest {
     }
 
     @Test
+    public void reportValueIntLogsInvocation() {
+         // given
+        String valueName = "IntegerValue";
+        int value = 42;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportValue(valueName, value);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportValue (int) (" + valueName + ", " + value + ")"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
     public void reportValueDoubleWithNullNameDoesNotReportValue() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
@@ -194,6 +229,7 @@ public class BaseActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(endsWith("reportValue (double): valueName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -210,6 +246,7 @@ public class BaseActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(endsWith("reportValue (double): valueName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -223,6 +260,22 @@ public class BaseActionImplTest {
         // verify that beacon within the action is called properly
         verify(beacon, times(1)).reportValue(ID_BASE_OFFSET, "DoubleValue", 12.3456);
         assertThat(obtained, is(sameInstance((Action) target)));
+    }
+
+    @Test
+    public void reportValueDoubleLogsInvocation() {
+         // given
+        String valueName = "DoubleValue";
+        double value = 12.3456;
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportValue(valueName, value);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportValue (double) (" + valueName + ", " + value + ")"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -271,6 +324,20 @@ public class BaseActionImplTest {
     }
 
     @Test
+    public void reportValueStringLogsInvocation() {
+        // given
+        String valueName = "StringValue";
+        String value = "value";
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.reportValue(valueName, value);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).debug(endsWith("reportValue (String) (" + valueName + ", " + value + ")"));
+    }
+
+    @Test
     public void reportErrorWithAllValuesSet() {
         // given
         String errorName = "FATAL ERROR";
@@ -304,6 +371,7 @@ public class BaseActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(endsWith("reportError: errorName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -323,6 +391,7 @@ public class BaseActionImplTest {
 
         // verify that a log message has been generated
         verify(logger, times(1)).warning(endsWith("reportError: errorName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -336,6 +405,24 @@ public class BaseActionImplTest {
         // verify that beacon within the action is called properly
         verify(beacon, times(1)).reportError(ID_BASE_OFFSET, "errorName", 42, null);
         assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportErrorLogsInvocation() {
+        // given
+        String errorName = "error name";
+        int errorCode = 42;
+        String reason = "reason";
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+       target.reportError(errorName, errorCode, reason);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportError(" + errorName + ", " + errorCode + ", " + reason + ")"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -362,7 +449,6 @@ public class BaseActionImplTest {
         List<OpenKitObject> childObjects = target.getCopyOfChildObjects();
         assertThat(childObjects, is(equalTo(Collections.singletonList((OpenKitObject)obtained))));
     }
-
 
     @Test
     public void onChildClosedRemovesChildFromList() {
@@ -392,6 +478,7 @@ public class BaseActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(endsWith("traceWebRequest (String): url must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -408,6 +495,7 @@ public class BaseActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(endsWith("traceWebRequest (String): url must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -424,6 +512,22 @@ public class BaseActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(endsWith("traceWebRequest (String): url \"foobar/://\" does not have a valid scheme"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void traceWebRequestStringLogsInvocation() {
+        // given
+        String url = "https://localhost";
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest(url);
+
+        // then
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("traceWebRequest(" + url + ")"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -471,6 +575,22 @@ public class BaseActionImplTest {
 
         // and a warning message has been generated
         verify(logger, times(1)).warning(endsWith("traceWebRequest (URLConnection): connection must not be null"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void traceWebRequestUrlConnectionLogsInvocation() {
+        // given
+        String connectionString = "connection";
+        URLConnection connection = mock(URLConnection.class);
+        when(connection.toString()).thenReturn(connectionString);
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        WebRequestTracer obtained = target.traceWebRequest(connection);
+
+        // then
+        verify(logger, times(1)).debug(endsWith("traceWebRequest (URLConnection) (" + connectionString + ")"));
     }
 
     @Test
@@ -707,6 +827,19 @@ public class BaseActionImplTest {
 
         // then
         verifyZeroInteractions(beacon, openKitComposite);
+    }
+
+    @Test
+    public void leaveActionLogsInvocation() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.leaveAction();
+
+        // then
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("leaveAction(" + ACTION_NAME + ")"));
     }
 
     @Test

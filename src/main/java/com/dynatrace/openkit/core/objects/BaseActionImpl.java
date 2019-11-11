@@ -211,7 +211,7 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
             return NullWebRequestTracer.INSTANCE;
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(this + "traceWebRequest (String) (" + url + ")");
+            logger.debug(this + "traceWebRequest(" + url + ")");
         }
         synchronized (lockObject) {
             if (!isActionLeft()) {

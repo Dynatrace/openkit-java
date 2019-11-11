@@ -34,6 +34,7 @@ import static org.mockito.Matchers.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -86,6 +87,7 @@ public class RootActionImplTest {
         assertThat(obtained, instanceOf(NullAction.class));
 
         verify(logger, times(1)).warning(endsWith("enterAction: actionName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -101,6 +103,7 @@ public class RootActionImplTest {
         assertThat(obtained, instanceOf(NullAction.class));
 
         verify(logger, times(1)).warning(endsWith("enterAction: actionName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
     }
 
     @Test
@@ -140,6 +143,19 @@ public class RootActionImplTest {
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained, is(instanceOf(NullAction.class)));
+    }
+
+    @Test
+    public void enterActionLogsInvocation() {
+        // given
+        RootActionImpl target = new RootActionImpl(logger, session, ROOT_ACTION_NAME, beacon);
+
+        // when
+        target.enterAction(CHILD_ACTION_NAME);
+
+        // then
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("enterAction(" + CHILD_ACTION_NAME + ")"));
     }
 
     @Test
