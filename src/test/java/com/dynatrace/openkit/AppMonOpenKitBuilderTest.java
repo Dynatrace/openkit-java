@@ -71,6 +71,6 @@ public class AppMonOpenKitBuilderTest {
         AppMonOpenKitBuilder target = new AppMonOpenKitBuilder(ENDPOINT_URL, APPLICATION_NAME, DEVICE_ID);
 
         // then
-        assertThat(target.getDefaultServerID(), is(equalTo(AbstractOpenKitBuilder.DEFAULT_SERVER_ID)));
+        assertThat(target.getDefaultServerID(), is(equalTo(AppMonOpenKitBuilder.DEFAULT_SERVER_ID)));
     }
 }

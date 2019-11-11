@@ -32,11 +32,6 @@ import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
  */
 public abstract class AbstractOpenKitBuilder {
 
-    /**
-     * The default server ID to communicate with.
-     */
-    public static final int DEFAULT_SERVER_ID = 1;
-
     // immutable fields
     private final String endpointURL;
     private final long deviceID;
@@ -338,9 +333,7 @@ public abstract class AbstractOpenKitBuilder {
      *
      * @return Default server id to communicate with.
      */
-    public int getDefaultServerID() {
-        return DEFAULT_SERVER_ID;
-    }
+    public abstract int getDefaultServerID();
 
     /**
      * Get the application version that has been set with {@link #withApplicationVersion(String)}.

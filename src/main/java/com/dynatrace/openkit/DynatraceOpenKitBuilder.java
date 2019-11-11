@@ -22,6 +22,11 @@ package com.dynatrace.openkit;
 public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
 
     /**
+     * The default server ID to communicate with.
+     */
+    public static final int DEFAULT_SERVER_ID = 1;
+
+    /**
      * A string, identifying the type of OpenKit this builder is made for.
      */
     public static final String OPENKIT_TYPE = "DynatraceOpenKit";
@@ -72,6 +77,11 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
             this.applicationName = applicationName;
         }
         return this;
+    }
+
+    @Override
+    public int getDefaultServerID() {
+        return DEFAULT_SERVER_ID;
     }
 
     @Override
