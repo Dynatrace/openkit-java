@@ -17,7 +17,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class BeaconSendingRequestUtilTest {
         context = mock(BeaconSendingContext.class);
         httpClient = mock(HTTPClient.class);
         response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(response.isErroneousResponse()).thenReturn(false);
 
         when(context.getHTTPClient()).thenReturn(httpClient);
@@ -58,7 +57,7 @@ public class BeaconSendingRequestUtilTest {
     public void sendStatusRequestIsAbortedWhenShutdownIsRequested() throws InterruptedException {
 
         // given
-        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(true);
 
@@ -80,7 +79,7 @@ public class BeaconSendingRequestUtilTest {
     public void sendStatusRequestIsAbortedIfTheNumberOfRetriesIsExceeded() throws InterruptedException {
 
         // given
-        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(false);
 
@@ -121,7 +120,7 @@ public class BeaconSendingRequestUtilTest {
     public void sleepTimeIsDoubledBetweenConsecutiveRetries() throws InterruptedException {
 
         // given
-        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(false);
         when(httpClient.sendStatusRequest()).thenReturn(response);
@@ -167,7 +166,7 @@ public class BeaconSendingRequestUtilTest {
 
         // given
         when(response.isErroneousResponse()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(context.isShutdownRequested()).thenReturn(false);
 
         // when

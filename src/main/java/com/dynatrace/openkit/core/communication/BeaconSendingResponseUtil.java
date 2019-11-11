@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
  * Utility class for responses.
@@ -34,18 +34,18 @@ class BeaconSendingResponseUtil {
     }
 
     /**
-     * Test if the given {@link Response} is a successful response.
+     * Test if the given {@link StatusResponse} is a successful response.
      *
      * @param response The given response to check whether it is successful or not.
      * @return {@code true} if response is successful, {@code false} otherwise.
      */
-    static boolean isSuccessfulResponse(Response response) {
+    static boolean isSuccessfulResponse(StatusResponse response) {
 
         return response != null && !response.isErroneousResponse();
     }
 
     /**
-     * Test if the given {@link Response} is a "too many requests" response.
+     * Test if the given {@link StatusResponse} is a "too many requests" response.
      *
      * <p>
      * A "too many requests" response is an HTTP response with response code 429.
@@ -54,8 +54,8 @@ class BeaconSendingResponseUtil {
      * @param response The given response to check whether it is a "too many requests" response or not.
      * @return {@code true} if response indicates too many requests, {@code false} otherwise.
      */
-    static boolean isTooManyRequestsResponse(Response response) {
+    static boolean isTooManyRequestsResponse(StatusResponse response) {
 
-        return response != null && response.getResponseCode() == Response.HTTP_TOO_MANY_REQUESTS;
+        return response != null && response.getResponseCode() == StatusResponse.HTTP_TOO_MANY_REQUESTS;
     }
 }

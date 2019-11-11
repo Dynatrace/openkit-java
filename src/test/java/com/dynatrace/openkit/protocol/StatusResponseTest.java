@@ -22,13 +22,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -44,6 +50,147 @@ public class StatusResponseTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
+        @Test
+    public void isErroneousResponseGivesTrueForErrorCodeEqualTo400() {
+        // when parsing 2^31, then
+        assertThat(new StatusResponse(mockLogger, "", 400, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
+            is(true));
+    }
+
+    @Test
+    public void isErroneousResponseGivesTrueForErrorCodeGreaterThan400() {
+        // when parsing 2^31, then
+        assertThat(new StatusResponse(mockLogger, "", 401, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
+            is(true));
+    }
+
+    @Test
+    public void isErroneousResponseGivesFalseForErrorCodeLessThan400() {
+        // when parsing 2^31, then
+        assertThat(new StatusResponse(mockLogger, "", 399, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
+            is(false));
+    }
+
+    @Test
+    public void responseCodeIsSet() {
+        // given
+        assertThat(new StatusResponse(mockLogger, "", 418, Collections.<String, List<String>>emptyMap()).getResponseCode(), is(equalTo(418)));
+    }
+
+    @Test
+    public void headersAreSet() {
+        // given
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        headers.put("X-Foo", Collections.singletonList("X-BAR"));
+        headers.put("X-YZ", Collections.<String>emptyList());
+
+        // then
+        assertThat(new StatusResponse(mockLogger, "", 418, headers).getHeaders(),
+            is(sameInstance(headers)));
+    }
+
+    @Test
+    public void getRetryAfterReturnsDefaultValueIfResponseKeyDoesNotExist() {
+
+        // given
+        StatusResponse target = new StatusResponse(mockLogger, "", 429, Collections.<String, List<String>>emptyMap());
+
+        // when
+        long obtained = target.getRetryAfterInMilliseconds();
+
+        // then
+        assertThat(obtained, is(equalTo(StatusResponse.DEFAULT_RETRY_AFTER_IN_MILLISECONDS)));
+    }
+
+    @Test
+    public void getRetryAfterReturnsDefaultValueIfMultipleValuesWereRetrieved() {
+
+        // given
+        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Arrays.asList("100", "200"));
+        StatusResponse target = new StatusResponse(mockLogger, "", 429, responseHeaders);
+
+        // when
+        long obtained = target.getRetryAfterInMilliseconds();
+
+        // then
+        assertThat(obtained, is(equalTo(StatusResponse.DEFAULT_RETRY_AFTER_IN_MILLISECONDS)));
+    }
+
+    @Test
+    public void getRetryAfterReturnsDefaultValueIfValueIsNotParsableAsInteger() {
+
+        // given
+        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Collections.singletonList("a"));
+        StatusResponse target = new StatusResponse(mockLogger, "", 429, responseHeaders);
+
+        // when
+        long obtained = target.getRetryAfterInMilliseconds();
+
+        // then
+        assertThat(obtained, is(equalTo(StatusResponse.DEFAULT_RETRY_AFTER_IN_MILLISECONDS)));
+    }
+
+    @Test
+    public void getRetryAfterReturnsParsedValue() {
+
+        // given
+        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Collections.singletonList("1234"));
+        StatusResponse target = new StatusResponse(mockLogger, "", 429, responseHeaders);
+
+        // when
+        long obtained = target.getRetryAfterInMilliseconds();
+
+        // then
+        assertThat(obtained, is(equalTo(1234L * 1000L)));
+    }
+
+    @Test
+    public void parseResponseKeyValuePairReturnsEmptyListIfInputIsEmptyString() {
+
+        // when
+        List<StatusResponse.KeyValuePair> obtained = StatusResponse.parseResponseKeyValuePair("");
+
+        // then
+        assertThat(obtained, is(empty()));
+    }
+
+    @Test
+    public void parseResponseKeyValuePairForOneKeyValuePair() {
+
+        // when
+        List<StatusResponse.KeyValuePair> obtained = StatusResponse.parseResponseKeyValuePair("key=value");
+
+        // then
+        assertThat(obtained, is(not(empty())));
+        assertThat(obtained.size(), is(equalTo(1)));
+        assertThat(obtained.get(0).key, is(equalTo("key")));
+        assertThat(obtained.get(0).value, is(equalTo("value")));
+    }
+
+    @Test
+    public void parseResponseKeyValuePairForMultipleKeyValuePair() {
+
+        // when
+        List<StatusResponse.KeyValuePair> obtained = StatusResponse.parseResponseKeyValuePair("key=value");
+
+        // then
+        assertThat(obtained, is(not(empty())));
+        assertThat(obtained.size(), is(equalTo(1)));
+        assertThat(obtained.get(0).key, is(equalTo("key")));
+        assertThat(obtained.get(0).value, is(equalTo("value")));
+    }
+
+    @Test
+    public void parseResponseKeyThrowsExceptionIfNoKeyValuePairIsParsed() {
+
+        // given
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Invalid response; even number of tokens expected.");
+
+        // when, then
+        StatusResponse.parseResponseKeyValuePair("key_value");
+    }
 
     @Test
     public void passingNullResponseStringDoesNotThrow() {

@@ -23,7 +23,6 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -584,7 +583,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseClearsSessionDataIfResponseIsCaptureOff() {
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(response.isCapture()).thenReturn(false);
 
         SessionState state = mock(SessionState.class);
@@ -606,7 +605,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseRemovesFinishedSessionsIfResponseIsCaptureOff() {
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(response.isCapture()).thenReturn(false);
 
         SessionState state = mock(SessionState.class);
@@ -631,7 +630,7 @@ public class BeaconSendingContextTest {
         int sendInterval = 999;
         StatusResponse response = mock(StatusResponse.class);
         when(response.isCapture()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(response.getSendInterval()).thenReturn(sendInterval);
 
         SessionImpl session = mock(SessionImpl.class);
@@ -654,7 +653,7 @@ public class BeaconSendingContextTest {
         // given
         StatusResponse response = mock(StatusResponse.class);
         when(response.isCapture()).thenReturn(false);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
 
         SessionState state = mock(SessionState.class);
         SessionImpl session = mock(SessionImpl.class);
@@ -677,7 +676,7 @@ public class BeaconSendingContextTest {
         // given
         StatusResponse response = mock(StatusResponse.class);
         when(response.isCapture()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
 
         SessionImpl session = mock(SessionImpl.class);
 
@@ -705,7 +704,7 @@ public class BeaconSendingContextTest {
         int serverId = 73;
         StatusResponse response = mock(StatusResponse.class);
         when(response.isCapture()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(response.getServerID()).thenReturn(serverId);
 
         BeaconSendingContext target = spy(createBeaconSendingContext().build());

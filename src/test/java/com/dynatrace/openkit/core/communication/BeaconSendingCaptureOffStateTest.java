@@ -17,7 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class BeaconSendingCaptureOffStateTest {
     @Before
     public void setUp() {
         StatusResponse mockResponse = mock(StatusResponse.class);
-        when(mockResponse.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(mockResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(mockResponse.isErroneousResponse()).thenReturn(false);
 
         httpClient = mock(HTTPClient.class);
@@ -121,7 +121,7 @@ public class BeaconSendingCaptureOffStateTest {
         BeaconSendingCaptureOffState target = new BeaconSendingCaptureOffState(12345L);
 
         StatusResponse tooManyRequestsResponse = mock(StatusResponse.class);
-        when(tooManyRequestsResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
         when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);

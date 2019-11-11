@@ -22,7 +22,6 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -402,7 +401,7 @@ public class BeaconSendingContext {
      * Handle the status response received from the server.
      */
     void handleStatusResponse(StatusResponse statusResponse) {
-        if (statusResponse == null || (statusResponse.getResponseCode() != Response.HTTP_OK)) {
+        if (statusResponse == null || (statusResponse.getResponseCode() != StatusResponse.HTTP_OK)) {
             disableCaptureAndClear();
             return;
         }

@@ -20,7 +20,6 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
@@ -115,7 +114,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
             .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
-            .thenReturn(new StatusResponse(mock(Logger.class), "", Response.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
+            .thenReturn(new StatusResponse(mock(Logger.class), "", StatusResponse.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
         when(mockSession6New.canSendNewSessionRequest()).thenReturn(true);
 
@@ -145,7 +144,7 @@ public class BeaconSendingCaptureOnStateTest {
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
             .thenReturn(new StatusResponse(mock(Logger.class), "mp=5", 200, Collections.<String, List<String>>emptyMap())) // first response valid
-            .thenReturn(new StatusResponse(mock(Logger.class), "", Response.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
+            .thenReturn(new StatusResponse(mock(Logger.class), "", StatusResponse.HTTP_BAD_REQUEST, Collections.<String, List<String>>emptyMap())); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(false);
         when(mockSession6New.canSendNewSessionRequest()).thenReturn(false);
 
@@ -166,7 +165,7 @@ public class BeaconSendingCaptureOnStateTest {
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         StatusResponse statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(statusResponse.isErroneousResponse()).thenReturn(true);
         when(statusResponse.getRetryAfterInMilliseconds()).thenReturn(6543L);
 
@@ -207,7 +206,7 @@ public class BeaconSendingCaptureOnStateTest {
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         StatusResponse statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(statusResponse.isErroneousResponse()).thenReturn(false);
 
         when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
@@ -253,7 +252,7 @@ public class BeaconSendingCaptureOnStateTest {
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         StatusResponse statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(statusResponse.isErroneousResponse()).thenReturn(true);
 
         when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
@@ -278,11 +277,11 @@ public class BeaconSendingCaptureOnStateTest {
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         StatusResponse erroneousStatusResponse = mock(StatusResponse.class);
-        when(erroneousStatusResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousStatusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousStatusResponse.isErroneousResponse()).thenReturn(true);
 
         StatusResponse statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(statusResponse.isErroneousResponse()).thenReturn(false);
 
         when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(erroneousStatusResponse);
@@ -310,7 +309,7 @@ public class BeaconSendingCaptureOnStateTest {
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         StatusResponse statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(statusResponse.isErroneousResponse()).thenReturn(true);
         when(statusResponse.getRetryAfterInMilliseconds()).thenReturn(12345L);
 
@@ -377,7 +376,7 @@ public class BeaconSendingCaptureOnStateTest {
     public void sendingOpenSessionsIsAbortedImmediatelyWhenTooManyRequestsResponseIsReceived() {
         //given
         StatusResponse statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(statusResponse.isErroneousResponse()).thenReturn(true);
         when(statusResponse.getRetryAfterInMilliseconds()).thenReturn(12345L);
 

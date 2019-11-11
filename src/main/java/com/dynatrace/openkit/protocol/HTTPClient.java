@@ -116,32 +116,32 @@ public class HTTPClient {
 
     // sends a status check request and returns a status response
     public StatusResponse sendStatusRequest() {
-        Response response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+        StatusResponse response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
         return response == null
             ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : (StatusResponse)response;
+            : response;
     }
 
     public StatusResponse sendNewSessionRequest() {
-        Response response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
+        StatusResponse response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
         return response == null
             ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : (StatusResponse)response;
+            : response;
     }
 
     // sends a beacon send request and returns a status response
     public StatusResponse sendBeaconRequest(String clientIPAddress, byte[] data) {
-        Response response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
+        StatusResponse response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
         return response == null
             ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : (StatusResponse)response;
+            : response;
     }
 
     // *** protected methods ***
 
     // generic request send with some verbose output and exception handling
     // protected because it's overridden by the TestHTTPClient
-    Response sendRequest(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
+    StatusResponse sendRequest(RequestType requestType, String url, String clientIPAddress, byte[] data, String method) {
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug(getClass().getSimpleName() + " sendRequest() - HTTP " + requestType.getRequestName() + " Request: " + url);
@@ -157,7 +157,7 @@ public class HTTPClient {
     // *** private methods ***
 
     // only for unit testing the HTTPClient
-    Response sendRequest(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress, byte[] data,
+    StatusResponse sendRequest(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress, byte[] data,
                          String method) {
         try {
             return sendRequestInternal(requestType, httpURLConnectionWrapper, clientIPAddress, data, method);
@@ -168,7 +168,7 @@ public class HTTPClient {
     }
 
     // generic internal request send
-    private Response sendRequestInternal(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress,
+    private StatusResponse sendRequestInternal(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress,
             byte[] data, String method) throws IOException, GeneralSecurityException {
         while (true) {
             try {
@@ -241,7 +241,7 @@ public class HTTPClient {
         }
     }
 
-    private Response handleResponse(RequestType requestType, HttpURLConnection connection) throws IOException {
+    private StatusResponse handleResponse(RequestType requestType, HttpURLConnection connection) throws IOException {
         // get response code
         int responseCode = connection.getResponseCode();
 
@@ -268,7 +268,7 @@ public class HTTPClient {
         }
     }
 
-    private Response parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
+    private StatusResponse parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         if (isStatusResponse(response)) {
             try {
                 return new StatusResponse(logger, response, responseCode, responseHeadersWithLowerCaseKeys(headers));
@@ -384,7 +384,7 @@ public class HTTPClient {
         return responseBuilder.toString();
     }
 
-    private  Response unknownErrorResponse(RequestType requestType) {
+    private  StatusResponse unknownErrorResponse(RequestType requestType) {
 
         if (requestType == null) {
             return null;

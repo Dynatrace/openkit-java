@@ -18,7 +18,6 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
@@ -171,7 +170,7 @@ public class BeaconSendingFlushSessionsStateTest {
 
         StatusResponse tooManyRequestsReceived = mock(StatusResponse.class);
         when(tooManyRequestsReceived.isErroneousResponse()).thenReturn(true);
-        when(tooManyRequestsReceived.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsReceived.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
 
         when(mockSession3Closed.sendBeacon(any(HTTPClientProvider.class))).thenReturn(tooManyRequestsReceived);
 

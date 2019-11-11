@@ -93,7 +93,7 @@ public class HTTPClientTest {
         HTTPClient client = new HTTPClient(logger, configuration);
 
         // when
-        Response response = client.sendRequest(null, "", null, null, null);
+        StatusResponse response = client.sendRequest(null, "", null, null, null);
 
         // then
         assertThat(response, is(nullValue()));
@@ -106,7 +106,7 @@ public class HTTPClientTest {
         HTTPClient client = new HTTPClient(logger, configuration);
 
         // when
-        Response response = client.sendStatusRequest();
+        StatusResponse response = client.sendStatusRequest();
 
         // then
         assertThat(response, is(notNullValue()));
@@ -124,7 +124,7 @@ public class HTTPClientTest {
         when(connection.getErrorStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that for error responses unknown error is returned)
         assertThat(response, is(notNullValue()));
@@ -142,7 +142,7 @@ public class HTTPClientTest {
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response, notNullValue());
@@ -166,7 +166,7 @@ public class HTTPClientTest {
         when(connection.getHeaderFields()).thenReturn(headerFields);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
@@ -189,7 +189,7 @@ public class HTTPClientTest {
         when(connection.getErrorStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that for error responses unknown error is returned)
         assertThat(response, is(notNullValue()));
@@ -207,7 +207,7 @@ public class HTTPClientTest {
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response, notNullValue());
@@ -231,7 +231,7 @@ public class HTTPClientTest {
         when(connection.getHeaderFields()).thenReturn(headerFields);
 
         // when
-        Response response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
 
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
@@ -254,7 +254,7 @@ public class HTTPClientTest {
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
 
         // then (verify that we properly send the request and parsed the response)
         assertThat(response.getResponseCode(), is(200));
@@ -274,7 +274,7 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
         assertThat(response.getResponseCode(), is(200));
@@ -297,7 +297,7 @@ public class HTTPClientTest {
         when(connection.getOutputStream()).thenReturn(os);
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", uncompressedText, "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", uncompressedText, "POST");
 
         // then
         // first ensure text length and compressed text length are not equal
@@ -359,7 +359,7 @@ public class HTTPClientTest {
         when(connection.getHeaderFields()).thenReturn(headerFields);
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", "type=m".getBytes(), "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", "type=m".getBytes(), "POST");
 
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
@@ -392,7 +392,7 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
         verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
@@ -417,7 +417,7 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
         assertThat(response, is(notNullValue()));
@@ -442,7 +442,7 @@ public class HTTPClientTest {
                 .thenThrow(new IOException("Third failure"));
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", null, "POST");
 
         // then
         verify(httpURLConnectionWrapper, times(3)).getHttpURLConnection();
@@ -461,7 +461,7 @@ public class HTTPClientTest {
         when(connection.getInputStream()).thenReturn(is);
 
         // when
-        Response response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+        StatusResponse response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
 
         // then (verify unknown error response)
         assertThat(response, is(notNullValue()));
@@ -481,7 +481,7 @@ public class HTTPClientTest {
         String data = "type=m";
 
         // when
-        Response response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", data.getBytes(), "POST");
 
         // then
         assertThat(response, is(notNullValue()));

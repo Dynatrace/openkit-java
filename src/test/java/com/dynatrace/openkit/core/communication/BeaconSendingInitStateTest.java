@@ -17,7 +17,6 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +58,7 @@ public class BeaconSendingInitStateTest {
         // setup http client
         when(httpClient.sendStatusRequest()).thenReturn(statusResponse);
         // setup status response
-        when(statusResponse.getResponseCode()).thenReturn(Response.HTTP_OK);
+        when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(statusResponse.isErroneousResponse()).thenReturn(false);
     }
 
@@ -184,7 +183,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         StatusResponse erroneousResponse = mock(StatusResponse.class);
-        when(erroneousResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
         when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
@@ -268,7 +267,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         StatusResponse erroneousResponse = mock(StatusResponse.class);
-        when(erroneousResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
         when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
@@ -294,7 +293,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         StatusResponse erroneousResponse = mock(StatusResponse.class);
-        when(erroneousResponse.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(erroneousResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
         when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
@@ -382,7 +381,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         StatusResponse tooManyRequestsResponse = mock(StatusResponse.class);
-        when(tooManyRequestsResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
         when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
@@ -402,7 +401,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         StatusResponse tooManyRequestsResponse = mock(StatusResponse.class);
-        when(tooManyRequestsResponse.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(tooManyRequestsResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
         when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);

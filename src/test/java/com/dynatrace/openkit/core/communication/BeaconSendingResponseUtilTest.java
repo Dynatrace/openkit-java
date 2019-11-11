@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.communication;
 
-import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Test;
 
@@ -86,7 +85,7 @@ public class BeaconSendingResponseUtilTest {
 
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_BAD_REQUEST);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
 
         // when
         boolean obtained = BeaconSendingResponseUtil.isTooManyRequestsResponse(response);
@@ -104,7 +103,7 @@ public class BeaconSendingResponseUtilTest {
 
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(Response.HTTP_TOO_MANY_REQUESTS);
+        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
 
         // when
         boolean obtained = BeaconSendingResponseUtil.isTooManyRequestsResponse(response);
