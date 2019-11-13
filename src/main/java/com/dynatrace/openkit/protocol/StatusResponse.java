@@ -78,7 +78,6 @@ public class StatusResponse  {
     private boolean captureCrashes = true;
     private int multiplicity = 1;
 
-
     // *** constructors ***
 
     public StatusResponse(Logger logger, String response, int responseCode, Map<String, List<String>> headers) {

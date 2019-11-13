@@ -1,12 +1,12 @@
 /**
  * Copyright 2018-2019 Dynatrace LLC
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -84,6 +84,30 @@ public class ServerConfigurationTest {
     public void inDefaultServerConfigurationMultiplicityIsOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getMultiplicity(), is(1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationMaxSessionDurationIsMinusOne() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.getMaxSessionDurationInMilliseconds(), is(-1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationMaxEventsPerSessionIsMinusOne() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.getMaxEventsPerSession(), is(-1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationSessionTimeoutIsMinusOne() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.getSessionTimeoutInMilliseconds(), is(-1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationVisitStoreVersionIsMinusOne() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.getVisitStoreVersion(), is(-1));
     }
 
     @Test
@@ -530,5 +554,61 @@ public class ServerConfigurationTest {
 
         // then
         assertThat(obtained.getMultiplicity(), is(multiplicity));
+    }
+
+    @Test
+    public void buildPropagatesMaxSessionDurationToInstance() {
+        // given
+        int sessionDuration = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder()
+                .withMaxSessionDurationInMilliseconds(sessionDuration)
+                .build();
+
+        // then
+        assertThat(obtained.getMaxSessionDurationInMilliseconds(), is(sessionDuration));
+    }
+
+    @Test
+    public void buildPropagatesMaxEventsPerSessionToInstance() {
+        // given
+        int eventsPerSession = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder()
+                .withMaxEventsPerSession(eventsPerSession)
+                .build();
+
+        // then
+        assertThat(obtained.getMaxEventsPerSession(), is(eventsPerSession));
+    }
+
+    @Test
+    public void buildPropagatesSessionTimeoutToInstance() {
+        // given
+        int sessionTimeout = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder()
+                .withSessionTimeoutInMilliseconds(sessionTimeout)
+                .build();
+
+        // then
+        assertThat(obtained.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
+    }
+
+    @Test
+    public void buildPropagatesVisitStoreVersionToInstance() {
+        // given
+        int visitStoreVersion = 73;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder()
+                .withVisitStoreVersion(visitStoreVersion)
+                .build();
+
+        // then
+        assertThat(obtained.getVisitStoreVersion(), is(visitStoreVersion));
     }
 }

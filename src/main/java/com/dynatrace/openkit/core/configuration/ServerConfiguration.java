@@ -18,6 +18,8 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.protocol.StatusResponse;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Configuration class storing all configuration parameters as returned by Dynatrace/AppMon.
  */
@@ -40,6 +42,14 @@ public class ServerConfiguration {
     static final int DEFAULT_BEACON_SIZE = -1;
     /** default multiplicity is 1 */
     static final int DEFAULT_MULTIPLICITY = 1;
+    /** default value specifying the maximum duration of a session in milliseconds */
+    static final int DEFAULT_MAX_SESSION_DURATION = -1;
+    /** default value for the maximum count of top level events before a session is split */
+    static final int DEFAULT_MAX_EVENTS_PER_SESSION = -1;
+    /** default idle timeout after which a new session is started */
+    static final int DEFAULT_SESSION_TIMEOUT = -1;
+    /** default visit store version */
+    static final int DEFAULT_VISIT_STORE_VERSION = -1;
 
     /** Boolean indicating whether capturing is enabled by the backend or not */
     private final boolean isCaptureEnabled;
@@ -55,6 +65,14 @@ public class ServerConfiguration {
     private final int beaconSizeInBytes;
     /** The multiplicity value */
     private final int multiplicity;
+    /** the maximum duration of a session */
+    private final int maxSessionDurationInMilliseconds;
+    /** the maximum number of events per session */
+    private final int maxEventsPerSession;
+    /** the session idle timeout in milliseconds */
+    private final int sessionTimeoutInMilliseconds;
+    /** version of the visit store that should be used */
+    private final int visitStoreVersion;
 
     /**
      * Create a server configuration from a builder.
@@ -69,6 +87,10 @@ public class ServerConfiguration {
         serverID = builder.serverID;
         beaconSizeInBytes = builder.beaconSizeInBytes;
         multiplicity = builder.multiplicity;
+        maxSessionDurationInMilliseconds = builder.maxSessionDurationInMilliseconds;
+        maxEventsPerSession = builder.maxEventsPerSession;
+        sessionTimeoutInMilliseconds = builder.sessionTimeoutInMilliseconds;
+        visitStoreVersion = builder.visitStoreVersion;
     }
 
     /**
@@ -150,6 +172,42 @@ public class ServerConfiguration {
      */
     public int getMultiplicity() {
         return multiplicity;
+    }
+
+    /**
+     * Returns the maximum duration in milliseconds after which a session is to be split.
+     *
+     * @return the maximum duration of a session in milliseconds.
+     */
+    public int getMaxSessionDurationInMilliseconds() {
+        return maxSessionDurationInMilliseconds;
+    }
+
+    /**
+     * Returns the maximum number of events after which a session is to be split.
+     *
+     * @return the maximum number of top level events per session.
+     */
+    public int getMaxEventsPerSession() {
+        return maxEventsPerSession;
+    }
+
+    /**
+     * Returns the idle timeout of a after which a session is to be split.
+     *
+     * @return the idle timeout of a session.
+     */
+    public int getSessionTimeoutInMilliseconds() {
+        return sessionTimeoutInMilliseconds;
+    }
+
+    /**
+     * Returns the version of the visit store that should be used.
+     *
+     * @return version of the visit store.
+     */
+    public int getVisitStoreVersion() {
+        return visitStoreVersion;
     }
 
     /**
@@ -240,6 +298,10 @@ public class ServerConfiguration {
         private int serverID = DEFAULT_SERVER_ID;
         private int beaconSizeInBytes = DEFAULT_BEACON_SIZE;
         private int multiplicity = DEFAULT_MULTIPLICITY;
+        private int maxSessionDurationInMilliseconds = DEFAULT_MAX_SESSION_DURATION;
+        private int maxEventsPerSession = DEFAULT_MAX_EVENTS_PER_SESSION;
+        private int sessionTimeoutInMilliseconds = DEFAULT_SESSION_TIMEOUT;
+        private int visitStoreVersion = DEFAULT_VISIT_STORE_VERSION;
 
         /**
          * Default constructor.
@@ -273,6 +335,10 @@ public class ServerConfiguration {
             serverID = serverConfiguration.getServerID();
             beaconSizeInBytes = serverConfiguration.getBeaconSizeInBytes();
             multiplicity = serverConfiguration.getMultiplicity();
+            maxSessionDurationInMilliseconds = serverConfiguration.getMaxSessionDurationInMilliseconds();
+            maxEventsPerSession = serverConfiguration.getMaxEventsPerSession();
+            sessionTimeoutInMilliseconds = serverConfiguration.getSessionTimeoutInMilliseconds();
+            visitStoreVersion = serverConfiguration.getVisitStoreVersion();
         }
 
         /**
@@ -346,6 +412,46 @@ public class ServerConfiguration {
          */
         public Builder withMultiplicity(int multiplicity) {
             this.multiplicity = multiplicity;
+            return this;
+        }
+
+        /**
+         * Configures the maximum duration of a session, after which the session gets split.
+         * @param maxSessionDurationInMillis the maximum duration of a session in milliseconds
+         * @return {@code this}
+         */
+        public Builder withMaxSessionDurationInMilliseconds(int maxSessionDurationInMillis) {
+            this.maxSessionDurationInMilliseconds = maxSessionDurationInMillis;
+            return this;
+        }
+
+        /**
+         * Configures the maximum number of events per session, after which the session gets split.
+         * @param maxEventsPerSession the maximum number of top level elements after which a session gets split.
+         * @return {@code this}
+         */
+        public Builder withMaxEventsPerSession(int maxEventsPerSession) {
+            this.maxEventsPerSession = maxEventsPerSession;
+            return this;
+        }
+
+        /**
+         * Configures the idle timeout after which a session gets split.
+         * @param sessionTimeoutInMilliseconds the idle timeout in milliseconds after which a session gets split.
+         * @return {@code this}
+         */
+        public Builder withSessionTimeoutInMilliseconds(int sessionTimeoutInMilliseconds) {
+            this.sessionTimeoutInMilliseconds = sessionTimeoutInMilliseconds;
+            return this;
+        }
+
+        /**
+         * Configures the version of the visit store that should be used.
+         * @param visitStoreVersion the version of the visit store to be used.
+         * @return {@code this}
+         */
+        public Builder withVisitStoreVersion(int visitStoreVersion) {
+            this.visitStoreVersion = visitStoreVersion;
             return this;
         }
 
