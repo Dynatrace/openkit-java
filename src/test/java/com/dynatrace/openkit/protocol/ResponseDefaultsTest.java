@@ -1,12 +1,12 @@
 /**
  * Copyright 2018-2019 Dynatrace LLC
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,9 @@ package com.dynatrace.openkit.protocol;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class ResponseDefaultsTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,17 +29,17 @@ public class ResponseDefaultsTest {
 
     @Test
     public void defaultJsonBeaconSize() {
-        assertThat(ResponseDefaults.JSON_RESPONSE.getBeaconSizeInBytes(), is(150 * 1024)); // 150 kB
+        assertThat(ResponseDefaults.JSON_RESPONSE.getMaxBeaconSizeInBytes(), is(150 * 1024)); // 150 kB
     }
 
     @Test
     public void defaultJsonSessionDuration() {
-        assertThat(ResponseDefaults.JSON_RESPONSE.getSessionDurationInMilliseconds(), is(360 * 60 * 1000)); // 360 minutes
+        assertThat(ResponseDefaults.JSON_RESPONSE.getMaxSessionDurationInMilliseconds(), is(360 * 60 * 1000)); // 360 minutes
     }
 
     @Test
     public void defaultJsonEventsPerSession() {
-        assertThat(ResponseDefaults.JSON_RESPONSE.getEventsPerSession(), is(200));
+        assertThat(ResponseDefaults.JSON_RESPONSE.getMaxEventsPerSession(), is(200));
     }
 
     @Test
@@ -85,23 +87,35 @@ public class ResponseDefaultsTest {
         assertThat(ResponseDefaults.JSON_RESPONSE.getTimestampInMilliseconds(), is(0L));
     }
 
+    @Test
+    public void defaultJsonMergeReturnsPassedValue() {
+        // given
+        Response response = mock(Response.class);
+
+        // when
+        Response obtained = ResponseDefaults.JSON_RESPONSE.merge(response);
+
+        // then
+        assertThat(obtained, sameInstance(response));
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Key value pair response tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void defaultKeyValueBeaconSize() {
-        assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getBeaconSizeInBytes(), is(30 * 1024)); // 30 kB
+        assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getMaxBeaconSizeInBytes(), is(30 * 1024)); // 30 kB
     }
 
     @Test
     public void defaultKeyValueSessionDuration() {
-        assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getSessionDurationInMilliseconds(), is(-1)); // not set
+        assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getMaxSessionDurationInMilliseconds(), is(-1)); // not set
     }
 
     @Test
     public void defaultKeyValueEventsPerSession() {
-        assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getEventsPerSession(), is(-1)); // not set
+        assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getMaxEventsPerSession(), is(-1)); // not set
     }
 
     @Test
@@ -148,4 +162,93 @@ public class ResponseDefaultsTest {
     public void defaultKeyValueTimestamp() {
         assertThat(ResponseDefaults.KEY_VALUE_RESPONSE.getTimestampInMilliseconds(), is(0L));
     }
+
+    @Test
+    public void defaultKeyValueMergeReturnsPassedValue() {
+        // given
+        Response response = mock(Response.class);
+
+        // when
+        Response obtained = ResponseDefaults.KEY_VALUE_RESPONSE.merge(response);
+
+        // then
+        assertThat(obtained, sameInstance(response));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Undefined defaults tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void defaultUndefinedBeaconSize() {
+        assertThat(ResponseDefaults.UNDEFINED.getMaxBeaconSizeInBytes(), is(-1));
+    }
+
+    @Test
+    public void defaultUndefinedSessionDuration() {
+        assertThat(ResponseDefaults.UNDEFINED.getMaxSessionDurationInMilliseconds(), is(-1)); // not set
+    }
+
+    @Test
+    public void defaultUndefinedEventsPerSession() {
+        assertThat(ResponseDefaults.UNDEFINED.getMaxEventsPerSession(), is(-1)); // not set
+    }
+
+    @Test
+    public void defaultUndefinedSessionTimeout() {
+        assertThat(ResponseDefaults.UNDEFINED.getSessionTimeoutInMilliseconds(), is(-1)); // not set
+    }
+
+    @Test
+    public void defaultUndefinedSendInterval() {
+        assertThat(ResponseDefaults.UNDEFINED.getSendIntervalInMilliseconds(), is(-1));
+    }
+
+    @Test
+    public void defaultUndefinedVisitStoreVersion() {
+        assertThat(ResponseDefaults.UNDEFINED.getVisitStoreVersion(), is(1));
+    }
+
+    @Test
+    public void defaultUndefinedIsCapture() {
+        assertThat(ResponseDefaults.UNDEFINED.isCapture(), is(true));
+    }
+
+    @Test
+    public void defaultUndefinedIsCaptureCrashes() {
+        assertThat(ResponseDefaults.UNDEFINED.isCaptureCrashes(), is(true));
+    }
+
+    @Test
+    public void defaultUndefinedIsCaptureErrors() {
+        assertThat(ResponseDefaults.UNDEFINED.isCaptureErrors(), is(true));
+    }
+
+    @Test
+    public void defaultUndefinedMultiplicity() {
+        assertThat(ResponseDefaults.UNDEFINED.getMultiplicity(), is(1));
+    }
+
+    @Test
+    public void defaultUndefinedServerId() {
+        assertThat(ResponseDefaults.UNDEFINED.getServerId(), is(-1));
+    }
+
+    @Test
+    public void defaultUndefinedTimestamp() {
+        assertThat(ResponseDefaults.UNDEFINED.getTimestampInMilliseconds(), is(0L));
+    }
+
+    @Test
+    public void defaultUndefinedMergeReturnsPassedValue() {
+        // given
+        Response response = mock(Response.class);
+
+        // when
+        Response obtained = ResponseDefaults.UNDEFINED.merge(response);
+
+        // then
+        assertThat(obtained, sameInstance(response));
+    }
 }
+

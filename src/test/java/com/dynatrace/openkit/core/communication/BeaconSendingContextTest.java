@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,8 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.ResponseImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -44,6 +46,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -69,7 +72,13 @@ public class BeaconSendingContextTest {
         httpClientConfig = mock(HTTPClientConfiguration.class);
 
         final HTTPClient httpClient = mock(HTTPClient.class);
-        final StatusResponse statusResponse = new StatusResponse(logger, "", 200, Collections.<String, List<String>>emptyMap());
+        Response responseAttributes = ResponseImpl.withKeyValueDefaults().build();
+        final StatusResponse statusResponse = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                200,
+                Collections.<String, List<String>>emptyMap()
+        );
         when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class))).thenReturn(statusResponse);
 
         httpClientProvider = mock(HTTPClientProvider.class);
@@ -582,9 +591,13 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseClearsSessionDataIfResponseIsCaptureOff() {
         // given
-        StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
-        when(response.isCapture()).thenReturn(false);
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(false).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         SessionState state = mock(SessionState.class);
         SessionImpl session = mock(SessionImpl.class);
@@ -604,9 +617,13 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseRemovesFinishedSessionsIfResponseIsCaptureOff() {
         // given
-        StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
-        when(response.isCapture()).thenReturn(false);
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(false).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         SessionState state = mock(SessionState.class);
         when(state.isFinished()).thenReturn(true);
@@ -628,10 +645,15 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseUpdatesSendInterval() {
         // given
         int sendInterval = 999;
-        StatusResponse response = mock(StatusResponse.class);
-        when(response.isCapture()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
-        when(response.getSendInterval()).thenReturn(sendInterval);
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults()
+                .withSendIntervalInMilliseconds(sendInterval)
+                .build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         SessionImpl session = mock(SessionImpl.class);
 
@@ -651,9 +673,13 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseUpdatesCaptureStateToFalse() {
         // given
-        StatusResponse response = mock(StatusResponse.class);
-        when(response.isCapture()).thenReturn(false);
-        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(false).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         SessionState state = mock(SessionState.class);
         SessionImpl session = mock(SessionImpl.class);
@@ -674,9 +700,13 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseUpdatesCaptureStateToTrue() {
         // given
-        StatusResponse response = mock(StatusResponse.class);
-        when(response.isCapture()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(true).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         SessionImpl session = mock(SessionImpl.class);
 
@@ -702,10 +732,13 @@ public class BeaconSendingContextTest {
         when(httpClientConfig.getSSLTrustManager()).thenReturn(mock(SSLTrustManager.class));
 
         int serverId = 73;
-        StatusResponse response = mock(StatusResponse.class);
-        when(response.isCapture()).thenReturn(true);
-        when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
-        when(response.getServerID()).thenReturn(serverId);
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withServerId(serverId).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         BeaconSendingContext target = spy(createBeaconSendingContext().build());
         verifyZeroInteractions(httpClientConfig);
@@ -733,6 +766,31 @@ public class BeaconSendingContextTest {
         assertThat(obtained.getBaseURL(), is(httpClientConfig.getBaseURL()));
         assertThat(obtained.getApplicationID(), is(httpClientConfig.getApplicationID()));
         assertThat(obtained.getSSLTrustManager(), is(httpClientConfig.getSSLTrustManager()));
+    }
+
+    @Test
+    public void handleStatusResponseMergesLastStatusResponse() {
+        // given
+        int beaconSize = 1234;
+        Response responseAttributes = ResponseImpl.withJsonDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(
+                logger,
+                responseAttributes,
+                StatusResponse.HTTP_OK,
+                Collections.<String, List<String>>emptyMap()
+        );
+
+        BeaconSendingContext target = createBeaconSendingContext().build();
+        StatusResponse initialLastResponse = target.getLastStatusResponse();
+
+        // when
+        target.handleStatusResponse(response);
+        StatusResponse obtained = target.getLastStatusResponse();
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(initialLastResponse, not(equalTo(obtained)));
+        assertThat(obtained.getResponseAttributes().getMaxBeaconSizeInBytes(), is(beaconSize));
     }
 
     @Test
@@ -765,7 +823,7 @@ public class BeaconSendingContextTest {
         // given
         SessionState relevantSessionState = mock(SessionState.class);
         when(relevantSessionState.isConfigured()).thenReturn(false);
-        SessionImpl relevantSession  = mock(SessionImpl.class);
+        SessionImpl relevantSession = mock(SessionImpl.class);
         when(relevantSession.getState()).thenReturn(relevantSessionState);
 
         SessionState ignoredSessionState = mock(SessionState.class);

@@ -1,12 +1,12 @@
 /**
  * Copyright 2018-2019 Dynatrace LLC
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ import com.dynatrace.openkit.util.json.parser.ParserException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -62,6 +63,45 @@ public class ResponseParserTest {
         assertThat(obtained.getMaxBeaconSizeInBytes(), is(17 * 1024));
         assertThat(obtained.getServerId(), is(18));
         assertThat(obtained.isCapture(), is(false));
+    }
+
+    @Test
+    public void parseWithPartiallyMatchingKeyValuePrefixThrowsException() throws ParserException {
+        // given
+        String input = "type=mobile&bl=17";
+        expectedException.expect(ParserException.class);
+
+        // when
+        ResponseParser.parseResponse(input);
+    }
+
+    @Test
+    public void parseWithOnlyKeyValuePrefixReturnsDefaultResponse() throws ParserException {
+        // given
+        ResponseDefaults defaults = ResponseDefaults.KEY_VALUE_RESPONSE;
+        String input = "type=m";
+
+        // when
+        Response obtained = ResponseParser.parseResponse(input);
+
+        // then
+        assertThat(obtained, notNullValue());
+
+        assertThat(obtained.getMaxBeaconSizeInBytes(), is(defaults.getMaxBeaconSizeInBytes()));
+        assertThat(obtained.getMaxSessionDurationInMilliseconds(), is(defaults.getMaxSessionDurationInMilliseconds()));
+        assertThat(obtained.getMaxEventsPerSession(), is(defaults.getMaxEventsPerSession()));
+        assertThat(obtained.getSessionTimeoutInMilliseconds(), is(defaults.getSessionTimeoutInMilliseconds()));
+        assertThat(obtained.getSendIntervalInMilliseconds(), is(defaults.getSendIntervalInMilliseconds()));
+        assertThat(obtained.getVisitStoreVersion(), is(defaults.getVisitStoreVersion()));
+
+        assertThat(obtained.isCapture(), is(defaults.isCapture()));
+        assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
+        assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+
+        assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
+        assertThat(obtained.getServerId(), is(defaults.getServerId()));
+
+        assertThat(obtained.getTimestampInMilliseconds(), is(defaults.getTimestampInMilliseconds()));
     }
 
     @Test

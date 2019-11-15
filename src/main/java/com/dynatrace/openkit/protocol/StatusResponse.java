@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,15 +18,14 @@ package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * Implements a status response which is sent for the request types status check and beacon send.
  */
-public class StatusResponse  {
+public class StatusResponse {
 
     /**
      * Response code sent by HTTP server to indicate success.
@@ -48,16 +47,6 @@ public class StatusResponse  {
      */
     static final String RESPONSE_KEY_RETRY_AFTER = "retry-after";
 
-    // status response constants
-    static final String RESPONSE_KEY_CAPTURE = "cp";
-    static final String RESPONSE_KEY_SEND_INTERVAL = "si";
-    static final String RESPONSE_KEY_MONITOR_NAME = "bn";
-    static final String RESPONSE_KEY_SERVER_ID = "id";
-    static final String RESPONSE_KEY_MAX_BEACON_SIZE = "bl";
-    static final String RESPONSE_KEY_CAPTURE_ERRORS = "er";
-    static final String RESPONSE_KEY_CAPTURE_CRASHES = "cr";
-    static final String RESPONSE_KEY_MULTIPLICITY = "mp";
-
     /**
      * Default "Retry-After" is 10 minutes.
      */
@@ -68,23 +57,28 @@ public class StatusResponse  {
     private final int responseCode;
     private final Map<String, List<String>> headers;
 
-    // settings contained in status response
-    private boolean capture = true;
-    private int sendInterval = -1;
-    private String monitorName = null;
-    private int serverID = -1;
-    private int maxBeaconSize = -1;
-    private boolean captureErrors = true;
-    private boolean captureCrashes = true;
-    private int multiplicity = 1;
+    private final Response responseAttributes;
 
     // *** constructors ***
 
-    public StatusResponse(Logger logger, String response, int responseCode, Map<String, List<String>> headers) {
+    private StatusResponse(Logger logger, Response response, int responseCode, Map<String, List<String>> headers) {
         this.logger = logger;
+        this.responseAttributes = response;
         this.responseCode = responseCode;
         this.headers = headers;
-        parseResponse(response);
+    }
+
+    public static StatusResponse createSuccessResponse(
+            Logger logger,
+            Response responseAttributes,
+            int responseCode,
+            Map<String, List<String>> headers) {
+        return new StatusResponse(logger, responseAttributes, responseCode, headers);
+    }
+
+    public static StatusResponse createErrorResponse(Logger logger, int responseCode) {
+        Response responseAttributes = ResponseImpl.withUndefinedDefaults().build();
+        return new StatusResponse(logger, responseAttributes, responseCode, new HashMap<String, List<String>>());
     }
 
     public boolean isErroneousResponse() {
@@ -95,36 +89,11 @@ public class StatusResponse  {
         return responseCode;
     }
 
-    public boolean isCapture() {
-        return capture;
-    }
-
-    public int getSendInterval() {
-        return sendInterval;
-    }
-
-    public String getMonitorName() {
-        return monitorName;
-    }
-
-    public int getServerID() {
-        return serverID;
-    }
-
-    public int getMaxBeaconSize() {
-        return maxBeaconSize;
-    }
-
-    public boolean isCaptureErrors() {
-        return captureErrors;
-    }
-
-    public boolean isCaptureCrashes() {
-        return captureCrashes;
-    }
-
-    public int getMultiplicity() {
-        return multiplicity;
+    /**
+     * Returns the attributes received as response from the server.
+     */
+    public Response getResponseAttributes() {
+        return responseAttributes;
     }
 
     public long getRetryAfterInMilliseconds() {
@@ -163,61 +132,29 @@ public class StatusResponse  {
         return headers;
     }
 
-    // parses status check response
-    private void parseResponse(String response) {
-
-        if (response == null || response.isEmpty()) {
-            return;
+    /**
+     * Creates a new status response by merging the given status response into this one.
+     *
+     * <p>
+     *     Attributes from {@link Response} will be taken over selectively from the given status response in case they
+     *     are set / were sent from the.
+     *     Response code and headers will be replaced with the ones of the given status response.
+     * </p>
+     *
+     * @param statusResponse the status response which will be merged together with this one into a new status response.
+     * @return a new status response instance by merging the given status response with this one.
+     */
+    public StatusResponse merge(StatusResponse statusResponse) {
+        if (statusResponse == null) {
+            return null;
         }
 
-        List<KeyValuePair> parsedResponse = parseResponseKeyValuePair(response);
-        for (KeyValuePair kv : parsedResponse) {
-
-            if (RESPONSE_KEY_CAPTURE.equals(kv.key)) {
-                capture = (Integer.parseInt(kv.value) == 1);
-            } else if (RESPONSE_KEY_SEND_INTERVAL.equals(kv.key)) {
-                sendInterval = Integer.parseInt(kv.value) * 1000;
-            } else if (RESPONSE_KEY_MONITOR_NAME.equals(kv.key)) {
-                monitorName = kv.value;
-            } else if (RESPONSE_KEY_SERVER_ID.equals(kv.key)) {
-                serverID = Integer.parseInt(kv.value);
-            } else if (RESPONSE_KEY_MAX_BEACON_SIZE.equals(kv.key)) {
-                maxBeaconSize = Integer.parseInt(kv.value) * 1024;
-            } else if (RESPONSE_KEY_CAPTURE_ERRORS.equals(kv.key)) {
-                captureErrors = (Integer.parseInt(kv.value) != 0);                    // 1 (always on) and 2 (only on WiFi) are treated the same
-            } else if (RESPONSE_KEY_CAPTURE_CRASHES.equals(kv.key)) {
-                captureCrashes = (Integer.parseInt(kv.value) != 0);                // 1 (always on) and 2 (only on WiFi) are treated the same
-            } else if (RESPONSE_KEY_MULTIPLICITY.equals(kv.key)) {
-                multiplicity = Integer.parseInt(kv.value);
-            }
-        }
-    }
-
-     static List<KeyValuePair> parseResponseKeyValuePair(String response) {
-        List<KeyValuePair> result = new ArrayList<KeyValuePair>();
-        StringTokenizer tokenizer = new StringTokenizer(response, "&");
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            int keyValueSeparatorIndex = token.indexOf('=');
-            if (keyValueSeparatorIndex == -1) {
-                throw new IllegalArgumentException("Invalid response; even number of tokens expected.");
-            }
-            String key = token.substring(0, keyValueSeparatorIndex);
-            String value = token.substring(keyValueSeparatorIndex + 1);
-
-            result.add(new KeyValuePair(key, value));
-        }
-
-        return result;
-    }
-
-    static class KeyValuePair {
-        final String key;
-        final String value;
-
-        KeyValuePair(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
+        Response mergedResponse = responseAttributes.merge(statusResponse.getResponseAttributes());
+        return new StatusResponse(
+                logger,
+                mergedResponse,
+                statusResponse.getResponseCode(),
+                statusResponse.getHeaders()
+        );
     }
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,8 @@
 
 package com.dynatrace.openkit.core.configuration;
 
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Configuration class storing all configuration parameters as returned by Dynatrace/AppMon.
@@ -270,21 +269,13 @@ public class ServerConfiguration {
      * @return New {@link ServerConfiguration} instance with merged values.
      */
     public ServerConfiguration merge(ServerConfiguration other) {
-
-        Builder builder = new Builder();
+        Builder builder = new Builder(other);
 
         // settings from this
         builder.withMultiplicity(this.getMultiplicity())
-               .withServerID(this.getServerID());
+                .withServerID(this.getServerID());
 
-        // settings from other
-        builder.withCapture(other.isCaptureEnabled);
-        builder.withCrashReporting(other.isCrashReportingEnabled);
-        builder.withErrorReporting(other.isErrorReportingEnabled);
-
-        return builder.withSendIntervalInMilliseconds(other.getSendIntervalInMilliseconds())
-                      .withBeaconSizeInBytes(other.getBeaconSizeInBytes())
-                      .build();
+        return builder.build();
     }
 
     /**
@@ -315,13 +306,18 @@ public class ServerConfiguration {
          * @param statusResponse Status response used for initializing the fields.
          */
         public Builder(StatusResponse statusResponse) {
-            isCaptureEnabled = statusResponse.isCapture();
-            isCrashReportingEnabled = statusResponse.isCaptureCrashes();
-            isErrorReportingEnabled = statusResponse.isCaptureErrors();
-            sendIntervalInMilliseconds = statusResponse.getSendInterval();
-            serverID = statusResponse.getServerID();
-            beaconSizeInBytes = statusResponse.getMaxBeaconSize();
-            multiplicity = statusResponse.getMultiplicity();
+            Response responseAttributes = statusResponse.getResponseAttributes();
+            isCaptureEnabled = responseAttributes.isCapture();
+            isCrashReportingEnabled = responseAttributes.isCaptureCrashes();
+            isErrorReportingEnabled = responseAttributes.isCaptureErrors();
+            sendIntervalInMilliseconds = responseAttributes.getSendIntervalInMilliseconds();
+            serverID = responseAttributes.getServerId();
+            beaconSizeInBytes = responseAttributes.getMaxBeaconSizeInBytes();
+            multiplicity = responseAttributes.getMultiplicity();
+            maxSessionDurationInMilliseconds = responseAttributes.getMaxSessionDurationInMilliseconds();
+            maxEventsPerSession = responseAttributes.getMaxEventsPerSession();
+            sessionTimeoutInMilliseconds = responseAttributes.getSessionTimeoutInMilliseconds();
+            visitStoreVersion = responseAttributes.getVisitStoreVersion();
         }
 
         /**

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,10 +22,12 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.ResponseImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,9 +40,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * State context for beacon sending states.
  *
  * <p>
- *     All package-private methods in this class shall only be accessed from the beacon sending thread,
- *     since they are not thread safe.
- *     All public methods are thread safe, unless explicitly stated.
+ * All package-private methods in this class shall only be accessed from the beacon sending thread,
+ * since they are not thread safe.
+ * All public methods are thread safe, unless explicitly stated.
  * </p>
  */
 public class BeaconSendingContext {
@@ -58,11 +60,27 @@ public class BeaconSendingContext {
      * BeaconSending thread.
      */
     private ServerConfiguration serverConfiguration;
+
+    /**
+     * Represents the last status response received from the server.
+     *
+     * <p>
+     * This filed will be initially filled with the first response from the server when OpenKit initializes.
+     * Subsequent server responses (e.g. from session requests) will update the last server response by merging
+     * received fields.
+     * </p>
+     * <p>
+     * Modification of this field must only happen within the context of the BeaconSending thread.
+     * </p>
+     */
+    private StatusResponse lastStatusResponse;
+
     /**
      * Configuration storing last valid HTTP client configuration, independent of a session.
-     *
+     * <p>
      * This field is initialized in the CTOR and must only be modified within the context of the
      * BeaconSending thread.
+     * </p>
      */
     private HTTPClientConfiguration httpClientConfiguration;
     private final HTTPClientProvider httpClientProvider;
@@ -106,7 +124,7 @@ public class BeaconSendingContext {
      * Constructor.
      *
      * <p>
-     *     The state is initialized to {@link BeaconSendingInitState},
+     * The state is initialized to {@link BeaconSendingInitState},
      * </p>
      */
     public BeaconSendingContext(Logger logger,
@@ -120,19 +138,25 @@ public class BeaconSendingContext {
      * Constructor.
      *
      * <p>
-     *     The initial state is provided. This constructor is intended for unit testing.
+     * The initial state is provided. This constructor is intended for unit testing.
      * </p>
      */
     BeaconSendingContext(Logger logger,
-                                HTTPClientConfiguration httpClientConfiguration,
-                                HTTPClientProvider httpClientProvider,
-                                TimingProvider timingProvider,
-                                AbstractBeaconSendingState initialState) {
+                         HTTPClientConfiguration httpClientConfiguration,
+                         HTTPClientProvider httpClientProvider,
+                         TimingProvider timingProvider,
+                         AbstractBeaconSendingState initialState) {
         this.logger = logger;
         this.httpClientConfiguration = httpClientConfiguration;
         this.serverConfiguration = ServerConfiguration.DEFAULT;
         this.httpClientProvider = httpClientProvider;
         this.timingProvider = timingProvider;
+        this.lastStatusResponse = StatusResponse.createSuccessResponse(
+                logger,
+                ResponseImpl.withUndefinedDefaults().build(),
+                Integer.MAX_VALUE,
+                Collections.<String, List<String>>emptyMap()
+        );
 
         currentState = initialState;
     }
@@ -141,7 +165,7 @@ public class BeaconSendingContext {
      * Executes the current state.
      *
      * <p>
-     *     This method must only be called from the beacon sending thread, since it's not thread safe.
+     * This method must only be called from the beacon sending thread, since it's not thread safe.
      * </p>
      */
     public void executeCurrentState() {
@@ -174,7 +198,7 @@ public class BeaconSendingContext {
      * Wait until OpenKit has been fully initialized.
      *
      * <p>
-     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
      * @return {@code true} OpenKit is fully initialized, {@code false} OpenKit init got interrupted.
@@ -193,11 +217,10 @@ public class BeaconSendingContext {
      * Wait until OpenKit has been fully initialized or timeout expired.
      *
      * <p>
-     *     If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
+     * If initialization is interrupted (e.g. {@link #requestShutdown()} was called), then this method also returns.
      * </p>
      *
-     * @param timeoutMillis
-     *            The maximum number of milliseconds to wait for initialization being completed.
+     * @param timeoutMillis The maximum number of milliseconds to wait for initialization being completed.
      * @return {@code true} if OpenKit is fully initialized, {@code false} if OpenKit init got interrupted or time to wait expired.
      */
     public boolean waitForInit(long timeoutMillis) {
@@ -226,7 +249,7 @@ public class BeaconSendingContext {
      * Gets a boolean indicating whether the current state is a terminal state or not.
      *
      * <p>
-     *     This method must only be called from the beacon sending thread, since it's not thread safe.
+     * This method must only be called from the beacon sending thread, since it's not thread safe.
      * </p>
      *
      * @return {@code true} if the current state is a terminal state, {@code false} otherwise.
@@ -275,7 +298,7 @@ public class BeaconSendingContext {
      * Complete OpenKit initialization.
      *
      * <p>
-     *     This will wake up every caller waiting in the {@link #waitForInit()} method.
+     * This will wake up every caller waiting in the {@link #waitForInit()} method.
      * </p>
      *
      * @param success {@code true} if OpenKit was successfully initialized, {@code false} if it was interrupted.
@@ -298,7 +321,7 @@ public class BeaconSendingContext {
      * Convenience method to retrieve an {@link HTTPClient} instance with {@link #httpClientConfiguration}
      *
      * <p>
-     *     This method is only allowed to be called from within the beacon sending thread.
+     * This method is only allowed to be called from within the beacon sending thread.
      * </p>
      *
      * @return HTTP client received from {@link HTTPClientProvider}.
@@ -380,6 +403,13 @@ public class BeaconSendingContext {
     }
 
     /**
+     * Returns the last status response received from the server.
+     */
+    StatusResponse getLastStatusResponse() {
+        return lastStatusResponse;
+    }
+
+    /**
      * Disable data capturing and clears all session data. Finished sessions are removed from the beacon.
      */
     void disableCaptureAndClear() {
@@ -393,20 +423,22 @@ public class BeaconSendingContext {
      */
     private void disableCapture() {
         serverConfiguration = new ServerConfiguration.Builder(serverConfiguration)
-            .withCapture(false)
-            .build();
+                .withCapture(false)
+                .build();
     }
 
     /**
      * Handle the status response received from the server.
      */
-    void handleStatusResponse(StatusResponse statusResponse) {
-        if (statusResponse == null || (statusResponse.getResponseCode() != StatusResponse.HTTP_OK)) {
+    void handleStatusResponse(StatusResponse receivedResponse) {
+        if (receivedResponse == null || (receivedResponse.getResponseCode() != StatusResponse.HTTP_OK)) {
             disableCaptureAndClear();
             return;
         }
 
-        serverConfiguration = new ServerConfiguration.Builder(statusResponse).build();
+        lastStatusResponse = lastStatusResponse.merge(receivedResponse);
+
+        serverConfiguration = new ServerConfiguration.Builder(lastStatusResponse).build();
         if (!isCaptureOn()) {
             // capturing was turned off
             clearAllSessionData();
@@ -443,13 +475,13 @@ public class BeaconSendingContext {
      * Get all sessions that are not yet configured.
      *
      * <p>
-     *     A session is considered as not configured if it did not receive a server configuration update (either
-     *     when receiving a successful for the first new session request or when capturing for the session got
-     *     disabled due to an unsuccessful response).
+     * A session is considered as not configured if it did not receive a server configuration update (either
+     * when receiving a successful for the first new session request or when capturing for the session got
+     * disabled due to an unsuccessful response).
      * </p>
      *
      * <p>
-     *     The returned list is a snapshot and might change during traversal.
+     * The returned list is a snapshot and might change during traversal.
      * </p>
      *
      * @return A list of new sessions.

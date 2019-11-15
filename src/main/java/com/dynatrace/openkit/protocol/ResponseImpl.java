@@ -1,12 +1,12 @@
 /**
  * Copyright 2018-2019 Dynatrace LLC
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +44,7 @@ public class ResponseImpl implements Response {
     private final long timestampInMilliseconds;
 
     private ResponseImpl(Builder builder) {
-        setAttributes = EnumSet.copyOf(builder.setAttributes);
+        setAttributes = builder.setAttributes;
 
         maxBeaconSizeInBytes = builder.maxBeaconSizeInBytes;
         maxSessionDurationInMilliseconds = builder.maxSessionDurationInMilliseconds;
@@ -128,6 +128,131 @@ public class ResponseImpl implements Response {
         return setAttributes.contains(attribute);
     }
 
+    @Override
+    public Response merge(Response response) {
+        Builder builder = new Builder(this);
+
+        applyBeaconSize(builder, response);
+        applySessionDuration(builder, response);
+        applyEventsPerSession(builder, response);
+        applySessionTimeout(builder, response);
+        applySendInterval(builder, response);
+        applyVisitStoreVersion(builder, response);
+        applyCapture(builder, response);
+        applyCaptureCrashes(builder, response);
+        applyCaptureErrors(builder, response);
+        applyMultiplicity(builder, response);
+        applyServerId(builder, response);
+        applyTimestamp(builder, response);
+
+        return builder.build();
+    }
+
+    private void applyBeaconSize(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.MAX_BEACON_SIZE)) {
+            return;
+        }
+        builder.withMaxBeaconSizeInBytes(response.getMaxBeaconSizeInBytes());
+    }
+
+    private void applySessionDuration(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)) {
+            return;
+        }
+        builder.withMaxSessionDurationInMilliseconds(response.getMaxSessionDurationInMilliseconds());
+    }
+
+    private void applyEventsPerSession(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)) {
+            return;
+        }
+        builder.withMaxEventsPerSession(response.getMaxEventsPerSession());
+    }
+
+    private void applySessionTimeout(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)) {
+            return;
+        }
+        builder.withSessionTimeoutInMilliseconds(response.getSessionTimeoutInMilliseconds());
+    }
+
+    private void applySendInterval(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.SEND_INTERVAL)) {
+            return;
+        }
+        builder.withSendIntervalInMilliseconds(response.getSendIntervalInMilliseconds());
+    }
+
+    private void applyVisitStoreVersion(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.VISIT_STORE_VERSION)) {
+            return;
+        }
+        builder.withVisitStoreVersion(response.getVisitStoreVersion());
+    }
+
+    private void applyCapture(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.IS_CAPTURE)) {
+            return;
+        }
+        builder.withCapture(response.isCapture());
+    }
+
+    private void applyCaptureCrashes(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.IS_CAPTURE_CRASHES)) {
+            return;
+        }
+        builder.withCaptureCrashes(response.isCaptureCrashes());
+    }
+
+    private void applyCaptureErrors(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.IS_CAPTURE_ERRORS)) {
+            return;
+        }
+        builder.withCaptureErrors(response.isCaptureErrors());
+    }
+
+    private void applyMultiplicity(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.MULTIPLICITY)) {
+            return;
+        }
+        builder.withMultiplicity(response.getMultiplicity());
+    }
+
+    private void applyServerId(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.SERVER_ID)) {
+            return;
+        }
+        builder.withServerId(response.getServerId());
+    }
+
+    private void applyTimestamp(Builder builder, Response response) {
+        if (!response.isAttributeSet(ResponseAttribute.TIMESTAMP)) {
+            return;
+        }
+        builder.withTimestampInMilliseconds(response.getTimestampInMilliseconds());
+    }
+
+    /**
+     * Creates a new builder initialized with the defaults value for {@link KeyValueResponseParser key-value parsing}.
+     */
+    public static Builder withKeyValueDefaults() {
+        return new Builder(ResponseDefaults.KEY_VALUE_RESPONSE);
+    }
+
+    /**
+     * Creates a new builder initialized with the default values for {@link JsonResponseParser JSON parsing}.
+     */
+    public static Builder withJsonDefaults() {
+        return new Builder(ResponseDefaults.JSON_RESPONSE);
+    }
+
+    /**
+     * Creates a new builder instance with undefined default values.
+     */
+    public static Builder withUndefinedDefaults() {
+        return new Builder(ResponseDefaults.UNDEFINED);
+    }
+
     public static class Builder {
         private EnumSet<ResponseAttribute> setAttributes = EnumSet.noneOf(ResponseAttribute.class);
 
@@ -147,10 +272,10 @@ public class ResponseImpl implements Response {
 
         private long timestampInMilliseconds;
 
-        private Builder(ResponseDefaults defaults) {
-            maxBeaconSizeInBytes = defaults.getBeaconSizeInBytes();
-            maxSessionDurationInMilliseconds = defaults.getSessionDurationInMilliseconds();
-            maxEventsPerSession = defaults.getEventsPerSession();
+        private Builder(Response defaults) {
+            maxBeaconSizeInBytes = defaults.getMaxBeaconSizeInBytes();
+            maxSessionDurationInMilliseconds = defaults.getMaxSessionDurationInMilliseconds();
+            maxEventsPerSession = defaults.getMaxEventsPerSession();
             sessionTimeoutInMilliseconds = defaults.getSessionTimeoutInMilliseconds();
             sendIntervalInMilliseconds = defaults.getSendIntervalInMilliseconds();
             visitStoreVersion = defaults.getVisitStoreVersion();
@@ -163,24 +288,17 @@ public class ResponseImpl implements Response {
             serverId = defaults.getServerId();
 
             timestampInMilliseconds = defaults.getTimestampInMilliseconds();
-        }
 
-        /**
-         * Creates a new builder initialized with the defaults value for {@link KeyValueResponseParser key-value parsing}.
-         */
-        public static Builder withKeyValueDefaults() {
-            return new Builder(ResponseDefaults.KEY_VALUE_RESPONSE);
-        }
-
-        /**
-         * Creates a new builder initialized with the default values for {@link JsonResponseParser JSON parsing}.
-         */
-        public static Builder withJsonDefaults() {
-            return new Builder(ResponseDefaults.JSON_RESPONSE);
+            for (ResponseAttribute attribute : ResponseAttribute.values()) {
+                if (defaults.isAttributeSet(attribute)) {
+                    setAttribute(attribute);
+                }
+            }
         }
 
         /**
          * Sets the maximum beacon size in bytes
+         *
          * @param maxBeaconSizeInBytes the maximum size in bytes when sending beacon data.
          * @return {@code this}
          */
@@ -193,6 +311,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the maximum duration after which a session is to be split.
+         *
          * @param maxSessionDurationInMilliseconds maximum duration of a session in milliseconds.
          * @return {@code this}
          */
@@ -205,6 +324,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the maximum number of top level elements after which a session is to be split.
+         *
          * @param maxEventsPerSession maximum number of top level elements
          * @return {@code this}
          */
@@ -217,6 +337,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the idle timeout after which a session is to be split.
+         *
          * @param sessionTimeoutInMilliseconds the maximum idle timeout of a session in milliseconds
          * @return {@code this}
          */
@@ -229,6 +350,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the send interval in milliseconds.
+         *
          * @param sendIntervalInMilliseconds send interval in milliseconds.
          * @return {@code this}
          */
@@ -241,6 +363,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the version of the visit store that should be used.
+         *
          * @param visitStoreVersion version of the visit store
          * @return {@code this}
          */
@@ -253,6 +376,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets whether capturing is enabled/disabled.
+         *
          * @param isCapture capture state
          * @return {@code this}
          */
@@ -265,6 +389,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets whether capturing of crashes is enabled/disabled.
+         *
          * @param isCaptureCrashes crash capture state
          * @return {@code this}
          */
@@ -277,6 +402,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets whether capturing of errors is enabled/disabled.
+         *
          * @param isCaptureErrors error capture state.
          * @return {@code this}
          */
@@ -289,6 +415,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the multiplicity
+         *
          * @param multiplicity multiplicity
          * @return {@code this}
          */
@@ -301,6 +428,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the ID of the server to which data should be sent to.
+         *
          * @param serverId the ID of the server to communicate with.
          * @return {@code this}
          */
@@ -313,6 +441,7 @@ public class ResponseImpl implements Response {
 
         /**
          * Sets the timestamp of the configuration sent by the sever.
+         *
          * @param timestampInMilliseconds the timestamp of the configuration in milliseconds.
          * @return {@code this}
          */

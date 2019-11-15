@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.Response;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,13 +46,16 @@ public class BeaconSendingInitStateTest {
     private HTTPClient httpClient;
     private BeaconSendingContext stateContext;
     private StatusResponse statusResponse;
+    private Response responseAttributes;
 
     @Before
     public void setUp() {
 
         httpClient = mock(HTTPClient.class);
         stateContext = mock(BeaconSendingContext.class);
+        responseAttributes = mock(Response.class);
         statusResponse = mock(StatusResponse.class);
+        when(statusResponse.getResponseAttributes()).thenReturn(responseAttributes);
 
         // setup state context
         when(stateContext.getHTTPClient()).thenReturn(httpClient);
@@ -323,7 +327,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         BeaconSendingInitState target = new BeaconSendingInitState();
-        when(statusResponse.isCapture()).thenReturn(true);
+        when(responseAttributes.isCapture()).thenReturn(true);
 
         // when
         target.execute(stateContext);
@@ -337,7 +341,7 @@ public class BeaconSendingInitStateTest {
 
         // given
         BeaconSendingInitState target = new BeaconSendingInitState();
-        when(statusResponse.isCapture()).thenReturn(false);
+        when(responseAttributes.isCapture()).thenReturn(false);
 
         // when
         target.execute(stateContext);

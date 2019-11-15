@@ -1,12 +1,12 @@
 /**
  * Copyright 2018-2019 Dynatrace LLC
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@ package com.dynatrace.openkit.protocol;
 
 import java.util.concurrent.TimeUnit;
 
-public enum ResponseDefaults {
+public enum ResponseDefaults implements Response {
 
     JSON_RESPONSE {
         private final int DEFAULT_BEACON_SIZE_IN_BYTES = 150 * 1024; // 150 kB
@@ -27,17 +27,17 @@ public enum ResponseDefaults {
         private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = (int) TimeUnit.SECONDS.toMillis(120); // 120 seconds
 
         @Override
-        public int getBeaconSizeInBytes() {
+        public int getMaxBeaconSizeInBytes() {
             return DEFAULT_BEACON_SIZE_IN_BYTES;
         }
 
         @Override
-        public int getSessionDurationInMilliseconds() {
+        public int getMaxSessionDurationInMilliseconds() {
             return DEFAULT_SESSION_DURATION_IN_MILLIS;
         }
 
         @Override
-        public int getEventsPerSession() {
+        public int getMaxEventsPerSession() {
             return DEFAULT_EVENTS_PER_SESSION;
         }
 
@@ -51,6 +51,7 @@ public enum ResponseDefaults {
             return DEFAULT_SEND_INTERVAL_IN_MILLIS;
         }
     },
+
     KEY_VALUE_RESPONSE {
         private final int DEFAULT_BEACON_SIZE_IN_BYTES = 30 * 1024; // 150 kB
         private final int DEFAULT_SESSION_DURATION_IN_MILLIS = -1;
@@ -59,17 +60,17 @@ public enum ResponseDefaults {
         private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = (int)TimeUnit.SECONDS.toMillis(120);
 
         @Override
-        public int getBeaconSizeInBytes() {
+        public int getMaxBeaconSizeInBytes() {
             return DEFAULT_BEACON_SIZE_IN_BYTES;
         }
 
         @Override
-        public int getSessionDurationInMilliseconds() {
+        public int getMaxSessionDurationInMilliseconds() {
             return DEFAULT_SESSION_DURATION_IN_MILLIS;
         }
 
         @Override
-        public int getEventsPerSession() {
+        public int getMaxEventsPerSession() {
             return DEFAULT_EVENTS_PER_SESSION;
         }
 
@@ -82,6 +83,45 @@ public enum ResponseDefaults {
         public int getSendIntervalInMilliseconds() {
             return DEFAULT_SEND_INTERVAL_IN_MILLIS;
         }
+    },
+
+    UNDEFINED {
+        private final int DEFAULT_BEACON_SIZE_IN_BYTES = -1;
+        private final int DEFAULT_SESSION_DURATION_IN_MILLIS = -1;
+        private final int DEFAULT_EVENTS_PER_SESSION = -1;
+        private final int DEFAULT_SESSION_TIMEOUT_IN_MILLIS = -1;
+        private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = -1;
+        private final int DEFAULT_SERVER_ID = -1;
+
+        @Override
+        public int getMaxBeaconSizeInBytes() {
+            return DEFAULT_BEACON_SIZE_IN_BYTES;
+        }
+
+        @Override
+        public int getMaxSessionDurationInMilliseconds() {
+            return DEFAULT_SESSION_DURATION_IN_MILLIS;
+        }
+
+        @Override
+        public int getMaxEventsPerSession() {
+            return DEFAULT_EVENTS_PER_SESSION;
+        }
+
+        @Override
+        public int getSessionTimeoutInMilliseconds() {
+            return DEFAULT_SESSION_TIMEOUT_IN_MILLIS;
+        }
+
+        @Override
+        public int getSendIntervalInMilliseconds() {
+            return DEFAULT_SEND_INTERVAL_IN_MILLIS;
+        }
+
+        @Override
+        public int getServerId() {
+            return DEFAULT_SERVER_ID;
+        }
     };
 
     private static final int DEFAULT_VISIT_STORE_VERSION = 1;
@@ -92,11 +132,11 @@ public enum ResponseDefaults {
     private static final int DEFAULT_SERVER_ID = 1;
     private static final int DEFAULT_TIMESTAMP = 0;
 
-    public abstract int getBeaconSizeInBytes();
+    public abstract int getMaxBeaconSizeInBytes();
 
-    public abstract int getSessionDurationInMilliseconds();
+    public abstract int getMaxSessionDurationInMilliseconds();
 
-    public abstract int getEventsPerSession();
+    public abstract int getMaxEventsPerSession();
 
     public abstract int getSessionTimeoutInMilliseconds();
 
@@ -128,5 +168,15 @@ public enum ResponseDefaults {
 
     public long getTimestampInMilliseconds() {
         return DEFAULT_TIMESTAMP;
+    }
+
+    @Override
+    public boolean isAttributeSet(ResponseAttribute attribute) {
+        return false;
+    }
+
+    @Override
+    public Response merge(Response response) {
+        return response;
     }
 }

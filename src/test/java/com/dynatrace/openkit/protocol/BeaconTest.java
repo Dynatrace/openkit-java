@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -196,8 +196,8 @@ public class BeaconTest {
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         Beacon target = createBeacon()
-            .withIpAddress(null)
-            .build();
+                .withIpAddress(null)
+                .build();
 
         // then
         verify(mockLogger, times(0)).warning(any(String.class));
@@ -274,15 +274,15 @@ public class BeaconTest {
 
         // then
         assertThat(tag, is(
-            "MT" +                      // tag prefix
-            "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
-            "_" + SERVER_ID +           // server ID
-            "_" + DEVICE_ID +           // device ID
-            "_" + SESSION_ID +          // session number
-            "_" + APP_ID +              // application ID
-            "_" + ACTION_ID +           // parent action ID
-            "_" + THREAD_ID +           // thread ID
-            "_" + sequenceNo            // sequence number
+                "MT" +                      // tag prefix
+                        "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
+                        "_" + SERVER_ID +           // server ID
+                        "_" + DEVICE_ID +           // device ID
+                        "_" + SESSION_ID +          // session number
+                        "_" + APP_ID +              // application ID
+                        "_" + ACTION_ID +           // parent action ID
+                        "_" + THREAD_ID +           // thread ID
+                        "_" + sequenceNo            // sequence number
         ));
     }
 
@@ -299,15 +299,15 @@ public class BeaconTest {
 
         // then
         assertThat(tag, is(
-            "MT" +                      // tag prefix
-            "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
-            "_" + SERVER_ID +           // server ID
-            "_" + deviceId +            // device ID percent encoded
-            "_" + SESSION_ID +          // session number
-            "_" + APP_ID +              // application ID
-            "_" + ACTION_ID +           // parent action ID
-            "_" + THREAD_ID +           // thread ID
-            "_" + sequenceNo            // sequence number
+                "MT" +                      // tag prefix
+                        "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
+                        "_" + SERVER_ID +           // server ID
+                        "_" + deviceId +            // device ID percent encoded
+                        "_" + SESSION_ID +          // session number
+                        "_" + APP_ID +              // application ID
+                        "_" + ACTION_ID +           // parent action ID
+                        "_" + THREAD_ID +           // thread ID
+                        "_" + sequenceNo            // sequence number
         ));
 
         // also ensure that the application ID is the encoded one
@@ -333,14 +333,14 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // action start time
                 "et=1&" +                       // event type
-                "na=" + actionName + "&" +      // action name
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "ca=" + ACTION_ID + "&" +       // action ID
-                "pa=" + parentID + "&" +        // parent action ID
-                "s0=0&" +                       // action start sequence number
-                "t0=0&" +                       // action start time (relative to session start)
-                "s1=0&" +                       // action end sequence number
-                "t1=0"                          // action duration (time from action start to end)
+                        "na=" + actionName + "&" +      // action name
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "ca=" + ACTION_ID + "&" +       // action ID
+                        "pa=" + parentID + "&" +        // parent action ID
+                        "s0=0&" +                       // action start sequence number
+                        "t0=0&" +                       // action start time (relative to session start)
+                        "s1=0&" +                       // action end sequence number
+                        "t1=0"                          // action duration (time from action start to end)
         );
     }
 
@@ -357,10 +357,10 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // session end time
                 "et=19&" +                      // event type
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=0&" +                       // parent action
-                "s0=1&" +                       // end session sequence number
-                "t0=0"                          // session end time
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=0&" +                       // parent action
+                        "s0=1&" +                       // end session sequence number
+                        "t0=0"                          // session end time
         );
     }
 
@@ -379,12 +379,12 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event time
                 "et=12&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported value event
-                "t0=0&" +                       // event time since session start
-                "vl=" + value                   // reported value
+                        "na=" + valueName + "&" +       // name of reported value
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported value event
+                        "t0=0&" +                       // event time since session start
+                        "vl=" + value                   // reported value
         );
     }
 
@@ -403,12 +403,12 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event timestamp
                 "et=13&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported value event
-                "t0=0&" +                       // event time since session start
-                "vl=" + value                   // reported value
+                        "na=" + valueName + "&" +       // name of reported value
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported value event
+                        "t0=0&" +                       // event time since session start
+                        "vl=" + value                   // reported value
         );
     }
 
@@ -427,12 +427,12 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event timestamp
                 "et=11&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported value
-                "t0=0&" +                       // event time since session start
-                "vl=" + value                   // reported value
+                        "na=" + valueName + "&" +       // name of reported value
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported value
+                        "t0=0&" +                       // event time since session start
+                        "vl=" + value                   // reported value
         );
     }
 
@@ -450,11 +450,11 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event timestamp
                 "et=11&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported value
-                "t0=0"                          // event time since session start
+                        "na=" + valueName + "&" +       // name of reported value
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported value
+                        "t0=0"                          // event time since session start
         );
     }
 
@@ -471,10 +471,10 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event timestamp
                 "et=11&" +                      // event type
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported value
-                "t0=0"                          // event time since session start
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported value
+                        "t0=0"                          // event time since session start
         );
     }
 
@@ -492,11 +492,11 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event timestamp
                 "et=10&" +                      // event type
-                "na=" + eventName + "&" +       // name of event
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported event
-                "t0=0"                          // event time since session start
+                        "na=" + eventName + "&" +       // name of event
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported event
+                        "t0=0"                          // event time since session start
         );
     }
 
@@ -513,10 +513,10 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                              // event timestamp
                 "et=10&" +                      // event type
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported event
-                "t0=0"                          // event time since session start
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported event
+                        "t0=0"                          // event time since session start
         );
     }
 
@@ -536,14 +536,14 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                    // error event timestamp
                 "et=40&" +                // event type
-                "na=" + errorName + "&" +       // name of error event
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of error event
-                "t0=0&" +                       // timestamp of error event since session start
-                "ev=" + errorCode + "&" +       // reported error value
-                "rs=" + reason + "&" +          // reported reason
-                "tt=c"                          // error technology type
+                        "na=" + errorName + "&" +       // name of error event
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of error event
+                        "t0=0&" +                       // timestamp of error event since session start
+                        "ev=" + errorCode + "&" +       // reported error value
+                        "rs=" + reason + "&" +          // reported reason
+                        "tt=c"                          // error technology type
         );
     }
 
@@ -561,12 +561,12 @@ public class BeaconTest {
                 SESSION_ID,                     // session number
                 0,                    // error event timestamp
                 "et=40&" +                // event type
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported event
-                "t0=0&" +                       // timestamp of error event since session start
-                "ev=" + errorCode + "&" +       // reported error value
-                "tt=c"                          // error technology type
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of reported event
+                        "t0=0&" +                       // timestamp of error event since session start
+                        "ev=" + errorCode + "&" +       // reported error value
+                        "tt=c"                          // error technology type
         );
     }
 
@@ -586,14 +586,14 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                // crash event timestamp
                 "et=50&" +            // event type
-                "na=" + errorName + "&" +   // reported crash name
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // sequence number of reported crash
-                "t0=0&" +                   // timestamp of crash since session start
-                "rs=" + reason + "&" +      // reported reason
-                "st=" + stacktrace + "&" +  // reported stacktrace
-                "tt=c"                      // crash technology type
+                        "na=" + errorName + "&" +   // reported crash name
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // sequence number of reported crash
+                        "t0=0&" +                   // timestamp of crash since session start
+                        "rs=" + reason + "&" +      // reported reason
+                        "st=" + stacktrace + "&" +  // reported stacktrace
+                        "tt=c"                      // crash technology type
         );
     }
 
@@ -611,12 +611,12 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                // crash event timestamp
                 "et=50&" +            // event type
-                "na=" + errorName + "&" +   // reported crash name
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // sequence number of reported crash
-                "t0=0&" +                   // timestamp of crash since session start
-                "tt=c"                      // crash technology type
+                        "na=" + errorName + "&" +   // reported crash name
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // sequence number of reported crash
+                        "t0=0&" +                   // timestamp of crash since session start
+                        "tt=c"                      // crash technology type
         );
     }
 
@@ -637,15 +637,15 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=" + ACTION_ID + "&" +   // parent action ID
-                "s0=0&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start time (since session start)
-                "s1=0&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end time (relative to start time)
-                "bs=13&" +                  // number of bytes sent
-                "br=14&" +                  // number of bytes received
-                "rc=15"                     // response code
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=" + ACTION_ID + "&" +   // parent action ID
+                        "s0=0&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start time (since session start)
+                        "s1=0&" +                   // web request end sequence number
+                        "t1=0&" +                   // web request end time (relative to start time)
+                        "bs=13&" +                  // number of bytes sent
+                        "br=14&" +                  // number of bytes received
+                        "rc=15"                     // response code
         );
     }
 
@@ -663,11 +663,11 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // identify user event timestamp
                 "et=60&" +                  // event type
-                "na=" + userID + "&" +      // reported user ID
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // identify user sequence number
-                "t0=0"                      // event timestamp since session start
+                        "na=" + userID + "&" +      // reported user ID
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // identify user sequence number
+                        "t0=0"                      // event timestamp since session start
         );
     }
 
@@ -684,10 +684,10 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // identify user event timestamp
                 "et=60&" +                  // event type
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // identify user sequence number
-                "t0=0"                      // event timestamp since session start
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // identify user sequence number
+                        "t0=0"                      // event timestamp since session start
         );
     }
 
@@ -707,14 +707,14 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "bs=" + bytesSent           // number bytes sent
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0&" +                   // web request end timestamp (relative to start time)
+                        "bs=" + bytesSent           // number bytes sent
         );
     }
 
@@ -734,14 +734,14 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "bs=" + bytesSent           // number bytes sent
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0&" +                   // web request end timestamp (relative to start time)
+                        "bs=" + bytesSent           // number bytes sent
         );
     }
 
@@ -761,13 +761,13 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0"                      // web request end timestamp (relative to start time)
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0"                      // web request end timestamp (relative to start time)
         );
     }
 
@@ -787,14 +787,14 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "br=" + bytesReceived       // number of received bytes
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0&" +                   // web request end timestamp (relative to start time)
+                        "br=" + bytesReceived       // number of received bytes
         );
     }
 
@@ -814,14 +814,14 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "br=" + bytesReceived       // number of received bytes
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0&" +                   // web request end timestamp (relative to start time)
+                        "br=" + bytesReceived       // number of received bytes
         );
     }
 
@@ -841,13 +841,13 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0"                      // web request end timestamp (relative to start time)
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0"                      // web request end timestamp (relative to start time)
         );
     }
 
@@ -862,24 +862,24 @@ public class BeaconTest {
 
         // when
         webRequest.start()
-                  .setBytesSent(bytesSent)
-                  .setBytesReceived(bytesReceived)
-                  .stop(-1); // stop will add the web request to the beacon
+                .setBytesSent(bytesSent)
+                .setBytesReceived(bytesReceived)
+                .stop(-1); // stop will add the web request to the beacon
 
         // then
         verify(mockBeaconCache, times(1)).addEventData(
                 SESSION_ID,                 // session number
                 0,                          // web request start timestamp
                 "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "bs=" + bytesSent + "&" +   // number of sent bytes
-                "br=" + bytesReceived       // number of received bytes
+                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // web request start sequence number
+                        "t0=0&" +                   // web request start timestamp (relative to session start)
+                        "s1=2&" +                   // web request end sequence number
+                        "t1=0&" +                   // web request end timestamp (relative to start time)
+                        "bs=" + bytesSent + "&" +   // number of sent bytes
+                        "br=" + bytesReceived       // number of received bytes
         );
     }
 
@@ -901,14 +901,14 @@ public class BeaconTest {
                 SESSION_ID,                 // session number
                 0,                          // action start timestamp
                 "et=1&" +                   // event type
-                "na=" + actionName + "&" +  // action name
-                "it=" + THREAD_ID + "&" +   // thread Id
-                "ca=0&" +                   // action ID
-                "pa=0&" +                   // parent action ID
-                "s0=0&" +                   // action start sequence number
-                "t0=0&" +                   // action start time (relative to session start)
-                "s1=0&" +                   // action end sequence number
-                "t1=0"                      // action end time (relative to start time)
+                        "na=" + actionName + "&" +  // action name
+                        "it=" + THREAD_ID + "&" +   // thread Id
+                        "ca=0&" +                   // action ID
+                        "pa=0&" +                   // parent action ID
+                        "s0=0&" +                   // action start sequence number
+                        "t0=0&" +                   // action start time (relative to session start)
+                        "s1=0&" +                   // action end sequence number
+                        "t1=0"                      // action end time (relative to start time)
         );
     }
 
@@ -956,7 +956,14 @@ public class BeaconTest {
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 200;
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse(mockLogger, "", responseCode, Collections.<String, List<String>>emptyMap()));
+        StatusResponse successResponse = StatusResponse.createSuccessResponse(
+                mockLogger,
+                ResponseImpl.withJsonDefaults().build(),
+                responseCode,
+                Collections.<String, List<String>>emptyMap()
+        );
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class)))
+                .thenReturn(successResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
@@ -981,7 +988,8 @@ public class BeaconTest {
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 418;
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(new StatusResponse(mockLogger, "", responseCode, Collections.<String, List<String>>emptyMap()));
+        StatusResponse errorResponse = StatusResponse.createErrorResponse(mockLogger, responseCode);
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(errorResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
@@ -1037,7 +1045,7 @@ public class BeaconTest {
         Beacon beacon = createBeacon().with(beaconCache).build();
         // add various data
         BaseActionImpl action = mock(BaseActionImpl.class);
-        when(action.getID()). thenReturn(ACTION_ID);
+        when(action.getID()).thenReturn(ACTION_ID);
         beacon.addAction(action);
         beacon.reportValue(ACTION_ID, "IntValue", 42);
         beacon.reportValue(ACTION_ID, "DoubleValue", 3.1415);
@@ -1077,7 +1085,7 @@ public class BeaconTest {
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
         BaseActionImpl action = mock(BaseActionImpl.class);
-        when(action.getID()). thenReturn(ACTION_ID);
+        when(action.getID()).thenReturn(ACTION_ID);
 
         // when
         target.addAction(action);
@@ -1295,15 +1303,15 @@ public class BeaconTest {
 
         //then
         assertThat(returnedTag, is(
-            "MT" +
-            "_" + ProtocolConstants.PROTOCOL_VERSION +
-            "_" + SERVER_ID +
-            "_" + DEVICE_ID +
-            "_" + SESSION_ID +
-            "_" + APP_ID +
-            "_" + ACTION_ID +
-            "_" + THREAD_ID +
-            "_" + sequenceNo
+                "MT" +
+                        "_" + ProtocolConstants.PROTOCOL_VERSION +
+                        "_" + SERVER_ID +
+                        "_" + DEVICE_ID +
+                        "_" + SESSION_ID +
+                        "_" + APP_ID +
+                        "_" + ACTION_ID +
+                        "_" + THREAD_ID +
+                        "_" + sequenceNo
         ));
     }
 
@@ -1321,15 +1329,15 @@ public class BeaconTest {
 
         //then
         assertThat(returnedTag, is(
-            "MT" +
-            "_" + ProtocolConstants.PROTOCOL_VERSION +
-            "_" + SERVER_ID +
-            "_" + DEVICE_ID +
-            "_" + SESSION_ID +
-            "_" + APP_ID +
-            "_" + ACTION_ID +
-            "_" + THREAD_ID +
-            "_" + sequenceNo
+                "MT" +
+                        "_" + ProtocolConstants.PROTOCOL_VERSION +
+                        "_" + SERVER_ID +
+                        "_" + DEVICE_ID +
+                        "_" + SESSION_ID +
+                        "_" + APP_ID +
+                        "_" + ACTION_ID +
+                        "_" + THREAD_ID +
+                        "_" + sequenceNo
         ));
     }
 
@@ -1347,15 +1355,15 @@ public class BeaconTest {
 
         //then
         assertThat(returnedTag, is(
-            "MT" +
-            "_" + ProtocolConstants.PROTOCOL_VERSION +
-            "_" + SERVER_ID +
-            "_" + DEVICE_ID +
-            "_1" +                      // session number must always be 1
-            "_" + APP_ID +
-            "_" + ACTION_ID +
-            "_" + THREAD_ID +
-            "_" + sequenceNo
+                "MT" +
+                        "_" + ProtocolConstants.PROTOCOL_VERSION +
+                        "_" + SERVER_ID +
+                        "_" + DEVICE_ID +
+                        "_1" +                      // session number must always be 1
+                        "_" + APP_ID +
+                        "_" + ACTION_ID +
+                        "_" + THREAD_ID +
+                        "_" + sequenceNo
         ));
     }
 
@@ -1532,7 +1540,7 @@ public class BeaconTest {
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isActionReportingAllowed()).thenReturn(true);
         BaseActionImpl action = mock(BaseActionImpl.class);
-        when(action.getID()). thenReturn(ACTION_ID);
+        when(action.getID()).thenReturn(ACTION_ID);
 
         //when
         target.addAction(action);
@@ -1581,7 +1589,7 @@ public class BeaconTest {
 
         //then
         //verify serialized session get added to beacon
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong() , anyString());
+        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
     }
 
     @Test
@@ -1678,7 +1686,7 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
-       @Test
+    @Test
     public void DoubleValueIsReportedIfValueReportingAllowed() {
         // given
         Beacon target = createBeacon().build();
@@ -1717,7 +1725,7 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
-        @Test
+    @Test
     public void StringValueIsReportedIfValueReportingAllowed() {
         // given
         Beacon target = createBeacon().build();
@@ -1881,16 +1889,16 @@ public class BeaconTest {
     }
 
     private BeaconBuilder createBeacon() {
-       BeaconBuilder builder = new BeaconBuilder();
-       builder.logger = mockLogger;
-       builder.beaconCache = mockBeaconCache;
-       builder.configuration = mockBeaconConfiguration;
-       builder.ipAddress = "127.0.0.1";
-       builder.sessionIdProvider = mockSessionIdProvider;
-       builder.threadIdProvider = mockThreadIDProvider;
-       builder.timingProvider = mockTimingProvider;
+        BeaconBuilder builder = new BeaconBuilder();
+        builder.logger = mockLogger;
+        builder.beaconCache = mockBeaconCache;
+        builder.configuration = mockBeaconConfiguration;
+        builder.ipAddress = "127.0.0.1";
+        builder.sessionIdProvider = mockSessionIdProvider;
+        builder.threadIdProvider = mockThreadIDProvider;
+        builder.timingProvider = mockTimingProvider;
 
-       return builder;
+        return builder;
     }
 
     private static class BeaconBuilder {

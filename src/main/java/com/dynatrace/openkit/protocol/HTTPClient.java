@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -73,7 +73,6 @@ public class HTTPClient {
 
     // request type constants
     private static final String REQUEST_TYPE_MOBILE = "type=m";
-    private static final String REQUEST_TYPE_MOBILE_WITH_ARGS_SEPARATOR = "type=m&";
 
     // query parameter constants
     private static final String QUERY_KEY_SERVER_ID = "srvid";
@@ -118,23 +117,23 @@ public class HTTPClient {
     public StatusResponse sendStatusRequest() {
         StatusResponse response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
         return response == null
-            ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : response;
+                ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
+                : response;
     }
 
     public StatusResponse sendNewSessionRequest() {
         StatusResponse response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
         return response == null
-            ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : response;
+                ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
+                : response;
     }
 
     // sends a beacon send request and returns a status response
     public StatusResponse sendBeaconRequest(String clientIPAddress, byte[] data) {
         StatusResponse response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
         return response == null
-            ? new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap())
-            : response;
+                ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
+                : response;
     }
 
     // *** protected methods ***
@@ -158,7 +157,7 @@ public class HTTPClient {
 
     // only for unit testing the HTTPClient
     StatusResponse sendRequest(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress, byte[] data,
-                         String method) {
+                               String method) {
         try {
             return sendRequestInternal(requestType, httpURLConnectionWrapper, clientIPAddress, data, method);
         } catch (Exception e) {
@@ -169,7 +168,7 @@ public class HTTPClient {
 
     // generic internal request send
     private StatusResponse sendRequestInternal(RequestType requestType, HttpURLConnectionWrapper httpURLConnectionWrapper, String clientIPAddress,
-            byte[] data, String method) throws IOException, GeneralSecurityException {
+                                               byte[] data, String method) throws IOException, GeneralSecurityException {
         while (true) {
             try {
                 HttpURLConnection connection = httpURLConnectionWrapper.getHttpURLConnection();
@@ -246,8 +245,8 @@ public class HTTPClient {
         int responseCode = connection.getResponseCode();
 
         String response = responseCode >= 400
-            ? readResponse(connection.getErrorStream()) // error stream is closed in readResponse
-            : readResponse(connection.getInputStream()); // input stream is closed in readResponse
+                ? readResponse(connection.getErrorStream()) // error stream is closed in readResponse
+                : readResponse(connection.getInputStream()); // input stream is closed in readResponse
 
         if (logger.isDebugEnabled()) {
             logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
@@ -255,33 +254,30 @@ public class HTTPClient {
         }
 
         // create typed response based on request type and response content
-        if ((requestType.getRequestName().equals(RequestType.BEACON.getRequestName()))
-            || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
-            || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
+        if (requestType == RequestType.BEACON
+                || requestType == RequestType.STATUS
+                || requestType == RequestType.NEW_SESSION) {
             return responseCode >= 400
-                ? new StatusResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap())
-                : parseStatusResponse(response, responseCode, connection.getHeaderFields());
-        }
-        else {
+                    ? StatusResponse.createErrorResponse(logger, responseCode)
+                    : parseStatusResponse(response, responseCode, connection.getHeaderFields());
+        } else {
             logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
             return unknownErrorResponse(requestType);
         }
     }
 
     private StatusResponse parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
-        if (isStatusResponse(response)) {
-            try {
-                return new StatusResponse(logger, response, responseCode, responseHeadersWithLowerCaseKeys(headers));
-            }
-            catch (Exception e) {
-                logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
-                return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
-            }
+        try {
+            Response parsedResponse = ResponseParser.parseResponse(response);
+            return StatusResponse.createSuccessResponse(
+                    logger,
+                    parsedResponse,
+                    responseCode, responseHeadersWithLowerCaseKeys(headers)
+            );
+        } catch (Exception e) {
+            logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
+            return StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE);
         }
-
-        // invalid/unexpected response
-        logger.warning(getClass().getSimpleName() + " parseStatusResponse() - The HTTPResponse \"" + response + "\" is not a valid status response");
-        return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
     }
 
     private static Map<String, List<String>> responseHeadersWithLowerCaseKeys(Map<String, List<String>> headers) {
@@ -294,11 +290,6 @@ public class HTTPClient {
         }
 
         return Collections.unmodifiableMap(result);
-    }
-
-    private static boolean isStatusResponse(String response) {
-        return response.equals(REQUEST_TYPE_MOBILE)
-            || response.startsWith(REQUEST_TYPE_MOBILE_WITH_ARGS_SEPARATOR);
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
@@ -384,7 +375,7 @@ public class HTTPClient {
         return responseBuilder.toString();
     }
 
-    private  StatusResponse unknownErrorResponse(RequestType requestType) {
+    private StatusResponse unknownErrorResponse(RequestType requestType) {
 
         if (requestType == null) {
             return null;
@@ -394,7 +385,7 @@ public class HTTPClient {
             case STATUS:
             case BEACON: // fallthrough
             case NEW_SESSION: // fallthrough
-                return new StatusResponse(logger, "", Integer.MAX_VALUE, Collections.<String, List<String>>emptyMap());
+                return StatusResponse.createErrorResponse(logger,Integer.MAX_VALUE);
             default:
                 // should not be reached
                 return null;
@@ -411,7 +402,7 @@ public class HTTPClient {
         private int connectCount;
 
         HttpURLConnectionWrapperImpl(String url, int maxCount) throws MalformedURLException {
-            this.httpURL= new URL(url);
+            this.httpURL = new URL(url);
             this.maxCount = maxCount;
         }
 
