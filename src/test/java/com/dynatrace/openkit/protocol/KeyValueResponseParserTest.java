@@ -41,11 +41,11 @@ public class KeyValueResponseParserTest {
     @Test
     public void parsingAnEmptyStringReturnsResponseWithDefaultValues() {
         // given
-        ResponseDefaults defaults = ResponseDefaults.KEY_VALUE_RESPONSE;
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.KEY_VALUE_RESPONSE;
         String input = "";
 
         // when
-        Response obtained = KeyValueResponseParser.parse(input);
+        ResponseAttributes obtained = KeyValueResponseParser.parse(input);
 
         // then
         assertThat(obtained, notNullValue());
@@ -117,7 +117,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_MAX_BEACON_SIZE_IN_KB, beaconSize);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -161,7 +161,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_SEND_INTERVAL_IN_SEC, sendInterval);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -204,7 +204,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_CAPTURE, 1);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -217,7 +217,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_CAPTURE, 0);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -240,7 +240,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_CAPTURE, 200);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -273,7 +273,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_CRASHES, 1);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -286,7 +286,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_CRASHES, 0);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -309,7 +309,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_CRASHES, 200);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -342,7 +342,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_ERRORS, 1);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -355,7 +355,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_ERRORS, 0);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -378,7 +378,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_ERRORS, 200);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -412,7 +412,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_SERVER_ID, serverId);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -456,7 +456,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_MULTIPLICITY, multiplicity);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -496,7 +496,7 @@ public class KeyValueResponseParserTest {
     @Test
     public void parseResponseWithAllParametersSet() {
         // given
-        ResponseDefaults defaults = ResponseDefaults.KEY_VALUE_RESPONSE;
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.KEY_VALUE_RESPONSE;
         int beaconSize = 73;
         int sendInterval = 74;
         int serverId = 75;
@@ -511,7 +511,7 @@ public class KeyValueResponseParserTest {
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_MULTIPLICITY, multiplicity);
 
         // when
-        Response obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());

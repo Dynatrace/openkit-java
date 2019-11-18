@@ -18,9 +18,9 @@ package com.dynatrace.openkit.protocol;
 import java.util.EnumSet;
 
 /**
- * Implements a {@link Response} providing all the attributes received from the server.
+ * Implements {@link ResponseAttributes} providing all the attributes received from the server.
  */
-public class ResponseImpl implements Response {
+public class ResponseAttributesImpl implements ResponseAttributes {
 
     /**
      * Represents the set of which are set / were sent by the server.
@@ -43,7 +43,7 @@ public class ResponseImpl implements Response {
 
     private final long timestampInMilliseconds;
 
-    private ResponseImpl(Builder builder) {
+    private ResponseAttributesImpl(Builder builder) {
         setAttributes = builder.setAttributes;
 
         maxBeaconSizeInBytes = builder.maxBeaconSizeInBytes;
@@ -129,128 +129,128 @@ public class ResponseImpl implements Response {
     }
 
     @Override
-    public Response merge(Response response) {
+    public ResponseAttributes merge(ResponseAttributes responseAttributes) {
         Builder builder = new Builder(this);
 
-        applyBeaconSize(builder, response);
-        applySessionDuration(builder, response);
-        applyEventsPerSession(builder, response);
-        applySessionTimeout(builder, response);
-        applySendInterval(builder, response);
-        applyVisitStoreVersion(builder, response);
-        applyCapture(builder, response);
-        applyCaptureCrashes(builder, response);
-        applyCaptureErrors(builder, response);
-        applyMultiplicity(builder, response);
-        applyServerId(builder, response);
-        applyTimestamp(builder, response);
+        applyBeaconSize(builder, responseAttributes);
+        applySessionDuration(builder, responseAttributes);
+        applyEventsPerSession(builder, responseAttributes);
+        applySessionTimeout(builder, responseAttributes);
+        applySendInterval(builder, responseAttributes);
+        applyVisitStoreVersion(builder, responseAttributes);
+        applyCapture(builder, responseAttributes);
+        applyCaptureCrashes(builder, responseAttributes);
+        applyCaptureErrors(builder, responseAttributes);
+        applyMultiplicity(builder, responseAttributes);
+        applyServerId(builder, responseAttributes);
+        applyTimestamp(builder, responseAttributes);
 
         return builder.build();
     }
 
-    private void applyBeaconSize(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.MAX_BEACON_SIZE)) {
+    private void applyBeaconSize(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.MAX_BEACON_SIZE)) {
             return;
         }
-        builder.withMaxBeaconSizeInBytes(response.getMaxBeaconSizeInBytes());
+        builder.withMaxBeaconSizeInBytes(responseAttributes.getMaxBeaconSizeInBytes());
     }
 
-    private void applySessionDuration(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)) {
+    private void applySessionDuration(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)) {
             return;
         }
-        builder.withMaxSessionDurationInMilliseconds(response.getMaxSessionDurationInMilliseconds());
+        builder.withMaxSessionDurationInMilliseconds(responseAttributes.getMaxSessionDurationInMilliseconds());
     }
 
-    private void applyEventsPerSession(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)) {
+    private void applyEventsPerSession(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)) {
             return;
         }
-        builder.withMaxEventsPerSession(response.getMaxEventsPerSession());
+        builder.withMaxEventsPerSession(responseAttributes.getMaxEventsPerSession());
     }
 
-    private void applySessionTimeout(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)) {
+    private void applySessionTimeout(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)) {
             return;
         }
-        builder.withSessionTimeoutInMilliseconds(response.getSessionTimeoutInMilliseconds());
+        builder.withSessionTimeoutInMilliseconds(responseAttributes.getSessionTimeoutInMilliseconds());
     }
 
-    private void applySendInterval(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.SEND_INTERVAL)) {
+    private void applySendInterval(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.SEND_INTERVAL)) {
             return;
         }
-        builder.withSendIntervalInMilliseconds(response.getSendIntervalInMilliseconds());
+        builder.withSendIntervalInMilliseconds(responseAttributes.getSendIntervalInMilliseconds());
     }
 
-    private void applyVisitStoreVersion(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.VISIT_STORE_VERSION)) {
+    private void applyVisitStoreVersion(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.VISIT_STORE_VERSION)) {
             return;
         }
-        builder.withVisitStoreVersion(response.getVisitStoreVersion());
+        builder.withVisitStoreVersion(responseAttributes.getVisitStoreVersion());
     }
 
-    private void applyCapture(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.IS_CAPTURE)) {
+    private void applyCapture(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.IS_CAPTURE)) {
             return;
         }
-        builder.withCapture(response.isCapture());
+        builder.withCapture(responseAttributes.isCapture());
     }
 
-    private void applyCaptureCrashes(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.IS_CAPTURE_CRASHES)) {
+    private void applyCaptureCrashes(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.IS_CAPTURE_CRASHES)) {
             return;
         }
-        builder.withCaptureCrashes(response.isCaptureCrashes());
+        builder.withCaptureCrashes(responseAttributes.isCaptureCrashes());
     }
 
-    private void applyCaptureErrors(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.IS_CAPTURE_ERRORS)) {
+    private void applyCaptureErrors(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.IS_CAPTURE_ERRORS)) {
             return;
         }
-        builder.withCaptureErrors(response.isCaptureErrors());
+        builder.withCaptureErrors(responseAttributes.isCaptureErrors());
     }
 
-    private void applyMultiplicity(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.MULTIPLICITY)) {
+    private void applyMultiplicity(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.MULTIPLICITY)) {
             return;
         }
-        builder.withMultiplicity(response.getMultiplicity());
+        builder.withMultiplicity(responseAttributes.getMultiplicity());
     }
 
-    private void applyServerId(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.SERVER_ID)) {
+    private void applyServerId(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.SERVER_ID)) {
             return;
         }
-        builder.withServerId(response.getServerId());
+        builder.withServerId(responseAttributes.getServerId());
     }
 
-    private void applyTimestamp(Builder builder, Response response) {
-        if (!response.isAttributeSet(ResponseAttribute.TIMESTAMP)) {
+    private void applyTimestamp(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.TIMESTAMP)) {
             return;
         }
-        builder.withTimestampInMilliseconds(response.getTimestampInMilliseconds());
+        builder.withTimestampInMilliseconds(responseAttributes.getTimestampInMilliseconds());
     }
 
     /**
      * Creates a new builder initialized with the defaults value for {@link KeyValueResponseParser key-value parsing}.
      */
     public static Builder withKeyValueDefaults() {
-        return new Builder(ResponseDefaults.KEY_VALUE_RESPONSE);
+        return new Builder(ResponseAttributesDefaults.KEY_VALUE_RESPONSE);
     }
 
     /**
      * Creates a new builder initialized with the default values for {@link JsonResponseParser JSON parsing}.
      */
     public static Builder withJsonDefaults() {
-        return new Builder(ResponseDefaults.JSON_RESPONSE);
+        return new Builder(ResponseAttributesDefaults.JSON_RESPONSE);
     }
 
     /**
      * Creates a new builder instance with undefined default values.
      */
     public static Builder withUndefinedDefaults() {
-        return new Builder(ResponseDefaults.UNDEFINED);
+        return new Builder(ResponseAttributesDefaults.UNDEFINED);
     }
 
     public static class Builder {
@@ -272,7 +272,7 @@ public class ResponseImpl implements Response {
 
         private long timestampInMilliseconds;
 
-        private Builder(Response defaults) {
+        private Builder(ResponseAttributes defaults) {
             maxBeaconSizeInBytes = defaults.getMaxBeaconSizeInBytes();
             maxSessionDurationInMilliseconds = defaults.getMaxSessionDurationInMilliseconds();
             maxEventsPerSession = defaults.getMaxEventsPerSession();
@@ -453,10 +453,10 @@ public class ResponseImpl implements Response {
         }
 
         /**
-         * Creates a new {@link Response} with all the attributes set in this builder.
+         * Creates a new {@link ResponseAttributes} with all the attributes set in this builder.
          */
-        public Response build() {
-            return new ResponseImpl(this);
+        public ResponseAttributes build() {
+            return new ResponseAttributesImpl(this);
         }
 
         private void setAttribute(ResponseAttribute attribute) {

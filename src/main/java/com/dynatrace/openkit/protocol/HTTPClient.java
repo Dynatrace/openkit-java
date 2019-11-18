@@ -268,10 +268,10 @@ public class HTTPClient {
 
     private StatusResponse parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         try {
-            Response parsedResponse = ResponseParser.parseResponse(response);
+            ResponseAttributes parsedAttributes = ResponseParser.parseResponse(response);
             return StatusResponse.createSuccessResponse(
                     logger,
-                    parsedResponse,
+                    parsedAttributes,
                     responseCode, responseHeadersWithLowerCaseKeys(headers)
             );
         } catch (Exception e) {

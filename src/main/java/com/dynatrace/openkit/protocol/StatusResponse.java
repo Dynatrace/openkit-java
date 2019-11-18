@@ -57,27 +57,27 @@ public class StatusResponse {
     private final int responseCode;
     private final Map<String, List<String>> headers;
 
-    private final Response responseAttributes;
+    private final ResponseAttributes responseAttributes;
 
     // *** constructors ***
 
-    private StatusResponse(Logger logger, Response response, int responseCode, Map<String, List<String>> headers) {
+    private StatusResponse(Logger logger, ResponseAttributes responseAttributes, int responseCode, Map<String, List<String>> headers) {
         this.logger = logger;
-        this.responseAttributes = response;
+        this.responseAttributes = responseAttributes;
         this.responseCode = responseCode;
         this.headers = headers;
     }
 
     public static StatusResponse createSuccessResponse(
             Logger logger,
-            Response responseAttributes,
+            ResponseAttributes responseAttributes,
             int responseCode,
             Map<String, List<String>> headers) {
         return new StatusResponse(logger, responseAttributes, responseCode, headers);
     }
 
     public static StatusResponse createErrorResponse(Logger logger, int responseCode) {
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().build();
         return new StatusResponse(logger, responseAttributes, responseCode, new HashMap<String, List<String>>());
     }
 
@@ -92,7 +92,7 @@ public class StatusResponse {
     /**
      * Returns the attributes received as response from the server.
      */
-    public Response getResponseAttributes() {
+    public ResponseAttributes getResponseAttributes() {
         return responseAttributes;
     }
 
@@ -136,8 +136,8 @@ public class StatusResponse {
      * Creates a new status response by merging the given status response into this one.
      *
      * <p>
-     *     Attributes from {@link Response} will be taken over selectively from the given status response in case they
-     *     are set / were sent from the.
+     *     Attributes from {@link ResponseAttributes} will be taken over selectively from the given status response in case they
+     *     are set / were sent from the server.
      *     Response code and headers will be replaced with the ones of the given status response.
      * </p>
      *
@@ -149,10 +149,10 @@ public class StatusResponse {
             return null;
         }
 
-        Response mergedResponse = responseAttributes.merge(statusResponse.getResponseAttributes());
+        ResponseAttributes mergedAttributes = responseAttributes.merge(statusResponse.getResponseAttributes());
         return new StatusResponse(
                 logger,
-                mergedResponse,
+                mergedAttributes,
                 statusResponse.getResponseCode(),
                 statusResponse.getHeaders()
         );

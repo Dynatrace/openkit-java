@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
@@ -33,13 +33,13 @@ import static org.mockito.Mockito.when;
 public class ServerConfigurationTest {
 
     private StatusResponse statusResponse;
-    private Response responseAttributes;
+    private ResponseAttributes responseAttributes;
 
     private ServerConfiguration mockServerConfig;
 
     @Before
     public void setUp() {
-        responseAttributes = mock(Response.class);
+        responseAttributes = mock(ResponseAttributes.class);
         when(responseAttributes.isCapture()).thenReturn(ServerConfiguration.DEFAULT_CAPTURE_ENABLED);
         when(responseAttributes.isCaptureCrashes()).thenReturn(ServerConfiguration.DEFAULT_CRASH_REPORTING_ENABLED);
         when(responseAttributes.isCaptureErrors()).thenReturn(ServerConfiguration.DEFAULT_ERROR_REPORTING_ENABLED);

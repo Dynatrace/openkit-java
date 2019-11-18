@@ -17,7 +17,7 @@ package com.dynatrace.openkit.protocol;
 
 import java.util.concurrent.TimeUnit;
 
-public enum ResponseDefaults implements Response {
+public enum ResponseAttributesDefaults implements ResponseAttributes {
 
     JSON_RESPONSE {
         private final int DEFAULT_BEACON_SIZE_IN_BYTES = 150 * 1024; // 150 kB
@@ -176,7 +176,7 @@ public enum ResponseDefaults implements Response {
     }
 
     @Override
-    public Response merge(Response response) {
-        return response;
+    public ResponseAttributes merge(ResponseAttributes responseAttributes) {
+        return responseAttributes;
     }
 }

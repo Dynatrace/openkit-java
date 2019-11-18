@@ -18,7 +18,7 @@ package com.dynatrace.openkit.protocol;
 /**
  * Defines a response received from the server.
  */
-public interface Response {
+public interface ResponseAttributes {
 
     /**
      * Returns the maximum POST body size when sending beacons.
@@ -96,8 +96,9 @@ public interface Response {
      * Creates a new response object by merging the given response into this one. Attributes are selectively taken over
      * from the given response as long as the attribute {@link #isAttributeSet is set}.
      *
-     * @param response the response which will be merged together with this one into a new response object.
+     * @param responseAttributes the response attributes which will be merged together with this one into a new response
+     *      attributes object.
      * @return a new response instance by merging the given response with this response.
      */
-    Response merge(Response response);
+    ResponseAttributes merge(ResponseAttributes responseAttributes);
 }

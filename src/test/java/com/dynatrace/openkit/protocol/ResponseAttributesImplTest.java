@@ -24,12 +24,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ResponseImplTest {
+public class ResponseAttributesImplTest {
 
     @Test
     public void buildWithJsonDefaultsHasNoAttributesSetOnInstance() {
         // given
-        Response target = ResponseImpl.withJsonDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withJsonDefaults().build();
 
         // when, then
         for (ResponseAttribute attribute : ResponseAttribute.values()) {
@@ -40,8 +40,8 @@ public class ResponseImplTest {
     @Test
     public void buildWithKeyValueDefaultsHasNoAttributeSetOnInstance() {
         // given
-        ResponseDefaults defaults = ResponseDefaults.JSON_RESPONSE;
-        Response target = ResponseImpl.withKeyValueDefaults().build();
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.JSON_RESPONSE;
+        ResponseAttributes target = ResponseAttributesImpl.withKeyValueDefaults().build();
 
         // when, then
         for (ResponseAttribute attribute : ResponseAttribute.values()) {
@@ -52,11 +52,11 @@ public class ResponseImplTest {
     @Test
     public void buildForwardsJsonDefaultsToInstance() {
         // given
-        ResponseDefaults defaults = ResponseDefaults.JSON_RESPONSE;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.JSON_RESPONSE;
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.build();
+        ResponseAttributes obtained = target.build();
 
         // then
         assertThat(obtained.getMaxBeaconSizeInBytes(), is(defaults.getMaxBeaconSizeInBytes()));
@@ -79,11 +79,11 @@ public class ResponseImplTest {
     @Test
     public void buildForwardsKeyValueDefaultsToInstance() {
         // given
-        ResponseDefaults defaults = ResponseDefaults.JSON_RESPONSE;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.JSON_RESPONSE;
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.build();
+        ResponseAttributes obtained = target.build();
 
         // then
         assertThat(obtained.getMaxBeaconSizeInBytes(), is(defaults.getMaxBeaconSizeInBytes()));
@@ -107,10 +107,10 @@ public class ResponseImplTest {
     public void buildPropagatesMaxBeaconSizeToInstance() {
         // given
         int beaconSize = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMaxBeaconSizeInBytes(beaconSize).build();
+        ResponseAttributes obtained = target.withMaxBeaconSizeInBytes(beaconSize).build();
 
         // then
         assertThat(obtained.getMaxBeaconSizeInBytes(), is(beaconSize));
@@ -120,10 +120,10 @@ public class ResponseImplTest {
     public void withMaxBeaconSizeSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.MAX_BEACON_SIZE;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMaxBeaconSizeInBytes(37).build();
+        ResponseAttributes obtained = target.withMaxBeaconSizeInBytes(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -140,10 +140,10 @@ public class ResponseImplTest {
     public void buildPropagatesMaxSessionDurationToInstance() {
         // given
         int sessionDuration = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMaxSessionDurationInMilliseconds(sessionDuration).build();
+        ResponseAttributes obtained = target.withMaxSessionDurationInMilliseconds(sessionDuration).build();
 
         // then
         assertThat(obtained.getMaxSessionDurationInMilliseconds(), is(sessionDuration));
@@ -153,10 +153,10 @@ public class ResponseImplTest {
     public void withMaxSessionDurationSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.MAX_SESSION_DURATION;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMaxSessionDurationInMilliseconds(37).build();
+        ResponseAttributes obtained = target.withMaxSessionDurationInMilliseconds(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -173,10 +173,10 @@ public class ResponseImplTest {
     public void buildPropagatesMaxEventsPerSessionToInstance() {
         // given
         int eventsPerSession = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMaxEventsPerSession(eventsPerSession).build();
+        ResponseAttributes obtained = target.withMaxEventsPerSession(eventsPerSession).build();
 
         // then
         assertThat(obtained.getMaxEventsPerSession(), is(eventsPerSession));
@@ -186,10 +186,10 @@ public class ResponseImplTest {
     public void withMaxEventsPerSessionSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.MAX_EVENTS_PER_SESSION;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMaxEventsPerSession(37).build();
+        ResponseAttributes obtained = target.withMaxEventsPerSession(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -206,10 +206,10 @@ public class ResponseImplTest {
     public void buildPropagatesSessionTimeoutToInstance() {
         // given
         int sessionTimeout = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withSessionTimeoutInMilliseconds(sessionTimeout).build();
+        ResponseAttributes obtained = target.withSessionTimeoutInMilliseconds(sessionTimeout).build();
 
         // then
         assertThat(obtained.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
@@ -219,10 +219,10 @@ public class ResponseImplTest {
     public void withSessionTimeoutSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.SESSION_TIMEOUT;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withSessionTimeoutInMilliseconds(37).build();
+        ResponseAttributes obtained = target.withSessionTimeoutInMilliseconds(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -239,10 +239,10 @@ public class ResponseImplTest {
     public void buildPropagatesSendIntervalToInstance() {
         // given
         int sendInterval = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withSendIntervalInMilliseconds(sendInterval).build();
+        ResponseAttributes obtained = target.withSendIntervalInMilliseconds(sendInterval).build();
 
         // then
         assertThat(obtained.getSendIntervalInMilliseconds(), is(sendInterval));
@@ -252,10 +252,10 @@ public class ResponseImplTest {
     public void withSendIntervalSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.SEND_INTERVAL;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withSendIntervalInMilliseconds(37).build();
+        ResponseAttributes obtained = target.withSendIntervalInMilliseconds(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -272,10 +272,10 @@ public class ResponseImplTest {
     public void buildPropagatesVisitStoreVersionToInstance() {
         // given
         int visitStoreVersion = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withVisitStoreVersion(visitStoreVersion).build();
+        ResponseAttributes obtained = target.withVisitStoreVersion(visitStoreVersion).build();
 
         // then
         assertThat(obtained.getVisitStoreVersion(), is(visitStoreVersion));
@@ -285,10 +285,10 @@ public class ResponseImplTest {
     public void withVisitStoreVersionSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.VISIT_STORE_VERSION;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withVisitStoreVersion(37).build();
+        ResponseAttributes obtained = target.withVisitStoreVersion(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -304,11 +304,11 @@ public class ResponseImplTest {
     @Test
     public void buildPropagatesIsCaptureToInstance() {
         // given
-        boolean isCapture = !ResponseDefaults.JSON_RESPONSE.isCapture();
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        boolean isCapture = !ResponseAttributesDefaults.JSON_RESPONSE.isCapture();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withCapture(isCapture).build();
+        ResponseAttributes obtained = target.withCapture(isCapture).build();
 
         // then
         assertThat(obtained.isCapture(), is(isCapture));
@@ -318,10 +318,10 @@ public class ResponseImplTest {
     public void withCaptureSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.IS_CAPTURE;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withCapture(!ResponseDefaults.JSON_RESPONSE.isCapture()).build();
+        ResponseAttributes obtained = target.withCapture(!ResponseAttributesDefaults.JSON_RESPONSE.isCapture()).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -337,11 +337,11 @@ public class ResponseImplTest {
     @Test
     public void buildPropagatesIsCaptureCrashesToInstance() {
         // given
-        boolean isCaptureCrashes = !ResponseDefaults.JSON_RESPONSE.isCaptureCrashes();
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        boolean isCaptureCrashes = !ResponseAttributesDefaults.JSON_RESPONSE.isCaptureCrashes();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withCaptureCrashes(isCaptureCrashes).build();
+        ResponseAttributes obtained = target.withCaptureCrashes(isCaptureCrashes).build();
 
         // then
         assertThat(obtained.isCaptureCrashes(), is(isCaptureCrashes));
@@ -351,10 +351,10 @@ public class ResponseImplTest {
     public void withCaptureCrashesSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.IS_CAPTURE_CRASHES;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withCaptureCrashes(!ResponseDefaults.JSON_RESPONSE.isCaptureCrashes()).build();
+        ResponseAttributes obtained = target.withCaptureCrashes(!ResponseAttributesDefaults.JSON_RESPONSE.isCaptureCrashes()).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -370,11 +370,11 @@ public class ResponseImplTest {
     @Test
     public void buildPropagatesIsCaptureErrorsToInstance() {
         // given
-        boolean isCaptureErrors = !ResponseDefaults.JSON_RESPONSE.isCaptureErrors();
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        boolean isCaptureErrors = !ResponseAttributesDefaults.JSON_RESPONSE.isCaptureErrors();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withCaptureErrors(isCaptureErrors).build();
+        ResponseAttributes obtained = target.withCaptureErrors(isCaptureErrors).build();
 
         // then
         assertThat(obtained.isCaptureErrors(), is(isCaptureErrors));
@@ -384,10 +384,10 @@ public class ResponseImplTest {
     public void withCaptureErrorsSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.IS_CAPTURE_ERRORS;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withCaptureErrors(!ResponseDefaults.JSON_RESPONSE.isCaptureErrors()).build();
+        ResponseAttributes obtained = target.withCaptureErrors(!ResponseAttributesDefaults.JSON_RESPONSE.isCaptureErrors()).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -404,10 +404,10 @@ public class ResponseImplTest {
     public void buildPropagatesMultiplicityToInstance() {
         // given
         int multiplicity = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMultiplicity(multiplicity).build();
+        ResponseAttributes obtained = target.withMultiplicity(multiplicity).build();
 
         // then
         assertThat(obtained.getMultiplicity(), is(multiplicity));
@@ -417,10 +417,10 @@ public class ResponseImplTest {
     public void withMultiplicitySetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.MULTIPLICITY;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withMultiplicity(37).build();
+        ResponseAttributes obtained = target.withMultiplicity(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -437,10 +437,10 @@ public class ResponseImplTest {
     public void buildPropagatesServerIdToInstance() {
         // given
         int serverId = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withServerId(serverId).build();
+        ResponseAttributes obtained = target.withServerId(serverId).build();
 
         // then
         assertThat(obtained.getServerId(), is(serverId));
@@ -450,10 +450,10 @@ public class ResponseImplTest {
     public void withServerIdSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.SERVER_ID;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withServerId(37).build();
+        ResponseAttributes obtained = target.withServerId(37).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -470,10 +470,10 @@ public class ResponseImplTest {
     public void buildPropagatesTimestampToInstance() {
         // given
         long timestamp = 73;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withTimestampInMilliseconds(timestamp).build();
+        ResponseAttributes obtained = target.withTimestampInMilliseconds(timestamp).build();
 
         // then
         assertThat(obtained.getTimestampInMilliseconds(), is(timestamp));
@@ -483,10 +483,10 @@ public class ResponseImplTest {
     public void withTimestampSetsAttributeOnInstance() {
         // given
         ResponseAttribute attribute = ResponseAttribute.TIMESTAMP;
-        ResponseImpl.Builder target = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
 
         // when
-        Response obtained = target.withTimestampInMilliseconds(37L).build();
+        ResponseAttributes obtained = target.withTimestampInMilliseconds(37L).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -506,11 +506,11 @@ public class ResponseImplTest {
     @Test
     public void mergingDefaultResponsesReturnsResponseWithoutAnyAttributeSet() {
         // given
-        Response toMerge = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withJsonDefaults().build();
+        ResponseAttributes toMerge = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withJsonDefaults().build();
 
         // when
-        Response obtained = target.merge(toMerge);
+        ResponseAttributes obtained = target.merge(toMerge);
 
         // then
         for (ResponseAttribute attribute : ResponseAttribute.values()) {
@@ -521,12 +521,12 @@ public class ResponseImplTest {
     @Test
     public void mergeResponseWithAllValuesSetToDefaultResponse() {
         // given
-        Response toMerge = mock(Response.class);
+        ResponseAttributes toMerge = mock(ResponseAttributes.class);
         when(toMerge.isAttributeSet(any(ResponseAttribute.class))).thenReturn(true);
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(toMerge);
+        ResponseAttributes obtained = target.merge(toMerge);
 
         // then
         for (ResponseAttribute attribute : ResponseAttribute.values()) {
@@ -538,11 +538,11 @@ public class ResponseImplTest {
     public void mergeTakesBeaconSizeFromMergeTargetIfNotSetInSource() {
         // given
         int beaconSize = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -553,11 +553,11 @@ public class ResponseImplTest {
     public void mergeTakesBeaconSizeFromMergeSourceIfSetInSource() {
         // given
         int beaconSize = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -568,11 +568,11 @@ public class ResponseImplTest {
     public void mergeTakesBeaconSizeFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int beaconSize = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
-        Response target = ResponseImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(37).build();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().withMaxBeaconSizeInBytes(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -583,12 +583,12 @@ public class ResponseImplTest {
     public void mergeTakesSessionDurationFromMergeTargetIfNotSetInSource() {
         // given
         int sessionDuration = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxSessionDurationInMilliseconds(sessionDuration).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -599,12 +599,12 @@ public class ResponseImplTest {
     public void mergeTakesSessionDurationFromMergeSourceIfSetInSource() {
         // given
         int sessionDuration = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxSessionDurationInMilliseconds(sessionDuration).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -615,13 +615,13 @@ public class ResponseImplTest {
     public void mergeTakesSessionDurationFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int sessionDuration = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxSessionDurationInMilliseconds(sessionDuration).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxSessionDurationInMilliseconds(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -632,12 +632,12 @@ public class ResponseImplTest {
     public void mergeTakesEventsPerSessionFromMergeTargetIfNotSetInSource() {
         // given
         int eventsPerSession = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxEventsPerSession(eventsPerSession).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -648,12 +648,12 @@ public class ResponseImplTest {
     public void mergeTakesEventsPerSessionFromMergeSourceIfSetInSource() {
         // given
         int eventsPerSession = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxEventsPerSession(eventsPerSession).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -664,13 +664,13 @@ public class ResponseImplTest {
     public void mergeTakesEventsPerSessionFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int eventsPerSession = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxEventsPerSession(eventsPerSession).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMaxEventsPerSession(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -681,12 +681,12 @@ public class ResponseImplTest {
     public void mergeTakesSessionTimeoutFromMergeTargetIfNotSetInSource() {
         // given
         int sessionTimeout = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSessionTimeoutInMilliseconds(sessionTimeout).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -697,12 +697,12 @@ public class ResponseImplTest {
     public void mergeTakesSessionTimeoutFromMergeSourceIfSetInSource() {
         // given
         int sessionTimeout = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSessionTimeoutInMilliseconds(sessionTimeout).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -713,13 +713,13 @@ public class ResponseImplTest {
     public void mergeTakesSessionTimeoutFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int sessionTimeout = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSessionTimeoutInMilliseconds(sessionTimeout).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSessionTimeoutInMilliseconds(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -730,12 +730,12 @@ public class ResponseImplTest {
     public void mergeTakesSendIntervalFromMergeTargetIfNotSetInSource() {
         // given
         int sendInterval = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSendIntervalInMilliseconds(sendInterval).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -746,12 +746,12 @@ public class ResponseImplTest {
     public void mergeTakesSendIntervalFromMergeSourceIfSetInSource() {
         // given
         int sendInterval = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSendIntervalInMilliseconds(sendInterval).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -762,13 +762,13 @@ public class ResponseImplTest {
     public void mergeTakesSendIntervalFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int sendInterval = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSendIntervalInMilliseconds(sendInterval).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSendIntervalInMilliseconds(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -779,12 +779,12 @@ public class ResponseImplTest {
     public void mergeTakesVisitStoreVersionFromMergeTargetIfNotSetInSource() {
         // given
         int visitStoreVersion = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withVisitStoreVersion(visitStoreVersion).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -795,12 +795,12 @@ public class ResponseImplTest {
     public void mergeTakesVisitStoreVersionFromMergeSourceIfSetInSource() {
         // given
         int visitStoreVersion = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withVisitStoreVersion(visitStoreVersion).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -811,13 +811,13 @@ public class ResponseImplTest {
     public void mergeTakesVisitStoreVersionFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int visitStoreVersion = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withVisitStoreVersion(visitStoreVersion).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withVisitStoreVersion(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -827,13 +827,13 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureFromMergeTargetIfNotSetInSource() {
         // given
-        boolean capture = !ResponseDefaults.UNDEFINED.isCapture();
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        boolean capture = !ResponseAttributesDefaults.UNDEFINED.isCapture();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCapture(capture).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -843,13 +843,13 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureFromMergeSourceIfSetInSource() {
         // given
-        boolean capture = !ResponseDefaults.UNDEFINED.isCapture();
-        Response source = ResponseImpl.withUndefinedDefaults()
+        boolean capture = !ResponseAttributesDefaults.UNDEFINED.isCapture();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCapture(capture).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -859,14 +859,14 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureFromMergeSourceIfSetInSourceAndTarget() {
         // given
-        boolean capture = !ResponseDefaults.UNDEFINED.isCapture();
-        Response source = ResponseImpl.withUndefinedDefaults()
+        boolean capture = !ResponseAttributesDefaults.UNDEFINED.isCapture();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCapture(capture).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCapture(!capture).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -876,13 +876,13 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureCrashesFromMergeTargetIfNotSetInSource() {
         // given
-        boolean captureCrashes = !ResponseDefaults.UNDEFINED.isCaptureCrashes();
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        boolean captureCrashes = !ResponseAttributesDefaults.UNDEFINED.isCaptureCrashes();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureCrashes(captureCrashes).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -892,13 +892,13 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureCrashesFromMergeSourceIfSetInSource() {
         // given
-        boolean captureCrashes = !ResponseDefaults.UNDEFINED.isCaptureCrashes();
-        Response source = ResponseImpl.withUndefinedDefaults()
+        boolean captureCrashes = !ResponseAttributesDefaults.UNDEFINED.isCaptureCrashes();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureCrashes(captureCrashes).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -908,14 +908,14 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureCrashesFromMergeSourceIfSetInSourceAndTarget() {
         // given
-        boolean captureCrashes = !ResponseDefaults.UNDEFINED.isCaptureCrashes();
-        Response source = ResponseImpl.withUndefinedDefaults()
+        boolean captureCrashes = !ResponseAttributesDefaults.UNDEFINED.isCaptureCrashes();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureCrashes(captureCrashes).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureCrashes(!captureCrashes).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -925,13 +925,13 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureErrorsFromMergeTargetIfNotSetInSource() {
         // given
-        boolean captureErrors = !ResponseDefaults.UNDEFINED.isCaptureErrors();
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        boolean captureErrors = !ResponseAttributesDefaults.UNDEFINED.isCaptureErrors();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureErrors(captureErrors).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -941,13 +941,13 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureErrorsFromMergeSourceIfSetInSource() {
         // given
-        boolean captureErrors = !ResponseDefaults.UNDEFINED.isCaptureErrors();
-        Response source = ResponseImpl.withUndefinedDefaults()
+        boolean captureErrors = !ResponseAttributesDefaults.UNDEFINED.isCaptureErrors();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureErrors(captureErrors).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -957,14 +957,14 @@ public class ResponseImplTest {
     @Test
     public void mergeTakesCaptureErrorsFromMergeSourceIfSetInSourceAndTarget() {
         // given
-        boolean captureErrors = !ResponseDefaults.UNDEFINED.isCaptureErrors();
-        Response source = ResponseImpl.withUndefinedDefaults()
+        boolean captureErrors = !ResponseAttributesDefaults.UNDEFINED.isCaptureErrors();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureErrors(captureErrors).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withCaptureErrors(!captureErrors).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -975,12 +975,12 @@ public class ResponseImplTest {
     public void mergeTakesMultiplicityFromMergeTargetIfNotSetInSource() {
         // given
         int multiplicity = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMultiplicity(multiplicity).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -991,12 +991,12 @@ public class ResponseImplTest {
     public void mergeTakesMultiplicityFromMergeSourceIfSetInSource() {
         // given
         int multiplicity = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMultiplicity(multiplicity).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1007,13 +1007,13 @@ public class ResponseImplTest {
     public void mergeTakesMultiplicityFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int multiplicity = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMultiplicity(multiplicity).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withMultiplicity(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1024,12 +1024,12 @@ public class ResponseImplTest {
     public void mergeTakesServerIdFromMergeTargetIfNotSetInSource() {
         // given
         int serverId = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withServerId(serverId).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1040,12 +1040,12 @@ public class ResponseImplTest {
     public void mergeTakesServerIdFromMergeSourceIfSetInSource() {
         // given
         int serverId = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withServerId(serverId).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1056,13 +1056,13 @@ public class ResponseImplTest {
     public void mergeTakesServerIdFromMergeSourceIfSetInSourceAndTarget() {
         // given
         int serverId = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withServerId(serverId).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withServerId(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1073,12 +1073,12 @@ public class ResponseImplTest {
     public void mergeTakesTimestampFromMergeTargetIfNotSetInSource() {
         // given
         long timestamp = 73;
-        Response source = ResponseImpl.withUndefinedDefaults().build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withTimestampInMilliseconds(timestamp).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1089,12 +1089,12 @@ public class ResponseImplTest {
     public void mergeTakesTimestampFromMergeSourceIfSetInSource() {
         // given
         long timestamp = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withTimestampInMilliseconds(timestamp).build();
-        Response target = ResponseImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());
@@ -1105,13 +1105,13 @@ public class ResponseImplTest {
     public void mergeTakesTimestampFromMergeSourceIfSetInSourceAndTarget() {
         // given
         long timestamp = 73;
-        Response source = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
                 .withTimestampInMilliseconds(timestamp).build();
-        Response target = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
                 .withTimestampInMilliseconds(37).build();
 
         // when
-        Response obtained = target.merge(source);
+        ResponseAttributes obtained = target.merge(source);
 
         // then
         assertThat(obtained, notNullValue());

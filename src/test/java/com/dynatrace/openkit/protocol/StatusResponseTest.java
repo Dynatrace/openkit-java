@@ -40,12 +40,12 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 public class StatusResponseTest {
 
     private Logger mockLogger;
-    private Response attributes;
+    private ResponseAttributes attributes;
 
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
-        attributes = ResponseImpl.withJsonDefaults().build();
+        attributes = ResponseAttributesImpl.withJsonDefaults().build();
     }
 
 
@@ -265,17 +265,17 @@ public class StatusResponseTest {
     public void mergeMergesAttributes() {
         // given
         Map<String, List<String>> emptyMap = Collections.emptyMap();
-        Response mergeResponse = mock(Response.class);
-        Response targetResponse = mock(Response.class);
+        ResponseAttributes mergeAttributes = mock(ResponseAttributes.class);
+        ResponseAttributes targetAttributes = mock(ResponseAttributes.class);
 
-        StatusResponse toMerge = StatusResponse.createSuccessResponse(mockLogger, mergeResponse, 200, emptyMap);
-        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, targetResponse, 200, emptyMap);
+        StatusResponse toMerge = StatusResponse.createSuccessResponse(mockLogger, mergeAttributes, 200, emptyMap);
+        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, targetAttributes, 200, emptyMap);
 
         // when
         target.merge(toMerge);
 
         // then
-        verify(targetResponse, times(1)).merge(mergeResponse);
-        verifyZeroInteractions(mergeResponse);
+        verify(targetAttributes, times(1)).merge(mergeAttributes);
+        verifyZeroInteractions(mergeAttributes);
     }
 }

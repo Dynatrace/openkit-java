@@ -36,10 +36,10 @@ public class KeyValueResponseParser {
     private KeyValueResponseParser() {
     }
 
-    public static Response parse(String keyValuePairResponse) {
+    public static ResponseAttributes parse(String keyValuePairResponse) {
         Map<String, String> keyValuePairs = parseKeyValuePairs(keyValuePairResponse);
 
-        ResponseImpl.Builder builder = ResponseImpl.withKeyValueDefaults();
+        ResponseAttributesImpl.Builder builder = ResponseAttributesImpl.withKeyValueDefaults();
 
         applyBeaconSizeInKb(builder, keyValuePairs);
         applySendIntervalInSec(builder, keyValuePairs);
@@ -75,7 +75,7 @@ public class KeyValueResponseParser {
     /// extract attributes
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static void applyBeaconSizeInKb(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applyBeaconSizeInKb(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_MAX_BEACON_SIZE_IN_KB);
         if (value == null) {
             return;
@@ -85,7 +85,7 @@ public class KeyValueResponseParser {
         builder.withMaxBeaconSizeInBytes(beaconSizeInKb * 1024);
     }
 
-    private static void applySendIntervalInSec(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applySendIntervalInSec(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_SEND_INTERVAL_IN_SEC);
         if (value == null) {
             return;
@@ -95,7 +95,7 @@ public class KeyValueResponseParser {
         builder.withSendIntervalInMilliseconds((int) TimeUnit.SECONDS.toMillis(sendIntervalInSec));
     }
 
-    private static void applyCapture(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applyCapture(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_CAPTURE);
         if (value == null) {
             return;
@@ -105,7 +105,7 @@ public class KeyValueResponseParser {
         builder.withCapture(capture == 1);
     }
 
-    private static void applyReportCrashes(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applyReportCrashes(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_REPORT_CRASHES);
         if (value == null) {
             return;
@@ -115,7 +115,7 @@ public class KeyValueResponseParser {
         builder.withCaptureCrashes(reportCrashes != 0);
     }
 
-    private static void applyReportErrors(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applyReportErrors(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_REPORT_ERRORS);
         if (value == null) {
             return;
@@ -125,7 +125,7 @@ public class KeyValueResponseParser {
         builder.withCaptureErrors(reportErrors != 0);
     }
 
-    private static void applyServerId(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applyServerId(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_SERVER_ID);
         if (value == null) {
             return;
@@ -135,7 +135,7 @@ public class KeyValueResponseParser {
         builder.withServerId(serverId);
     }
 
-    private static void applyMultiplicity(ResponseImpl.Builder builder, Map<String, String> keyValuePairs) {
+    private static void applyMultiplicity(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
         String value = keyValuePairs.get(RESPONSE_KEY_MULTIPLICITY);
         if (value == null) {
             return;

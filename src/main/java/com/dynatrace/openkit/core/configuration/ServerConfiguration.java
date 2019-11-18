@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
@@ -319,7 +319,7 @@ public class ServerConfiguration {
          * @param statusResponse Status response used for initializing the fields.
          */
         public Builder(StatusResponse statusResponse) {
-            Response responseAttributes = statusResponse.getResponseAttributes();
+            ResponseAttributes responseAttributes = statusResponse.getResponseAttributes();
             isCaptureEnabled = responseAttributes.isCapture();
             isCrashReportingEnabled = responseAttributes.isCaptureCrashes();
             isErrorReportingEnabled = responseAttributes.isCaptureErrors();

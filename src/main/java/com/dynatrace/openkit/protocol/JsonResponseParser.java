@@ -48,14 +48,14 @@ public class JsonResponseParser {
     private JsonResponseParser() {
     }
 
-    public static Response parse(String jsonResponse) throws ParserException {
+    public static ResponseAttributes parse(String jsonResponse) throws ParserException {
         JSONParser parser = new JSONParser(jsonResponse);
 
         JSONValue parsedValue = parser.parse();
 
         JSONObjectValue rootObject = (JSONObjectValue) parsedValue;
 
-        ResponseImpl.Builder builder = ResponseImpl.withJsonDefaults();
+        ResponseAttributesImpl.Builder builder = ResponseAttributesImpl.withJsonDefaults();
         applyAgentConfiguration(builder, rootObject);
         applyApplicationConfiguration(builder, rootObject);
         applyDynamicConfiguration(builder, rootObject);
@@ -68,7 +68,7 @@ public class JsonResponseParser {
     /// Agent configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static void applyAgentConfiguration(ResponseImpl.Builder builder, JSONObjectValue rootObject) {
+    private static void applyAgentConfiguration(ResponseAttributesImpl.Builder builder, JSONObjectValue rootObject) {
         JSONValue agentConfigValue = rootObject.get(RESPONSE_KEY_AGENT_CONFIG);
         if (agentConfigValue == null) {
             return;
@@ -83,7 +83,7 @@ public class JsonResponseParser {
         applyVisitStoreVersion(builder, agentConfigObject);
     }
 
-    private static void applyBeaconSizeInKb(ResponseImpl.Builder builder, JSONObjectValue agentConfigObject) {
+    private static void applyBeaconSizeInKb(ResponseAttributesImpl.Builder builder, JSONObjectValue agentConfigObject) {
         JSONValue value = agentConfigObject.get(RESPONSE_KEY_MAX_BEACON_SIZE_IN_KB);
         if (value == null) {
             return;
@@ -94,7 +94,7 @@ public class JsonResponseParser {
         builder.withMaxBeaconSizeInBytes(beaconSizeInKb * 1024);
     }
 
-    private static void applyMaxSessionDurationInMin(ResponseImpl.Builder builder, JSONObjectValue agentConfigObject) {
+    private static void applyMaxSessionDurationInMin(ResponseAttributesImpl.Builder builder, JSONObjectValue agentConfigObject) {
         JSONValue value = agentConfigObject.get(RESPONSE_KEY_MAX_SESSION_DURATION_IN_MIN);
         if (value == null) {
             return;
@@ -105,7 +105,7 @@ public class JsonResponseParser {
         builder.withMaxSessionDurationInMilliseconds((int) TimeUnit.MINUTES.toMillis(sessionDurationInMin));
     }
 
-    private static void applyMaxEventsPerSession(ResponseImpl.Builder builder, JSONObjectValue agentConfigObject) {
+    private static void applyMaxEventsPerSession(ResponseAttributesImpl.Builder builder, JSONObjectValue agentConfigObject) {
         JSONValue value = agentConfigObject.get(RESPONSE_KEY_MAX_EVENTS_PER_SESSION);
         if (value == null) {
             return;
@@ -116,7 +116,7 @@ public class JsonResponseParser {
         builder.withMaxEventsPerSession(eventsPerSession);
     }
 
-    private static void applySessionTimeoutInSec(ResponseImpl.Builder builder, JSONObjectValue agentConfigObject) {
+    private static void applySessionTimeoutInSec(ResponseAttributesImpl.Builder builder, JSONObjectValue agentConfigObject) {
         JSONValue value = agentConfigObject.get(RESPONSE_KEY_SESSION_TIMEOUT_IN_SEC);
         if (value == null) {
             return;
@@ -127,7 +127,7 @@ public class JsonResponseParser {
         builder.withSessionTimeoutInMilliseconds((int) TimeUnit.SECONDS.toMillis(sessionTimeoutInSec));
     }
 
-    private static void applySendIntervalInSec(ResponseImpl.Builder builder, JSONObjectValue agentConfigObject) {
+    private static void applySendIntervalInSec(ResponseAttributesImpl.Builder builder, JSONObjectValue agentConfigObject) {
         JSONValue value = agentConfigObject.get(RESPONSE_KEY_SEND_INTERVAL_IN_SEC);
         if (value == null) {
             return;
@@ -138,7 +138,7 @@ public class JsonResponseParser {
         builder.withSendIntervalInMilliseconds((int) TimeUnit.SECONDS.toMillis(sendIntervalInSec));
     }
 
-    private static void applyVisitStoreVersion(ResponseImpl.Builder builder, JSONObjectValue agentConfigObject) {
+    private static void applyVisitStoreVersion(ResponseAttributesImpl.Builder builder, JSONObjectValue agentConfigObject) {
         JSONValue value = agentConfigObject.get(RESPONSE_KEY_VISIT_STORE_VERSION);
         if (value == null) {
             return;
@@ -153,7 +153,7 @@ public class JsonResponseParser {
     /// Application configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static void applyApplicationConfiguration(ResponseImpl.Builder builder, JSONObjectValue rootObject) {
+    private static void applyApplicationConfiguration(ResponseAttributesImpl.Builder builder, JSONObjectValue rootObject) {
         JSONValue appConfigValue = rootObject.get(RESPONSE_KEY_APP_CONFIG);
         if (appConfigValue == null) {
             return;
@@ -165,7 +165,7 @@ public class JsonResponseParser {
         applyReportErrors(builder, appConfigObject);
     }
 
-    private static void applyCapture(ResponseImpl.Builder builder, JSONObjectValue appConfigObject) {
+    private static void applyCapture(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {
         JSONValue value = appConfigObject.get(RESPONSE_KEY_CAPTURE);
         if (value == null) {
             return;
@@ -176,7 +176,7 @@ public class JsonResponseParser {
         builder.withCapture(capture == 1);
     }
 
-    private static void applyReportCrashes(ResponseImpl.Builder builder, JSONObjectValue appConfigObject) {
+    private static void applyReportCrashes(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {
         JSONValue value = appConfigObject.get(RESPONSE_KEY_REPORT_CRASHES);
         if (value == null) {
             return;
@@ -187,7 +187,7 @@ public class JsonResponseParser {
         builder.withCaptureCrashes(reportCrashes != 0);
     }
 
-    private static void applyReportErrors(ResponseImpl.Builder builder, JSONObjectValue appConfigObject) {
+    private static void applyReportErrors(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {
         JSONValue value = appConfigObject.get(RESPONSE_KEY_REPORT_ERRORS);
         if (value == null) {
             return;
@@ -202,7 +202,7 @@ public class JsonResponseParser {
     /// Dynamic configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static void applyDynamicConfiguration(ResponseImpl.Builder builder, JSONObjectValue rootObject) {
+    private static void applyDynamicConfiguration(ResponseAttributesImpl.Builder builder, JSONObjectValue rootObject) {
         JSONValue dynConfigValue = rootObject.get(RESPONSE_KEY_DYNAMIC_CONFIG);
         if (dynConfigValue == null) {
             return;
@@ -213,7 +213,7 @@ public class JsonResponseParser {
         applyServerId(builder, dynConfigObject);
     }
 
-    private static void applyMultiplicity(ResponseImpl.Builder builder, JSONObjectValue dynConfigObject) {
+    private static void applyMultiplicity(ResponseAttributesImpl.Builder builder, JSONObjectValue dynConfigObject) {
         JSONValue value = dynConfigObject.get(RESPONSE_KEY_MULTIPLICITY);
         if (value == null) {
             return;
@@ -224,7 +224,7 @@ public class JsonResponseParser {
         builder.withMultiplicity(multiplicity);
     }
 
-    private static void applyServerId(ResponseImpl.Builder builder, JSONObjectValue dynConfigObject) {
+    private static void applyServerId(ResponseAttributesImpl.Builder builder, JSONObjectValue dynConfigObject) {
         JSONValue value = dynConfigObject.get(RESPONSE_KEY_SERVER_ID);
         if (value == null) {
             return;
@@ -239,7 +239,7 @@ public class JsonResponseParser {
     /// Root attributes
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static void applyRootAttributes(ResponseImpl.Builder builder, JSONObjectValue rootObject) {
+    private static void applyRootAttributes(ResponseAttributesImpl.Builder builder, JSONObjectValue rootObject) {
         JSONValue value = rootObject.get(RESPONSE_KEY_TIMESTAMP_IN_MILLIS);
         if (value == null) {
             return;

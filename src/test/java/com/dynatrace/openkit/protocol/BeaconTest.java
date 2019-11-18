@@ -44,7 +44,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import static org.hamcrest.Matchers.emptyArray;
 import static org.hamcrest.Matchers.equalTo;
@@ -960,7 +959,7 @@ public class BeaconTest {
         int responseCode = 200;
         StatusResponse successResponse = StatusResponse.createSuccessResponse(
                 mockLogger,
-                ResponseImpl.withJsonDefaults().build(),
+                ResponseAttributesImpl.withJsonDefaults().build(),
                 responseCode,
                 Collections.<String, List<String>>emptyMap()
         );

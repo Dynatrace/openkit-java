@@ -56,7 +56,7 @@ public class ResponseParserTest {
         String input = "type=m&bl=17&id=18&cp=0";
 
         // when
-        Response obtained = ResponseParser.parseResponse(input);
+        ResponseAttributes obtained = ResponseParser.parseResponse(input);
 
         // then
         assertThat(obtained, notNullValue());
@@ -78,11 +78,11 @@ public class ResponseParserTest {
     @Test
     public void parseWithOnlyKeyValuePrefixReturnsDefaultResponse() throws ParserException {
         // given
-        ResponseDefaults defaults = ResponseDefaults.KEY_VALUE_RESPONSE;
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.KEY_VALUE_RESPONSE;
         String input = "type=m";
 
         // when
-        Response obtained = ResponseParser.parseResponse(input);
+        ResponseAttributes obtained = ResponseParser.parseResponse(input);
 
         // then
         assertThat(obtained, notNullValue());
@@ -122,7 +122,7 @@ public class ResponseParserTest {
         inputBuilder.append("}");
 
         // when
-        Response obtained = ResponseParser.parseResponse(inputBuilder.toString());
+        ResponseAttributes obtained = ResponseParser.parseResponse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());

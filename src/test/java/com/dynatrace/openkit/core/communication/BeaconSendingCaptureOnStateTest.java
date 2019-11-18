@@ -20,8 +20,8 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
-import com.dynatrace.openkit.protocol.ResponseImpl;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
+import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
@@ -67,7 +67,7 @@ public class BeaconSendingCaptureOnStateTest {
 
         StatusResponse successResponse = StatusResponse.createSuccessResponse(
                 mock(Logger.class),
-                ResponseImpl.withJsonDefaults().build(),
+                ResponseAttributesImpl.withJsonDefaults().build(),
                 200,
                 Collections.<String, List<String>>emptyMap()
         );
@@ -123,13 +123,13 @@ public class BeaconSendingCaptureOnStateTest {
 
         StatusResponse contextResponse = StatusResponse.createSuccessResponse(
                 mock(Logger.class),
-                ResponseImpl.withUndefinedDefaults().build(),
+                ResponseAttributesImpl.withUndefinedDefaults().build(),
                 200,
                 Collections.<String, List<String>>emptyMap()
         );
         StatusResponse successResponse = StatusResponse.createSuccessResponse(
                 mock(Logger.class),
-                ResponseImpl.withJsonDefaults().withMultiplicity(5).build(),
+                ResponseAttributesImpl.withJsonDefaults().withMultiplicity(5).build(),
                 200,
                 Collections.<String, List<String>>emptyMap()
         );
@@ -166,7 +166,7 @@ public class BeaconSendingCaptureOnStateTest {
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
         int beaconSize = 73;
-        Response responseAttributes = mock(Response.class);
+        ResponseAttributes responseAttributes = mock(ResponseAttributes.class);
         when(responseAttributes.getMaxBeaconSizeInBytes()).thenReturn(beaconSize);
         StatusResponse sessionRequestResponse = mock(StatusResponse.class);
         when(sessionRequestResponse.getResponseAttributes()).thenReturn(responseAttributes);
@@ -226,7 +226,7 @@ public class BeaconSendingCaptureOnStateTest {
 
         StatusResponse successResponse = StatusResponse.createSuccessResponse(
                 mock(Logger.class),
-                ResponseImpl.withJsonDefaults().withMultiplicity(5).build(),
+                ResponseAttributesImpl.withJsonDefaults().withMultiplicity(5).build(),
                 200,
                 Collections.<String, List<String>>emptyMap()
         );

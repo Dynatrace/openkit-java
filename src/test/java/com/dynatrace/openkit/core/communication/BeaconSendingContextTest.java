@@ -23,8 +23,8 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.Response;
-import com.dynatrace.openkit.protocol.ResponseImpl;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
+import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -46,7 +46,6 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -72,7 +71,7 @@ public class BeaconSendingContextTest {
         httpClientConfig = mock(HTTPClientConfiguration.class);
 
         final HTTPClient httpClient = mock(HTTPClient.class);
-        Response responseAttributes = ResponseImpl.withKeyValueDefaults().build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withKeyValueDefaults().build();
         final StatusResponse statusResponse = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,
@@ -591,7 +590,7 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseClearsSessionDataIfResponseIsCaptureOff() {
         // given
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(false).build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().withCapture(false).build();
         StatusResponse response = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,
@@ -617,7 +616,7 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseRemovesFinishedSessionsIfResponseIsCaptureOff() {
         // given
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(false).build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().withCapture(false).build();
         StatusResponse response = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,
@@ -645,7 +644,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseUpdatesSendInterval() {
         // given
         int sendInterval = 999;
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults()
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults()
                 .withSendIntervalInMilliseconds(sendInterval)
                 .build();
         StatusResponse response = StatusResponse.createSuccessResponse(
@@ -673,7 +672,7 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseUpdatesCaptureStateToFalse() {
         // given
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(false).build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().withCapture(false).build();
         StatusResponse response = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,
@@ -700,7 +699,7 @@ public class BeaconSendingContextTest {
     @Test
     public void handleStatusResponseUpdatesCaptureStateToTrue() {
         // given
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withCapture(true).build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().withCapture(true).build();
         StatusResponse response = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,
@@ -732,7 +731,7 @@ public class BeaconSendingContextTest {
         when(httpClientConfig.getSSLTrustManager()).thenReturn(mock(SSLTrustManager.class));
 
         int serverId = 73;
-        Response responseAttributes = ResponseImpl.withUndefinedDefaults().withServerId(serverId).build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().withServerId(serverId).build();
         StatusResponse response = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,
@@ -772,7 +771,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseMergesLastStatusResponse() {
         // given
         int beaconSize = 1234;
-        Response responseAttributes = ResponseImpl.withJsonDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
+        ResponseAttributes responseAttributes = ResponseAttributesImpl.withJsonDefaults().withMaxBeaconSizeInBytes(beaconSize).build();
         StatusResponse response = StatusResponse.createSuccessResponse(
                 logger,
                 responseAttributes,

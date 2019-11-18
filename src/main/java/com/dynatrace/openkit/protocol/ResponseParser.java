@@ -28,7 +28,7 @@ public class ResponseParser {
     private ResponseParser() {
     }
 
-    public static Response parseResponse(String responseString) throws ParserException {
+    public static ResponseAttributes parseResponse(String responseString) throws ParserException {
         if (isKeyValuePairResponse(responseString)) {
             return KeyValueResponseParser.parse(responseString);
         }

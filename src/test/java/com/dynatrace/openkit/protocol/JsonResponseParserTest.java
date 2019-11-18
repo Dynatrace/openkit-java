@@ -53,11 +53,11 @@ public class JsonResponseParserTest {
     @Test
     public void parsingAnEmptyObjectReturnsInstanceWithDefaultValues() throws ParserException {
         // given
-        ResponseDefaults defaults = ResponseDefaults.JSON_RESPONSE;
+        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.JSON_RESPONSE;
         String input = "{}";
 
         // when
-        Response obtained = JsonResponseParser.parse(input);
+        ResponseAttributes obtained = JsonResponseParser.parse(input);
 
         // then
         assertThat(obtained, is(notNullValue()));
@@ -84,7 +84,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -100,7 +100,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -116,7 +116,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -132,7 +132,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -148,7 +148,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -164,7 +164,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -179,7 +179,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -194,7 +194,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -209,7 +209,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -224,7 +224,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -239,7 +239,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -254,7 +254,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -270,7 +270,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -286,7 +286,7 @@ public class JsonResponseParserTest {
         close(2);
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -301,7 +301,7 @@ public class JsonResponseParserTest {
         close();
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -348,7 +348,7 @@ public class JsonResponseParserTest {
         close();
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         assertThat(obtained, notNullValue());
@@ -390,7 +390,7 @@ public class JsonResponseParserTest {
         close();
 
         // when
-        Response obtained = JsonResponseParser.parse(inputBuilder.toString());
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
 
         // then
         for (ResponseAttribute attribute : ResponseAttribute.values()) {
