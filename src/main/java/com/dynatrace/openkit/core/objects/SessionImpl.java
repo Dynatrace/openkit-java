@@ -301,6 +301,13 @@ public class SessionImpl extends OpenKitComposite implements Session {
         numRemainingNewSessionRequests--;
     }
 
+    /**
+     * Returns the beacon of this session.
+     */
+    Beacon getBeacon() {
+        return beacon;
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [sn=" + beacon.getSessionNumber() + "] ";

@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 /**
@@ -68,6 +69,8 @@ public class ServerConfiguration {
     private final int maxSessionDurationInMilliseconds;
     /** the maximum number of events per session */
     private final int maxEventsPerSession;
+    /** indicator whether session splitting by events is enabled or not */
+    private final boolean isSessionSplitByEventsEnabled;
     /** the session idle timeout in milliseconds */
     private final int sessionTimeoutInMilliseconds;
     /** version of the visit store that should be used */
@@ -88,6 +91,7 @@ public class ServerConfiguration {
         multiplicity = builder.multiplicity;
         maxSessionDurationInMilliseconds = builder.maxSessionDurationInMilliseconds;
         maxEventsPerSession = builder.maxEventsPerSession;
+        isSessionSplitByEventsEnabled = builder.isSessionSplitByEventsEnabled;
         sessionTimeoutInMilliseconds = builder.sessionTimeoutInMilliseconds;
         visitStoreVersion = builder.visitStoreVersion;
     }
@@ -192,6 +196,14 @@ public class ServerConfiguration {
     }
 
     /**
+     * Returns {@code true} if session splitting when exceeding the maximum number of events is enabled, {@code false}
+     * otherwise.
+     */
+    public boolean isSessionSplitByEventsEnabled() {
+        return isSessionSplitByEventsEnabled && maxEventsPerSession > 0;
+    }
+
+    /**
      * Returns the idle timeout of a after which a session is to be split.
      *
      * @return the idle timeout of a session.
@@ -291,6 +303,7 @@ public class ServerConfiguration {
         private int multiplicity = DEFAULT_MULTIPLICITY;
         private int maxSessionDurationInMilliseconds = DEFAULT_MAX_SESSION_DURATION;
         private int maxEventsPerSession = DEFAULT_MAX_EVENTS_PER_SESSION;
+        private boolean isSessionSplitByEventsEnabled;
         private int sessionTimeoutInMilliseconds = DEFAULT_SESSION_TIMEOUT;
         private int visitStoreVersion = DEFAULT_VISIT_STORE_VERSION;
 
@@ -316,6 +329,7 @@ public class ServerConfiguration {
             multiplicity = responseAttributes.getMultiplicity();
             maxSessionDurationInMilliseconds = responseAttributes.getMaxSessionDurationInMilliseconds();
             maxEventsPerSession = responseAttributes.getMaxEventsPerSession();
+            isSessionSplitByEventsEnabled = responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION);
             sessionTimeoutInMilliseconds = responseAttributes.getSessionTimeoutInMilliseconds();
             visitStoreVersion = responseAttributes.getVisitStoreVersion();
         }
@@ -333,6 +347,7 @@ public class ServerConfiguration {
             multiplicity = serverConfiguration.getMultiplicity();
             maxSessionDurationInMilliseconds = serverConfiguration.getMaxSessionDurationInMilliseconds();
             maxEventsPerSession = serverConfiguration.getMaxEventsPerSession();
+            isSessionSplitByEventsEnabled = serverConfiguration.isSessionSplitByEventsEnabled();
             sessionTimeoutInMilliseconds = serverConfiguration.getSessionTimeoutInMilliseconds();
             visitStoreVersion = serverConfiguration.getVisitStoreVersion();
         }

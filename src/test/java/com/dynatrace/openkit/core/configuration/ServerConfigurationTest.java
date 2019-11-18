@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.protocol.Response;
+import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +35,8 @@ public class ServerConfigurationTest {
     private StatusResponse statusResponse;
     private Response responseAttributes;
 
+    private ServerConfiguration mockServerConfig;
+
     @Before
     public void setUp() {
         responseAttributes = mock(Response.class);
@@ -44,11 +47,32 @@ public class ServerConfigurationTest {
         when(responseAttributes.getServerId()).thenReturn(ServerConfiguration.DEFAULT_SERVER_ID);
         when(responseAttributes.getMaxBeaconSizeInBytes()).thenReturn(ServerConfiguration.DEFAULT_BEACON_SIZE);
         when(responseAttributes.getMultiplicity()).thenReturn(ServerConfiguration.DEFAULT_MULTIPLICITY);
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_MAX_SESSION_DURATION);
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(ServerConfiguration.DEFAULT_MAX_EVENTS_PER_SESSION);
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SESSION_TIMEOUT);
+        when(responseAttributes.getVisitStoreVersion()).thenReturn(ServerConfiguration.DEFAULT_VISIT_STORE_VERSION);
 
         statusResponse = mock(StatusResponse.class);
         when(statusResponse.getResponseAttributes()).thenReturn(responseAttributes);
+
+        mockServerConfig = mock(ServerConfiguration.class);
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(ServerConfiguration.DEFAULT_CAPTURE_ENABLED);
+        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(ServerConfiguration.DEFAULT_CRASH_REPORTING_ENABLED);
+        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(ServerConfiguration.DEFAULT_ERROR_REPORTING_ENABLED);
+        when(mockServerConfig.getSendIntervalInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SEND_INTERVAL);
+        when(mockServerConfig.getServerID()).thenReturn(ServerConfiguration.DEFAULT_SERVER_ID);
+        when(mockServerConfig.getBeaconSizeInBytes()).thenReturn(ServerConfiguration.DEFAULT_BEACON_SIZE);
+        when(mockServerConfig.getMultiplicity()).thenReturn(ServerConfiguration.DEFAULT_MULTIPLICITY);
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_MAX_SESSION_DURATION);
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(ServerConfiguration.DEFAULT_MAX_EVENTS_PER_SESSION);
+        when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(false);
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SESSION_TIMEOUT);
+        when(mockServerConfig.getVisitStoreVersion()).thenReturn(ServerConfiguration.DEFAULT_VISIT_STORE_VERSION);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Default tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Test
     public void inDefaultServerConfigurationCapturingIsEnabled() {
         // then
@@ -104,6 +128,12 @@ public class ServerConfigurationTest {
     }
 
     @Test
+    public void inDefaultServerConfigurationIsSessionSplitByEventsEnabledIsFalse() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.isSessionSplitByEventsEnabled(), is(false));
+    }
+
+    @Test
     public void inDefaultServerConfigurationSessionTimeoutIsMinusOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getSessionTimeoutInMilliseconds(), is(-1));
@@ -120,6 +150,10 @@ public class ServerConfigurationTest {
         // when, then
         assertThat(ServerConfiguration.from(null), is(nullValue()));
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// creating server config from status response
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void creatingAServerConfigurationFromStatusResponseCopiesCaptureSettings() {
@@ -227,6 +261,62 @@ public class ServerConfigurationTest {
         // then
         assertThat(target.getMaxEventsPerSession(), is(eventsPerSession));
         verify(responseAttributes, times(1)).getMaxEventsPerSession();
+    }
+
+    @Test
+    public void creatingAServerConfigurationFromStatusResponseHasSplitBySessionEnabledIfMaxEventsGreaterZero() {
+        // given
+        int eventsPerSession = 1;
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(true));
+        verify(responseAttributes, times(1)).getMaxEventsPerSession();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDisabledIfMaxEventsZero() {
+        // given
+        int eventsPerSession = 0;
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+        verify(responseAttributes, times(1)).getMaxEventsPerSession();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDisabledIfMaxEventsEventsSmallerZero() {
+        // given
+        int eventsPerSession = -1;
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+        verify(responseAttributes, times(1)).getMaxEventsPerSession();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDisabledIfMaxEventsIsNotSet() {
+        // given
+        int eventsPerSession = 1;
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
+        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+        verify(responseAttributes, times(1)).getMaxEventsPerSession();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION);
     }
 
     @Test
@@ -390,6 +480,325 @@ public class ServerConfigurationTest {
         // then
         assertThat(obtained, is(false));
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// creating builder from server config
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void builderFromServerConfigCopiesCaptureSettings() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(false);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isCaptureEnabled(), is(false));
+        verify(mockServerConfig, times(1)).isCaptureEnabled();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesCrashReportingSettings() {
+        // given
+        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(false);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isCrashReportingEnabled(), is(false));
+        verify(mockServerConfig, times(1)).isCrashReportingEnabled();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesErrorReportingSettings() {
+        // given
+        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(false);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isErrorReportingEnabled(), is(false));
+        verify(mockServerConfig, times(1)).isErrorReportingEnabled();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesSendingIntervalSettings() {
+        // given
+        when(mockServerConfig.getSendIntervalInMilliseconds()).thenReturn(1234);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getSendIntervalInMilliseconds(), is(1234));
+        verify(mockServerConfig, times(1)).getSendIntervalInMilliseconds();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesServerIDSettings() {
+        // given
+        when(mockServerConfig.getServerID()).thenReturn(42);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getServerID(), is(42));
+        verify(mockServerConfig, times(1)).getServerID();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesBeaconSizeSettings() {
+        // given
+        when(mockServerConfig.getBeaconSizeInBytes()).thenReturn(100 * 1024);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getBeaconSizeInBytes(), is(100 * 1024));
+        verify(mockServerConfig, times(1)).getBeaconSizeInBytes();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesMultiplicitySettings() {
+        // given
+        when(mockServerConfig.getMultiplicity()).thenReturn(7);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getMultiplicity(), is(7));
+        verify(mockServerConfig, times(1)).getMultiplicity();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesSessionDuration() {
+        // given
+        int sessionDuration = 73;
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getMaxSessionDurationInMilliseconds(), is(sessionDuration));
+        verify(mockServerConfig, times(1)).getMaxSessionDurationInMilliseconds();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesMaxEventsPerSession() {
+        // given
+        int eventsPerSession = 37;
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getMaxEventsPerSession(), is(eventsPerSession));
+        verify(mockServerConfig, times(1)).getMaxEventsPerSession();
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionEnabledIfMaxEventsGreaterZero() {
+        // given
+        int eventsPerSession = 1;
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(true));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionDisabledIfMaxEventsZero() {
+        // given
+        int eventsPerSession = 0;
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionDisabledIfMaxEventsEventsSmallerZero() {
+        // given
+        int eventsPerSession = -1;
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionDisabledIfMaxEventsIsNotSet() {
+        // given
+        int eventsPerSession = 1;
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(false);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesSessionTimeout() {
+        // given
+        int sessionTimeout = 42;
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(sessionTimeout);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
+        verify(mockServerConfig, times(1)).getSessionTimeoutInMilliseconds();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesVisitStoreVersion() {
+        // given
+        int visitStoreVersion = 73;
+        when(mockServerConfig.getVisitStoreVersion()).thenReturn(visitStoreVersion);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getVisitStoreVersion(), is(visitStoreVersion));
+        verify(mockServerConfig, times(1)).getVisitStoreVersion();
+    }
+
+    @Test
+    public void builderFromServerConfigSendingDataToTheServerIsAllowedIfCapturingIsEnabledAndMultiplicityIsGreaterThanZero() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingDataAllowed();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingDataToTheServerIsNotAllowedIfCapturingIsDisabled() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingDataAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingDataToTheServerIsNotAllowedIfCapturingIsEnabledButMultiplicityIsZero() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfig.getMultiplicity()).thenReturn(0);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingDataAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingCrashesToTheServerIsAllowedIfDataSendingIsAllowedAndCaptureCrashesIsEnabled() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(true);
+
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingCrashesAllowed();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingCrashesToTheServerIsNotAllowedIfDataSendingIsNotAllowed() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(true);
+
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingCrashesAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingCrashesToTheServerIsNotAllowedIfDataSendingIsAllowedButCaptureCrashesIsDisabled() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(false);
+
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingCrashesAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingErrorToTheServerIsAllowedIfDataSendingIsAllowedAndCaptureErrorIsEnabled() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(true);
+
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingErrorsAllowed();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingErrorToTheServerIsNotAllowedIfDataSendingIsNotAllowed() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(true);
+
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingErrorsAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigSendingErrorsToTheServerIsNotAllowedIfDataSendingIsAllowedButCaptureErrorsDisabled() {
+        // given
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfig.getMultiplicity()).thenReturn(1);
+        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(false);
+
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // when
+        boolean obtained = target.isSendingErrorsAllowed();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// merge tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void mergeTakesOverEnabledCapture() {
@@ -556,6 +965,60 @@ public class ServerConfigurationTest {
     }
 
     @Test
+    public void mergeTakesOverIsSessionSplitByEventsEnabledWhenMaxEventsIsGreaterZeroAndAttributeIsSet() {
+        // given
+        int eventsPerSession = 73;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        ServerConfiguration target = new ServerConfiguration.Builder().build();
+        ServerConfiguration other = ServerConfiguration.from(statusResponse);
+
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitByEventsEnabled(), is(true));
+    }
+
+    @Test
+    public void mergeTakesOverIsSessionSplitByEventsEnabledWhenMaxEventsIsSmallerZeroButAttributeIsSet() {
+        // given
+        int eventsPerSession = 0;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        ServerConfiguration target = new ServerConfiguration.Builder().build();
+        ServerConfiguration other = ServerConfiguration.from(statusResponse);
+
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitByEventsEnabled(), is(false));
+    }
+
+    @Test
+    public void mergeTakesOverIsSessionSplitByEventsEnabledWhenMaxEventsIsGreaterZeroButAttributeIsNotSet() {
+        // given
+        int eventsPerSession = 73;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
+        ServerConfiguration target = new ServerConfiguration.Builder().build();
+        ServerConfiguration other = ServerConfiguration.from(statusResponse);
+
+        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitByEventsEnabled(), is(false));
+    }
+
+    @Test
     public void mergeTakesOverSessionTimeout() {
         // given
         int sessionTimeout = 73;
@@ -586,6 +1049,10 @@ public class ServerConfigurationTest {
         // then
         assertThat(obtained.getVisitStoreVersion(), is(visitStoreVersion));
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// empty builder tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void buildPropagatesCaptureEnabledToInstance() {

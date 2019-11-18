@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Actual implementation of the {@link OpenKit} interface.
  */
-public class OpenKitImpl extends OpenKitComposite implements OpenKit {
+public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCreatorInput {
 
     /** {@link Logger} for tracing log message */
     private final Logger logger;
@@ -262,5 +262,49 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit {
         synchronized (lockObject) {
             removeChildFromList(childObject);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Session creator input
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
+    @Override
+    public OpenKitConfiguration getOpenKitConfiguration() {
+        return openKitConfiguration;
+    }
+
+    @Override
+    public PrivacyConfiguration getPrivacyConfiguration() {
+        return privacyConfiguration;
+    }
+
+    @Override
+    public BeaconCache getBeaconCache() {
+        return beaconCache;
+    }
+
+    @Override
+    public SessionIDProvider getSessionIdProvider() {
+        return sessionIDProvider;
+    }
+
+    @Override
+    public ThreadIDProvider getThreadIdProvider() {
+        return threadIDProvider;
+    }
+
+    @Override
+    public TimingProvider getTimingProvider() {
+        return timingProvider;
+    }
+
+    @Override
+    public int getCurrentServerId() {
+        return beaconSender.getCurrentServerId();
     }
 }

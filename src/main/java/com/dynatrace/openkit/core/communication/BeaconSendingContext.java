@@ -65,7 +65,7 @@ public class BeaconSendingContext {
      * Represents the last status response received from the server.
      *
      * <p>
-     * This filed will be initially filled with the first response from the server when OpenKit initializes.
+     * This field will be initially filled with the first response from the server when OpenKit initializes.
      * Subsequent server responses (e.g. from session requests) will update the last server response by merging
      * received fields.
      * </p>

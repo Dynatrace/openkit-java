@@ -24,6 +24,7 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
 import com.dynatrace.openkit.core.objects.RootActionImpl;
@@ -31,6 +32,7 @@ import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.objects.WebRequestTracerURLConnection;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -1399,7 +1401,7 @@ public class BeaconTest {
     public void deviceIDIsRandomizedIfDeviceIdSendingDisallowed() {
         // given
         when(mockPrivacyConfiguration.isDeviceIDSendingAllowed()).thenReturn(false);
-        Random mockRandom = mock(Random.class);
+        RandomNumberGenerator mockRandom = mock(RandomNumberGenerator.class);
 
         // when
         createBeacon().with(mockRandom).build();
@@ -1407,7 +1409,7 @@ public class BeaconTest {
         // then verify that the device id is not taken from the configuration
         // this means it must have been generated randomly
         verify(mockOpenKitConfiguration, times(0)).getDeviceID();
-        verify(mockRandom, times(1)).nextLong();
+        verify(mockRandom, times(1)).nextPositiveLong();
     }
 
     @Test
@@ -1416,7 +1418,7 @@ public class BeaconTest {
         //given
         when(mockPrivacyConfiguration.isDeviceIDSendingAllowed()).thenReturn(true);
         when(mockOpenKitConfiguration.getDeviceID()).thenReturn(testDeviceId);
-        Random mockRandom = mock(Random.class);
+        RandomNumberGenerator mockRandom = mock(RandomNumberGenerator.class);
 
         //when
         Beacon target = createBeacon().with(mockRandom).build();
@@ -1433,15 +1435,15 @@ public class BeaconTest {
         //given
         when(mockPrivacyConfiguration.isDeviceIDSendingAllowed()).thenReturn(false);
 
-        Random mockRandom = mock(Random.class);
-        when(mockRandom.nextLong()).thenReturn(-123456789L);
+        RandomNumberGenerator mockRandom = mock(RandomNumberGenerator.class);
+        when(mockRandom.nextPositiveLong()).thenReturn(-123456789L);
 
         //when
         Beacon target = createBeacon().with(mockRandom).build();
         long deviceID = target.getDeviceID();
 
         //then verify that the id is positive regardless of the data collection level
-        verify(mockRandom, times(1)).nextLong();
+        verify(mockRandom, times(1)).nextPositiveLong();
         assertThat(deviceID, is(greaterThanOrEqualTo(0L)));
         assertThat(deviceID, is(equalTo(-123456789L & Long.MAX_VALUE)));
     }
@@ -1888,6 +1890,19 @@ public class BeaconTest {
         verifyNoMoreInteractions(mockBeaconConfiguration);
     }
 
+    @Test
+    public void setServerConfigUpdateCallbackDelegatesToBeaconConfig() {
+        // given
+        ServerConfigurationUpdateCallback callback = mock(ServerConfigurationUpdateCallback.class);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.setServerConfigurationUpdateCallback(callback);
+
+        // then
+        verify(mockBeaconConfiguration, times(1)).setServerConfigurationUpdateCallback(callback);
+    }
+
     private BeaconBuilder createBeacon() {
         BeaconBuilder builder = new BeaconBuilder();
         builder.logger = mockLogger;
@@ -1909,7 +1924,7 @@ public class BeaconTest {
         private SessionIDProvider sessionIdProvider;
         private ThreadIDProvider threadIdProvider;
         private TimingProvider timingProvider;
-        private Random random;
+        private RandomNumberGenerator random;
 
         private BeaconBuilder withIpAddress(String ipAddress) {
             this.ipAddress = ipAddress;
@@ -1926,7 +1941,7 @@ public class BeaconTest {
             return this;
         }
 
-        private BeaconBuilder with(Random random) {
+        private BeaconBuilder with(RandomNumberGenerator random) {
             this.random = random;
             return this;
         }

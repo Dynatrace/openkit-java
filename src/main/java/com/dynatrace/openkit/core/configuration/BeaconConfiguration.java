@@ -29,6 +29,8 @@ public class BeaconConfiguration {
     private final HTTPClientConfiguration httpClientConfiguration;
     /** Server configuration, which can be updated by the server. */
     private ServerConfiguration serverConfiguration;
+    /** callback when the server configuration is updated. */
+    private ServerConfigurationUpdateCallback serverConfigUpdateCallback;
     /** Object for synchronization */
     private final Object lockObject = new Object();
 
@@ -145,6 +147,10 @@ public class BeaconConfiguration {
             } else {
                 serverConfiguration = serverConfiguration.merge(newServerConfiguration);
             }
+
+            if (serverConfigUpdateCallback != null) {
+                serverConfigUpdateCallback.onServerConfigurationUpdate(serverConfiguration);
+            }
         }
     }
 
@@ -156,6 +162,16 @@ public class BeaconConfiguration {
     public boolean isServerConfigurationSet() {
         synchronized (lockObject) {
             return serverConfiguration != null;
+        }
+    }
+
+    /**
+     * Sets the callback which will be invoked when the server configuration will be updated.
+     * @param updateCallback the callback to be called on server configuration updates.
+     */
+    public void setServerConfigurationUpdateCallback(ServerConfigurationUpdateCallback updateCallback) {
+        synchronized (lockObject) {
+            serverConfigUpdateCallback = updateCallback;
         }
     }
 

@@ -241,6 +241,37 @@ public class BeaconConfigurationTest {
     }
 
     @Test
+    public void updateServerConfigurationDoesInvokeCallbackIfCallbackIsSet() {
+        // given
+        ServerConfiguration serverConfig = mock(ServerConfiguration.class);
+        ServerConfigurationUpdateCallback callback = mock(ServerConfigurationUpdateCallback.class);
+        BeaconConfiguration target = createBeaconConfig();
+        target.setServerConfigurationUpdateCallback(callback);
+
+        // when
+        target.updateServerConfiguration(serverConfig);
+
+        // then
+        verify(callback, times(1)).onServerConfigurationUpdate(serverConfig);
+    }
+
+    @Test
+    public void updateServerConfigurationDoesNotInvokeCallbackIfNoCallbackIsSet() {
+         // given
+        ServerConfiguration serverConfig = mock(ServerConfiguration.class);
+        ServerConfigurationUpdateCallback callback = mock(ServerConfigurationUpdateCallback.class);
+        BeaconConfiguration target = createBeaconConfig();
+        target.setServerConfigurationUpdateCallback(callback);
+        target.setServerConfigurationUpdateCallback(null);
+
+        // when
+        target.updateServerConfiguration(serverConfig);
+
+        // then
+        verifyZeroInteractions(callback);
+    }
+
+    @Test
     public void enableCaptureSetsIsConfigurationSet() {
         // given
         BeaconConfiguration target = createBeaconConfig();

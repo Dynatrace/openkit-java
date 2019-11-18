@@ -22,18 +22,20 @@ import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.core.util.PercentEncoder;
+import com.dynatrace.openkit.providers.DefaultRandomNumberGenerator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -146,7 +148,16 @@ public class Beacon {
                   SessionIDProvider sessionIDProvider,
                   ThreadIDProvider threadIDProvider,
                   TimingProvider timingProvider) {
-        this(logger, beaconCache, configuration, clientIPAddress, sessionIDProvider, threadIDProvider, timingProvider, new Random());
+        this(
+            logger,
+            beaconCache,
+            configuration,
+            clientIPAddress,
+            sessionIDProvider,
+            threadIDProvider,
+            timingProvider,
+            new DefaultRandomNumberGenerator()
+        );
     }
 
     /**
@@ -161,14 +172,14 @@ public class Beacon {
      * @param timingProvider Provider for time related methods.
      * @param random Random that can be mocked for tests
      */
-    Beacon(Logger logger,
+    public Beacon(Logger logger,
            BeaconCache beaconCache,
            BeaconConfiguration configuration,
            String clientIPAddress,
            SessionIDProvider sessionIDProvider,
            ThreadIDProvider threadIDProvider,
            TimingProvider timingProvider,
-           Random random) {
+           RandomNumberGenerator random) {
 
         this.logger = logger;
         this.beaconCache = beaconCache;
@@ -204,7 +215,7 @@ public class Beacon {
      * @param configuration Configuration.
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
-    private static long createDeviceID(Random random, BeaconConfiguration configuration) {
+    private static long createDeviceID(RandomNumberGenerator random, BeaconConfiguration configuration) {
 
         if (configuration.getPrivacyConfiguration().isDeviceIDSendingAllowed()) {
             // configuration is valid and user allows data tracking
@@ -221,8 +232,8 @@ public class Beacon {
      * @param random Pseudo random number generator.
      * @return Randomly generated long, which is greater than or equal to {@code 0}.
      */
-    private static long nextRandomPositiveLong(Random random) {
-        return random.nextLong() & 0x7fffffffffffffffL;
+    private static long nextRandomPositiveLong(RandomNumberGenerator random) {
+        return random.nextPositiveLong() & 0x7fffffffffffffffL;
     }
 
     /**
@@ -1048,6 +1059,14 @@ public class Beacon {
      */
     public boolean isServerConfigurationSet() {
         return configuration.isServerConfigurationSet();
+    }
+
+    /**
+     * Sets the callback when a server configuration is updated.
+     * @param callback the callback to be notified when the server configuration is updated.
+     */
+    public void setServerConfigurationUpdateCallback(ServerConfigurationUpdateCallback callback) {
+        configuration.setServerConfigurationUpdateCallback(callback);
     }
 
     /**
