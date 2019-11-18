@@ -38,15 +38,15 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     // Parent object of this session proxy
     private final OpenKitComposite parent;
     // creator for split sessions
-    private SessionCreator sessionCreator;
+    private final SessionCreator sessionCreator;
     // the current session instance
     private SessionImpl currentSession;
     // holds the number of received calls to any of the top level events (identify user, enter action, ...)
     private int topLevelEventCount = 0;
-    // the server configuration of the first session (will be initialized
+    // the server configuration of the first session (will be initialized when first session is updated with server config)
     private ServerConfiguration serverConfiguration;
     // indicates if this session proxy was already finished
-    private volatile boolean isFinished;
+    private boolean isFinished;
 
     SessionProxyImpl(
             Logger logger,

@@ -1431,24 +1431,6 @@ public class BeaconTest {
     }
 
     @Test
-    public void randomDeviceIDCannotBeNegativeIfDeviceIdSendingIsDisallowed() {
-        //given
-        when(mockPrivacyConfiguration.isDeviceIDSendingAllowed()).thenReturn(false);
-
-        RandomNumberGenerator mockRandom = mock(RandomNumberGenerator.class);
-        when(mockRandom.nextPositiveLong()).thenReturn(-123456789L);
-
-        //when
-        Beacon target = createBeacon().with(mockRandom).build();
-        long deviceID = target.getDeviceID();
-
-        //then verify that the id is positive regardless of the data collection level
-        verify(mockRandom, times(1)).nextPositiveLong();
-        assertThat(deviceID, is(greaterThanOrEqualTo(0L)));
-        assertThat(deviceID, is(equalTo(-123456789L & Long.MAX_VALUE)));
-    }
-
-    @Test
     public void sessionIDIsAlwaysValueOneIfSessionNumberReportingDisallowed() {
         //given
         Beacon target = createBeacon().build();

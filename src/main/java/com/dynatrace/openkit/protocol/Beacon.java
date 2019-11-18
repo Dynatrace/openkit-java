@@ -223,17 +223,7 @@ public class Beacon {
         }
 
         // no user tracking allowed
-        return nextRandomPositiveLong(random);
-    }
-
-    /**
-     * Get a random long, which is in positive range (including {@code 0}).
-     *
-     * @param random Pseudo random number generator.
-     * @return Randomly generated long, which is greater than or equal to {@code 0}.
-     */
-    private static long nextRandomPositiveLong(RandomNumberGenerator random) {
-        return random.nextPositiveLong() & 0x7fffffffffffffffL;
+        return random.nextPositiveLong();
     }
 
     /**
