@@ -66,6 +66,13 @@ public abstract class OpenKitComposite implements OpenKitObject {
     }
 
     /**
+     * Returns the current number of children hold by this composite.
+     */
+    int getChildCount() {
+        return children.size();
+    }
+
+    /**
      * Abstract method to notify the composite about closing/ending a child object.
      *
      * <p>

@@ -30,8 +30,10 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -226,6 +228,18 @@ public class StatusResponseTest {
 
         // then
         assertThat(target.getResponseAttributes(), is(attributes));
+    }
+
+    @Test
+    public void mergeWithNullReturnsNull() {
+        // given
+        StatusResponse target = StatusResponse.createErrorResponse(mockLogger, 999);
+
+        // when
+        StatusResponse obtained = target.merge(null);
+
+        // then
+        assertThat(obtained, nullValue());
     }
 
     @Test

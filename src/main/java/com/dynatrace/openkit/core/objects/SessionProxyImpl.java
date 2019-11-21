@@ -19,6 +19,8 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
+import com.dynatrace.openkit.core.BeaconSender;
+import com.dynatrace.openkit.core.SessionWatchdog;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 
@@ -39,10 +41,16 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     private final OpenKitComposite parent;
     // creator for split sessions
     private final SessionCreator sessionCreator;
+    // sender of beacon data
+    private final BeaconSender beaconSender;
+    // watchdog to split sessions after idle/max timeout or to close split off sessions which were not closable on split
+    private final SessionWatchdog sessionWatchdog;
     // the current session instance
     private SessionImpl currentSession;
     // holds the number of received calls to any of the top level events (identify user, enter action, ...)
     private int topLevelEventCount = 0;
+    // specifies the timestamp when the last top level event happened
+    private long lastInteractionTime;
     // the server configuration of the first session (will be initialized when first session is updated with server config)
     private ServerConfiguration serverConfiguration;
     // indicates if this session proxy was already finished
@@ -51,13 +59,17 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     SessionProxyImpl(
             Logger logger,
             OpenKitComposite parent,
-            SessionCreator sessionCreator
+            SessionCreator sessionCreator,
+            BeaconSender beaconSender,
+            SessionWatchdog sessionWatchdog
     ) {
         this.logger = logger;
         this.parent = parent;
         this.sessionCreator = sessionCreator;
+        this.beaconSender = beaconSender;
+        this.sessionWatchdog = sessionWatchdog;
 
-        this.currentSession = createSession();
+        this.currentSession = createSession(null);
     }
 
     @Override
@@ -186,6 +198,15 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         parent.onChildClosed(this);
     }
 
+    /**
+     * Indicates whether this session proxy was finished or is still open.
+     */
+    public boolean isFinished() {
+        synchronized (lockObject) {
+            return isFinished;
+        }
+    }
+
     @Override
     public void close() {
         end();
@@ -195,6 +216,9 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     void onChildClosed(OpenKitObject childObject) {
         synchronized (lockObject) {
             removeChildFromList(childObject);
+            if (childObject instanceof SessionImpl) {
+                sessionWatchdog.dequeueFromClosing((SessionImpl)childObject);
+            }
         }
     }
 
@@ -204,11 +228,21 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
     }
 
+    long getLastInteractionTime() {
+        synchronized (lockObject) {
+            return lastInteractionTime;
+        }
+    }
+
     private SessionImpl getOrSplitCurrentSession() {
         if (isSessionSplitRequired()) {
-            currentSession = createSession();
-            currentSession.updateServerConfiguration(serverConfiguration);
+            SessionImpl newSession = createSession(serverConfiguration);
             topLevelEventCount = 0;
+
+            // try to close old session or wait half the max session duration time and then close it forcefully.
+            int closeGracePeriodInMillis =  serverConfiguration.getMaxSessionDurationInMilliseconds() / 2;
+            sessionWatchdog.closeOrEnqueueForClosing(currentSession, closeGracePeriodInMillis);
+            currentSession = newSession;
         }
         return currentSession;
     }
@@ -221,16 +255,23 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return serverConfiguration.getMaxEventsPerSession() <= topLevelEventCount;
     }
 
-    private SessionImpl createSession() {
+    private SessionImpl createSession(ServerConfiguration sessionServerConfig) {
         SessionImpl session = sessionCreator.createSession(this);
         session.getBeacon().setServerConfigurationUpdateCallback(this);
         storeChildInList(session);
+
+        if (sessionServerConfig != null) {
+            session.updateServerConfiguration(sessionServerConfig);
+        }
+
+        this.beaconSender.addSession(session);
 
         return session;
     }
 
     private void recordTopLevelEventInvocation() {
         ++topLevelEventCount;
+        lastInteractionTime = currentSession.getBeacon().getCurrentTimestamp();
     }
 
     @Override

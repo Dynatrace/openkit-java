@@ -428,6 +428,50 @@ public class SessionImplTest {
     }
 
     @Test
+    public void tryEndEndsSessionIfNoMoreChildObjects() {
+        // given
+        SessionImpl target = createSession().build();
+        RootAction action = target.enterAction("action");
+        WebRequestTracer tracer = target.traceWebRequest("https://localhost");
+
+        // when
+        boolean obtained = target.tryEnd();
+
+        // then
+        assertThat(obtained, is(false));
+        verify(mockBeacon, times(0)).endSession();
+
+        // and when
+        action.leaveAction();
+        obtained = target.tryEnd();
+
+        // then
+        assertThat(obtained, is(false));
+        verify(mockBeacon, times(0)).endSession();
+
+        // and when
+        tracer.stop(200);
+        obtained = target.tryEnd();
+
+        // then
+        assertThat(obtained, is(true));
+        verify(mockBeacon, times(1)).endSession();
+    }
+
+    @Test
+    public void tryEndReturnsTrueIfSessionAlreadyEnded() {
+        // given
+        SessionImpl target = createSession().build();
+        target.end();
+
+        // when
+        boolean obtained = target.tryEnd();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
     public void sendBeaconForwardsCallToBeacon() {
         // given
         SessionImpl target = createSession().build();
@@ -948,6 +992,28 @@ public class SessionImplTest {
         // then
         verify(mockBeacon, times(1)).disableCapture();
         verifyNoMoreInteractions(mockBeacon);
+    }
+
+    @Test
+    public void getSplitByEventsGracePeriodEndTimeInMillisReturnsMinusOneByDefault() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // then
+        assertThat(target.getSplitByEventsGracePeriodEndTimeInMillis(), is(-1L));
+    }
+
+    @Test
+    public void getSplitByEventsGracePeriodEndTimeInMillisReturnsPreviouslySetValue() {
+        // given
+        long endTime = 1234;
+        SessionImpl target = createSession().build();
+
+        // when
+        target.setSplitByEventsGracePeriodEndTimeInMillis(endTime);
+
+        // then
+        assertThat(target.getSplitByEventsGracePeriodEndTimeInMillis(), is(endTime));
     }
 
     private SessionBuilder createSession() {

@@ -28,6 +28,7 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Actual implementation of the {@link Session} interface.
@@ -53,6 +54,8 @@ public class SessionImpl extends OpenKitComposite implements Session {
 
     /** the number of tries for new session requests */
     private int numRemainingNewSessionRequests = MAX_NEW_SESSION_REQUESTS;
+    /** the time when the session is to be ended (including a grace period from when the session was split by events) */
+    private final AtomicLong splitByEventsGracePeriodEndTimeInMillis = new AtomicLong(-1);
 
     SessionImpl(Logger logger, OpenKitComposite parent, Beacon beacon) {
         this.state = new SessionStateImpl(this);
@@ -195,6 +198,48 @@ public class SessionImpl extends OpenKitComposite implements Session {
         // last but not least update parent relation
         parent.onChildClosed(this);
         parent = null;
+    }
+
+    /**
+     * Tries to end the current session by checking if there are no more child objects (actions / web request tracers)
+     * open. In case no more child objects are open the session is ended otherwise it is kept open.
+     *
+     * @return {@code true} if the session was successfully ended (or was already ended before). {@code false} in case
+     *  there are / were still open child objects (actions / web request tracers).
+     */
+    public boolean tryEnd() {
+        synchronized (state) {
+            if (state.isFinishingOrFinished()) {
+                return true;
+            }
+
+            if (getChildCount() == 0) {
+                end();
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * Sets the end time when the session is to be actually ended after a session split by event count. It might
+     * occur that a session is not yet ready to be finished (e.g. open actions, tracers) when the session split happens.
+     * In this case the session is kept open and closed at a later time. The given end time is the point in time at
+     * which the session will be closed forcefully by the {@link com.dynatrace.openkit.core.SessionWatchdog} thread.
+     *
+     * @param endTime the time when the session is to be closed for good.
+     */
+    public void setSplitByEventsGracePeriodEndTimeInMillis(long endTime) {
+        splitByEventsGracePeriodEndTimeInMillis.compareAndSet(-1, endTime);
+    }
+
+    /**
+     * Returns the time when the session is to be ended (after it was not possible to end the session after splitting
+     * events e.g. due to actions still being open). The returned time already includes a grace period.
+     */
+    public long getSplitByEventsGracePeriodEndTimeInMillis() {
+        return splitByEventsGracePeriodEndTimeInMillis.get();
     }
 
     /**
