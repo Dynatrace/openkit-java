@@ -24,6 +24,7 @@ import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
+import com.dynatrace.openkit.protocol.ResponseAttributesDefaults;
 import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -282,7 +283,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void getSendIntervalIsTakenFromDefaultSessionConfig() {
+    public void getSendIntervalIsTakenFromDefaultResponseAttributeDefaults() {
         // given
         BeaconSendingContext target = createBeaconSendingContext().build();
 
@@ -290,7 +291,7 @@ public class BeaconSendingContextTest {
         int obtained = target.getSendInterval();
 
         // then
-        assertThat(obtained, is(equalTo(ServerConfiguration.DEFAULT.getSendIntervalInMilliseconds())));
+        assertThat(obtained, is(equalTo(ResponseAttributesDefaults.UNDEFINED.getSendIntervalInMilliseconds())));
     }
 
     @Test

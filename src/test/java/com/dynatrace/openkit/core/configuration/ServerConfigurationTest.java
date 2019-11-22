@@ -16,9 +16,9 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttribute;
-import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
+import com.dynatrace.openkit.protocol.ResponseAttributesDefaults;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 public class ServerConfigurationTest {
 
+    private final ResponseAttributesDefaults DEFAULT_VALUES = ResponseAttributesDefaults.UNDEFINED;
     private ResponseAttributes responseAttributes;
 
     private ServerConfiguration mockServerConfig;
@@ -39,31 +40,30 @@ public class ServerConfigurationTest {
     @Before
     public void setUp() {
         responseAttributes = mock(ResponseAttributes.class);
-        when(responseAttributes.isCapture()).thenReturn(ServerConfiguration.DEFAULT_CAPTURE_ENABLED);
-        when(responseAttributes.isCaptureCrashes()).thenReturn(ServerConfiguration.DEFAULT_CRASH_REPORTING_ENABLED);
-        when(responseAttributes.isCaptureErrors()).thenReturn(ServerConfiguration.DEFAULT_ERROR_REPORTING_ENABLED);
-        when(responseAttributes.getSendIntervalInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SEND_INTERVAL);
-        when(responseAttributes.getServerId()).thenReturn(ServerConfiguration.DEFAULT_SERVER_ID);
-        when(responseAttributes.getMaxBeaconSizeInBytes()).thenReturn(ServerConfiguration.DEFAULT_BEACON_SIZE);
-        when(responseAttributes.getMultiplicity()).thenReturn(ServerConfiguration.DEFAULT_MULTIPLICITY);
-        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_MAX_SESSION_DURATION);
-        when(responseAttributes.getMaxEventsPerSession()).thenReturn(ServerConfiguration.DEFAULT_MAX_EVENTS_PER_SESSION);
-        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SESSION_TIMEOUT);
-        when(responseAttributes.getVisitStoreVersion()).thenReturn(ServerConfiguration.DEFAULT_VISIT_STORE_VERSION);
+        when(responseAttributes.isCapture()).thenReturn(DEFAULT_VALUES.isCapture());
+        when(responseAttributes.isCaptureCrashes()).thenReturn(DEFAULT_VALUES.isCaptureCrashes());
+        when(responseAttributes.isCaptureErrors()).thenReturn(DEFAULT_VALUES.isCaptureErrors());
+        when(responseAttributes.getSendIntervalInMilliseconds()).thenReturn(DEFAULT_VALUES.getSendIntervalInMilliseconds());
+        when(responseAttributes.getServerId()).thenReturn(DEFAULT_VALUES.getServerId());
+        when(responseAttributes.getMaxBeaconSizeInBytes()).thenReturn(DEFAULT_VALUES.getMaxBeaconSizeInBytes());
+        when(responseAttributes.getMultiplicity()).thenReturn(DEFAULT_VALUES.getMultiplicity());
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(DEFAULT_VALUES.getMaxSessionDurationInMilliseconds());
+        when(responseAttributes.getMaxEventsPerSession()).thenReturn(DEFAULT_VALUES.getMaxEventsPerSession());
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(DEFAULT_VALUES.getSessionTimeoutInMilliseconds());
+        when(responseAttributes.getVisitStoreVersion()).thenReturn(DEFAULT_VALUES.getVisitStoreVersion());
 
         mockServerConfig = mock(ServerConfiguration.class);
-        when(mockServerConfig.isCaptureEnabled()).thenReturn(ServerConfiguration.DEFAULT_CAPTURE_ENABLED);
-        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(ServerConfiguration.DEFAULT_CRASH_REPORTING_ENABLED);
-        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(ServerConfiguration.DEFAULT_ERROR_REPORTING_ENABLED);
-        when(mockServerConfig.getSendIntervalInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SEND_INTERVAL);
-        when(mockServerConfig.getServerID()).thenReturn(ServerConfiguration.DEFAULT_SERVER_ID);
-        when(mockServerConfig.getBeaconSizeInBytes()).thenReturn(ServerConfiguration.DEFAULT_BEACON_SIZE);
-        when(mockServerConfig.getMultiplicity()).thenReturn(ServerConfiguration.DEFAULT_MULTIPLICITY);
-        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_MAX_SESSION_DURATION);
-        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(ServerConfiguration.DEFAULT_MAX_EVENTS_PER_SESSION);
+        when(mockServerConfig.isCaptureEnabled()).thenReturn(DEFAULT_VALUES.isCapture());
+        when(mockServerConfig.isCrashReportingEnabled()).thenReturn(DEFAULT_VALUES.isCaptureCrashes());
+        when(mockServerConfig.isErrorReportingEnabled()).thenReturn(DEFAULT_VALUES.isCaptureErrors());
+        when(mockServerConfig.getServerID()).thenReturn(DEFAULT_VALUES.getServerId());
+        when(mockServerConfig.getBeaconSizeInBytes()).thenReturn(DEFAULT_VALUES.getMaxBeaconSizeInBytes());
+        when(mockServerConfig.getMultiplicity()).thenReturn(DEFAULT_VALUES.getMultiplicity());
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(DEFAULT_VALUES.getMaxSessionDurationInMilliseconds());
+        when(mockServerConfig.getMaxEventsPerSession()).thenReturn(DEFAULT_VALUES.getMaxEventsPerSession());
         when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(false);
-        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SESSION_TIMEOUT);
-        when(mockServerConfig.getVisitStoreVersion()).thenReturn(ServerConfiguration.DEFAULT_VISIT_STORE_VERSION);
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(DEFAULT_VALUES.getSessionTimeoutInMilliseconds());
+        when(mockServerConfig.getVisitStoreVersion()).thenReturn(DEFAULT_VALUES.getVisitStoreVersion());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,21 +88,15 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void inDefaultServerConfigurationSendIntervalIsMinusOne() {
-        // then
-        assertThat(ServerConfiguration.DEFAULT.getSendIntervalInMilliseconds(), is(-1));
-    }
-
-    @Test
     public void inDefaultServerConfigurationServerIDIsMinusOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getServerID(), is(-1));
     }
 
     @Test
-    public void inDefaultServerConfigurationBeaconSizeIsMinusOne() {
+    public void inDefaultServerConfigurationBeaconSizeIsThirtyKB() {
         // then
-        assertThat(ServerConfiguration.DEFAULT.getBeaconSizeInBytes(), is(-1));
+        assertThat(ServerConfiguration.DEFAULT.getBeaconSizeInBytes(), is(30*1024));
     }
 
     @Test
@@ -136,9 +130,9 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void inDefaultServerConfigurationVisitStoreVersionIsMinusOne() {
+    public void inDefaultServerConfigurationVisitStoreVersionIsOne() {
         // then
-        assertThat(ServerConfiguration.DEFAULT.getVisitStoreVersion(), is(-1));
+        assertThat(ServerConfiguration.DEFAULT.getVisitStoreVersion(), is(1));
     }
 
     @Test
@@ -185,18 +179,6 @@ public class ServerConfigurationTest {
         assertThat(target.isErrorReportingEnabled(), is(false));
 
         verify(responseAttributes, times(1)).isCaptureErrors();
-    }
-
-    @Test
-    public void creatingAServerConfigurationFromResponseAttributesCopiesSendingIntervalSettings() {
-        // given
-        when(responseAttributes.getSendIntervalInMilliseconds()).thenReturn(1234);
-        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
-
-        // then
-        assertThat(target.getSendIntervalInMilliseconds(), is(1234));
-
-        verify(responseAttributes, times(1)).getSendIntervalInMilliseconds();
     }
 
     @Test
@@ -515,17 +497,6 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void builderFromServerConfigCopiesSendingIntervalSettings() {
-        // given
-        when(mockServerConfig.getSendIntervalInMilliseconds()).thenReturn(1234);
-        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
-
-        // then
-        assertThat(target.getSendIntervalInMilliseconds(), is(1234));
-        verify(mockServerConfig, times(1)).getSendIntervalInMilliseconds();
-    }
-
-    @Test
     public void builderFromServerConfigCopiesServerIDSettings() {
         // given
         when(mockServerConfig.getServerID()).thenReturn(42);
@@ -799,8 +770,8 @@ public class ServerConfigurationTest {
     @Test
     public void mergeTakesOverEnabledCapture() {
         // given
-        ServerConfiguration target = new ServerConfiguration.Builder().withCapture(false).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withCapture(true).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withCapture(false).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withCapture(true).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -812,8 +783,8 @@ public class ServerConfigurationTest {
     @Test
     public void mergeTakesOverDisabledCapture() {
         // given
-        ServerConfiguration target = new ServerConfiguration.Builder().withCapture(true).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withCapture(false).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withCapture(true).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withCapture(false).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -825,8 +796,8 @@ public class ServerConfigurationTest {
     @Test
     public void mergeTakesOverEnabledCrashReporting() {
         // given
-        ServerConfiguration target = new ServerConfiguration.Builder().withCrashReporting(false).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withCrashReporting(true).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withCrashReporting(false).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withCrashReporting(true).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -838,8 +809,8 @@ public class ServerConfigurationTest {
     @Test
     public void mergeTakesOverDisabledCrashReporting() {
         // given
-        ServerConfiguration target = new ServerConfiguration.Builder().withCrashReporting(true).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withCrashReporting(false).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withCrashReporting(true).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withCrashReporting(false).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -851,8 +822,8 @@ public class ServerConfigurationTest {
     @Test
     public void mergeTakesOverEnabledErrorReporting() {
         // given
-        ServerConfiguration target = new ServerConfiguration.Builder().withErrorReporting(false).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withErrorReporting(true).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withErrorReporting(false).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withErrorReporting(true).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -864,8 +835,8 @@ public class ServerConfigurationTest {
     @Test
     public void mergeTakesOverDisabledErrorReporting() {
         // given
-        ServerConfiguration target = new ServerConfiguration.Builder().withErrorReporting(true).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withErrorReporting(false).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withErrorReporting(true).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withErrorReporting(false).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -875,25 +846,13 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverSendInterval() {
-        // given
-        int sendInterval = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder().withSendIntervalInMilliseconds(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withSendIntervalInMilliseconds(sendInterval).build();
-
-        // when
-        ServerConfiguration obtained = target.merge(other);
-
-        // then
-        assertThat(obtained.getSendIntervalInMilliseconds(), is(sendInterval));
-    }
-
-    @Test
     public void mergeTakesOverBeaconSize() {
         // given
         int beaconSize = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder().withBeaconSizeInBytes(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withBeaconSizeInBytes(beaconSize).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withBeaconSizeInBytes(37).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withBeaconSizeInBytes(beaconSize).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -906,8 +865,8 @@ public class ServerConfigurationTest {
     public void mergeIgnoresMultiplicity() {
         // given
         int multiplicity = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder().withMultiplicity(multiplicity).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withMultiplicity(37).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withMultiplicity(multiplicity).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withMultiplicity(37).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -920,8 +879,8 @@ public class ServerConfigurationTest {
     public void mergeIgnoresServerId() {
         // given
         int serverId = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder().withServerID(serverId).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withServerID(37).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).withServerID(serverId).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).withServerID(37).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -934,9 +893,9 @@ public class ServerConfigurationTest {
     public void mergeTakesOverMaxSessionDuration() {
         // given
         int sessionDuration = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder()
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxSessionDurationInMilliseconds(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder()
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxSessionDurationInMilliseconds(sessionDuration).build();
 
         // when
@@ -950,8 +909,10 @@ public class ServerConfigurationTest {
     public void mergeTakesOverMaxEventsPerSession() {
         // given
         int eventsPerSession = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder().withMaxEventsPerSession(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder().withMaxEventsPerSession(eventsPerSession).build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withMaxEventsPerSession(37).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withMaxEventsPerSession(eventsPerSession).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -966,7 +927,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = 73;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = new ServerConfiguration.Builder().build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
         ServerConfiguration other = ServerConfiguration.from(responseAttributes);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
@@ -984,7 +945,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = 0;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = new ServerConfiguration.Builder().build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
         ServerConfiguration other = ServerConfiguration.from(responseAttributes);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
@@ -1002,7 +963,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = 73;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = new ServerConfiguration.Builder().build();
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
         ServerConfiguration other = ServerConfiguration.from(responseAttributes);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
@@ -1018,9 +979,9 @@ public class ServerConfigurationTest {
     public void mergeTakesOverSessionTimeout() {
         // given
         int sessionTimeout = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder()
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxSessionDurationInMilliseconds(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder()
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withSessionTimeoutInMilliseconds(sessionTimeout).build();
 
         // when
@@ -1034,9 +995,9 @@ public class ServerConfigurationTest {
     public void mergeTakesOverVisitStoreVersion() {
         // given
         int visitStoreVersion = 73;
-        ServerConfiguration target = new ServerConfiguration.Builder()
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withVisitStoreVersion(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder()
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withVisitStoreVersion(visitStoreVersion).build();
 
         // when
@@ -1053,10 +1014,10 @@ public class ServerConfigurationTest {
     @Test
     public void buildPropagatesCaptureEnabledToInstance() {
         // given
-        boolean capture = !ServerConfiguration.DEFAULT_CAPTURE_ENABLED;
+        boolean capture = !DEFAULT_VALUES.isCapture();
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withCapture(capture).build();
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES).withCapture(capture).build();
 
         // then
         assertThat(obtained.isCaptureEnabled(), is(capture));
@@ -1065,10 +1026,11 @@ public class ServerConfigurationTest {
     @Test
     public void buildPropagatesCrashReportingEnabledToInstance() {
         // given
-        boolean crashReporting = !ServerConfiguration.DEFAULT_CRASH_REPORTING_ENABLED;
+        boolean crashReporting = !DEFAULT_VALUES.isCaptureCrashes();
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withCrashReporting(crashReporting).build();
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withCrashReporting(crashReporting).build();
 
         // then
         assertThat(obtained.isCrashReportingEnabled(), is(crashReporting));
@@ -1077,25 +1039,14 @@ public class ServerConfigurationTest {
     @Test
     public void buildPropagatesErrorReportingEnabledToInstance() {
         // given
-        boolean errorReporting = !ServerConfiguration.DEFAULT_ERROR_REPORTING_ENABLED;
+        boolean errorReporting = !DEFAULT_VALUES.isCaptureErrors();
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withErrorReporting(errorReporting).build();
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withErrorReporting(errorReporting).build();
 
         // then
         assertThat(obtained.isErrorReportingEnabled(), is(errorReporting));
-    }
-
-    @Test
-    public void buildPropagatesSendIntervalToInstance() {
-        // given
-        int sendInterval = 73;
-
-        // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withSendIntervalInMilliseconds(sendInterval).build();
-
-        // then
-        assertThat(obtained.getSendIntervalInMilliseconds(), is(sendInterval));
     }
 
     @Test
@@ -1104,7 +1055,8 @@ public class ServerConfigurationTest {
         int serverId = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withServerID(serverId).build();
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withServerID(serverId).build();
 
         // then
         assertThat(obtained.getServerID(), is(serverId));
@@ -1116,7 +1068,8 @@ public class ServerConfigurationTest {
         int beaconSize = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withBeaconSizeInBytes(beaconSize).build();
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withBeaconSizeInBytes(beaconSize).build();
 
         // then
         assertThat(obtained.getBeaconSizeInBytes(), is(beaconSize));
@@ -1128,7 +1081,8 @@ public class ServerConfigurationTest {
         int multiplicity = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder().withMultiplicity(multiplicity).build();
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withMultiplicity(multiplicity).build();
 
         // then
         assertThat(obtained.getMultiplicity(), is(multiplicity));
@@ -1140,7 +1094,7 @@ public class ServerConfigurationTest {
         int sessionDuration = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder()
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxSessionDurationInMilliseconds(sessionDuration)
                 .build();
 
@@ -1154,7 +1108,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder()
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxEventsPerSession(eventsPerSession)
                 .build();
 
@@ -1168,7 +1122,7 @@ public class ServerConfigurationTest {
         int sessionTimeout = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder()
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withSessionTimeoutInMilliseconds(sessionTimeout)
                 .build();
 
@@ -1182,7 +1136,7 @@ public class ServerConfigurationTest {
         int visitStoreVersion = 73;
 
         // when
-        ServerConfiguration obtained = new ServerConfiguration.Builder()
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withVisitStoreVersion(visitStoreVersion)
                 .build();
 

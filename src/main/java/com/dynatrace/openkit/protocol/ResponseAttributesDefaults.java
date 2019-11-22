@@ -24,7 +24,6 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
         private final int DEFAULT_SESSION_DURATION_IN_MILLIS = (int) TimeUnit.MINUTES.toMillis(360); // 360 minutes
         private final int DEFAULT_EVENTS_PER_SESSION = 200;
         private final int DEFAULT_SESSION_TIMEOUT_IN_MILLIS = (int) TimeUnit.SECONDS.toMillis(600); // 600 seconds
-        private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = (int) TimeUnit.SECONDS.toMillis(120); // 120 seconds
 
         @Override
         public int getMaxBeaconSizeInBytes() {
@@ -44,11 +43,6 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
         @Override
         public int getSessionTimeoutInMilliseconds() {
             return DEFAULT_SESSION_TIMEOUT_IN_MILLIS;
-        }
-
-        @Override
-        public int getSendIntervalInMilliseconds() {
-            return DEFAULT_SEND_INTERVAL_IN_MILLIS;
         }
     },
 
@@ -86,11 +80,10 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
     },
 
     UNDEFINED {
-        private final int DEFAULT_BEACON_SIZE_IN_BYTES = -1;
+        private final int DEFAULT_BEACON_SIZE_IN_BYTES = 30 * 1024; // 30 kB
         private final int DEFAULT_SESSION_DURATION_IN_MILLIS = -1;
         private final int DEFAULT_EVENTS_PER_SESSION = -1;
         private final int DEFAULT_SESSION_TIMEOUT_IN_MILLIS = -1;
-        private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = -1;
         private final int DEFAULT_SERVER_ID = -1;
 
         @Override
@@ -114,11 +107,6 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
         }
 
         @Override
-        public int getSendIntervalInMilliseconds() {
-            return DEFAULT_SEND_INTERVAL_IN_MILLIS;
-        }
-
-        @Override
         public int getServerId() {
             return DEFAULT_SERVER_ID;
         }
@@ -131,6 +119,7 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
     private static final int DEFAULT_MULTIPLICITY = 1;
     private static final int DEFAULT_SERVER_ID = 1;
     private static final int DEFAULT_TIMESTAMP = 0;
+    private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = (int) TimeUnit.SECONDS.toMillis(120); // 120 seconds
 
     public abstract int getMaxBeaconSizeInBytes();
 
@@ -140,7 +129,9 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
 
     public abstract int getSessionTimeoutInMilliseconds();
 
-    public abstract int getSendIntervalInMilliseconds();
+    public int getSendIntervalInMilliseconds() {
+        return DEFAULT_SEND_INTERVAL_IN_MILLIS;
+    }
 
     public int getVisitStoreVersion() {
         return DEFAULT_VISIT_STORE_VERSION;

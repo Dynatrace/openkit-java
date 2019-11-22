@@ -18,61 +18,19 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
+import com.dynatrace.openkit.protocol.ResponseAttributesDefaults;
 
 /**
  * Configuration class storing all configuration parameters as returned by Dynatrace/AppMon.
  */
 public class ServerConfiguration {
 
+    private static final ResponseAttributesDefaults DEFAULT_VALUES = ResponseAttributesDefaults.UNDEFINED;
+
     /**
      * Default server configuration
      */
-    public static final ServerConfiguration DEFAULT = new ServerConfiguration.Builder().build();
-
-    /**
-     * by default capturing is enabled
-     */
-    static final boolean DEFAULT_CAPTURE_ENABLED = true;
-    /**
-     * by default crash reporting is enabled
-     */
-    static final boolean DEFAULT_CRASH_REPORTING_ENABLED = true;
-    /**
-     * by default error reporting is enabled
-     */
-    static final boolean DEFAULT_ERROR_REPORTING_ENABLED = true;
-    /**
-     * default send interval is not defined
-     */
-    static final int DEFAULT_SEND_INTERVAL = -1;
-    /**
-     * default server id depends on the backend
-     */
-    static final int DEFAULT_SERVER_ID = -1;
-    /**
-     * default beacon size is not defined
-     */
-    static final int DEFAULT_BEACON_SIZE = -1;
-    /**
-     * default multiplicity is 1
-     */
-    static final int DEFAULT_MULTIPLICITY = 1;
-    /**
-     * default value specifying the maximum duration of a session in milliseconds
-     */
-    static final int DEFAULT_MAX_SESSION_DURATION = -1;
-    /**
-     * default value for the maximum count of top level events before a session is split
-     */
-    static final int DEFAULT_MAX_EVENTS_PER_SESSION = -1;
-    /**
-     * default idle timeout after which a new session is started
-     */
-    static final int DEFAULT_SESSION_TIMEOUT = -1;
-    /**
-     * default visit store version
-     */
-    static final int DEFAULT_VISIT_STORE_VERSION = -1;
+    public static final ServerConfiguration DEFAULT = ServerConfiguration.from(DEFAULT_VALUES);
 
     /**
      * Boolean indicating whether capturing is enabled by the backend or not
@@ -86,10 +44,6 @@ public class ServerConfiguration {
      * Boolean indicating whether error reporting is enabled by the backend or not
      */
     private final boolean isErrorReportingEnabled;
-    /**
-     * Value specifying the send interval in milliseconds
-     */
-    private final int sendIntervalInMilliseconds;
     /**
      * The server ID to send future requests to
      */
@@ -132,7 +86,6 @@ public class ServerConfiguration {
         isCaptureEnabled = builder.isCaptureEnabled;
         isCrashReportingEnabled = builder.isCrashReportingEnabled;
         isErrorReportingEnabled = builder.isErrorReportingEnabled;
-        sendIntervalInMilliseconds = builder.sendIntervalInMilliseconds;
         serverID = builder.serverID;
         beaconSizeInBytes = builder.beaconSizeInBytes;
         multiplicity = builder.multiplicity;
@@ -181,15 +134,6 @@ public class ServerConfiguration {
      */
     public boolean isErrorReportingEnabled() {
         return isErrorReportingEnabled;
-    }
-
-    /**
-     * Get the send interval in milliseconds.
-     *
-     * @return Send interval in milliseconds.
-     */
-    public int getSendIntervalInMilliseconds() {
-        return sendIntervalInMilliseconds;
     }
 
     /**
@@ -341,24 +285,17 @@ public class ServerConfiguration {
      * Builder class for creating a custom instance of {@link ServerConfiguration}.
      */
     public static final class Builder {
-        private boolean isCaptureEnabled = DEFAULT_CAPTURE_ENABLED;
-        private boolean isCrashReportingEnabled = DEFAULT_CRASH_REPORTING_ENABLED;
-        private boolean isErrorReportingEnabled = DEFAULT_ERROR_REPORTING_ENABLED;
-        private int sendIntervalInMilliseconds = DEFAULT_SEND_INTERVAL;
-        private int serverID = DEFAULT_SERVER_ID;
-        private int beaconSizeInBytes = DEFAULT_BEACON_SIZE;
-        private int multiplicity = DEFAULT_MULTIPLICITY;
-        private int maxSessionDurationInMilliseconds = DEFAULT_MAX_SESSION_DURATION;
-        private int maxEventsPerSession = DEFAULT_MAX_EVENTS_PER_SESSION;
+        private boolean isCaptureEnabled;
+        private boolean isCrashReportingEnabled;
+        private boolean isErrorReportingEnabled;
+        private int serverID;
+        private int beaconSizeInBytes;
+        private int multiplicity;
+        private int maxSessionDurationInMilliseconds;
+        private int maxEventsPerSession;
         private boolean isSessionSplitByEventsEnabled;
-        private int sessionTimeoutInMilliseconds = DEFAULT_SESSION_TIMEOUT;
-        private int visitStoreVersion = DEFAULT_VISIT_STORE_VERSION;
-
-        /**
-         * Default constructor.
-         */
-        public Builder() {
-        }
+        private int sessionTimeoutInMilliseconds;
+        private int visitStoreVersion;
 
         /**
          * Construct and initialize fields from given {@link ResponseAttributes}.
@@ -369,7 +306,6 @@ public class ServerConfiguration {
             isCaptureEnabled = responseAttributes.isCapture();
             isCrashReportingEnabled = responseAttributes.isCaptureCrashes();
             isErrorReportingEnabled = responseAttributes.isCaptureErrors();
-            sendIntervalInMilliseconds = responseAttributes.getSendIntervalInMilliseconds();
             serverID = responseAttributes.getServerId();
             beaconSizeInBytes = responseAttributes.getMaxBeaconSizeInBytes();
             multiplicity = responseAttributes.getMultiplicity();
@@ -387,7 +323,6 @@ public class ServerConfiguration {
             isCaptureEnabled = serverConfiguration.isCaptureEnabled();
             isCrashReportingEnabled = serverConfiguration.isCrashReportingEnabled();
             isErrorReportingEnabled = serverConfiguration.isErrorReportingEnabled();
-            sendIntervalInMilliseconds = serverConfiguration.getSendIntervalInMilliseconds();
             serverID = serverConfiguration.getServerID();
             beaconSizeInBytes = serverConfiguration.getBeaconSizeInBytes();
             multiplicity = serverConfiguration.getMultiplicity();
@@ -425,17 +360,6 @@ public class ServerConfiguration {
          */
         public Builder withErrorReporting(boolean errorReportingState) {
             isErrorReportingEnabled = errorReportingState;
-            return this;
-        }
-
-        /**
-         * Configures the send interval.
-         *
-         * @param sendIntervalInMilliseconds Send interval in milliseconds.
-         * @return {@code this}
-         */
-        public Builder withSendIntervalInMilliseconds(int sendIntervalInMilliseconds) {
-            this.sendIntervalInMilliseconds = sendIntervalInMilliseconds;
             return this;
         }
 

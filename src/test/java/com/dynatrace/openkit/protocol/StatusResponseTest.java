@@ -163,12 +163,12 @@ public class StatusResponseTest {
     }
 
     @Test
-    public void errorResponseDefaultSendIntervalIsMinusOne() {
+    public void errorResponseDefaultSendIntervalIs120Sec() {
         // given
         StatusResponse target = StatusResponse.createErrorResponse(mockLogger, 200);
 
         // then
-        assertThat(target.getResponseAttributes().getSendIntervalInMilliseconds(), is(equalTo(-1)));
+        assertThat(target.getResponseAttributes().getSendIntervalInMilliseconds(), is(equalTo(120 * 1000))); // 120 sec
     }
 
     @Test
@@ -181,12 +181,12 @@ public class StatusResponseTest {
     }
 
     @Test
-    public void errorResponseDefaultMaxBeaconSizeIsMinusOne() {
+    public void errorResponseDefaultMaxBeaconSizeIsThirtyKB() {
         // given
         StatusResponse target = StatusResponse.createErrorResponse(mockLogger, 200);
 
         // then
-        assertThat(target.getResponseAttributes().getMaxBeaconSizeInBytes(), is(equalTo(-1)));
+        assertThat(target.getResponseAttributes().getMaxBeaconSizeInBytes(), is(equalTo(30 * 1024)));
     }
 
     @Test

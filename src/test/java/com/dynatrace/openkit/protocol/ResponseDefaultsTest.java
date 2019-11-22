@@ -17,6 +17,8 @@ package com.dynatrace.openkit.protocol;
 
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -181,7 +183,7 @@ public class ResponseDefaultsTest {
 
     @Test
     public void defaultUndefinedBeaconSize() {
-        assertThat(ResponseAttributesDefaults.UNDEFINED.getMaxBeaconSizeInBytes(), is(-1));
+        assertThat(ResponseAttributesDefaults.UNDEFINED.getMaxBeaconSizeInBytes(), is(30 * 1024));
     }
 
     @Test
@@ -201,7 +203,7 @@ public class ResponseDefaultsTest {
 
     @Test
     public void defaultUndefinedSendInterval() {
-        assertThat(ResponseAttributesDefaults.UNDEFINED.getSendIntervalInMilliseconds(), is(-1));
+        assertThat(ResponseAttributesDefaults.UNDEFINED.getSendIntervalInMilliseconds(), is(120 * 1000)); // 120 sec
     }
 
     @Test

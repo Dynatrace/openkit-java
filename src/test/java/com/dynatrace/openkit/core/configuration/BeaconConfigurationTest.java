@@ -319,8 +319,6 @@ public class BeaconConfigurationTest {
         assertThat(obtained.isCaptureEnabled(), is(not(equalTo(initialServerConfig.isCaptureEnabled()))));
         assertThat(obtained.isCrashReportingEnabled(), is(equalTo(initialServerConfig.isCrashReportingEnabled())));
         assertThat(obtained.isErrorReportingEnabled(), is(equalTo(initialServerConfig.isErrorReportingEnabled())));
-        assertThat(obtained.getSendIntervalInMilliseconds(),
-                is(equalTo(initialServerConfig.getSendIntervalInMilliseconds())));
         assertThat(obtained.getServerID(), is(equalTo(initialServerConfig.getServerID())));
         assertThat(obtained.getBeaconSizeInBytes(), is(equalTo(initialServerConfig.getBeaconSizeInBytes())));
         assertThat(obtained.getMultiplicity(), is(equalTo(initialServerConfig.getMultiplicity())));
@@ -374,8 +372,6 @@ public class BeaconConfigurationTest {
         assertThat(obtained.isCaptureEnabled(), is(not(equalTo(initialServerConfig.isCaptureEnabled()))));
         assertThat(obtained.isCrashReportingEnabled(), is(equalTo(initialServerConfig.isCrashReportingEnabled())));
         assertThat(obtained.isErrorReportingEnabled(), is(equalTo(initialServerConfig.isErrorReportingEnabled())));
-        assertThat(obtained.getSendIntervalInMilliseconds(),
-                is(equalTo(initialServerConfig.getSendIntervalInMilliseconds())));
         assertThat(obtained.getServerID(), is(equalTo(initialServerConfig.getServerID())));
         assertThat(obtained.getBeaconSizeInBytes(), is(equalTo(initialServerConfig.getBeaconSizeInBytes())));
         assertThat(obtained.getMultiplicity(), is(equalTo(initialServerConfig.getMultiplicity())));
@@ -390,7 +386,6 @@ public class BeaconConfigurationTest {
         when(initialServerConfig.isCaptureEnabled()).thenReturn(enableCapture);
         when(initialServerConfig.isCrashReportingEnabled()).thenReturn(true);
         when(initialServerConfig.isErrorReportingEnabled()).thenReturn(true);
-        when(initialServerConfig.getSendIntervalInMilliseconds()).thenReturn(999);
         when(initialServerConfig.getServerID()).thenReturn(73);
         when(initialServerConfig.getBeaconSizeInBytes()).thenReturn(1024);
         when(initialServerConfig.getMultiplicity()).thenReturn(37);
