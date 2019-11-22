@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.StatusResponse;
 
 import java.util.List;
@@ -105,8 +106,9 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
             statusResponse = context.getHTTPClient().sendNewSessionRequest();
             if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-                StatusResponse mergedStatusResponse = context.getLastStatusResponse().merge(statusResponse);
-                ServerConfiguration newServerConfig = ServerConfiguration.from(mergedStatusResponse);
+                ResponseAttributes mergedAttributes = context.getLastResponseAttributes()
+                        .merge(statusResponse.getResponseAttributes());
+                ServerConfiguration newServerConfig = ServerConfiguration.from(mergedAttributes);
                 session.updateServerConfiguration(newServerConfig);
             } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
                 // server is currently overloaded, return immediately

@@ -53,7 +53,7 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
     },
 
     KEY_VALUE_RESPONSE {
-        private final int DEFAULT_BEACON_SIZE_IN_BYTES = 30 * 1024; // 150 kB
+        private final int DEFAULT_BEACON_SIZE_IN_BYTES = 30 * 1024; // 30 kB
         private final int DEFAULT_SESSION_DURATION_IN_MILLIS = -1;
         private final int DEFAULT_EVENTS_PER_SESSION = -1;
         private final int DEFAULT_SESSION_TIMEOUT_IN_MILLIS = -1;

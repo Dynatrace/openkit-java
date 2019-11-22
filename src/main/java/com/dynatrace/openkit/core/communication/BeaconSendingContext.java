@@ -22,12 +22,12 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +73,7 @@ public class BeaconSendingContext {
      * Modification of this field must only happen within the context of the BeaconSending thread.
      * </p>
      */
-    private StatusResponse lastStatusResponse;
+    private ResponseAttributes lastResponseAttributes;
 
     /**
      * Configuration storing last valid HTTP client configuration, independent of a session.
@@ -151,12 +151,7 @@ public class BeaconSendingContext {
         this.serverConfiguration = ServerConfiguration.DEFAULT;
         this.httpClientProvider = httpClientProvider;
         this.timingProvider = timingProvider;
-        this.lastStatusResponse = StatusResponse.createSuccessResponse(
-                logger,
-                ResponseAttributesImpl.withUndefinedDefaults().build(),
-                Integer.MAX_VALUE,
-                Collections.<String, List<String>>emptyMap()
-        );
+        this.lastResponseAttributes = ResponseAttributesImpl.withUndefinedDefaults().build();
 
         currentState = initialState;
     }
@@ -399,14 +394,14 @@ public class BeaconSendingContext {
      * Get the send interval for open sessions.
      */
     int getSendInterval() {
-        return serverConfiguration.getSendIntervalInMilliseconds();
+        return lastResponseAttributes.getSendIntervalInMilliseconds();
     }
 
     /**
-     * Returns the last status response received from the server.
+     * Returns the last {@link ResponseAttributes} received from the server.
      */
-    StatusResponse getLastStatusResponse() {
-        return lastStatusResponse;
+    ResponseAttributes getLastResponseAttributes() {
+        return lastResponseAttributes;
     }
 
     /**
@@ -436,9 +431,9 @@ public class BeaconSendingContext {
             return;
         }
 
-        lastStatusResponse = lastStatusResponse.merge(receivedResponse);
+        lastResponseAttributes = lastResponseAttributes.merge(receivedResponse.getResponseAttributes());
 
-        serverConfiguration = new ServerConfiguration.Builder(lastStatusResponse).build();
+        serverConfiguration = new ServerConfiguration.Builder(lastResponseAttributes).build();
         if (!isCaptureOn()) {
             // capturing was turned off
             clearAllSessionData();

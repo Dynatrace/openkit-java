@@ -16,64 +16,111 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttribute;
-import com.dynatrace.openkit.protocol.StatusResponse;
+import com.dynatrace.openkit.protocol.ResponseAttributes;
 
 /**
  * Configuration class storing all configuration parameters as returned by Dynatrace/AppMon.
  */
 public class ServerConfiguration {
 
-    /** Default server configuration */
+    /**
+     * Default server configuration
+     */
     public static final ServerConfiguration DEFAULT = new ServerConfiguration.Builder().build();
 
-    /** by default capturing is enabled */
+    /**
+     * by default capturing is enabled
+     */
     static final boolean DEFAULT_CAPTURE_ENABLED = true;
-    /** by default crash reporting is enabled */
+    /**
+     * by default crash reporting is enabled
+     */
     static final boolean DEFAULT_CRASH_REPORTING_ENABLED = true;
-    /** by default error reporting is enabled */
+    /**
+     * by default error reporting is enabled
+     */
     static final boolean DEFAULT_ERROR_REPORTING_ENABLED = true;
-    /** default send interval is not defined */
+    /**
+     * default send interval is not defined
+     */
     static final int DEFAULT_SEND_INTERVAL = -1;
-    /** default server id depends on the backend */
+    /**
+     * default server id depends on the backend
+     */
     static final int DEFAULT_SERVER_ID = -1;
-    /** default beacon size is not defined */
+    /**
+     * default beacon size is not defined
+     */
     static final int DEFAULT_BEACON_SIZE = -1;
-    /** default multiplicity is 1 */
+    /**
+     * default multiplicity is 1
+     */
     static final int DEFAULT_MULTIPLICITY = 1;
-    /** default value specifying the maximum duration of a session in milliseconds */
+    /**
+     * default value specifying the maximum duration of a session in milliseconds
+     */
     static final int DEFAULT_MAX_SESSION_DURATION = -1;
-    /** default value for the maximum count of top level events before a session is split */
+    /**
+     * default value for the maximum count of top level events before a session is split
+     */
     static final int DEFAULT_MAX_EVENTS_PER_SESSION = -1;
-    /** default idle timeout after which a new session is started */
+    /**
+     * default idle timeout after which a new session is started
+     */
     static final int DEFAULT_SESSION_TIMEOUT = -1;
-    /** default visit store version */
+    /**
+     * default visit store version
+     */
     static final int DEFAULT_VISIT_STORE_VERSION = -1;
 
-    /** Boolean indicating whether capturing is enabled by the backend or not */
+    /**
+     * Boolean indicating whether capturing is enabled by the backend or not
+     */
     private final boolean isCaptureEnabled;
-    /** Boolean indicating whether crash reporting is enabled by the backend or not */
+    /**
+     * Boolean indicating whether crash reporting is enabled by the backend or not
+     */
     private final boolean isCrashReportingEnabled;
-    /** Boolean indicating whether error reporting is enabled by the backend or not */
+    /**
+     * Boolean indicating whether error reporting is enabled by the backend or not
+     */
     private final boolean isErrorReportingEnabled;
-    /** Value specifying the send interval in milliseconds */
+    /**
+     * Value specifying the send interval in milliseconds
+     */
     private final int sendIntervalInMilliseconds;
-    /** The server ID to send future requests to */
+    /**
+     * The server ID to send future requests to
+     */
     private final int serverID;
-    /** The maximum allowed beacon size (post body size) in bytes */
+    /**
+     * The maximum allowed beacon size (post body size) in bytes
+     */
     private final int beaconSizeInBytes;
-    /** The multiplicity value */
+    /**
+     * The multiplicity value
+     */
     private final int multiplicity;
-    /** the maximum duration of a session */
+    /**
+     * the maximum duration of a session
+     */
     private final int maxSessionDurationInMilliseconds;
-    /** the maximum number of events per session */
+    /**
+     * the maximum number of events per session
+     */
     private final int maxEventsPerSession;
-    /** indicator whether session splitting by events is enabled or not */
+    /**
+     * indicator whether session splitting by events is enabled or not
+     */
     private final boolean isSessionSplitByEventsEnabled;
-    /** the session idle timeout in milliseconds */
+    /**
+     * the session idle timeout in milliseconds
+     */
     private final int sessionTimeoutInMilliseconds;
-    /** version of the visit store that should be used */
+    /**
+     * version of the visit store that should be used
+     */
     private final int visitStoreVersion;
 
     /**
@@ -97,16 +144,16 @@ public class ServerConfiguration {
     }
 
     /**
-     * Creates a new server configuration from the given {@link StatusResponse}
+     * Creates a new server configuration from the given {@link ResponseAttributes}
      *
-     * @param statusResponse the status response from which to create the server configuration.
+     * @param responseAttributes the response attributes from which to create the server configuration.
      * @return the newly created server configuration.
      */
-    public static ServerConfiguration from(StatusResponse statusResponse) {
-        if (statusResponse == null) {
+    public static ServerConfiguration from(ResponseAttributes responseAttributes) {
+        if (responseAttributes == null) {
             return null;
         }
-        return new ServerConfiguration.Builder(statusResponse).build();
+        return new ServerConfiguration.Builder(responseAttributes).build();
     }
 
     /**
@@ -167,8 +214,8 @@ public class ServerConfiguration {
      * Get multiplicity value.
      *
      * <p>
-     *     Multiplicity is a factor on the server side, which is greater than 1 to prevent overload situations.
-     *     This value comes from the server and has to be sent back to the server.
+     * Multiplicity is a factor on the server side, which is greater than 1 to prevent overload situations.
+     * This value comes from the server and has to be sent back to the server.
      * </p>
      *
      * @return Multiplicity factor
@@ -225,12 +272,12 @@ public class ServerConfiguration {
      * Get a boolean indicating whether sending arbitrary data to the server is allowed or not.
      *
      * <p>
-     *     Sending data is only allowed if all of the following conditions evaluate to true.
-     *     * {@link #isCaptureEnabled()} is {@code true}
-     *     * {@link #getMultiplicity()} is greater than {@code 0}
+     * Sending data is only allowed if all of the following conditions evaluate to true.
+     * * {@link #isCaptureEnabled()} is {@code true}
+     * * {@link #getMultiplicity()} is greater than {@code 0}
      *
-     *     To check if sending errors is allowed, use {@link #isSendingErrorsAllowed()}.
-     *     To check if sending crashes is allowed, use {@link #isSendingCrashesAllowed()}.
+     * To check if sending errors is allowed, use {@link #isSendingErrorsAllowed()}.
+     * To check if sending crashes is allowed, use {@link #isSendingCrashesAllowed()}.
      * </p>
      *
      * @return {@code true} if data sending is allowed, {@code false} otherwise.
@@ -243,9 +290,9 @@ public class ServerConfiguration {
      * Get a boolean indicating whether sending crashes to the server is allowed or not.
      *
      * <p>
-     *     Sending crashes is only allowed if all of the following conditions evaluate to true.
-     *     * {@link #isSendingDataAllowed()} yields {@code true}
-     *     * {@link #isCrashReportingEnabled()} is {@code true}
+     * Sending crashes is only allowed if all of the following conditions evaluate to true.
+     * * {@link #isSendingDataAllowed()} yields {@code true}
+     * * {@link #isCrashReportingEnabled()} is {@code true}
      * </p>
      *
      * @return {@code true} if sending crashes is allowed, {@code false} otherwise.
@@ -258,9 +305,9 @@ public class ServerConfiguration {
      * Get a boolean indicating whether sending errors to the server is allowed or not.
      *
      * <p>
-     *     Sending errors is only allowed if all of the following conditions evaluate to true.
-     *     * {@link #isSendingDataAllowed()} yields {@code true}
-     *     * {@link #isErrorReportingEnabled()} is {@code true}
+     * Sending errors is only allowed if all of the following conditions evaluate to true.
+     * * {@link #isSendingDataAllowed()} yields {@code true}
+     * * {@link #isErrorReportingEnabled()} is {@code true}
      * </p>
      *
      * @return {@code true} if sending errors is allowed, {@code false} otherwise.
@@ -273,8 +320,8 @@ public class ServerConfiguration {
      * Merges given {@code other} with {@code this} instance and return the merged instance.
      *
      * <p>
-     *     Most fields are taken from {@code other}, except for {@link #multiplicity} and {@link #serverID}
-     *     which doe not change.
+     * Most fields are taken from {@code other}, except for {@link #multiplicity} and {@link #serverID}
+     * which doe not change.
      * </p>
      *
      * @param other The other instance to merge with.
@@ -314,12 +361,11 @@ public class ServerConfiguration {
         }
 
         /**
-         * Construct and initialize fields from given {@link StatusResponse}.
+         * Construct and initialize fields from given {@link ResponseAttributes}.
          *
-         * @param statusResponse Status response used for initializing the fields.
+         * @param responseAttributes the attributes received as a response from the server.
          */
-        public Builder(StatusResponse statusResponse) {
-            ResponseAttributes responseAttributes = statusResponse.getResponseAttributes();
+        public Builder(ResponseAttributes responseAttributes) {
             isCaptureEnabled = responseAttributes.isCapture();
             isCrashReportingEnabled = responseAttributes.isCaptureCrashes();
             isErrorReportingEnabled = responseAttributes.isCaptureErrors();
@@ -428,6 +474,7 @@ public class ServerConfiguration {
 
         /**
          * Configures the maximum duration of a session, after which the session gets split.
+         *
          * @param maxSessionDurationInMillis the maximum duration of a session in milliseconds
          * @return {@code this}
          */
@@ -438,6 +485,7 @@ public class ServerConfiguration {
 
         /**
          * Configures the maximum number of events per session, after which the session gets split.
+         *
          * @param maxEventsPerSession the maximum number of top level elements after which a session gets split.
          * @return {@code this}
          */
@@ -448,6 +496,7 @@ public class ServerConfiguration {
 
         /**
          * Configures the idle timeout after which a session gets split.
+         *
          * @param sessionTimeoutInMilliseconds the idle timeout in milliseconds after which a session gets split.
          * @return {@code this}
          */
@@ -458,6 +507,7 @@ public class ServerConfiguration {
 
         /**
          * Configures the version of the visit store that should be used.
+         *
          * @param visitStoreVersion the version of the visit store to be used.
          * @return {@code this}
          */

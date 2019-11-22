@@ -780,16 +780,16 @@ public class BeaconSendingContextTest {
         );
 
         BeaconSendingContext target = createBeaconSendingContext().build();
-        StatusResponse initialLastResponse = target.getLastStatusResponse();
+        ResponseAttributes initialAttributes = target.getLastResponseAttributes();
 
         // when
         target.handleStatusResponse(response);
-        StatusResponse obtained = target.getLastStatusResponse();
+        ResponseAttributes obtained = target.getLastResponseAttributes();
 
         // then
         assertThat(obtained, notNullValue());
-        assertThat(initialLastResponse, not(equalTo(obtained)));
-        assertThat(obtained.getResponseAttributes().getMaxBeaconSizeInBytes(), is(beaconSize));
+        assertThat(initialAttributes, not(equalTo(obtained)));
+        assertThat(obtained.getMaxBeaconSizeInBytes(), is(beaconSize));
     }
 
     @Test

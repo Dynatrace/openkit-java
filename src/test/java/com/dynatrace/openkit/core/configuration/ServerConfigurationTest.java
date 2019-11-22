@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 
 public class ServerConfigurationTest {
 
-    private StatusResponse statusResponse;
     private ResponseAttributes responseAttributes;
 
     private ServerConfiguration mockServerConfig;
@@ -51,9 +50,6 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(ServerConfiguration.DEFAULT_MAX_EVENTS_PER_SESSION);
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(ServerConfiguration.DEFAULT_SESSION_TIMEOUT);
         when(responseAttributes.getVisitStoreVersion()).thenReturn(ServerConfiguration.DEFAULT_VISIT_STORE_VERSION);
-
-        statusResponse = mock(StatusResponse.class);
-        when(statusResponse.getResponseAttributes()).thenReturn(responseAttributes);
 
         mockServerConfig = mock(ServerConfiguration.class);
         when(mockServerConfig.isCaptureEnabled()).thenReturn(ServerConfiguration.DEFAULT_CAPTURE_ENABLED);
@@ -156,10 +152,10 @@ public class ServerConfigurationTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesCaptureSettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesCaptureSettings() {
         // given
         when(responseAttributes.isCapture()).thenReturn(false);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isCaptureEnabled(), is(false));
@@ -168,10 +164,10 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesCrashReportingSettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesCrashReportingSettings() {
         // given
         when(responseAttributes.isCaptureCrashes()).thenReturn(false);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isCrashReportingEnabled(), is(false));
@@ -180,10 +176,10 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesErrorReportingSettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesErrorReportingSettings() {
         // given
         when(responseAttributes.isCaptureErrors()).thenReturn(false);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isErrorReportingEnabled(), is(false));
@@ -192,10 +188,10 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesSendingIntervalSettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesSendingIntervalSettings() {
         // given
         when(responseAttributes.getSendIntervalInMilliseconds()).thenReturn(1234);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getSendIntervalInMilliseconds(), is(1234));
@@ -204,10 +200,10 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesServerIDSettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesServerIDSettings() {
         // given
         when(responseAttributes.getServerId()).thenReturn(42);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getServerID(), is(42));
@@ -216,10 +212,10 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesBeaconSizeSettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesBeaconSizeSettings() {
         // given
         when(responseAttributes.getMaxBeaconSizeInBytes()).thenReturn(100 * 1024);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getBeaconSizeInBytes(), is(100 * 1024));
@@ -228,10 +224,10 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesMultiplicitySettings() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesMultiplicitySettings() {
         // given
         when(responseAttributes.getMultiplicity()).thenReturn(7);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getMultiplicity(), is(7));
@@ -240,11 +236,11 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesSessionDuration() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesSessionDuration() {
         // given
         int sessionDuration = 73;
         when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getMaxSessionDurationInMilliseconds(), is(sessionDuration));
@@ -252,11 +248,11 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesMaxEventsPerSession() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesMaxEventsPerSession() {
         // given
         int eventsPerSession = 37;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getMaxEventsPerSession(), is(eventsPerSession));
@@ -264,12 +260,12 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseHasSplitBySessionEnabledIfMaxEventsGreaterZero() {
+    public void creatingAServerConfigurationFromResponseAttributesHasSplitBySessionEnabledIfMaxEventsGreaterZero() {
         // given
         int eventsPerSession = 1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isSessionSplitByEventsEnabled(), is(true));
@@ -283,7 +279,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = 0;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
@@ -297,7 +293,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = -1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
@@ -311,7 +307,7 @@ public class ServerConfigurationTest {
         int eventsPerSession = 1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
@@ -320,11 +316,11 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromStatusResponseCopiesSessionTimeout() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesSessionTimeout() {
         // given
         int sessionTimeout = 42;
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(sessionTimeout);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
@@ -332,11 +328,11 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingASessionConfigurationFromStatusResponseCopiesVisitStoreVersion() {
+    public void creatingASessionConfigurationFromResponseAttributesCopiesVisitStoreVersion() {
         // given
         int visitStoreVersion = 73;
         when(responseAttributes.getVisitStoreVersion()).thenReturn(visitStoreVersion);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // then
         assertThat(target.getVisitStoreVersion(), is(visitStoreVersion));
@@ -348,7 +344,7 @@ public class ServerConfigurationTest {
         // given
         when(responseAttributes.isCapture()).thenReturn(true);
         when(responseAttributes.getMultiplicity()).thenReturn(1);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingDataAllowed();
@@ -362,7 +358,7 @@ public class ServerConfigurationTest {
         // given
         when(responseAttributes.isCapture()).thenReturn(false);
         when(responseAttributes.getMultiplicity()).thenReturn(1);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingDataAllowed();
@@ -376,7 +372,7 @@ public class ServerConfigurationTest {
         // given
         when(responseAttributes.isCapture()).thenReturn(true);
         when(responseAttributes.getMultiplicity()).thenReturn(0);
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingDataAllowed();
@@ -392,7 +388,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMultiplicity()).thenReturn(1);
         when(responseAttributes.isCaptureCrashes()).thenReturn(true);
 
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingCrashesAllowed();
@@ -408,7 +404,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMultiplicity()).thenReturn(1);
         when(responseAttributes.isCaptureCrashes()).thenReturn(true);
 
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingCrashesAllowed();
@@ -424,7 +420,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMultiplicity()).thenReturn(1);
         when(responseAttributes.isCaptureCrashes()).thenReturn(false);
 
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingCrashesAllowed();
@@ -440,7 +436,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMultiplicity()).thenReturn(1);
         when(responseAttributes.isCaptureErrors()).thenReturn(true);
 
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingErrorsAllowed();
@@ -456,7 +452,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMultiplicity()).thenReturn(1);
         when(responseAttributes.isCaptureErrors()).thenReturn(true);
 
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingErrorsAllowed();
@@ -472,7 +468,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMultiplicity()).thenReturn(1);
         when(responseAttributes.isCaptureErrors()).thenReturn(false);
 
-        ServerConfiguration target = ServerConfiguration.from(statusResponse);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
 
         // when
         boolean obtained = target.isSendingErrorsAllowed();
@@ -971,7 +967,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         ServerConfiguration target = new ServerConfiguration.Builder().build();
-        ServerConfiguration other = ServerConfiguration.from(statusResponse);
+        ServerConfiguration other = ServerConfiguration.from(responseAttributes);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
 
@@ -989,7 +985,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         ServerConfiguration target = new ServerConfiguration.Builder().build();
-        ServerConfiguration other = ServerConfiguration.from(statusResponse);
+        ServerConfiguration other = ServerConfiguration.from(responseAttributes);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
 
@@ -1007,7 +1003,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
         ServerConfiguration target = new ServerConfiguration.Builder().build();
-        ServerConfiguration other = ServerConfiguration.from(statusResponse);
+        ServerConfiguration other = ServerConfiguration.from(responseAttributes);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
 

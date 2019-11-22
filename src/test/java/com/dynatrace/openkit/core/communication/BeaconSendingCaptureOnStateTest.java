@@ -121,12 +121,7 @@ public class BeaconSendingCaptureOnStateTest {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        StatusResponse contextResponse = StatusResponse.createSuccessResponse(
-                mock(Logger.class),
-                ResponseAttributesImpl.withUndefinedDefaults().build(),
-                200,
-                Collections.<String, List<String>>emptyMap()
-        );
+        ResponseAttributes contextAttributes = ResponseAttributesImpl.withUndefinedDefaults().build();
         StatusResponse successResponse = StatusResponse.createSuccessResponse(
                 mock(Logger.class),
                 ResponseAttributesImpl.withJsonDefaults().withMultiplicity(5).build(),
@@ -136,7 +131,7 @@ public class BeaconSendingCaptureOnStateTest {
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getLastStatusResponse()).thenReturn(contextResponse);
+        when(mockContext.getLastResponseAttributes()).thenReturn(contextAttributes);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
         when(mockClient.sendNewSessionRequest())
                 .thenReturn(successResponse) // first response valid
@@ -171,14 +166,14 @@ public class BeaconSendingCaptureOnStateTest {
         StatusResponse sessionRequestResponse = mock(StatusResponse.class);
         when(sessionRequestResponse.getResponseAttributes()).thenReturn(responseAttributes);
 
-        StatusResponse contextResponse = mock(StatusResponse.class);
-        when(contextResponse.merge(sessionRequestResponse)).thenReturn(sessionRequestResponse);
+        ResponseAttributes contextAttributes = mock(ResponseAttributes.class);
+        when(contextAttributes.merge(responseAttributes)).thenReturn(responseAttributes);
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockClient.sendNewSessionRequest()).thenReturn(sessionRequestResponse);
 
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getLastStatusResponse()).thenReturn(contextResponse);
+        when(mockContext.getLastResponseAttributes()).thenReturn(contextAttributes);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Collections.singletonList(mockSession5New));
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
         ArgumentCaptor<ServerConfiguration> serverConfigCaptor = ArgumentCaptor.forClass(ServerConfiguration.class);
@@ -187,7 +182,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // then
-        verify(contextResponse, times(1)).merge(sessionRequestResponse);
+        verify(contextAttributes, times(1)).merge(responseAttributes);
         verify(mockSession5New, times(1)).updateServerConfiguration(serverConfigCaptor.capture());
 
         ServerConfiguration serverConfig = serverConfigCaptor.getValue();
@@ -201,13 +196,13 @@ public class BeaconSendingCaptureOnStateTest {
 
         StatusResponse sessionRequestResponse = mock(StatusResponse.class);
         when(sessionRequestResponse.isErroneousResponse()).thenReturn(true);
-        StatusResponse contextResponse = mock(StatusResponse.class);
+        ResponseAttributes contextAttributes = mock(ResponseAttributes.class);
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockClient.sendNewSessionRequest()).thenReturn(sessionRequestResponse);
 
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getLastStatusResponse()).thenReturn(contextResponse);
+        when(mockContext.getLastResponseAttributes()).thenReturn(contextAttributes);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Collections.singletonList(mockSession5New));
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
 
@@ -215,7 +210,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // then
-        verifyZeroInteractions(contextResponse);
+        verifyZeroInteractions(contextAttributes);
         verify(mockSession5New, times(0)).updateServerConfiguration(any(ServerConfiguration.class));
     }
 

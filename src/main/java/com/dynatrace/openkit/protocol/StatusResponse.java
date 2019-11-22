@@ -131,30 +131,4 @@ public class StatusResponse {
     Map<String, List<String>> getHeaders() {
         return headers;
     }
-
-    /**
-     * Creates a new status response by merging the given status response into this one.
-     *
-     * <p>
-     *     Attributes from {@link ResponseAttributes} will be taken over selectively from the given status response in case they
-     *     are set / were sent from the server.
-     *     Response code and headers will be replaced with the ones of the given status response.
-     * </p>
-     *
-     * @param statusResponse the status response which will be merged together with this one into a new status response.
-     * @return a new status response instance by merging the given status response with this one.
-     */
-    public StatusResponse merge(StatusResponse statusResponse) {
-        if (statusResponse == null) {
-            return null;
-        }
-
-        ResponseAttributes mergedAttributes = responseAttributes.merge(statusResponse.getResponseAttributes());
-        return new StatusResponse(
-                logger,
-                mergedAttributes,
-                statusResponse.getResponseCode(),
-                statusResponse.getHeaders()
-        );
-    }
 }
