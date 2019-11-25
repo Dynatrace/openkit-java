@@ -20,6 +20,7 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
@@ -60,6 +61,7 @@ public class SessionImplTest {
     private Logger mockLogger;
     private OpenKitComposite mockParent;
     private Beacon mockBeacon;
+    private AdditionalQueryParameters mockAdditionalParameters;
 
     @Before
     public void setUp() {
@@ -73,6 +75,8 @@ public class SessionImplTest {
 
         // mock Beacon
         mockBeacon = mock(Beacon.class);
+
+        mockAdditionalParameters = mock(AdditionalQueryParameters.class);
     }
 
     @Test
@@ -478,11 +482,11 @@ public class SessionImplTest {
         HTTPClientProvider clientProvider = mock(HTTPClientProvider.class);
 
         // when
-        target.sendBeacon(clientProvider);
+        target.sendBeacon(clientProvider, mockAdditionalParameters);
 
         // then verify the proper methods being called
         verify(mockBeacon, times(1)).startSession();
-        verify(mockBeacon, times(1)).send(clientProvider);
+        verify(mockBeacon, times(1)).send(clientProvider, mockAdditionalParameters);
         verifyNoMoreInteractions(mockBeacon);
     }
 

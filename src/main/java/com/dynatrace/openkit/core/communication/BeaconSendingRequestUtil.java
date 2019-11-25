@@ -41,7 +41,7 @@ class BeaconSendingRequestUtil {
         int retry = 0;
 
         while (true) {
-            statusResponse = context.getHTTPClient().sendStatusRequest();
+            statusResponse = context.getHTTPClient().sendStatusRequest(context);
             if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)
                 || BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse) // is handled by the states
                 || retry >= numRetries

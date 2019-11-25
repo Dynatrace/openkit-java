@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.StatusResponse;
@@ -32,6 +33,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.inOrder;
@@ -60,7 +62,7 @@ public class BeaconSendingInitStateTest {
         // setup state context
         when(stateContext.getHTTPClient()).thenReturn(httpClient);
         // setup http client
-        when(httpClient.sendStatusRequest()).thenReturn(statusResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(statusResponse);
         // setup status response
         when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(statusResponse.isErroneousResponse()).thenReturn(false);
@@ -168,7 +170,7 @@ public class BeaconSendingInitStateTest {
     public void initIsTerminatedIfShutdownRequestedWithValidResponse() {
 
         // given
-        when(httpClient.sendStatusRequest()).thenReturn(mock(StatusResponse.class));
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(mock(StatusResponse.class));
         when(stateContext.isShutdownRequested()).thenReturn(true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
@@ -190,7 +192,7 @@ public class BeaconSendingInitStateTest {
         when(erroneousResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
-        when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(erroneousResponse);
         when(stateContext.isShutdownRequested()).thenAnswer(new Answer<Boolean>() {
             private int count = 0;
 
@@ -274,7 +276,7 @@ public class BeaconSendingInitStateTest {
         when(erroneousResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
-        when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(erroneousResponse);
         when(stateContext.isShutdownRequested()).thenReturn(false, false, false, false, false, true);
         InOrder inOrder = inOrder(stateContext);
 
@@ -300,7 +302,7 @@ public class BeaconSendingInitStateTest {
         when(erroneousResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(erroneousResponse.isErroneousResponse()).thenReturn(true);
 
-        when(httpClient.sendStatusRequest()).thenReturn(erroneousResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(erroneousResponse);
         when(stateContext.isShutdownRequested()).thenReturn(false)
                                                 .thenReturn(false)
                                                 .thenReturn(true);
@@ -316,7 +318,7 @@ public class BeaconSendingInitStateTest {
 
         // verify that the requests where sent N times - defined as constants in the state itself
         verify(stateContext, times(3)).getHTTPClient();
-        verify(httpClient, times(3)).sendStatusRequest();
+        verify(httpClient, times(3)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         // verify sleeps between each retry
         verify(stateContext, times(2)).sleep(anyLong());
@@ -388,7 +390,7 @@ public class BeaconSendingInitStateTest {
         when(tooManyRequestsResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
-        when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(tooManyRequestsResponse);
         when(stateContext.isShutdownRequested()).thenReturn(false, true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();
@@ -408,7 +410,7 @@ public class BeaconSendingInitStateTest {
         when(tooManyRequestsResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
-        when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(tooManyRequestsResponse);
         when(stateContext.isShutdownRequested()).thenReturn(false, true);
 
         BeaconSendingInitState target = new BeaconSendingInitState();

@@ -82,6 +82,7 @@ public class BeaconTest {
     private PrivacyConfiguration mockPrivacyConfiguration;
     private ServerConfiguration mockServerConfiguration;
     private HTTPClientConfiguration mockHttpClientConfiguration;
+    private AdditionalQueryParameters mockAdditionalParameters;
 
     private SessionIDProvider mockSessionIdProvider;
     private ThreadIDProvider mockThreadIDProvider;
@@ -132,6 +133,8 @@ public class BeaconTest {
         when(mockBeaconConfiguration.getServerConfiguration()).thenReturn(mockServerConfiguration);
         when(mockBeaconConfiguration.getHTTPClientConfiguration()).thenReturn(mockHttpClientConfiguration);
 
+        mockAdditionalParameters = mock(AdditionalQueryParameters.class);
+
         mockSessionIdProvider = mock(SessionIDProvider.class);
         when(mockSessionIdProvider.getNextSessionID()).thenReturn(SESSION_ID);
 
@@ -177,11 +180,12 @@ public class BeaconTest {
         // and when
         when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn("dummy");
 
-        target.send(httpClientProvider);
+        target.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
-        verify(httpClient, times(1)).sendBeaconRequest(ipCaptor.capture(), any(byte[].class));
+        verify(httpClient, times(1))
+                .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters));
 
         String capturedIp = ipCaptor.getValue();
         assertThat(capturedIp, is(""));
@@ -206,11 +210,12 @@ public class BeaconTest {
         // and when
         when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn("dummy");
 
-        target.send(httpClientProvider);
+        target.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
-        verify(httpClient, times(1)).sendBeaconRequest(ipCaptor.capture(), any(byte[].class));
+        verify(httpClient, times(1))
+                .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters));
 
         String capturedIp = ipCaptor.getValue();
         assertThat(capturedIp, is(""));
@@ -939,7 +944,7 @@ public class BeaconTest {
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(mockClient);
 
         // when
-        StatusResponse response = beacon.send(httpClientProvider);
+        StatusResponse response = beacon.send(httpClientProvider, mockAdditionalParameters);
 
         // then (verify, that null is returned as no data was sent)
         assertThat(response, nullValue());
@@ -963,18 +968,18 @@ public class BeaconTest {
                 responseCode,
                 Collections.<String, List<String>>emptyMap()
         );
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class)))
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
                 .thenReturn(successResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
         beacon.reportCrash("errorName", "errorReason", "errorStackTrace");
-        StatusResponse response = beacon.send(httpClientProvider);
+        StatusResponse response = beacon.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         assertThat(response, notNullValue());
         assertThat(response.getResponseCode(), is(responseCode));
-        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class));
+        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class), eq(mockAdditionalParameters));
     }
 
     @Test
@@ -990,17 +995,18 @@ public class BeaconTest {
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 418;
         StatusResponse errorResponse = StatusResponse.createErrorResponse(mockLogger, responseCode);
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class))).thenReturn(errorResponse);
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+                .thenReturn(errorResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
         beacon.reportCrash("errorName", "errorReason", "errorStackTrace");
-        StatusResponse response = beacon.send(httpClientProvider);
+        StatusResponse response = beacon.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         assertThat(response, notNullValue());
         assertThat(response.getResponseCode(), is(responseCode));
-        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class));
+        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class), eq(mockAdditionalParameters));
     }
 
     @Test
@@ -1031,7 +1037,7 @@ public class BeaconTest {
         };
 
         // when
-        StatusResponse obtained = target.send(httpClientProvider);
+        StatusResponse obtained = target.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         assertThat(obtained, is(nullValue()));

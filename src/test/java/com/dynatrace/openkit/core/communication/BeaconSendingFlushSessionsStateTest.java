@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.communication;
 
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -56,9 +57,12 @@ public class BeaconSendingFlushSessionsStateTest {
         StatusResponse mockStatusResponse = mock(StatusResponse.class);
         when(mockStatusResponse.getResponseCode()).thenReturn(200);
 
-        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(mockStatusResponse);
-        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class))).thenReturn(mockStatusResponse);
-        when(mockSession3Closed.sendBeacon(any(HTTPClientProvider.class))).thenReturn(mockStatusResponse);
+        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(mockStatusResponse);
+        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(mockStatusResponse);
+        when(mockSession3Closed.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(mockStatusResponse);
 
         HTTPClient mockHttpClient = mock(HTTPClient.class);
         mockContext = mock(BeaconSendingContext.class);
@@ -136,9 +140,12 @@ public class BeaconSendingFlushSessionsStateTest {
         target.doExecute(mockContext);
 
         // verify that beacons are sent
-        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession2Open, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession3Closed, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
     }
 
     @Test
@@ -154,9 +161,12 @@ public class BeaconSendingFlushSessionsStateTest {
         target.doExecute(mockContext);
 
         // verify that beacons are not sent, but cleared
-        verify(mockSession1Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession2Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession3Closed, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession2Open, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession3Closed, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession1Open, times(1)).clearCapturedData();
         verify(mockSession2Open, times(1)).clearCapturedData();
         verify(mockSession3Closed, times(1)).clearCapturedData();
@@ -172,15 +182,19 @@ public class BeaconSendingFlushSessionsStateTest {
         when(tooManyRequestsReceived.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsReceived.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
 
-        when(mockSession3Closed.sendBeacon(any(HTTPClientProvider.class))).thenReturn(tooManyRequestsReceived);
+        when(mockSession3Closed.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(tooManyRequestsReceived);
 
         // when
         target.doExecute(mockContext);
 
         // verify that beacons are not sent, but cleared
-        verify(mockSession1Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession2Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession3Closed, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession2Open, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession3Closed, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession1Open, times(1)).clearCapturedData();
         verify(mockSession2Open, times(1)).clearCapturedData();
         verify(mockSession3Closed, times(1)).clearCapturedData();

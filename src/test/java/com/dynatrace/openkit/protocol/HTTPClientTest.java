@@ -22,6 +22,7 @@ import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
 import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.BufferedReader;
@@ -46,6 +47,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -64,6 +66,8 @@ public class HTTPClientTest {
     private HTTPClientConfiguration configuration;
     private HttpURLConnectionWrapper httpURLConnectionWrapper;
 
+    private AdditionalQueryParameters mockAdditionalParameters;
+
     private Logger logger;
 
     @Before
@@ -77,6 +81,8 @@ public class HTTPClientTest {
 
         logger = mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
+
+        mockAdditionalParameters = mock(AdditionalQueryParameters.class);
     }
 
     @Test
@@ -106,7 +112,7 @@ public class HTTPClientTest {
         HTTPClient client = new HTTPClient(logger, configuration);
 
         // when
-        StatusResponse response = client.sendStatusRequest();
+        StatusResponse response = client.sendStatusRequest(mockAdditionalParameters);
 
         // then
         assertThat(response, is(notNullValue()));
@@ -495,7 +501,7 @@ public class HTTPClientTest {
         doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
 
         // when
-        StatusResponse obtained = target.sendStatusRequest();
+        StatusResponse obtained = target.sendStatusRequest(mockAdditionalParameters);
 
         // then
         assertThat(obtained, is(notNullValue()));
@@ -509,7 +515,7 @@ public class HTTPClientTest {
         doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
 
         // when
-        StatusResponse obtained = target.sendNewSessionRequest();
+        StatusResponse obtained = target.sendNewSessionRequest(mockAdditionalParameters);
 
         // then
         assertThat(obtained, is(notNullValue()));
@@ -523,10 +529,153 @@ public class HTTPClientTest {
         doReturn(null).when(target).sendRequest(Mockito.any(RequestType.class), anyString(), anyString(), Mockito.any(byte[].class), anyString());
 
         // when
-        StatusResponse obtained = target.sendBeaconRequest("127.0.0.1", "".getBytes(CHARSET));
+        StatusResponse obtained = target.sendBeaconRequest("127.0.0.1", "".getBytes(CHARSET), mockAdditionalParameters);
 
         // then
         assertThat(obtained, is(notNullValue()));
         assertThat(obtained.getResponseCode(), is(equalTo(Integer.MAX_VALUE)));
+    }
+
+    @Test
+    public void sendStatusRequestDoesNotAppendIfAdditionalQueryParametersAreNull() {
+        // given
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(any(RequestType.class), anyString(), anyString(), any(byte[].class), anyString());
+
+        // when
+        target.sendStatusRequest(null);
+
+        // then
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+
+        StringBuilder expectedUrl = initializeBaseUrl();
+        assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    @Test
+    public void sendStatusRequestAppendsAdditionalQueryParameters() {
+        // given
+        long timestamp = 1234;
+        AdditionalQueryParameters additionalQueryParameters = mock(AdditionalQueryParameters.class);
+        when(additionalQueryParameters.getConfigurationTimestamp()).thenReturn(timestamp);
+
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(any(RequestType.class), anyString(), anyString(), any(byte[].class), anyString());
+
+        // when
+        target.sendStatusRequest(additionalQueryParameters);
+
+        // then
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+
+        StringBuilder expectedUrl = initializeBaseUrl();
+        appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));
+        assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    @Test
+    public void sendNewSessionRequestDoesNotAppendIfAdditionalQueryParametersAreNull() {
+        // given
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(any(RequestType.class), anyString(), anyString(), any(byte[].class), anyString());
+
+        // when
+        target.sendNewSessionRequest(null);
+
+        // then
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+
+        StringBuilder expectedUrl = initializeBaseUrl();
+        appendUrlParameter(expectedUrl, "ns", "1");
+        assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    @Test
+    public void sendNewSessionRequestAppendsAdditionalQueryParameters() {
+        // given
+        long timestamp = 1234;
+        AdditionalQueryParameters additionalQueryParameters = mock(AdditionalQueryParameters.class);
+        when(additionalQueryParameters.getConfigurationTimestamp()).thenReturn(timestamp);
+
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(any(RequestType.class), anyString(), anyString(), any(byte[].class), anyString());
+
+        // when
+        target.sendNewSessionRequest(additionalQueryParameters);
+
+        // then
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+
+        StringBuilder expectedUrl = initializeBaseUrl();
+        appendUrlParameter(expectedUrl, "ns", "1");
+        appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));
+        assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    @Test
+    public void sendBeaconRequestDoesNotAppendIfAdditionalQueryParametersAreNull() {
+        // given
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(any(RequestType.class), anyString(), anyString(), any(byte[].class), anyString());
+
+        // when
+        target.sendBeaconRequest(null, null, null);
+
+        // then
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+
+        StringBuilder expectedUrl = initializeBaseUrl();
+        assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    @Test
+    public void sendBeaconRequestAppendsAdditionalQueryParameters() {
+        // given
+        long timestamp = 1234;
+        AdditionalQueryParameters additionalQueryParameters = mock(AdditionalQueryParameters.class);
+        when(additionalQueryParameters.getConfigurationTimestamp()).thenReturn(timestamp);
+
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
+        HTTPClient target = spy(new HTTPClient(logger, configuration));
+        doReturn(null).when(target).sendRequest(any(RequestType.class), anyString(), anyString(), any(byte[].class), anyString());
+
+        // when
+        target.sendBeaconRequest(null, null, additionalQueryParameters);
+
+        // then
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+
+        StringBuilder expectedUrl = initializeBaseUrl();
+        appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));
+        assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    private StringBuilder initializeBaseUrl() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(BASE_URL).append("?type=m");
+        appendUrlParameter(builder, "srvid", String.valueOf(SERVER_ID));
+        appendUrlParameter(builder, "app", APP_ID);
+        appendUrlParameter(builder, "va", ProtocolConstants.OPENKIT_VERSION);
+        appendUrlParameter(builder, "pt", String.valueOf(ProtocolConstants.PLATFORM_TYPE_OPENKIT));
+        appendUrlParameter(builder, "tt", ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
+        appendUrlParameter(builder, "resp", ProtocolConstants.RESPONSE_TYPE);
+
+        return builder;
+    }
+
+    private void appendUrlParameter(StringBuilder builder, String key, String value) {
+        builder.append("&").append(key).append("=").append(value);
     }
 }

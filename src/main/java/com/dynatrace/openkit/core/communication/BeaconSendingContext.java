@@ -21,6 +21,7 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
@@ -45,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * All public methods are thread safe, unless explicitly stated.
  * </p>
  */
-public class BeaconSendingContext {
+public class BeaconSendingContext implements AdditionalQueryParameters {
 
     /**
      * Default sleep time in milliseconds (used by {@link #sleep()}).
@@ -431,7 +432,7 @@ public class BeaconSendingContext {
             return;
         }
 
-        lastResponseAttributes = lastResponseAttributes.merge(receivedResponse.getResponseAttributes());
+        updateLastResponseAttributesFrom(receivedResponse);
 
         serverConfiguration = new ServerConfiguration.Builder(lastResponseAttributes).build();
         if (!isCaptureOn()) {
@@ -443,6 +444,22 @@ public class BeaconSendingContext {
         if (serverId != httpClientConfiguration.getServerID()) {
             httpClientConfiguration = createHttpClientConfigurationWith(serverId);
         }
+    }
+
+    /**
+     * Updates the last known response attributes of this context from the given status response if the given status
+     * response {@link BeaconSendingResponseUtil#isSuccessfulResponse(StatusResponse) is succesful}.
+     *
+     * @param statusResponse the status response from which to update the last response attributes.
+     * @return in case the given status response was successful the updated response attributes are returned. Otherwise
+     *   the current response attributes are returned.
+     */
+    ResponseAttributes updateLastResponseAttributesFrom(StatusResponse statusResponse) {
+        if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
+            lastResponseAttributes = lastResponseAttributes.merge(statusResponse.getResponseAttributes());
+        }
+
+        return lastResponseAttributes;
     }
 
     HTTPClientConfiguration createHttpClientConfigurationWith(int serverId) {
@@ -559,5 +576,14 @@ public class BeaconSendingContext {
      */
     boolean removeSession(SessionImpl session) {
         return sessions.remove(session);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// AdditionalQueryParameters
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public long getConfigurationTimestamp() {
+        return lastResponseAttributes.getTimestampInMilliseconds();
     }
 }

@@ -16,8 +16,8 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
-import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -47,7 +48,7 @@ public class BeaconSendingCaptureOffStateTest {
         when(mockResponse.isErroneousResponse()).thenReturn(false);
 
         httpClient = mock(HTTPClient.class);
-        when(httpClient.sendStatusRequest()).thenReturn(mockResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(mockResponse);
 
         mockContext = mock(BeaconSendingContext.class);
         when(mockContext.getHTTPClient()).thenReturn(httpClient);
@@ -124,7 +125,7 @@ public class BeaconSendingCaptureOffStateTest {
         when(tooManyRequestsResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_TOO_MANY_REQUESTS);
         when(tooManyRequestsResponse.isErroneousResponse()).thenReturn(true);
         when(tooManyRequestsResponse.getRetryAfterInMilliseconds()).thenReturn(1234L * 1000L);
-        when(httpClient.sendStatusRequest()).thenReturn(tooManyRequestsResponse);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(tooManyRequestsResponse);
         when(mockContext.isCaptureOn()).thenReturn(false);
         ArgumentCaptor<BeaconSendingCaptureOffState> stateCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);
 

@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.communication;
 
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import org.junit.Before;
@@ -27,6 +28,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -50,7 +52,7 @@ public class BeaconSendingRequestUtilTest {
         when(response.isErroneousResponse()).thenReturn(false);
 
         when(context.getHTTPClient()).thenReturn(httpClient);
-        when(httpClient.sendStatusRequest()).thenReturn(response);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(response);
     }
 
     @Test
@@ -70,7 +72,7 @@ public class BeaconSendingRequestUtilTest {
         verify(context, times(1)).isShutdownRequested();
         verify(context, times(1)).getHTTPClient();
 
-        verify(httpClient, times(1)).sendStatusRequest();
+        verify(httpClient, times(1)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         verifyNoMoreInteractions(context, httpClient);
     }
@@ -91,7 +93,7 @@ public class BeaconSendingRequestUtilTest {
 
         verify(context, times(4)).getHTTPClient();
         verify(context, times(3)).sleep(anyLong());
-        verify(httpClient, times(4)).sendStatusRequest();
+        verify(httpClient, times(4)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         verifyNoMoreInteractions(httpClient);
     }
@@ -111,7 +113,7 @@ public class BeaconSendingRequestUtilTest {
 
         verify(context, times(1)).getHTTPClient();
 
-        verify(httpClient, times(1)).sendStatusRequest();
+        verify(httpClient, times(1)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         verifyNoMoreInteractions(context, httpClient);
     }
@@ -123,7 +125,7 @@ public class BeaconSendingRequestUtilTest {
         when(response.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(response.isErroneousResponse()).thenReturn(true);
         when(context.isShutdownRequested()).thenReturn(false);
-        when(httpClient.sendStatusRequest()).thenReturn(response);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(response);
         InOrder inOrder = inOrder(context);
 
         // when
@@ -132,7 +134,7 @@ public class BeaconSendingRequestUtilTest {
         // then
         assertThat(obtained, is(sameInstance(response)));
         verify(context, times(6)).getHTTPClient();
-        verify(httpClient, times(6)).sendStatusRequest();
+        verify(httpClient, times(6)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         inOrder.verify(context).sleep(1000L);
         inOrder.verify(context).sleep(2000L);
@@ -146,7 +148,7 @@ public class BeaconSendingRequestUtilTest {
 
         // given
         when(context.isShutdownRequested()).thenReturn(false);
-        when(httpClient.sendStatusRequest()).thenReturn(null);
+        when(httpClient.sendStatusRequest(any(AdditionalQueryParameters.class))).thenReturn(null);
 
         // when
         StatusResponse obtained = BeaconSendingRequestUtil.sendStatusRequest(context, 3, 1000L);
@@ -156,7 +158,7 @@ public class BeaconSendingRequestUtilTest {
 
         verify(context, times(4)).getHTTPClient();
         verify(context, times(3)).sleep(anyLong());
-        verify(httpClient, times(4)).sendStatusRequest();
+        verify(httpClient, times(4)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         verifyNoMoreInteractions(httpClient);
     }
@@ -177,7 +179,7 @@ public class BeaconSendingRequestUtilTest {
 
         verify(context, times(1)).getHTTPClient();
         verify(context, times(0)).sleep(anyLong());
-        verify(httpClient, times(1)).sendStatusRequest();
+        verify(httpClient, times(1)).sendStatusRequest(any(AdditionalQueryParameters.class));
 
         verifyNoMoreInteractions(httpClient);
     }

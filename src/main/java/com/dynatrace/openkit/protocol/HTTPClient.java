@@ -80,6 +80,8 @@ public class HTTPClient {
     private static final String QUERY_KEY_VERSION = "va";
     private static final String QUERY_KEY_PLATFORM_TYPE = "pt";
     private static final String QUERY_KEY_AGENT_TECHNOLOGY_TYPE = "tt";
+    private static final String QUERY_KEY_RESPONSE_TYPE = "resp";
+    private static final String QUERY_KEY_CONFIG_TIMESTAMP = "cts";
     private static final String QUERY_KEY_NEW_SESSION = "ns";
 
     // additional reserved characters for URL encoding
@@ -114,23 +116,29 @@ public class HTTPClient {
     // *** public methods ***
 
     // sends a status check request and returns a status response
-    public StatusResponse sendStatusRequest() {
-        StatusResponse response = sendRequest(RequestType.STATUS, monitorURL, null, null, "GET");
+    public StatusResponse sendStatusRequest(AdditionalQueryParameters additionalParameters) {
+        String url = appendAdditionalQueryParameters(monitorURL, additionalParameters);
+        StatusResponse response = sendRequest(RequestType.STATUS, url, null, null, "GET");
         return response == null
                 ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
                 : response;
     }
 
-    public StatusResponse sendNewSessionRequest() {
-        StatusResponse response = sendRequest(RequestType.NEW_SESSION, newSessionURL, null, null, "GET");
+    public StatusResponse sendNewSessionRequest(AdditionalQueryParameters additionalParameters) {
+        String url = appendAdditionalQueryParameters(newSessionURL, additionalParameters);
+        StatusResponse response = sendRequest(RequestType.NEW_SESSION, url, null, null, "GET");
         return response == null
                 ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
                 : response;
     }
 
     // sends a beacon send request and returns a status response
-    public StatusResponse sendBeaconRequest(String clientIPAddress, byte[] data) {
-        StatusResponse response = sendRequest(RequestType.BEACON, monitorURL, clientIPAddress, data, "POST");
+    public StatusResponse sendBeaconRequest(
+            String clientIPAddress,
+            byte[] data,
+            AdditionalQueryParameters additionalParameters) {
+        String url = appendAdditionalQueryParameters(monitorURL, additionalParameters);
+        StatusResponse response = sendRequest(RequestType.BEACON, url, clientIPAddress, data, "POST");
         return response == null
                 ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
                 : response;
@@ -322,6 +330,7 @@ public class HTTPClient {
         appendQueryParam(monitorURLBuilder, QUERY_KEY_VERSION, ProtocolConstants.OPENKIT_VERSION);
         appendQueryParam(monitorURLBuilder, QUERY_KEY_PLATFORM_TYPE, String.valueOf(ProtocolConstants.PLATFORM_TYPE_OPENKIT));
         appendQueryParam(monitorURLBuilder, QUERY_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
+        appendQueryParam(monitorURLBuilder, QUERY_KEY_RESPONSE_TYPE, ProtocolConstants.RESPONSE_TYPE);
 
         return monitorURLBuilder.toString();
     }
@@ -332,6 +341,17 @@ public class HTTPClient {
         appendQueryParam(monitorURLBuilder, QUERY_KEY_NEW_SESSION, "1");
 
         return monitorURLBuilder.toString();
+    }
+
+    private static String appendAdditionalQueryParameters(String baseUrl, AdditionalQueryParameters parameters) {
+        if (parameters == null) {
+            return baseUrl;
+        }
+
+        StringBuilder builder = new StringBuilder(baseUrl);
+        appendQueryParam(builder, QUERY_KEY_CONFIG_TIMESTAMP, Long.toString(parameters.getConfigurationTimestamp()));
+
+        return builder.toString();
     }
 
     // helper method for appending query parameters

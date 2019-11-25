@@ -22,6 +22,7 @@ import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesDefaults;
@@ -79,7 +80,8 @@ public class BeaconSendingContextTest {
                 200,
                 Collections.<String, List<String>>emptyMap()
         );
-        when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class))).thenReturn(statusResponse);
+        when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
 
         httpClientProvider = mock(HTTPClientProvider.class);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
@@ -909,6 +911,88 @@ public class BeaconSendingContextTest {
 
         // then
         assertThat(obtained, is(serverId));
+    }
+
+    @Test
+    public void updateResponseAttributesFromDoesNothingIfStatusResponseIsNull() {
+        // given
+        BeaconSendingContext target = createBeaconSendingContext().build();
+        ResponseAttributes initialAttributes = target.getLastResponseAttributes();
+
+        // when
+        ResponseAttributes obtained = target.updateLastResponseAttributesFrom(null);
+
+        // then
+        assertThat(obtained, is(equalTo(initialAttributes)));
+    }
+
+    @Test
+    public void updateResponseAttributesFromDoesNothingIfStatusResponseIsNotSuccessful() {
+        // given
+        StatusResponse response = mock(StatusResponse.class);
+        when(response.isErroneousResponse()).thenReturn(true);
+        BeaconSendingContext target = createBeaconSendingContext().build();
+        ResponseAttributes initialAttributes = target.getLastResponseAttributes();
+
+        // when
+        ResponseAttributes obtained = target.updateLastResponseAttributesFrom(response);
+
+        // then
+        assertThat(obtained, is(equalTo(initialAttributes)));
+        verify(response, times(1)).isErroneousResponse();
+        verifyNoMoreInteractions(response);
+    }
+
+    @Test
+    public void updateResponseAttributesFromMergesResponseAttributesFromStatusResponse() {
+        // given
+        int serverId = 9999;
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                .withServerId(serverId).build();
+        StatusResponse response = mock(StatusResponse.class);
+        when(response.getResponseAttributes()).thenReturn(attributes);
+        when(response.isErroneousResponse()).thenReturn(false);
+
+        BeaconSendingContext target = createBeaconSendingContext().build();
+        ResponseAttributes initialAttributes  = target.getLastResponseAttributes();
+
+        // when
+        ResponseAttributes obtained = target.updateLastResponseAttributesFrom(response);
+
+        // then
+        assertThat(obtained, is(equalTo(target.getLastResponseAttributes())));
+        assertThat(obtained, is(not(equalTo(initialAttributes))));
+        assertThat(obtained, is(not(equalTo(attributes))));
+        assertThat(obtained.getServerId(), is(serverId));
+    }
+
+    @Test
+    public void getConfigurationTimestampReturnsZeroOnDefault() {
+        // given
+        BeaconSendingContext target = createBeaconSendingContext().build();
+
+        // when
+        long obtained = target.getConfigurationTimestamp();
+
+        // then
+        assertThat(obtained, is(0L));
+    }
+
+    @Test
+    public void getConfigurationTimestampReturnsValueFromResponseAttributes() {
+        // given
+        long timestamp = 1234;
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                .withTimestampInMilliseconds(timestamp).build();
+        StatusResponse response = StatusResponse.createSuccessResponse(logger, attributes, 200, Collections.<String, List<String>>emptyMap()
+        );
+        BeaconSendingContext target = createBeaconSendingContext().build();
+
+        // when
+        target.updateLastResponseAttributesFrom(response);
+
+        // then
+        assertThat(target.getConfigurationTimestamp(), is(timestamp));
     }
 
     private TestBeaconSendingContextBuilder createBeaconSendingContext() {

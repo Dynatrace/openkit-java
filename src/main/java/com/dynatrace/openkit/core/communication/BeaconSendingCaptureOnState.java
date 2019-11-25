@@ -104,11 +104,10 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
                 continue;
             }
 
-            statusResponse = context.getHTTPClient().sendNewSessionRequest();
+            statusResponse = context.getHTTPClient().sendNewSessionRequest(context);
             if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-                ResponseAttributes mergedAttributes = context.getLastResponseAttributes()
-                        .merge(statusResponse.getResponseAttributes());
-                ServerConfiguration newServerConfig = ServerConfiguration.from(mergedAttributes);
+                ResponseAttributes updatedAttributes = context.updateLastResponseAttributesFrom(statusResponse);
+                ServerConfiguration newServerConfig = ServerConfiguration.from(updatedAttributes);
                 session.updateServerConfiguration(newServerConfig);
             } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
                 // server is currently overloaded, return immediately
@@ -136,7 +135,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
         for (SessionImpl finishedSession : finishedSessions) {
             if (finishedSession.isDataSendingAllowed()) {
-                statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider());
+                statusResponse = finishedSession.sendBeacon(context.getHTTPClientProvider(), context);
                 if (!BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
                     // something went wrong,
                     if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse) || !finishedSession.isEmpty()) {
@@ -172,7 +171,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
         List<SessionImpl> openSessions = context.getAllOpenAndConfiguredSessions();
         for (SessionImpl session : openSessions) {
             if (session.isDataSendingAllowed()) {
-                statusResponse = session.sendBeacon(context.getHTTPClientProvider());
+                statusResponse = session.sendBeacon(context.getHTTPClientProvider(), context);
                 if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {
                     // server is currently overloaded, return immediately
                     break;

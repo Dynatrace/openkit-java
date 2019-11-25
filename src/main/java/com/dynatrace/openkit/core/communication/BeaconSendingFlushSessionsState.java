@@ -57,7 +57,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         List<SessionImpl> finishedSessions = context.getAllFinishedAndConfiguredSessions();
         for (SessionImpl finishedSession : finishedSessions) {
             if (!tooManyRequestsReceived && finishedSession.isDataSendingAllowed()) {
-                StatusResponse response = finishedSession.sendBeacon(context.getHTTPClientProvider());
+                StatusResponse response = finishedSession.sendBeacon(context.getHTTPClientProvider(), context);
                 if (BeaconSendingResponseUtil.isTooManyRequestsResponse(response)) {
                     tooManyRequestsReceived = true;
                 }

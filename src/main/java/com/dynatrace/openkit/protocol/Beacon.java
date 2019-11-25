@@ -643,10 +643,11 @@ public class Beacon {
      * </p>
      *
      * @param provider Provider for getting an {@link HTTPClient} required to send the data.
+     * @param additionalParameters additional parameters that will be send with the beacon request (can be {@code null}).
      *
      * @return Returns the last status response retrieved from the server side, or {@code null} if an error occurred.
      */
-    public StatusResponse send(HTTPClientProvider provider) {
+    public StatusResponse send(HTTPClientProvider provider, AdditionalQueryParameters additionalParameters) {
 
         HTTPClient httpClient = provider.createClient(configuration.getHTTPClientConfiguration());
         StatusResponse response = null;
@@ -675,7 +676,7 @@ public class Beacon {
             }
 
             // send the request
-            response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon);
+            response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon, additionalParameters);
             if (response == null || response.isErroneousResponse()) {
                 // error happened - but don't know what exactly
                 // reset the previously retrieved chunk (restore it in internal cache) & retry another time

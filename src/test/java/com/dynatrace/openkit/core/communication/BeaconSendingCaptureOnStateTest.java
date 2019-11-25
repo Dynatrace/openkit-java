@@ -19,6 +19,7 @@ package com.dynatrace.openkit.core.communication;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
@@ -72,9 +73,9 @@ public class BeaconSendingCaptureOnStateTest {
                 Collections.<String, List<String>>emptyMap()
         );
 
-        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class)))
+        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
                 .thenReturn(successResponse);
-        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class)))
+        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
                 .thenReturn(StatusResponse.createErrorResponse(mock(Logger.class), 404));
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
 
@@ -121,7 +122,6 @@ public class BeaconSendingCaptureOnStateTest {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        ResponseAttributes contextAttributes = ResponseAttributesImpl.withUndefinedDefaults().build();
         StatusResponse successResponse = StatusResponse.createSuccessResponse(
                 mock(Logger.class),
                 ResponseAttributesImpl.withJsonDefaults().withMultiplicity(5).build(),
@@ -131,9 +131,9 @@ public class BeaconSendingCaptureOnStateTest {
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getLastResponseAttributes()).thenReturn(contextAttributes);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
-        when(mockClient.sendNewSessionRequest())
+        when(mockContext.updateLastResponseAttributesFrom(any(StatusResponse.class))).thenReturn(successResponse.getResponseAttributes());
+        when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class)))
                 .thenReturn(successResponse) // first response valid
                 .thenReturn(StatusResponse.createErrorResponse(mock(Logger.class), StatusResponse.HTTP_BAD_REQUEST)); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
@@ -145,7 +145,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // verify for both new sessions a new session request has been made
-        verify(mockClient, times(2)).sendNewSessionRequest();
+        verify(mockClient, times(2)).sendNewSessionRequest(mockContext);
 
         // verify first has been updated, second decreased
         verify(mockSession5New, times(1)).updateServerConfiguration(serverConfigCaptor.capture());
@@ -156,7 +156,7 @@ public class BeaconSendingCaptureOnStateTest {
     }
 
     @Test
-    public void successfulNewSessionRequestMergesStatusResponse() {
+    public void successfulNewSessionRequestUpdateLastResponseAttributes() {
         // given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
@@ -166,14 +166,11 @@ public class BeaconSendingCaptureOnStateTest {
         StatusResponse sessionRequestResponse = mock(StatusResponse.class);
         when(sessionRequestResponse.getResponseAttributes()).thenReturn(responseAttributes);
 
-        ResponseAttributes contextAttributes = mock(ResponseAttributes.class);
-        when(contextAttributes.merge(responseAttributes)).thenReturn(responseAttributes);
+        when(mockContext.updateLastResponseAttributesFrom(any(StatusResponse.class))).thenReturn(responseAttributes);
 
         HTTPClient mockClient = mock(HTTPClient.class);
-        when(mockClient.sendNewSessionRequest()).thenReturn(sessionRequestResponse);
-
+        when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class))).thenReturn(sessionRequestResponse);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
-        when(mockContext.getLastResponseAttributes()).thenReturn(contextAttributes);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Collections.singletonList(mockSession5New));
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
         ArgumentCaptor<ServerConfiguration> serverConfigCaptor = ArgumentCaptor.forClass(ServerConfiguration.class);
@@ -182,7 +179,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // then
-        verify(contextAttributes, times(1)).merge(responseAttributes);
+        verify(mockContext, times(1)).updateLastResponseAttributesFrom(sessionRequestResponse);
         verify(mockSession5New, times(1)).updateServerConfiguration(serverConfigCaptor.capture());
 
         ServerConfiguration serverConfig = serverConfigCaptor.getValue();
@@ -199,7 +196,7 @@ public class BeaconSendingCaptureOnStateTest {
         ResponseAttributes contextAttributes = mock(ResponseAttributes.class);
 
         HTTPClient mockClient = mock(HTTPClient.class);
-        when(mockClient.sendNewSessionRequest()).thenReturn(sessionRequestResponse);
+        when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class))).thenReturn(sessionRequestResponse);
 
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getLastResponseAttributes()).thenReturn(contextAttributes);
@@ -228,7 +225,7 @@ public class BeaconSendingCaptureOnStateTest {
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
-        when(mockClient.sendNewSessionRequest())
+        when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class)))
                 .thenReturn(successResponse) // first response valid
                 .thenReturn(StatusResponse.createErrorResponse(mock(Logger.class), StatusResponse.HTTP_BAD_REQUEST)); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(false);
@@ -238,7 +235,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // verify for no session a new session request has been made
-        verify(mockClient, times(0)).sendNewSessionRequest();
+        verify(mockClient, times(0)).sendNewSessionRequest(mockContext);
 
         // verify both sessions disabled capture
         verify(mockSession5New, times(1)).disableCapture();
@@ -258,7 +255,7 @@ public class BeaconSendingCaptureOnStateTest {
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
-        when(mockClient.sendNewSessionRequest())
+        when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class)))
                 .thenReturn(statusResponse); // second response invalid
         when(mockSession5New.canSendNewSessionRequest()).thenReturn(true);
         when(mockSession6New.canSendNewSessionRequest()).thenReturn(true);
@@ -267,7 +264,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // verify for first new sessions a new session request has been made
-        verify(mockClient, times(1)).sendNewSessionRequest();
+        verify(mockClient, times(1)).sendNewSessionRequest(mockContext);
 
         // verify no changes on first
         verify(mockSession5New, times(1)).canSendNewSessionRequest();
@@ -295,16 +292,20 @@ public class BeaconSendingCaptureOnStateTest {
         when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(statusResponse.isErroneousResponse()).thenReturn(false);
 
-        when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
-        when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
+        when(mockSession3Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
+        when(mockSession4Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
         when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
         when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
 
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession4Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Finished, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession4Finished, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
 
         // also verify that the session are removed
         verify(mockContext, times(1)).removeSession(mockSession3Finished);
@@ -316,16 +317,20 @@ public class BeaconSendingCaptureOnStateTest {
         //given
         BeaconSendingCaptureOnState target = new BeaconSendingCaptureOnState();
 
-        when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
-        when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
+        when(mockSession3Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(mock(StatusResponse.class));
+        when(mockSession4Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(mock(StatusResponse.class));
         when(mockSession3Finished.isDataSendingAllowed()).thenReturn(false);
         when(mockSession4Finished.isDataSendingAllowed()).thenReturn(false);
 
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession3Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession4Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Finished, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession4Finished, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
 
         // also verify that the session are removed
         verify(mockContext, times(1)).removeSession(mockSession3Finished);
@@ -341,8 +346,10 @@ public class BeaconSendingCaptureOnStateTest {
         when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_BAD_REQUEST);
         when(statusResponse.isErroneousResponse()).thenReturn(true);
 
-        when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
-        when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(mock(StatusResponse.class));
+        when(mockSession3Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
+        when(mockSession4Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(mock(StatusResponse.class));
         when(mockSession3Finished.isEmpty()).thenReturn(false);
         when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
         when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
@@ -350,8 +357,10 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession4Finished, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Finished, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession4Finished, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
 
         verify(mockContext, times(1)).getAllFinishedAndConfiguredSessions();
         verify(mockContext, times(0)).removeSession(any(SessionImpl.class));
@@ -370,8 +379,10 @@ public class BeaconSendingCaptureOnStateTest {
         when(statusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
         when(statusResponse.isErroneousResponse()).thenReturn(false);
 
-        when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(erroneousStatusResponse);
-        when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
+        when(mockSession3Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(erroneousStatusResponse);
+        when(mockSession4Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
         when(mockSession3Finished.isEmpty()).thenReturn(true);
         when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
         when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
@@ -379,8 +390,10 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession4Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Finished, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession4Finished, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession3Finished, times(1)).clearCapturedData();
         verify(mockSession4Finished, times(1)).clearCapturedData();
 
@@ -399,15 +412,18 @@ public class BeaconSendingCaptureOnStateTest {
         when(statusResponse.isErroneousResponse()).thenReturn(true);
         when(statusResponse.getRetryAfterInMilliseconds()).thenReturn(12345L);
 
-        when(mockSession3Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
-        when(mockSession4Finished.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
+        when(mockSession3Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
+        when(mockSession4Finished.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
         when(mockSession3Finished.isDataSendingAllowed()).thenReturn(true);
         when(mockSession4Finished.isDataSendingAllowed()).thenReturn(true);
 
         //when calling execute
         target.execute(mockContext);
         verify(mockSession3Finished, times(1)).isDataSendingAllowed();
-        verify(mockSession3Finished, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession3Finished, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verifyNoMoreInteractions(mockSession3Finished);
 
         // verify no interaction with second finished session
@@ -436,8 +452,10 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession2Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession2Open, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
     }
 
@@ -451,8 +469,10 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession1Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
-        verify(mockSession2Open, times(0)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+        verify(mockSession2Open, times(0))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession1Open, times(1)).clearCapturedData();
         verify(mockSession2Open, times(1)).clearCapturedData();
         verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
@@ -466,8 +486,10 @@ public class BeaconSendingCaptureOnStateTest {
         when(statusResponse.isErroneousResponse()).thenReturn(true);
         when(statusResponse.getRetryAfterInMilliseconds()).thenReturn(12345L);
 
-        when(mockSession1Open.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
-        when(mockSession2Open.sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class))).thenReturn(statusResponse);
+        when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
+        when(mockSession2Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
+                .thenReturn(statusResponse);
         when(mockSession1Open.isDataSendingAllowed()).thenReturn(true);
         when(mockSession2Open.isDataSendingAllowed()).thenReturn(true);
 
@@ -476,7 +498,8 @@ public class BeaconSendingCaptureOnStateTest {
         //when calling execute
         target.execute(mockContext);
 
-        verify(mockSession1Open, times(1)).sendBeacon(org.mockito.Matchers.any(HTTPClientProvider.class));
+        verify(mockSession1Open, times(1))
+                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession1Open, times(1)).isDataSendingAllowed();
         verifyNoMoreInteractions(mockSession1Open);
 

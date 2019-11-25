@@ -21,6 +21,7 @@ import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
+import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
@@ -246,11 +247,12 @@ public class SessionImpl extends OpenKitComposite implements Session {
      * Sends the current beacon state.
      *
      * @param clientProvider Provider class providing the client for data transmission.
+     * @param additionalParameters additional parameters that will be appended to the beacon request (can be {@code null}).
      *
      * @return Response from client.
      */
-    public StatusResponse sendBeacon(HTTPClientProvider clientProvider) {
-        return beacon.send(clientProvider);
+    public StatusResponse sendBeacon(HTTPClientProvider clientProvider, AdditionalQueryParameters additionalParameters) {
+        return beacon.send(clientProvider, additionalParameters);
     }
 
     /**
