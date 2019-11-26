@@ -21,6 +21,7 @@ import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
+import com.dynatrace.openkit.protocol.BeaconInitializer;
 import com.dynatrace.openkit.providers.DefaultRandomNumberGenerator;
 import com.dynatrace.openkit.providers.FixedRandomNumberGenerator;
 import com.dynatrace.openkit.providers.FixedSessionIdProvider;
@@ -29,7 +30,7 @@ import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
-public class SessionCreatorImpl implements SessionCreator {
+public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
 
     // log message reporter
     private final Logger logger;
@@ -47,6 +48,7 @@ public class SessionCreatorImpl implements SessionCreator {
     private final int serverId;
     private final SessionIDProvider sessionIdProvider;
     private final RandomNumberGenerator randomNumberGenerator;
+
     private int sessionSequenceNumber;
 
     SessionCreatorImpl(SessionCreatorInput input, String clientIpAddress) {
@@ -70,28 +72,56 @@ public class SessionCreatorImpl implements SessionCreator {
                 privacyConfiguration,
                 serverId
         );
-        Beacon beacon = new Beacon(
-                logger,
-                beaconCache,
-                configuration,
-                clientIpAddress,
-                sessionIdProvider,
-                threadIdProvider,
-                timingProvider,
-                randomNumberGenerator
-        );
 
+        Beacon beacon = new Beacon(this, configuration);
         SessionImpl session = new SessionImpl(logger, parent, beacon);
+
         sessionSequenceNumber++;
 
         return session;
     }
 
-    int getSessionSequenceNumber() {
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// BeaconInitializer implementation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
+    @Override
+    public BeaconCache getBeaconCache() {
+        return beaconCache;
+    }
+
+    @Override
+    public String getClientIpAddress() {
+        return clientIpAddress;
+    }
+
+    @Override
+    public SessionIDProvider getSessionIdProvider() {
+        return sessionIdProvider;
+    }
+
+    @Override
+    public int getSessionSequenceNumber() {
         return sessionSequenceNumber;
     }
 
-    RandomNumberGenerator getRandomNumberGenerator() {
+    @Override
+    public ThreadIDProvider getThreadIdProvider() {
+        return threadIdProvider;
+    }
+
+    @Override
+    public TimingProvider getTimingProvider() {
+        return timingProvider;
+    }
+
+    @Override
+    public RandomNumberGenerator getRandomNumberGenerator() {
         return randomNumberGenerator;
     }
 }

@@ -264,9 +264,16 @@ public class ServerConfiguration {
      * Merges given {@code other} with {@code this} instance and return the merged instance.
      *
      * <p>
-     * Most fields are taken from {@code other}, except for {@link #multiplicity} and {@link #serverID}
-     * which doe not change.
+     * Most fields are taken from {@code other}, except for the following which do not change:
      * </p>
+     * <ul>
+     *     <li>{@link #multiplicity}</li>
+     *     <li>{@link #serverID}</li>
+     *     <li>{@link #maxEventsPerSession}</li>
+     *     <li>{@link #maxSessionDurationInMilliseconds}</li>
+     *     <li>{@link #sessionTimeoutInMilliseconds}</li>
+     *     <li>{@link #visitStoreVersion}</li>
+     * </ul>
      *
      * @param other The other instance to merge with.
      * @return New {@link ServerConfiguration} instance with merged values.
@@ -276,7 +283,12 @@ public class ServerConfiguration {
 
         // settings from this
         builder.withMultiplicity(this.getMultiplicity())
-                .withServerID(this.getServerID());
+                .withServerID(this.getServerID())
+                .withMaxSessionDurationInMilliseconds(this.getMaxSessionDurationInMilliseconds())
+                .withMaxEventsPerSession(this.getMaxEventsPerSession())
+                .withSessionTimeoutInMilliseconds(this.getSessionTimeoutInMilliseconds())
+                .withVisitStoreVersion(this.getVisitStoreVersion());
+        builder.isSessionSplitByEventsEnabled = this.isSessionSplitByEventsEnabled();
 
         return builder.build();
     }

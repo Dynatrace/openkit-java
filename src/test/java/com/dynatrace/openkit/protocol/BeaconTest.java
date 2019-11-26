@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
+import com.dynatrace.openkit.CrashReportingLevel;
+import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
@@ -46,8 +48,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.emptyArray;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -87,6 +87,7 @@ public class BeaconTest {
     private SessionIDProvider mockSessionIdProvider;
     private ThreadIDProvider mockThreadIDProvider;
     private TimingProvider mockTimingProvider;
+    private RandomNumberGenerator mockRandom;
     private OpenKitComposite parentOpenKitObject;
 
     private Logger mockLogger;
@@ -114,6 +115,8 @@ public class BeaconTest {
         when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(true);
         when(mockPrivacyConfiguration.isCrashReportingAllowed()).thenReturn(true);
         when(mockPrivacyConfiguration.isUserIdentificationAllowed()).thenReturn(true);
+        when(mockPrivacyConfiguration.getDataCollectionLevel()).thenReturn(DataCollectionLevel.USER_BEHAVIOR);
+        when(mockPrivacyConfiguration.getCrashReportingLevel()).thenReturn(CrashReportingLevel.OPT_IN_CRASHES);
 
         mockServerConfiguration = mock(ServerConfiguration.class);
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
@@ -149,6 +152,8 @@ public class BeaconTest {
 
         parentOpenKitObject = mock(OpenKitComposite.class);
         when(parentOpenKitObject.getActionID()).thenReturn(0);
+
+        mockRandom = mock(RandomNumberGenerator.class);
     }
 
     @Test
@@ -318,6 +323,61 @@ public class BeaconTest {
 
         // also ensure that the application ID is the encoded one
         verify(mockOpenKitConfiguration, times(1)).getPercentEncodedApplicationID();
+    }
+
+    @Test
+    public void createTagDoesNotAppendSessionSequenceNumberForVisitStoreVersionsLowerTwo() {
+        int tracerSeqNo = 42;
+        int sessionSeqNo = 73;
+        for (int version = 1; version > -2; version--) {
+            // given
+            when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(version);
+            Beacon target = createBeacon().withSessionSequenceNumber(sessionSeqNo).build();
+
+            // when
+            String obtained = target.createTag(ACTION_ID, tracerSeqNo);
+
+            // then
+            assertThat(obtained, is(
+                    "MT" +                      // tag prefix
+                            "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
+                            "_" + SERVER_ID +           // server ID
+                            "_" + DEVICE_ID +           // device ID percent encoded
+                            "_" + SESSION_ID +          // session number
+                            "_" + APP_ID +              // application ID
+                            "_" + ACTION_ID +           // parent action ID
+                            "_" + THREAD_ID +           // thread ID
+                            "_" + tracerSeqNo           // sequence number
+            ));
+        }
+    }
+
+    @Test
+    public void createTagAddsSessionSequenceNumberForVisitStoreVersionHigherOne() {
+        int tracerSeqNo = 42;
+        int sessionSeqNo = 73;
+        for (int version = 2; version < 5; version++) {
+            // given
+            when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(version);
+            Beacon target = createBeacon().withSessionSequenceNumber(sessionSeqNo).build();
+
+            // when
+            String obtained = target.createTag(ACTION_ID, tracerSeqNo);
+
+            // then
+            assertThat(obtained, is(
+                    "MT" +                      // tag prefix
+                            "_" + ProtocolConstants.PROTOCOL_VERSION + // protocol version
+                            "_" + SERVER_ID +           // server ID
+                            "_" + DEVICE_ID +           // device ID percent encoded
+                            "_" + SESSION_ID +          // session number
+                            "-" + sessionSeqNo +        // session sequence number
+                            "_" + APP_ID +              // application ID
+                            "_" + ACTION_ID +           // parent action ID
+                            "_" + THREAD_ID +           // thread ID
+                            "_" + tracerSeqNo           // sequence number
+            ));
+        }
     }
 
     @Test
@@ -1021,15 +1081,16 @@ public class BeaconTest {
 
         final UnsupportedEncodingException exception = new UnsupportedEncodingException();
 
-        Beacon target = new Beacon(
-                mockLogger,
-                mockBeaconCache,
-                mockBeaconConfiguration,
-                "127.0.0.1",
-                mockSessionIdProvider,
-                mockThreadIDProvider,
-                mockTimingProvider
-        ) {
+        BeaconInitializer beaconInitializer = mock(BeaconInitializer.class);
+        when(beaconInitializer.getLogger()).thenReturn(mockLogger);
+        when(beaconInitializer.getBeaconCache()).thenReturn(mockBeaconCache);
+        when(beaconInitializer.getClientIpAddress()).thenReturn("127.0.0.1");
+        when(beaconInitializer.getSessionIdProvider()).thenReturn(mockSessionIdProvider);
+        when(beaconInitializer.getThreadIdProvider()).thenReturn(mockThreadIDProvider);
+        when(beaconInitializer.getTimingProvider()).thenReturn(mockTimingProvider);
+        when(beaconInitializer.getRandomNumberGenerator()).thenReturn(mockRandom);
+
+        Beacon target = new Beacon(beaconInitializer, mockBeaconConfiguration) {
             @Override
             protected byte[] encodeBeaconChunk(String chunkToEncode) throws UnsupportedEncodingException {
                 throw exception;
@@ -1043,6 +1104,49 @@ public class BeaconTest {
         assertThat(obtained, is(nullValue()));
         verify(mockBeaconCache, times(1)).resetChunkedData(SESSION_ID);
         verify(mockLogger, times(1)).error(": Required charset \"UTF-8\" is not supported.", exception);
+    }
+
+    @Test
+    public void beaconDataPrefix() {
+        // given
+        int sessionSequence = 1213;
+        int visitStoreVersion = 9;
+        String appVersion = "1111";
+        String ipAddress = "192.168.0.1";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
+        when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
+        when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
+        when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
+        Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
+
+        // when
+        target.send(mock(HTTPClientProvider.class), null);
+
+        // then
+        String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
+                "&va=" + ProtocolConstants.OPENKIT_VERSION +
+                "&ap=" + APP_ID +
+                "&an=" + APP_NAME +
+                "&vn=" + appVersion +
+                "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
+                "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
+                "&vi=" + DEVICE_ID +
+                "&sn=" + SESSION_ID +
+                "&ss=" + sessionSequence +
+                "&ip=" + ipAddress +
+                "&os=system" +
+                "&mf=manufacturer" +
+                "&md=model" +
+                "&dl=2" +
+                "&cl=2" +
+                "&vs=" + visitStoreVersion +
+                "&tx=0" +
+                "&tv=0" +
+                "&mp=0";
+
+        verify(mockBeaconCache, times(1)).getNextBeaconChunk(eq(SESSION_ID), eq(expectedPrefix), anyInt(), anyChar());
     }
 
     @Test
@@ -1899,6 +2003,7 @@ public class BeaconTest {
         builder.sessionIdProvider = mockSessionIdProvider;
         builder.threadIdProvider = mockThreadIDProvider;
         builder.timingProvider = mockTimingProvider;
+        builder.random = mockRandom;
 
         return builder;
     }
@@ -1912,6 +2017,7 @@ public class BeaconTest {
         private ThreadIDProvider threadIdProvider;
         private TimingProvider timingProvider;
         private RandomNumberGenerator random;
+        private int sessionSequenceNumber;
 
         private BeaconBuilder withIpAddress(String ipAddress) {
             this.ipAddress = ipAddress;
@@ -1933,29 +2039,23 @@ public class BeaconTest {
             return this;
         }
 
-        private Beacon build() {
-            if (random != null) {
-                return new Beacon(
-                        logger,
-                        beaconCache,
-                        configuration,
-                        ipAddress,
-                        sessionIdProvider,
-                        threadIdProvider,
-                        timingProvider,
-                        random
-                );
-            }
+        private BeaconBuilder withSessionSequenceNumber(int sessionSequenceNumber) {
+            this.sessionSequenceNumber = sessionSequenceNumber;
+            return this;
+        }
 
-            return new Beacon(
-                    logger,
-                    beaconCache,
-                    configuration,
-                    ipAddress,
-                    sessionIdProvider,
-                    threadIdProvider,
-                    timingProvider
-            );
+        private Beacon build() {
+            BeaconInitializer beaconInitializer = mock(BeaconInitializer.class);
+            when(beaconInitializer.getLogger()).thenReturn(logger);
+            when(beaconInitializer.getBeaconCache()).thenReturn(beaconCache);
+            when(beaconInitializer.getClientIpAddress()).thenReturn(ipAddress);
+            when(beaconInitializer.getSessionIdProvider()).thenReturn(sessionIdProvider);
+            when(beaconInitializer.getSessionSequenceNumber()).thenReturn(sessionSequenceNumber);
+            when(beaconInitializer.getThreadIdProvider()).thenReturn(threadIdProvider);
+            when(beaconInitializer.getTimingProvider()).thenReturn(timingProvider);
+            when(beaconInitializer.getRandomNumberGenerator()).thenReturn(random);
+
+            return new Beacon(beaconInitializer, configuration);
         }
     }
 }

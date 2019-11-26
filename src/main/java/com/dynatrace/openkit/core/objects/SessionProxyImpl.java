@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.SessionWatchdog;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
+import com.dynatrace.openkit.protocol.Beacon;
 
 import java.io.IOException;
 import java.net.URLConnection;
@@ -279,12 +280,16 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if(serverConfiguration == null) {
                 serverConfiguration = serverConfig;
+            } else {
+                serverConfiguration = serverConfiguration.merge(serverConfig);
             }
         }
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName();
+        Beacon beacon = currentSession.getBeacon();
+        return getClass().getSimpleName()
+                + " [sn=" + beacon.getSessionNumber() + ", seq=" + beacon.getSessionSequenceNumber() + "]";
     }
 }

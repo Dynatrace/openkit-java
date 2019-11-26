@@ -28,10 +28,8 @@ import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.core.util.PercentEncoder;
-import com.dynatrace.openkit.providers.DefaultRandomNumberGenerator;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
-import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 
@@ -53,10 +51,12 @@ public class Beacon {
     private static final String BEACON_KEY_AGENT_TECHNOLOGY_TYPE = "tt";
     private static final String BEACON_KEY_VISITOR_ID = "vi";
     private static final String BEACON_KEY_SESSION_NUMBER = "sn";
+    private static final String BEACON_KEY_SESSION_SEQUENCE = "ss";
     private static final String BEACON_KEY_CLIENT_IP_ADDRESS = "ip";
     private static final String BEACON_KEY_MULTIPLICITY = "mp";
     private static final String BEACON_KEY_DATA_COLLECTION_LEVEL = "dl";
     private static final String BEACON_KEY_CRASH_REPORTING_LEVEL = "cl";
+    private static final String BEACON_KEY_VISIT_STORE_VERSION = "vs";
 
     // device data constants
     private static final String BEACON_KEY_DEVICE_OS = "os";
@@ -110,6 +110,7 @@ public class Beacon {
 
     // session number & start time
     private final int sessionNumber;
+    private final int sessionSequenceNumber;
     private final TimingProvider timingProvider;
     private final ThreadIDProvider threadIDProvider;
     private final long sessionStartTime;
@@ -131,76 +132,36 @@ public class Beacon {
     private final BeaconCache beaconCache;
 
     /**
-     * Constructor.
-     *
-     * @param logger Logger for logging messages.
-     * @param beaconCache Cache storing beacon related data.
-     * @param configuration OpenKit related configuration.
-     * @param clientIPAddress The client's IP address.
-     * @param sessionIDProvider Provider for retrieving a unique session number.
-     * @param threadIDProvider Provider for retrieving thread id.
-     * @param timingProvider Provider for time related methods.
-     */
-    public Beacon(Logger logger,
-                  BeaconCache beaconCache,
-                  BeaconConfiguration configuration,
-                  String clientIPAddress,
-                  SessionIDProvider sessionIDProvider,
-                  ThreadIDProvider threadIDProvider,
-                  TimingProvider timingProvider) {
-        this(
-            logger,
-            beaconCache,
-            configuration,
-            clientIPAddress,
-            sessionIDProvider,
-            threadIDProvider,
-            timingProvider,
-            new DefaultRandomNumberGenerator()
-        );
-    }
-
-    /**
      * Constructor additionally taking a Random object, used for testing
      *
-     * @param logger Logger for logging messages.
-     * @param beaconCache Cache storing beacon related data.
-     * @param configuration OpenKit related configuration.
-     * @param clientIPAddress The client's IP address.
-     * @param sessionIDProvider Provider for retrieving a unique session number.
-     * @param threadIDProvider Provider for retrieving thread id.
-     * @param timingProvider Provider for time related methods.
-     * @param random Random that can be mocked for tests
+     * @param initializer           provider of relevant parameters to initialize / create the beacon
+     * @param configuration         OpenKit related configuration.
      */
-    public Beacon(Logger logger,
-           BeaconCache beaconCache,
-           BeaconConfiguration configuration,
-           String clientIPAddress,
-           SessionIDProvider sessionIDProvider,
-           ThreadIDProvider threadIDProvider,
-           TimingProvider timingProvider,
-           RandomNumberGenerator random) {
+    public Beacon(BeaconInitializer initializer,
+                  BeaconConfiguration configuration) {
 
-        this.logger = logger;
-        this.beaconCache = beaconCache;
-        this.sessionNumber = sessionIDProvider.getNextSessionID();
-        this.timingProvider = timingProvider;
+        this.logger = initializer.getLogger();
+        this.beaconCache = initializer.getBeaconCache();
+        this.sessionNumber = initializer.getSessionIdProvider().getNextSessionID();
+        this.sessionSequenceNumber = initializer.getSessionSequenceNumber();
+        this.timingProvider = initializer.getTimingProvider();
 
         this.configuration = configuration;
-        this.threadIDProvider = threadIDProvider;
+        this.threadIDProvider = initializer.getThreadIdProvider();
         this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
 
-        this.deviceID = createDeviceID(random, configuration);
+        this.deviceID = createDeviceID(initializer.getRandomNumberGenerator(), configuration);
 
-        if (clientIPAddress == null) {
+        String ipAddress = initializer.getClientIpAddress();
+        if (ipAddress == null) {
             // A client IP address, which is a null, is valid.
             // The real IP address is determined on the server side.
             this.clientIPAddress = "";
-        } else if (InetAddressValidator.isValidIP(clientIPAddress)) {
-            this.clientIPAddress = clientIPAddress;
+        } else if (InetAddressValidator.isValidIP(ipAddress)) {
+            this.clientIPAddress = ipAddress;
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warning(getClass().getSimpleName() + ": Client IP address validation failed: " + clientIPAddress);
+                logger.warning(getClass().getSimpleName() + ": Client IP address validation failed: " + ipAddress);
             }
             this.clientIPAddress = "";
         }
@@ -211,7 +172,7 @@ public class Beacon {
     /**
      * Create a device ID.
      *
-     * @param random Pseudo random number generator.
+     * @param random        Pseudo random number generator.
      * @param configuration Configuration.
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
@@ -230,8 +191,8 @@ public class Beacon {
      * Create a unique identifier.
      *
      * <p>
-     *     The identifier returned is only unique per Beacon.
-     *     Calling this method on two different Beacon instances, might give the same result.
+     * The identifier returned is only unique per Beacon.
+     * Calling this method on two different Beacon instances, might give the same result.
      * </p>
      *
      * @return A unique identifier.
@@ -253,8 +214,8 @@ public class Beacon {
      * Create a unique sequence number.
      *
      * <p>
-     *     The sequence number returned is only unique per Beacon.
-     *     Calling this method on two different Beacon instances, might give the same result.
+     * The sequence number returned is only unique per Beacon.
+     * Calling this method on two different Beacon instances, might give the same result.
      * </p>
      *
      * @return A unique sequence number.
@@ -267,36 +228,42 @@ public class Beacon {
      * Create a web request tag.
      *
      * <p>
-     *     Web request tags can be attached as HTTP header for web request tracing.
-     *     If {@link PrivacyConfiguration#isWebRequestTracingAllowed()} yields {@code false} an empty tag is returned.
+     * Web request tags can be attached as HTTP header for web request tracing.
+     * If {@link PrivacyConfiguration#isWebRequestTracingAllowed()} yields {@code false} an empty tag is returned.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} for which to create a web request tag
      *                       or {@code 0} if no parent action exists.
-     * @param sequenceNo Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
+     * @param tracerSeqNo    Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
      * @return A web request tracer tag.
      */
-    public String createTag(int parentActionID, int sequenceNo) {
+    public String createTag(int parentActionID, int tracerSeqNo) {
         if (!configuration.getPrivacyConfiguration().isWebRequestTracingAllowed()) {
             return "";
         }
+
         int serverId = configuration.getHTTPClientConfiguration().getServerID();
-        return TAG_PREFIX
-                + "_" + ProtocolConstants.PROTOCOL_VERSION
-                + "_" + serverId
-                + "_" + getDeviceID()
-                + "_" + getSessionNumber()
-                + "_" + configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()
-                + "_" + parentActionID
-                + "_" + threadIDProvider.getThreadID()
-                + "_" + sequenceNo;
+        StringBuilder builder = new StringBuilder(TAG_PREFIX);
+        builder.append("_").append(ProtocolConstants.PROTOCOL_VERSION);
+        builder.append("_").append(serverId);
+        builder.append("_").append(getDeviceID());
+        builder.append("_").append(getSessionNumber());
+        if (getVisitStoreVersion() > 1) {
+            builder.append("-").append(getSessionSequenceNumber());
+        }
+        builder.append("_").append(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID());
+        builder.append("_").append(parentActionID);
+        builder.append("_").append(threadIDProvider.getThreadID());
+        builder.append("_").append(tracerSeqNo);
+
+        return builder.toString();
     }
 
     /**
      * Add {@link BaseActionImpl} to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param action The action to add.
@@ -329,7 +296,7 @@ public class Beacon {
      * Add start session event to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      */
     public void startSession() {
@@ -353,7 +320,7 @@ public class Beacon {
      * Add {@link SessionImpl} to Beacon when session is ended.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      */
     public void endSession() {
@@ -382,12 +349,12 @@ public class Beacon {
      * Add key-value-pair to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName Value's name.
-     * @param value Actual value to report.
+     * @param valueName      Value's name.
+     * @param value          Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, int value) {
 
@@ -411,12 +378,12 @@ public class Beacon {
      * Add key-value-pair to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName Value's name.
-     * @param value Actual value to report.
+     * @param valueName      Value's name.
+     * @param value          Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, double value) {
 
@@ -440,12 +407,12 @@ public class Beacon {
      * Add key-value-pair to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName Value's name.
-     * @param value Actual value to report.
+     * @param valueName      Value's name.
+     * @param value          Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, String value) {
 
@@ -471,11 +438,11 @@ public class Beacon {
      * Add event (aka. named event) to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this event was reported.
-     * @param eventName Event's name.
+     * @param eventName      Event's name.
      */
     public void reportEvent(int parentActionID, String eventName) {
 
@@ -498,13 +465,13 @@ public class Beacon {
      * Add error to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this error was reported.
-     * @param errorName Error's name.
-     * @param errorCode Some error code.
-     * @param reason Reason for that error.
+     * @param errorName      Error's name.
+     * @param errorCode      Some error code.
+     * @param reason         Reason for that error.
      */
     public void reportError(int parentActionID, String errorName, int errorCode, String reason) {
 
@@ -535,11 +502,11 @@ public class Beacon {
      * Add crash to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param errorName Error's name.
-     * @param reason Reason for that error.
+     * @param errorName  Error's name.
+     * @param reason     Reason for that error.
      * @param stacktrace Crash stacktrace.
      */
     public void reportCrash(String errorName, String reason, String stacktrace) {
@@ -571,10 +538,10 @@ public class Beacon {
      * Add web request to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentActionID The id of the parent {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
+     * @param parentActionID   The id of the parent {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
      * @param webRequestTracer Web request tracer to serialize.
      */
     public void addWebRequest(int parentActionID, WebRequestTracerBaseImpl webRequestTracer) {
@@ -608,7 +575,7 @@ public class Beacon {
      * Add user identification to Beacon.
      *
      * <p>
-     *     The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
      * @param userTag User tag containing data to serialize.
@@ -639,12 +606,11 @@ public class Beacon {
      * Send current state of Beacon.
      *
      * <p>
-     *     This method tries to send all so far collected and serialized data.
+     * This method tries to send all so far collected and serialized data.
      * </p>
      *
-     * @param provider Provider for getting an {@link HTTPClient} required to send the data.
+     * @param provider             Provider for getting an {@link HTTPClient} required to send the data.
      * @param additionalParameters additional parameters that will be send with the beacon request (can be {@code null}).
-     *
      * @return Returns the last status response retrieved from the server side, or {@code null} if an error occurred.
      */
     public StatusResponse send(HTTPClientProvider provider, AdditionalQueryParameters additionalParameters) {
@@ -695,7 +661,7 @@ public class Beacon {
      * Encodes the given chunk to an {@link #CHARSET} byte array.
      *
      * <p>
-     *     This method should only be used by tests.
+     * This method should only be used by tests.
      * </p>
      *
      * @param chunkToEncode the beacon chunk to encode
@@ -708,6 +674,8 @@ public class Beacon {
     private String appendMutableBeaconData(String immutableBasicBeaconData) {
 
         StringBuilder mutableBeaconDataBuilder = new StringBuilder(immutableBasicBeaconData);
+        addKeyValuePair(mutableBeaconDataBuilder, BEACON_KEY_VISIT_STORE_VERSION, getVisitStoreVersion());
+
         mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER);
 
         // append timestamp data
@@ -722,7 +690,7 @@ public class Beacon {
     /**
      * Add previously serialized action data to the beacon cache.
      *
-     * @param timestamp The timestamp when the action data occurred.
+     * @param timestamp     The timestamp when the action data occurred.
      * @param actionBuilder Contains the serialized action data.
      */
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
@@ -734,7 +702,7 @@ public class Beacon {
     /**
      * Add previously serialized event data to the beacon cache.
      *
-     * @param timestamp The timestamp when the event data occurred.
+     * @param timestamp    The timestamp when the event data occurred.
      * @param eventBuilder Contains the serialized event data.
      */
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
@@ -747,7 +715,7 @@ public class Beacon {
      * Clears all previously collected data for this Beacon.
      *
      * <p>
-     *     This only affects the so far serialized data, which gets removed from the cache.
+     * This only affects the so far serialized data, which gets removed from the cache.
      * </p>
      */
     public void clearData() {
@@ -758,9 +726,9 @@ public class Beacon {
     /**
      * Serialization helper for event data.
      *
-     * @param builder String builder storing the serialized data.
-     * @param eventType The event's type.
-     * @param name Event name
+     * @param builder        String builder storing the serialized data.
+     * @param eventType      The event's type.
+     * @param name           Event name
      * @param parentActionID The unique Action identifier on which this event was reported.
      * @return The timestamp associated with the event (timestamp since session start time).
      */
@@ -779,9 +747,9 @@ public class Beacon {
     /**
      * Serialization for building basic event data.
      *
-     * @param builder String builder storing serialized data.
+     * @param builder   String builder storing serialized data.
      * @param eventType The event's type.
-     * @param name Event's name.
+     * @param name      Event's name.
      */
     private void buildBasicEventData(StringBuilder builder, EventType eventType, String name) {
         addKeyValuePair(builder, BEACON_KEY_EVENT_TYPE, eventType.protocolValue());
@@ -812,6 +780,7 @@ public class Beacon {
         // device/visitor ID, session number and IP address
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getDeviceID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionNumber());
+        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_SEQUENCE, getSessionSequenceNumber());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
@@ -842,8 +811,8 @@ public class Beacon {
      * Get a session ID for the current data collection level
      *
      * <p>
-     *     If session number reporting is allowed (see also {@link PrivacyConfiguration#isSessionNumberReportingAllowed()},
-     *     then the real session number is returned, otherwise {@code 1} is returned.
+     * If session number reporting is allowed (see also {@link PrivacyConfiguration#isSessionNumberReportingAllowed()},
+     * then the real session number is returned, otherwise {@code 1} is returned.
      * </p>
      *
      * @return Pre calculated session number or {@code 1} if session number reporting is not allowed.
@@ -854,6 +823,26 @@ public class Beacon {
             return sessionNumber;
         }
         return 1; //the visitor/device id is already random, it is fine to use 1 here
+    }
+
+    /**
+     * Returns sequence number of the session.
+     *
+     * <p>
+     * The session sequence number is a consecutive number which is increased when a session is split due to
+     * exceeding the maximum number of allowed events. The split session will then have the same session number
+     * but an increased session sequence number.
+     * </p>
+     */
+    public int getSessionSequenceNumber() {
+        return sessionSequenceNumber;
+    }
+
+    /**
+     * Returns the version of the visit store which this beacon uses.
+     */
+    private int getVisitStoreVersion() {
+        return configuration.getServerConfiguration().getVisitStoreVersion();
     }
 
     /**
@@ -889,8 +878,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with string values
      *
-     * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param builder     The string builder storing serialized data.
+     * @param key         The key to add.
      * @param stringValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, String stringValue) {
@@ -911,8 +900,8 @@ public class Beacon {
      * if the string value turns out to be null the key value pair is not added
      * to the string builder
      *
-     * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param builder     The string builder storing serialized data.
+     * @param key         The key to add.
      * @param stringValue The value to add.
      */
     private void addKeyValuePairIfNotNull(StringBuilder builder, String key, String stringValue) {
@@ -924,8 +913,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with long values
      *
-     * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param builder   The string builder storing serialized data.
+     * @param key       The key to add.
      * @param longValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, long longValue) {
@@ -936,8 +925,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with int values
      *
-     * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param builder  The string builder storing serialized data.
+     * @param key      The key to add.
      * @param intValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, int intValue) {
@@ -950,8 +939,8 @@ public class Beacon {
      * {@link SerializableBeaconValue} interface.
      *
      * @param builder the string builder storing the serialized data.
-     * @param key the key to add.
-     * @param value the value to add.
+     * @param key     the key to add.
+     * @param value   the value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, SerializableBeaconValue value) {
         if (value == null) {
@@ -965,8 +954,8 @@ public class Beacon {
      *
      * the key value pair is only added to the string builder when the int is not negative
      *
-     * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param builder  The string builder storing serialized data.
+     * @param key      The key to add.
      * @param intValue The value to add.
      */
     private void addKeyValuePairIfNotNegative(StringBuilder builder, String key, int intValue) {
@@ -979,8 +968,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with double values
      *
-     * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param builder     The string builder storing serialized data.
+     * @param key         The key to add.
      * @param doubleValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, double doubleValue) {
@@ -992,7 +981,7 @@ public class Beacon {
      * Serialization helper method for appending a key.
      *
      * @param builder The string builder storing serialized data.
-     * @param key The key to add.
+     * @param key     The key to add.
      */
     private void appendKey(StringBuilder builder, String key) {
         if (builder.length() > 0) {
@@ -1054,6 +1043,7 @@ public class Beacon {
 
     /**
      * Sets the callback when a server configuration is updated.
+     *
      * @param callback the callback to be notified when the server configuration is updated.
      */
     public void setServerConfigurationUpdateCallback(ServerConfigurationUpdateCallback callback) {
@@ -1071,7 +1061,7 @@ public class Beacon {
      * Enables capturing for this beacon.
      *
      * <p>
-     *     This will implicitly cause {@link #isServerConfigurationSet()} to return {@code true}.
+     * This will implicitly cause {@link #isServerConfigurationSet()} to return {@code true}.
      * </p>
      */
     public void enableCapture() {
@@ -1082,7 +1072,7 @@ public class Beacon {
      * Disables capturing for this session
      *
      * <p>
-     *     This will implicitly cause {@link #isServerConfigurationSet()} to return {@code true}.
+     * This will implicitly cause {@link #isServerConfigurationSet()} to return {@code true}.
      * </p>
      */
     public void disableCapture() {

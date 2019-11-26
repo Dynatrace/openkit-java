@@ -346,6 +346,7 @@ public class SessionProxyImplTest {
         int maxEventCount = 3;
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(maxEventCount);
+        when(mockServerConfiguration.merge(any(ServerConfiguration.class))).thenCallRealMethod();
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -657,6 +658,7 @@ public class SessionProxyImplTest {
         int maxEventCount = 3;
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(maxEventCount);
+        when(mockServerConfiguration.merge(any(ServerConfiguration.class))).thenCallRealMethod();
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -987,6 +989,7 @@ public class SessionProxyImplTest {
         int maxEventCount = 3;
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(maxEventCount);
+        when(mockServerConfiguration.merge(any(ServerConfiguration.class))).thenCallRealMethod();
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -1324,6 +1327,7 @@ public class SessionProxyImplTest {
         int maxEventCount = 3;
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(maxEventCount);
+        when(mockServerConfiguration.merge(any(ServerConfiguration.class))).thenCallRealMethod();
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -1627,6 +1631,7 @@ public class SessionProxyImplTest {
         int maxEventCount = 3;
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(maxEventCount);
+        when(mockServerConfiguration.merge(any(ServerConfiguration.class))).thenCallRealMethod();
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -1866,13 +1871,15 @@ public class SessionProxyImplTest {
     @Test
     public void toStringReturnsAppropriateResult() {
         // given
+        when(mockBeacon.getSessionNumber()).thenReturn(37);
+        when(mockBeacon.getSessionSequenceNumber()).thenReturn(73);
         SessionProxyImpl target = createSessionProxy();
 
         // when
         String obtained = target.toString();
 
         // then
-        assertThat(obtained, is(equalTo("SessionProxyImpl")));
+        assertThat(obtained, is(equalTo("SessionProxyImpl [sn=37, seq=73]")));
     }
 
 

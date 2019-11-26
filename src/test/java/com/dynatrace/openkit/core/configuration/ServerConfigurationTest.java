@@ -890,13 +890,13 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverMaxSessionDuration() {
+    public void mergeKeepsOriginalMaxSessionDuration() {
         // given
         int sessionDuration = 73;
         ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
-                .withMaxSessionDurationInMilliseconds(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxSessionDurationInMilliseconds(sessionDuration).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withMaxSessionDurationInMilliseconds(37).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -906,13 +906,13 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverMaxEventsPerSession() {
+    public void mergeKeepsOriginalMaxEventsPerSession() {
         // given
         int eventsPerSession = 73;
         ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
-                .withMaxEventsPerSession(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withMaxEventsPerSession(eventsPerSession).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withMaxEventsPerSession(37).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -922,15 +922,16 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverIsSessionSplitByEventsEnabledWhenMaxEventsIsGreaterZeroAndAttributeIsSet() {
+    public void mergeKeepsIsSessionSplitByEventsEnabledWhenMaxEventsIsGreaterZeroAndAttributeIsSet() {
         // given
         int eventsPerSession = 73;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
-        ServerConfiguration other = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
 
-        assertThat(target.isSessionSplitByEventsEnabled(), is(false));
+        assertThat(other.isSessionSplitByEventsEnabled(), is(false));
+        assertThat(target.isSessionSplitByEventsEnabled(), is(true));
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -940,13 +941,14 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverIsSessionSplitByEventsEnabledWhenMaxEventsIsSmallerZeroButAttributeIsSet() {
+    public void mergeKeepsIsSessionSplitByEventsEnabledWhenMaxEventsIsSmallerZeroButAttributeIsSet() {
         // given
         int eventsPerSession = 0;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(true);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
-        ServerConfiguration other = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = mock(ServerConfiguration.class);
+        when(other.isSessionSplitByEventsEnabled()).thenReturn(true);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
 
@@ -963,8 +965,9 @@ public class ServerConfigurationTest {
         int eventsPerSession = 73;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
-        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
-        ServerConfiguration other = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = mock(ServerConfiguration.class);
+        when(other.isSessionSplitByEventsEnabled()).thenReturn(true);
 
         assertThat(target.isSessionSplitByEventsEnabled(), is(false));
 
@@ -976,13 +979,13 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverSessionTimeout() {
+    public void mergeKeepsOriginalSessionTimeout() {
         // given
         int sessionTimeout = 73;
         ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
-                .withMaxSessionDurationInMilliseconds(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withSessionTimeoutInMilliseconds(sessionTimeout).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withSessionTimeoutInMilliseconds(37).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);
@@ -992,13 +995,13 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverVisitStoreVersion() {
+    public void mergeKeepsOriginalVisitStoreVersion() {
         // given
         int visitStoreVersion = 73;
         ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
-                .withVisitStoreVersion(37).build();
-        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
                 .withVisitStoreVersion(visitStoreVersion).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+                .withVisitStoreVersion(37).build();
 
         // when
         ServerConfiguration obtained = target.merge(other);

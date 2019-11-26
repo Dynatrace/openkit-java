@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
@@ -36,6 +37,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * State context for beacon sending states.
@@ -432,9 +434,9 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
             return;
         }
 
-        updateLastResponseAttributesFrom(receivedResponse);
+        ResponseAttributes updatedAttributes = updateLastResponseAttributesFrom(receivedResponse);
 
-        serverConfiguration = new ServerConfiguration.Builder(lastResponseAttributes).build();
+        serverConfiguration = new ServerConfiguration.Builder(updatedAttributes).build();
         if (!isCaptureOn()) {
             // capturing was turned off
             clearAllSessionData();
@@ -452,14 +454,16 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      *
      * @param statusResponse the status response from which to update the last response attributes.
      * @return in case the given status response was successful the updated response attributes are returned. Otherwise
-     *   the current response attributes are returned.
+     * the current response attributes are returned.
      */
     ResponseAttributes updateLastResponseAttributesFrom(StatusResponse statusResponse) {
+        ResponseAttributes currentAttributes = lastResponseAttributes;
         if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-            lastResponseAttributes = lastResponseAttributes.merge(statusResponse.getResponseAttributes());
+            currentAttributes = currentAttributes.merge(statusResponse.getResponseAttributes());
+            lastResponseAttributes = currentAttributes;
         }
 
-        return lastResponseAttributes;
+        return currentAttributes;
     }
 
     HTTPClientConfiguration createHttpClientConfigurationWith(int serverId) {

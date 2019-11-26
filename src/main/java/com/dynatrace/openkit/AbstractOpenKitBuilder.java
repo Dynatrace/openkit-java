@@ -23,6 +23,7 @@ import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
 import com.dynatrace.openkit.core.objects.OpenKitImpl;
+import com.dynatrace.openkit.core.objects.OpenKitInitializerImpl;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.core.util.StringUtil;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
@@ -287,7 +288,8 @@ public abstract class AbstractOpenKitBuilder {
      */
     public OpenKit build() {
         // create and initialize OpenKit instance
-        OpenKitImpl openKit = new OpenKitImpl(this);
+        OpenKitInitializerImpl initializer = new OpenKitInitializerImpl(this);
+        OpenKitImpl openKit = new OpenKitImpl(initializer);
         openKit.initialize();
 
         return openKit;

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,25 +16,17 @@
 
 package com.dynatrace.openkit.core.objects;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.core.BeaconSender;
+import com.dynatrace.openkit.core.SessionWatchdog;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheEvictor;
-import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
-import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
-import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
-import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
-import com.dynatrace.openkit.providers.DefaultHTTPClientProvider;
-import com.dynatrace.openkit.providers.DefaultSessionIDProvider;
-import com.dynatrace.openkit.providers.DefaultThreadIDProvider;
-import com.dynatrace.openkit.providers.DefaultTimingProvider;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -68,6 +60,8 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
     private final BeaconCacheEvictor beaconCacheEvictor;
     /** BeaconSender reference */
     private final BeaconSender beaconSender;
+    /** watchdog thread to perform certain actions on a session after a specific time */
+    private final SessionWatchdog sessionWatchdog;
 
     /** Boolean value, indicating whether this {@link OpenKit} instance is shutdown or not */
     private boolean isShutdown = false;
@@ -77,57 +71,19 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
     /**
      * Public constructor for creating an OpenKit instance.
      *
-     * @param builder Builder used to set all OpenKit related configuration parameters.
+     * @param initializer provider to get all OpenKit related configuration parameters.
      */
-    public OpenKitImpl(AbstractOpenKitBuilder builder) {
-
-        logger = builder.getLogger();
-        privacyConfiguration = PrivacyConfiguration.from(builder);
-        openKitConfiguration = OpenKitConfiguration.from(builder);
-
-        timingProvider = new DefaultTimingProvider();
-        threadIDProvider = new DefaultThreadIDProvider();
-        sessionIDProvider = new DefaultSessionIDProvider();
-
-        beaconCache = new BeaconCacheImpl(logger);
-        beaconCacheEvictor = new BeaconCacheEvictor(logger, beaconCache, BeaconCacheConfiguration.from(builder), timingProvider);
-
-        HTTPClientConfiguration httpClientConfig = HTTPClientConfiguration.from(openKitConfiguration);
-        beaconSender = new BeaconSender(logger, httpClientConfig, new DefaultHTTPClientProvider(logger), timingProvider);
-
-        logOpenKitInstanceCreation(logger, openKitConfiguration);
-    }
-
-    /**
-     * Internal constructor that shall be used for testing only.
-     *
-     * @param logger Logger for logging messages.
-     * @param privacyConfiguration OpenKit privacy configuration
-     * @param openKitConfiguration General OpenKit related configuration
-     * @param timingProvider Provider for getting timing information
-     * @param threadIDProvider For getting thread identifier
-     * @param beaconCache Cache where beacon data is stored
-     * @param beaconSender Sending that is responsible for sending beacon related data
-     * @param beaconCacheEvictor Evictor to prevent OOM due to full cache
-     */
-    OpenKitImpl(Logger logger,
-                PrivacyConfiguration privacyConfiguration,
-                OpenKitConfiguration openKitConfiguration,
-                TimingProvider timingProvider,
-                ThreadIDProvider threadIDProvider,
-                SessionIDProvider sessionIDProvider,
-                BeaconCache beaconCache,
-                BeaconSender beaconSender,
-                BeaconCacheEvictor beaconCacheEvictor) {
-        this.logger = logger;
-        this.privacyConfiguration = privacyConfiguration;
-        this.openKitConfiguration = openKitConfiguration;
-        this.threadIDProvider = threadIDProvider;
-        this.timingProvider = timingProvider;
-        this.sessionIDProvider = sessionIDProvider;
-        this.beaconCache = beaconCache;
-        this.beaconSender = beaconSender;
-        this.beaconCacheEvictor = beaconCacheEvictor;
+    public OpenKitImpl(OpenKitInitializer initializer) {
+        this.logger = initializer.getLogger();
+        this.privacyConfiguration = initializer.getPrivacyConfiguration();
+        this.openKitConfiguration = initializer.getOpenKitConfiguration();
+        this.threadIDProvider = initializer.getThreadIdProvider();
+        this.timingProvider = initializer.getTimingProvider();
+        this.sessionIDProvider = initializer.getSessionIdProvider();
+        this.beaconCache = initializer.getBeaconCache();
+        this.beaconSender = initializer.getBeaconSender();
+        this.beaconCacheEvictor = initializer.getBeaconCacheEvictor();
+        this.sessionWatchdog = initializer.getSessionWatchdog();
 
         logOpenKitInstanceCreation(this.logger, this.openKitConfiguration);
     }
@@ -141,17 +97,17 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
     private static void logOpenKitInstanceCreation(Logger logger, OpenKitConfiguration openKitConfiguration) {
         if (logger.isInfoEnabled()) {
             logger.info(OpenKitImpl.class.getSimpleName()
-                + " - " + openKitConfiguration.getOpenKitType()
-                + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
-                + " instantiated");
+                    + " - " + openKitConfiguration.getOpenKitType()
+                    + " OpenKit " + OpenKitConstants.DEFAULT_APPLICATION_VERSION
+                    + " instantiated");
         }
         if (logger.isDebugEnabled()) {
             logger.debug(OpenKitImpl.class.getSimpleName()
-                + " - applicationName=" + openKitConfiguration.getApplicationName()
-                + ", applicationID=" + openKitConfiguration.getApplicationID()
-                + ", deviceID=" + openKitConfiguration.getDeviceID()
-                + ", origDeviceID=" + openKitConfiguration.getOrigDeviceID()
-                + ", endpointURL=" + openKitConfiguration.getEndpointURL());
+                    + " - applicationName=" + openKitConfiguration.getApplicationName()
+                    + ", applicationID=" + openKitConfiguration.getApplicationID()
+                    + ", deviceID=" + openKitConfiguration.getDeviceID()
+                    + ", origDeviceID=" + openKitConfiguration.getOrigDeviceID()
+                    + ", endpointURL=" + openKitConfiguration.getEndpointURL());
         }
     }
 
@@ -165,6 +121,7 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
      */
     public void initialize() {
         beaconCacheEvictor.start();
+        sessionWatchdog.initialize();
         beaconSender.initialize();
     }
 
@@ -195,29 +152,18 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
         }
         synchronized (lockObject) {
             if (!isShutdown) {
-                // create beacon for session
-                int serverId = beaconSender.getCurrentServerId();
-                BeaconConfiguration beaconConfiguration = BeaconConfiguration.from(
-                        openKitConfiguration,
-                        privacyConfiguration,
-                        serverId
-                );
-                Beacon beacon = new Beacon(
+                SessionCreator sessionCreator = new SessionCreatorImpl(this, clientIPAddress);
+                SessionProxyImpl sessionProxy = new SessionProxyImpl(
                         logger,
-                        beaconCache,
-                        beaconConfiguration,
-                        clientIPAddress,
-                        sessionIDProvider,
-                        threadIDProvider,
-                        timingProvider
+                        this,
+                        sessionCreator,
+                        beaconSender,
+                        sessionWatchdog
                 );
-                // create session and add it to the list of children
-                SessionImpl session = new SessionImpl(logger, this, beacon);
-                beaconSender.addSession(session);
 
-                storeChildInList(session);
+                storeChildInList(sessionProxy);
 
-                return session;
+                return sessionProxy;
             }
         }
 
@@ -254,6 +200,7 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
         }
 
         beaconCacheEvictor.stop();
+        sessionWatchdog.shutdown();
         beaconSender.shutdown();
     }
 
