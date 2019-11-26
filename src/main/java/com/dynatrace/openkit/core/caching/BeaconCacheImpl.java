@@ -44,7 +44,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
     private final Logger logger;
     private final ReadWriteLock globalCacheLock;
-    private final Map<Integer, BeaconCacheEntry> beacons;
+    private final Map<BeaconKey, BeaconCacheEntry> beacons;
     private final AtomicLong cacheSizeInBytes;
 
     /**
@@ -55,18 +55,20 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     public BeaconCacheImpl(Logger logger) {
         this.logger = logger;
         globalCacheLock = new ReentrantReadWriteLock();
-        beacons = new HashMap<Integer, BeaconCacheEntry>();
+        beacons = new HashMap<BeaconKey, BeaconCacheEntry>();
         cacheSizeInBytes = new AtomicLong(0L);
     }
 
 
     @Override
-    public void addEventData(Integer beaconID, long timestamp, String data) {
+    public void addEventData(BeaconKey key, long timestamp, String data) {
         if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " addEventData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
+            logger.debug(getClass().getSimpleName()
+                    + " addEventData(sn=" + key.beaconId + ", seq=" + key.beaconSeqNo
+                    + ", timestamp=" + timestamp + ", data='" + data + "')");
         }
         // get a reference to the cache entry
-        BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
+        BeaconCacheEntry entry = getCachedEntryOrInsert(key);
 
         BeaconCacheRecord record = new BeaconCacheRecord(timestamp, data);
 
@@ -86,11 +88,13 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     @Override
-    public void addActionData(Integer beaconID, long timestamp, String data) {
+    public void addActionData(BeaconKey key, long timestamp, String data) {
         if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " addActionData(sn=" + beaconID + ", timestamp=" + timestamp + ", data='" + data + "')");
+            logger.debug(getClass().getSimpleName()
+                    + " addActionData(sn=" + key.beaconId + ", seq=" + key.beaconSeqNo
+                    + ", timestamp=" + timestamp + ", data='" + data + "')");
         }
-        BeaconCacheEntry entry = getCachedEntryOrInsert(beaconID);
+        BeaconCacheEntry entry = getCachedEntryOrInsert(key);
 
         // add event data for that beacon
         BeaconCacheRecord record = new BeaconCacheRecord(timestamp, data);
@@ -111,14 +115,15 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     @Override
-    public void deleteCacheEntry(Integer beaconID) {
+    public void deleteCacheEntry(BeaconKey key) {
         if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " deleteCacheEntry(sn=" + beaconID + ")");
+            logger.debug(getClass().getSimpleName()
+                    + " deleteCacheEntry(sn=" + key.beaconId + ", seq=" +key.beaconSeqNo+ ")");
         }
         BeaconCacheEntry entry;
         try {
             globalCacheLock.writeLock().lock();
-            entry = beacons.remove(beaconID);
+            entry = beacons.remove(key);
 
         } finally {
             globalCacheLock.writeLock().unlock();
@@ -131,11 +136,11 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
 
     @Override
-    public String getNextBeaconChunk(Integer beaconID, String chunkPrefix, int maxSize, char delimiter) {
+    public String getNextBeaconChunk(BeaconKey key, String chunkPrefix, int maxSize, char delimiter) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
-            // a cache entry for the given beaconID does not exist
+            // a cache entry for the given key does not exist
             return null;
         }
 
@@ -159,11 +164,11 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     @Override
-    public void removeChunkedData(Integer beaconID) {
+    public void removeChunkedData(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
-            // a cache entry for the given beaconID does not exist
+            // a cache entry for the given key does not exist
             return;
         }
 
@@ -172,11 +177,11 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
 
     @Override
-    public void resetChunkedData(Integer beaconID) {
+    public void resetChunkedData(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
-            // a cache entry for the given beaconID does not exist
+            // a cache entry for the given key does not exist
             return;
         }
 
@@ -198,27 +203,27 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     /**
-     * Get cached {@link BeaconCacheEntry} or insert new one if nothing exists for given {@code beaconID}.
+     * Get cached {@link BeaconCacheEntry} or insert new one if nothing exists for given {@code key}.
      *
-     * @param beaconID The beacon id to search for.
+     * @param key The key of the beacon to search for.
      *
      * @return The already cached entry or newly created one.
      */
-    private BeaconCacheEntry getCachedEntryOrInsert(Integer beaconID) {
+    private BeaconCacheEntry getCachedEntryOrInsert(BeaconKey key) {
 
         // get the appropriate cache entry
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
 
         if (entry == null) {
             try {
                 // does not exist, and needs to be inserted
                 globalCacheLock.writeLock().lock();
-                if (!beacons.containsKey(beaconID)) {
+                if (!beacons.containsKey(key)) {
                     // double check since this could have been added in the mean time
                     entry = new BeaconCacheEntry();
-                    beacons.put(beaconID, entry);
+                    beacons.put(key, entry);
                 } else {
-                    entry = beacons.get(beaconID);
+                    entry = beacons.get(key);
                 }
             } finally {
                 globalCacheLock.writeLock().unlock();
@@ -235,13 +240,13 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
      * Although this method is intended for debugging purposes only, it still does appropriate locking.
      * </p>
      *
-     * @param beaconID The beacon id for which to retrieve the events.
+     * @param key The key of the beacon for which to retrieve the events.
      *
      * @return List of event data.
      */
-    public String[] getEvents(Integer beaconID) {
+    public String[] getEvents(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
             // entry not found
             return new String[0];
@@ -262,13 +267,13 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
      * This method is only intended for internal unit tests.
      * </P>
      *
-     * @param beaconID The beacon id for which to retrieve the events.
+     * @param key The key of the beacon for which to retrieve the events.
      *
      * @return List of event data.
      */
-    List<BeaconCacheRecord> getEventsBeingSent(Integer beaconID) {
+    List<BeaconCacheRecord> getEventsBeingSent(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         return entry.getEventDataBeingSent();
     }
 
@@ -279,13 +284,13 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
      * Although this method is intended for debugging purposes only, it still does appropriate locking.
      * </p>
      *
-     * @param beaconID The beacon id for which to retrieve the events.
+     * @param key The key of the beacon for which to retrieve the events.
      *
      * @return List of event data.
      */
-    public String[] getActions(Integer beaconID) {
+    public String[] getActions(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
             // entry not found
             return new String[0];
@@ -306,13 +311,13 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
      * This method is only intended for internal unit tests.
      * </P>
      *
-     * @param beaconID The beacon id for which to retrieve the events.
+     * @param key The key of the beacon for which to retrieve the events.
      *
      * @return List of event data.
      */
-    List<BeaconCacheRecord> getActionsBeingSent(Integer beaconID) {
+    List<BeaconCacheRecord> getActionsBeingSent(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         return entry.getActionDataBeingSent();
     }
 
@@ -326,20 +331,20 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     /**
-     * Get cached {@link BeaconCacheEntry} or {@code null} if nothing exists for given {@code beaconID}.
+     * Get cached {@link BeaconCacheEntry} or {@code null} if nothing exists for given {@code key}.
      *
-     * @param beaconID The beacon id to search for.
+     * @param key The key of the beacon to search for.
      *
      * @return The cached entry or {@code null}.
      */
-    private BeaconCacheEntry getCachedEntry(Integer beaconID) {
+    private BeaconCacheEntry getCachedEntry(BeaconKey key) {
 
         BeaconCacheEntry entry;
 
         // acquire read lock and get the entry
         try {
             globalCacheLock.readLock().lock();
-            entry = beacons.get(beaconID);
+            entry = beacons.get(key);
         } finally {
             globalCacheLock.readLock().unlock();
         }
@@ -348,12 +353,12 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     @Override
-    public Set<Integer> getBeaconIDs() {
+    public Set<BeaconKey> getBeaconKeys() {
 
-        Set<Integer> result;
+        Set<BeaconKey> result;
         try {
             globalCacheLock.readLock().lock();
-            result = new HashSet<Integer>(beacons.keySet());
+            result = new HashSet<BeaconKey>(beacons.keySet());
         } finally {
             globalCacheLock.readLock().unlock();
         }
@@ -363,9 +368,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
 
 
     @Override
-    public int evictRecordsByAge(Integer beaconID, long minTimestamp) {
+    public int evictRecordsByAge(BeaconKey key, long minTimestamp) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
             // already removed
             return 0;
@@ -380,17 +385,18 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " evictRecordsByAge(sn=" + beaconID + ", minTimestamp=" + minTimestamp + ") has evicted "
-                    + numRecordsRemoved + " records");
+            logger.debug(getClass().getSimpleName()
+                    + " evictRecordsByAge(sn=" + key.beaconId + "seq=" + key.beaconSeqNo
+                    + ", minTimestamp=" + minTimestamp + ") has evicted " + numRecordsRemoved + " records");
         }
         return numRecordsRemoved;
     }
 
 
     @Override
-    public int evictRecordsByNumber(Integer beaconID, int numRecords) {
+    public int evictRecordsByNumber(BeaconKey key, int numRecords) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
             // already removed
             return 0;
@@ -405,8 +411,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug(getClass().getSimpleName() + " evictRecordsByNumber(sn=" + beaconID + ", numRecords=" + numRecords + ") has evicted "
-                    + numRecordsRemoved + " records");
+            logger.debug(getClass().getSimpleName()
+                    + " evictRecordsByNumber(sn=" + key.beaconId + ", seq=" + key.beaconSeqNo
+                    + ", numRecords=" + numRecords + ") has evicted " + numRecordsRemoved + " records");
         }
         return numRecordsRemoved;
     }
@@ -425,9 +432,9 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     @Override
-    public boolean isEmpty(Integer beaconID) {
+    public boolean isEmpty(BeaconKey key) {
 
-        BeaconCacheEntry entry = getCachedEntry(beaconID);
+        BeaconCacheEntry entry = getCachedEntry(key);
         if (entry == null) {
             // already removed
             return true;

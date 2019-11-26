@@ -126,8 +126,8 @@ class TimeEvictionStrategy implements BeaconCacheEvictionStrategy {
     private void doExecute() {
 
         // first get a snapshot of all inserted beacons
-        Set<Integer> beaconIDs = beaconCache.getBeaconIDs();
-        if (beaconIDs.isEmpty()) {
+        Set<BeaconKey> beaconKeys = beaconCache.getBeaconKeys();
+        if (beaconKeys.isEmpty()) {
             // no beacons - set last run timestamp and return immediately
             setLastRunTimestamp(timingProvider.provideTimestampInMilliseconds());
             return;
@@ -138,12 +138,12 @@ class TimeEvictionStrategy implements BeaconCacheEvictionStrategy {
         long smallestAllowedBeaconTimestamp = currentTimestamp - configuration.getMaxRecordAge();
 
         // iterate over the previously obtained set and evict for each beacon
-        Iterator<Integer> beaconIDIterator = beaconIDs.iterator();
-        while (!Thread.currentThread().isInterrupted() && beaconIDIterator.hasNext()) {
-            Integer beaconID = beaconIDIterator.next();
-            int numRecordsRemoved = beaconCache.evictRecordsByAge(beaconID, smallestAllowedBeaconTimestamp);
+        Iterator<BeaconKey> beaconKeyIterator = beaconKeys.iterator();
+        while (!Thread.currentThread().isInterrupted() && beaconKeyIterator.hasNext()) {
+            BeaconKey beaconKey = beaconKeyIterator.next();
+            int numRecordsRemoved = beaconCache.evictRecordsByAge(beaconKey, smallestAllowedBeaconTimestamp);
             if (numRecordsRemoved  > 0 && logger.isDebugEnabled()) {
-                logger.debug(getClass().getSimpleName() + " doExecute() - Removed " + numRecordsRemoved + " records from Beacon with ID " + beaconID);
+                logger.debug(getClass().getSimpleName() + " doExecute() - Removed " + numRecordsRemoved + " records from Beacon with key " + beaconKey);
             }
         }
 

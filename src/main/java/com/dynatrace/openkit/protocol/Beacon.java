@@ -18,6 +18,7 @@ package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
+import com.dynatrace.openkit.core.caching.BeaconKey;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
@@ -109,8 +110,7 @@ public class Beacon {
     private final AtomicInteger nextSequenceNumber = new AtomicInteger(0);
 
     // session number & start time
-    private final int sessionNumber;
-    private final int sessionSequenceNumber;
+    private final BeaconKey beaconKey;
     private final TimingProvider timingProvider;
     private final ThreadIDProvider threadIDProvider;
     private final long sessionStartTime;
@@ -142,8 +142,9 @@ public class Beacon {
 
         this.logger = initializer.getLogger();
         this.beaconCache = initializer.getBeaconCache();
-        this.sessionNumber = initializer.getSessionIdProvider().getNextSessionID();
-        this.sessionSequenceNumber = initializer.getSessionSequenceNumber();
+        int sessionNumber  = initializer.getSessionIdProvider().getNextSessionID();
+        int sessionSequenceNumber = initializer.getSessionSequenceNumber();
+        this.beaconKey = new BeaconKey(sessionNumber, sessionSequenceNumber);
         this.timingProvider = initializer.getTimingProvider();
 
         this.configuration = configuration;
@@ -625,7 +626,7 @@ public class Beacon {
             // subtract 1024 to ensure that the chunk does not exceed the send size configured on server side?
             // i guess that was the original intention, but i'm not sure about this
             // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
-            String chunk = beaconCache.getNextBeaconChunk(sessionNumber, prefix, configuration.getServerConfiguration().getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
+            String chunk = beaconCache.getNextBeaconChunk(beaconKey, prefix, configuration.getServerConfiguration().getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
             if (chunk == null || chunk.isEmpty()) {
                 // no data added so far or no data to send
                 return response;
@@ -637,7 +638,7 @@ public class Beacon {
             } catch (UnsupportedEncodingException e) {
                 // must not happen, as UTF-8 should *really* be supported
                 logger.error(getClass().getSimpleName() + ": Required charset \"" + CHARSET + "\" is not supported.", e);
-                beaconCache.resetChunkedData(sessionNumber);
+                beaconCache.resetChunkedData(beaconKey);
                 return response;
             }
 
@@ -646,11 +647,11 @@ public class Beacon {
             if (response == null || response.isErroneousResponse()) {
                 // error happened - but don't know what exactly
                 // reset the previously retrieved chunk (restore it in internal cache) & retry another time
-                beaconCache.resetChunkedData(sessionNumber);
+                beaconCache.resetChunkedData(beaconKey);
                 break;
             } else {
                 // worked -> remove previously retrieved chunk from cache
-                beaconCache.removeChunkedData(sessionNumber);
+                beaconCache.removeChunkedData(beaconKey);
             }
         }
 
@@ -695,7 +696,7 @@ public class Beacon {
      */
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
         if (isCaptureEnabled()) {
-            beaconCache.addActionData(sessionNumber, timestamp, actionBuilder.toString());
+            beaconCache.addActionData(beaconKey, timestamp, actionBuilder.toString());
         }
     }
 
@@ -707,7 +708,7 @@ public class Beacon {
      */
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
         if (isCaptureEnabled()) {
-            beaconCache.addEventData(sessionNumber, timestamp, eventBuilder.toString());
+            beaconCache.addEventData(beaconKey, timestamp, eventBuilder.toString());
         }
     }
 
@@ -720,7 +721,7 @@ public class Beacon {
      */
     public void clearData() {
         // remove all cached data for this Beacon from the cache
-        beaconCache.deleteCacheEntry(sessionNumber);
+        beaconCache.deleteCacheEntry(beaconKey);
     }
 
     /**
@@ -820,7 +821,7 @@ public class Beacon {
     public int getSessionNumber() {
         PrivacyConfiguration privacyConfiguration = configuration.getPrivacyConfiguration();
         if (privacyConfiguration.isSessionNumberReportingAllowed()) {
-            return sessionNumber;
+            return beaconKey.beaconId;
         }
         return 1; //the visitor/device id is already random, it is fine to use 1 here
     }
@@ -835,7 +836,7 @@ public class Beacon {
      * </p>
      */
     public int getSessionSequenceNumber() {
-        return sessionSequenceNumber;
+        return beaconKey.beaconSeqNo;
     }
 
     /**
@@ -1022,7 +1023,7 @@ public class Beacon {
      * @return {@code true} if the beacon is empty, {@code false} otherwise.
      */
     public boolean isEmpty() {
-        return beaconCache.isEmpty(sessionNumber);
+        return beaconCache.isEmpty(beaconKey);
     }
 
     /**

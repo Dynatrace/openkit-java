@@ -21,6 +21,7 @@ import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
+import com.dynatrace.openkit.core.caching.BeaconKey;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
@@ -76,6 +77,7 @@ public class BeaconTest {
     private static final long DEVICE_ID = 456;
     private static final int THREAD_ID = 1234567;
     private static final int SESSION_ID = 73;
+    private static final int SESSION_SEQ_NO = 13;
 
     private BeaconConfiguration mockBeaconConfiguration;
     private OpenKitConfiguration mockOpenKitConfiguration;
@@ -183,7 +185,7 @@ public class BeaconTest {
         verify(mockLogger, times(1)).warning("Beacon: Client IP address validation failed: " + ipAddress);
 
         // and when
-        when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn("dummy");
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn("dummy");
 
         target.send(httpClientProvider, mockAdditionalParameters);
 
@@ -213,7 +215,7 @@ public class BeaconTest {
         verify(mockLogger, times(0)).warning(any(String.class));
 
         // and when
-        when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn("dummy");
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn("dummy");
 
         target.send(httpClientProvider, mockAdditionalParameters);
 
@@ -395,18 +397,21 @@ public class BeaconTest {
         beacon.addAction(action);
 
         // then
-        verify(mockBeaconCache, times(1)).addActionData(
-                SESSION_ID,                     // session number
-                0,                              // action start time
+        String expectedActionData =
                 "et=1&" +                       // event type
-                        "na=" + actionName + "&" +      // action name
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "ca=" + ACTION_ID + "&" +       // action ID
-                        "pa=" + parentID + "&" +        // parent action ID
-                        "s0=0&" +                       // action start sequence number
-                        "t0=0&" +                       // action start time (relative to session start)
-                        "s1=0&" +                       // action end sequence number
-                        "t1=0"                          // action duration (time from action start to end)
+                "na=" + actionName + "&" +      // action name
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "ca=" + ACTION_ID + "&" +       // action ID
+                "pa=" + parentID + "&" +        // parent action ID
+                "s0=0&" +                       // action start sequence number
+                "t0=0&" +                       // action start time (relative to session start)
+                "s1=0&" +                       // action end sequence number
+                "t1=0"                          // action duration (time from action start to end)\
+        ;
+        verify(mockBeaconCache, times(1)).addActionData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // action start time
+                eq(expectedActionData)
         );
     }
 
@@ -419,14 +424,17 @@ public class BeaconTest {
         beacon.endSession();
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // session end time
+        String expectedEventData =
                 "et=19&" +                      // event type
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=0&" +                       // parent action
-                        "s0=1&" +                       // end session sequence number
-                        "t0=0"                          // session end time
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=0&" +                       // parent action
+                "s0=1&" +                       // end session sequence number
+                "t0=0"                          // session end time
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // session end time
+                eq(expectedEventData)
         );
     }
 
@@ -441,16 +449,19 @@ public class BeaconTest {
         beacon.reportValue(ACTION_ID, valueName, value);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event time
+        String expectedEventData =
                 "et=12&" +                      // event type
-                        "na=" + valueName + "&" +       // name of reported value
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported value event
-                        "t0=0&" +                       // event time since session start
-                        "vl=" + value                   // reported value
+                "na=" + valueName + "&" +       // name of reported value
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported value event
+                "t0=0&" +                       // event time since session start
+                "vl=" + value                   // reported value
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event time
+                eq(expectedEventData)
         );
     }
 
@@ -465,16 +476,19 @@ public class BeaconTest {
         beacon.reportValue(ACTION_ID, valueName, value);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event timestamp
+        String expectedEventData =
                 "et=13&" +                      // event type
-                        "na=" + valueName + "&" +       // name of reported value
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported value event
-                        "t0=0&" +                       // event time since session start
-                        "vl=" + value                   // reported value
+                "na=" + valueName + "&" +       // name of reported value
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported value event
+                "t0=0&" +                       // event time since session start
+                "vl=" + value                   // reported value
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -489,16 +503,19 @@ public class BeaconTest {
         beacon.reportValue(ACTION_ID, valueName, value);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event timestamp
+        String expectedEventData =
                 "et=11&" +                      // event type
-                        "na=" + valueName + "&" +       // name of reported value
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported value
-                        "t0=0&" +                       // event time since session start
-                        "vl=" + value                   // reported value
+                "na=" + valueName + "&" +       // name of reported value
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported value
+                "t0=0&" +                       // event time since session start
+                "vl=" + value                   // reported value
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -512,15 +529,18 @@ public class BeaconTest {
         beacon.reportValue(ACTION_ID, valueName, null);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event timestamp
+        String expectedEventData =
                 "et=11&" +                      // event type
-                        "na=" + valueName + "&" +       // name of reported value
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported value
-                        "t0=0"                          // event time since session start
+                "na=" + valueName + "&" +       // name of reported value
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported value
+                "t0=0"                          // event time since session start
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -533,14 +553,17 @@ public class BeaconTest {
         beacon.reportValue(ACTION_ID, null, null);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event timestamp
+        String expectedEventData =
                 "et=11&" +                      // event type
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported value
-                        "t0=0"                          // event time since session start
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported value
+                "t0=0"                          // event time since session start
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -554,15 +577,18 @@ public class BeaconTest {
         beacon.reportEvent(ACTION_ID, eventName);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event timestamp
+        String expectedEventData =
                 "et=10&" +                      // event type
-                        "na=" + eventName + "&" +       // name of event
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported event
-                        "t0=0"                          // event time since session start
+                "na=" + eventName + "&" +       // name of event
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported event
+                "t0=0"                          // event time since session start
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -575,14 +601,17 @@ public class BeaconTest {
         beacon.reportEvent(ACTION_ID, null);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                              // event timestamp
+        String expectedEventData =
                 "et=10&" +                      // event type
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported event
-                        "t0=0"                          // event time since session start
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported event
+                "t0=0"                          // event time since session start
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -598,18 +627,21 @@ public class BeaconTest {
         beacon.reportError(ACTION_ID, errorName, errorCode, reason);
 
         // then
+        String expectedEventData =
+                "et=40&" +                      // event type
+                "na=" + errorName + "&" +       // name of error event
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of error event
+                "t0=0&" +                       // timestamp of error event since session start
+                "ev=" + errorCode + "&" +       // reported error value
+                "rs=" + reason + "&" +          // reported reason
+                "tt=c"                          // error technology type
+        ;
         verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                    // error event timestamp
-                "et=40&" +                // event type
-                        "na=" + errorName + "&" +       // name of error event
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of error event
-                        "t0=0&" +                       // timestamp of error event since session start
-                        "ev=" + errorCode + "&" +       // reported error value
-                        "rs=" + reason + "&" +          // reported reason
-                        "tt=c"                          // error technology type
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // error event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -623,16 +655,19 @@ public class BeaconTest {
         beacon.reportError(ACTION_ID, null, errorCode, null);
 
         // then
+        String expectedEventData =
+                "et=40&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported event
+                "t0=0&" +                       // timestamp of error event since session start
+                "ev=" + errorCode + "&" +       // reported error value
+                "tt=c"                          // error technology type
+        ;
         verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                     // session number
-                0,                    // error event timestamp
-                "et=40&" +                // event type
-                        "it=" + THREAD_ID + "&" +       // thread ID
-                        "pa=" + ACTION_ID + "&" +       // parent action ID
-                        "s0=1&" +                       // sequence number of reported event
-                        "t0=0&" +                       // timestamp of error event since session start
-                        "ev=" + errorCode + "&" +       // reported error value
-                        "tt=c"                          // error technology type
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                              // error event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -648,18 +683,21 @@ public class BeaconTest {
         beacon.reportCrash(errorName, reason, stacktrace);
 
         // then
+        String expectedEventData =
+                "et=50&" +                  // event type
+                "na=" + errorName + "&" +   // reported crash name
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // sequence number of reported crash
+                "t0=0&" +                   // timestamp of crash since session start
+                "rs=" + reason + "&" +      // reported reason
+                "st=" + stacktrace + "&" +  // reported stacktrace
+                "tt=c"                      // crash technology type
+        ;
         verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                // crash event timestamp
-                "et=50&" +            // event type
-                        "na=" + errorName + "&" +   // reported crash name
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // sequence number of reported crash
-                        "t0=0&" +                   // timestamp of crash since session start
-                        "rs=" + reason + "&" +      // reported reason
-                        "st=" + stacktrace + "&" +  // reported stacktrace
-                        "tt=c"                      // crash technology type
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // crash event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -673,16 +711,19 @@ public class BeaconTest {
         beacon.reportCrash(errorName, null, null);
 
         // then
+        String expectedEventData =
+                "et=50&" +                  // event type
+                "na=" + errorName + "&" +   // reported crash name
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // sequence number of reported crash
+                "t0=0&" +                   // timestamp of crash since session start
+                "tt=c"                      // crash technology type
+        ;
         verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                // crash event timestamp
-                "et=50&" +            // event type
-                        "na=" + errorName + "&" +   // reported crash name
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // sequence number of reported crash
-                        "t0=0&" +                   // timestamp of crash since session start
-                        "tt=c"                      // crash technology type
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // crash event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -699,19 +740,22 @@ public class BeaconTest {
         beacon.addWebRequest(ACTION_ID, webRequestTracer);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=" + ACTION_ID + "&" +   // parent action ID
-                        "s0=0&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start time (since session start)
-                        "s1=0&" +                   // web request end sequence number
-                        "t1=0&" +                   // web request end time (relative to start time)
-                        "bs=13&" +                  // number of bytes sent
-                        "br=14&" +                  // number of bytes received
-                        "rc=15"                     // response code
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "bs=13&" +                  // number of bytes sent
+                "br=14&" +                  // number of bytes received
+                "rc=15"                     // response code
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -725,15 +769,18 @@ public class BeaconTest {
         beacon.identifyUser(userID);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // identify user event timestamp
+        String expectedEventData =
                 "et=60&" +                  // event type
-                        "na=" + userID + "&" +      // reported user ID
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // identify user sequence number
-                        "t0=0"                      // event timestamp since session start
+                "na=" + userID + "&" +      // reported user ID
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // identify user sequence number
+                "t0=0"                      // event timestamp since session start
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // identify user event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -746,14 +793,17 @@ public class BeaconTest {
         beacon.identifyUser(null);
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // identify user event timestamp
+        String expectedEventData =
                 "et=60&" +                  // event type
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // identify user sequence number
-                        "t0=0"                      // event timestamp since session start
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // identify user sequence number
+                "t0=0"
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // identify user event timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -769,18 +819,21 @@ public class BeaconTest {
         webRequest.start().setBytesSent(bytesSent).stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0&" +                   // web request end timestamp (relative to start time)
-                        "bs=" + bytesSent           // number bytes sent
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end timestamp (relative to start time)
+                "bs=" + bytesSent           // number bytes sent
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -796,18 +849,21 @@ public class BeaconTest {
         webRequest.start().setBytesSent(bytesSent).stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0&" +                   // web request end timestamp (relative to start time)
-                        "bs=" + bytesSent           // number bytes sent
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end timestamp (relative to start time)
+                "bs=" + bytesSent           // number bytes sent
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -823,17 +879,20 @@ public class BeaconTest {
         webRequest.start().setBytesSent(-5).stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(beaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0"                      // web request end timestamp (relative to start time)
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0"                      // web request end timestamp (relative to start time)
+        ;
+        verify(beaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -849,18 +908,21 @@ public class BeaconTest {
         webRequest.start().setBytesReceived(bytesReceived).stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0&" +                   // web request end timestamp (relative to start time)
-                        "br=" + bytesReceived       // number of received bytes
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end timestamp (relative to start time)
+                "br=" + bytesReceived       // number of received bytes
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -876,18 +938,21 @@ public class BeaconTest {
         webRequest.start().setBytesReceived(bytesReceived).stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0&" +                   // web request end timestamp (relative to start time)
-                        "br=" + bytesReceived       // number of received bytes
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end timestamp (relative to start time)
+                "br=" + bytesReceived       // number of received bytes
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -903,17 +968,20 @@ public class BeaconTest {
         webRequest.start().setBytesReceived(-1).stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(beaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0"                      // web request end timestamp (relative to start time)
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0"                      // web request end timestamp (relative to start time)
+        ;
+        verify(beaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                          // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -933,19 +1001,22 @@ public class BeaconTest {
                 .stop(-1); // stop will add the web request to the beacon
 
         // then
-        verify(mockBeaconCache, times(1)).addEventData(
-                SESSION_ID,                 // session number
-                0,                          // web request start timestamp
+        String expectedEventData =
                 "et=30&" +                  // event type
-                        "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                        "it=" + THREAD_ID + "&" +   // thread ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=1&" +                   // web request start sequence number
-                        "t0=0&" +                   // web request start timestamp (relative to session start)
-                        "s1=2&" +                   // web request end sequence number
-                        "t1=0&" +                   // web request end timestamp (relative to start time)
-                        "bs=" + bytesSent + "&" +   // number of sent bytes
-                        "br=" + bytesReceived       // number of received bytes
+                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start timestamp (relative to session start)
+                "s1=2&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end timestamp (relative to start time)
+                "bs=" + bytesSent + "&" +   // number of sent bytes
+                "br=" + bytesReceived       // number of received bytes
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // web request start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -963,18 +1034,21 @@ public class BeaconTest {
         beacon.addAction(rootAction);
 
         // then
-        verify(mockBeaconCache, times(1)).addActionData(
-                SESSION_ID,                 // session number
-                0,                          // action start timestamp
+        String expectedEventData =
                 "et=1&" +                   // event type
-                        "na=" + actionName + "&" +  // action name
-                        "it=" + THREAD_ID + "&" +   // thread Id
-                        "ca=0&" +                   // action ID
-                        "pa=0&" +                   // parent action ID
-                        "s0=0&" +                   // action start sequence number
-                        "t0=0&" +                   // action start time (relative to session start)
-                        "s1=0&" +                   // action end sequence number
-                        "t1=0"                      // action end time (relative to start time)
+                "na=" + actionName + "&" +  // action name
+                "it=" + THREAD_ID + "&" +   // thread Id
+                "ca=0&" +                   // action ID
+                "pa=0&" +                   // parent action ID
+                "s0=0&" +                   // action start sequence number
+                "t0=0&" +                   // action start time (relative to session start)
+                "s1=0&" +                   // action end sequence number
+                "t1=0"                      // action end time (relative to start time)
+        ;
+        verify(mockBeaconCache, times(1)).addActionData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // action start timestamp
+                eq(expectedEventData)
         );
     }
 
@@ -1073,7 +1147,7 @@ public class BeaconTest {
     public void sendCatchesUnsupportedEncodingException() throws Exception {
         // given
         String beaconChunk = "some beacon string";
-        when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn(beaconChunk);
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(beaconChunk);
 
         HTTPClient httpClient = mock(HTTPClient.class);
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
@@ -1086,6 +1160,7 @@ public class BeaconTest {
         when(beaconInitializer.getBeaconCache()).thenReturn(mockBeaconCache);
         when(beaconInitializer.getClientIpAddress()).thenReturn("127.0.0.1");
         when(beaconInitializer.getSessionIdProvider()).thenReturn(mockSessionIdProvider);
+        when(beaconInitializer.getSessionSequenceNumber()).thenReturn(SESSION_SEQ_NO);
         when(beaconInitializer.getThreadIdProvider()).thenReturn(mockThreadIDProvider);
         when(beaconInitializer.getTimingProvider()).thenReturn(mockTimingProvider);
         when(beaconInitializer.getRandomNumberGenerator()).thenReturn(mockRandom);
@@ -1102,7 +1177,7 @@ public class BeaconTest {
 
         // then
         assertThat(obtained, is(nullValue()));
-        verify(mockBeaconCache, times(1)).resetChunkedData(SESSION_ID);
+        verify(mockBeaconCache, times(1)).resetChunkedData(eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)));
         verify(mockLogger, times(1)).error(": Required charset \"UTF-8\" is not supported.", exception);
     }
 
@@ -1117,7 +1192,7 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
         when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
         when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
-        when(mockBeaconCache.getNextBeaconChunk(anyInt(), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
         when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
         Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
 
@@ -1146,7 +1221,8 @@ public class BeaconTest {
                 "&tv=0" +
                 "&mp=0";
 
-        verify(mockBeaconCache, times(1)).getNextBeaconChunk(eq(SESSION_ID), eq(expectedPrefix), anyInt(), anyChar());
+        verify(mockBeaconCache, times(1))
+                .getNextBeaconChunk(eq(new BeaconKey(SESSION_ID, sessionSequence)), eq(expectedPrefix), anyInt(), anyChar());
     }
 
     @Test
@@ -1170,9 +1246,10 @@ public class BeaconTest {
         beacon.clearData();
 
         // then (verify, all data is cleared)
-        String[] events = beaconCache.getEvents(beacon.getSessionNumber());
+        BeaconKey key = new BeaconKey(SESSION_ID, SESSION_SEQ_NO);
+        String[] events = beaconCache.getEvents(key);
         assertThat(events, emptyArray());
-        String[] actions = beaconCache.getActions(beacon.getSessionNumber());
+        String[] actions = beaconCache.getActions(key);
         assertThat(actions, emptyArray());
         assertThat(beacon.isEmpty(), is(true));
     }
@@ -1386,7 +1463,7 @@ public class BeaconTest {
         verify(mockWebRequestTracer, times(1)).getBytesSent();
         verify(mockWebRequestTracer, times(1)).getResponseCode();
 
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1503,7 +1580,7 @@ public class BeaconTest {
 
         //then
         //verify user tag has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1593,7 +1670,7 @@ public class BeaconTest {
 
         //then
         verify(mockTimingProvider, times(2)).provideTimestampInMilliseconds();
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1641,7 +1718,7 @@ public class BeaconTest {
         //then
         //verify action has been serialized
         verify(action, times(1)).getID();
-        verify(mockBeaconCache, times(1)).addActionData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addActionData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1682,7 +1759,7 @@ public class BeaconTest {
 
         //then
         //verify serialized session get added to beacon
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1710,7 +1787,7 @@ public class BeaconTest {
 
         //then
         //verify error has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1749,7 +1826,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "testValue", 123);
 
         // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
 
@@ -1789,7 +1866,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1828,7 +1905,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", "test data");
 
         // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1854,7 +1931,7 @@ public class BeaconTest {
         target.reportEvent(ACTION_ID, "test event");
 
         // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1866,7 +1943,7 @@ public class BeaconTest {
         target.startSession();
 
         // then ensure session start has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
     @Test
@@ -1879,7 +1956,7 @@ public class BeaconTest {
         target.startSession();
 
         // then ensure session start has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(anyInt(), anyLong(), anyString());
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
         verifyNoMoreInteractions(mockPrivacyConfiguration);
     }
 
@@ -2003,6 +2080,7 @@ public class BeaconTest {
         builder.sessionIdProvider = mockSessionIdProvider;
         builder.threadIdProvider = mockThreadIDProvider;
         builder.timingProvider = mockTimingProvider;
+        builder.sessionSequenceNumber = SESSION_SEQ_NO;
         builder.random = mockRandom;
 
         return builder;

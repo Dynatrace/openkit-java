@@ -108,37 +108,37 @@ class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {
      */
     private void doExecute() {
 
-        Map<Integer, Integer> removedRecordsPerBeacon = new HashMap<Integer, Integer>();
+        Map<BeaconKey, Integer> removedRecordsPerBeacon = new HashMap<BeaconKey, Integer>();
 
         while (!Thread.currentThread().isInterrupted()
             && beaconCache.getNumBytesInCache() > configuration.getCacheSizeLowerBound()) {
 
-            Set<Integer> beaconIDs = beaconCache.getBeaconIDs();
+            Set<BeaconKey> beaconKeys = beaconCache.getBeaconKeys();
 
-            Iterator<Integer> iterator = beaconIDs.iterator();
+            Iterator<BeaconKey> iterator = beaconKeys.iterator();
             while (!Thread.currentThread().isInterrupted()
                 && iterator.hasNext()
                 && beaconCache.getNumBytesInCache() > configuration.getCacheSizeLowerBound()) {
 
-                Integer beaconID = iterator.next();
+                BeaconKey beaconKey = iterator.next();
 
-                // remove 1 record from Beacon cache for given beaconID
+                // remove 1 record from Beacon cache for given beaconKey
                 // the result is the number of records removed, which might be in range [0, numRecords=1]
-                int numRecordsRemoved = beaconCache.evictRecordsByNumber(beaconID, 1);
+                int numRecordsRemoved = beaconCache.evictRecordsByNumber(beaconKey, 1);
 
                 if (logger.isDebugEnabled()) {
-                    if (!removedRecordsPerBeacon.containsKey(beaconID)) {
-                        removedRecordsPerBeacon.put(beaconID, numRecordsRemoved);
+                    if (!removedRecordsPerBeacon.containsKey(beaconKey)) {
+                        removedRecordsPerBeacon.put(beaconKey, numRecordsRemoved);
                     } else {
-                        removedRecordsPerBeacon.put(beaconID, removedRecordsPerBeacon.get(beaconID) + numRecordsRemoved);
+                        removedRecordsPerBeacon.put(beaconKey, removedRecordsPerBeacon.get(beaconKey) + numRecordsRemoved);
                     }
                 }
             }
         }
 
         if (logger.isDebugEnabled()) {
-            for (Map.Entry<Integer, Integer> entries : removedRecordsPerBeacon.entrySet()) {
-                logger.debug(getClass().getSimpleName() + " doExecute()  - Removed " + entries.getValue() + " records from Beacon with ID " + entries.getKey());
+            for (Map.Entry<BeaconKey, Integer> entries : removedRecordsPerBeacon.entrySet()) {
+                logger.debug(getClass().getSimpleName() + " doExecute()  - Removed " + entries.getValue() + " records from Beacon with key " + entries.getKey());
             }
         }
     }

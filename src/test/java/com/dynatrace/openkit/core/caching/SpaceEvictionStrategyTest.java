@@ -29,6 +29,7 @@ import java.util.HashSet;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.eq;
@@ -196,7 +197,10 @@ public class SpaceEvictionStrategyTest {
             configuration.getCacheSizeUpperBound() + 1,
             0L
         );
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
+        BeaconKey keyOne = new BeaconKey(42, 0);
+        BeaconKey keyTwo = new BeaconKey(1, 0);
+        when(mockBeaconCache.getBeaconKeys())
+                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
 
 
         // when executing the first time
@@ -204,8 +208,8 @@ public class SpaceEvictionStrategyTest {
 
         // then
         verify(mockBeaconCache, times(5)).getNumBytesInCache();
-        verify(mockBeaconCache, times(1)).evictRecordsByNumber(1, 1);
-        verify(mockBeaconCache, times(1)).evictRecordsByNumber(42, 1);
+        verify(mockBeaconCache, times(1)).evictRecordsByNumber(keyTwo, 1);
+        verify(mockBeaconCache, times(1)).evictRecordsByNumber(keyOne, 1);
     }
 
     @Test
@@ -221,9 +225,12 @@ public class SpaceEvictionStrategyTest {
             configuration.getCacheSizeUpperBound() + 1,
             0L
         );
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
-        when(mockBeaconCache.evictRecordsByNumber(eq(1), anyInt())).thenReturn(5);
-        when(mockBeaconCache.evictRecordsByNumber(eq(42), anyInt())).thenReturn(1);
+
+        BeaconKey keyOne = new BeaconKey(42, 0);
+        BeaconKey keyTwo = new BeaconKey(1, 0);
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.evictRecordsByNumber(eq(keyTwo), anyInt())).thenReturn(5);
+        when(mockBeaconCache.evictRecordsByNumber(eq(keyOne), anyInt())).thenReturn(1);
 
         when(mockLogger.isDebugEnabled()).thenReturn(true);
 
@@ -232,8 +239,8 @@ public class SpaceEvictionStrategyTest {
 
         // then
         verify(mockLogger, times(3)).isDebugEnabled();
-        verify(mockLogger, times(1)).debug("SpaceEvictionStrategy doExecute()  - Removed 5 records from Beacon with ID 1");
-        verify(mockLogger, times(1)).debug("SpaceEvictionStrategy doExecute()  - Removed 1 records from Beacon with ID 42");
+        verify(mockLogger, times(1)).debug("SpaceEvictionStrategy doExecute()  - Removed 1 records from Beacon with key " + keyOne);
+        verify(mockLogger, times(1)).debug("SpaceEvictionStrategy doExecute()  - Removed 5 records from Beacon with key " + keyTwo);
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -250,9 +257,11 @@ public class SpaceEvictionStrategyTest {
             configuration.getCacheSizeUpperBound() + 1,
             0L
         );
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
-        when(mockBeaconCache.evictRecordsByNumber(eq(1), anyInt())).thenReturn(5);
-        when(mockBeaconCache.evictRecordsByNumber(eq(42), anyInt())).thenReturn(1);
+        BeaconKey keyOne = new BeaconKey(42, 0);
+        BeaconKey keyTwo = new BeaconKey(1, 0);
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.evictRecordsByNumber(eq(keyTwo), anyInt())).thenReturn(5);
+        when(mockBeaconCache.evictRecordsByNumber(eq(keyOne), anyInt())).thenReturn(1);
 
         when(mockLogger.isDebugEnabled()).thenReturn(false);
 
@@ -281,15 +290,17 @@ public class SpaceEvictionStrategyTest {
             configuration.getCacheSizeLowerBound(), // stops already
             0L // just for safety
         );
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
+        BeaconKey keyOne = new BeaconKey(42, 0);
+        BeaconKey keyTwo = new BeaconKey(1, 0);
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
 
         // when executing the first time
         target.execute();
 
         // then
         verify(mockBeaconCache, times(8)).getNumBytesInCache();
-        verify(mockBeaconCache, times(2)).evictRecordsByNumber(1, 1);
-        verify(mockBeaconCache, times(2)).evictRecordsByNumber(42, 1);
+        verify(mockBeaconCache, times(2)).evictRecordsByNumber(keyTwo, 1);
+        verify(mockBeaconCache, times(2)).evictRecordsByNumber(keyOne, 1);
     }
 
     @Test
@@ -309,8 +320,9 @@ public class SpaceEvictionStrategyTest {
             configuration.getCacheSizeLowerBound(), // stops already
             0L // just for safety
         );
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
-        when(mockBeaconCache.evictRecordsByNumber(anyInt(), eq(1))).then(new Answer<Integer>() {
+        when(mockBeaconCache.getBeaconKeys())
+                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(new BeaconKey(42, 0), new BeaconKey(1, 0))));
+        when(mockBeaconCache.evictRecordsByNumber(any(BeaconKey.class), eq(1))).then(new Answer<Integer>() {
             @Override
             public Integer answer(InvocationOnMock invocation) {
                 Thread.currentThread().interrupt(); // interrupt current thread - just to test, if it stopped
@@ -323,7 +335,7 @@ public class SpaceEvictionStrategyTest {
 
         // then
         verify(mockBeaconCache, times(3)).getNumBytesInCache();
-        verify(mockBeaconCache, times(1)).evictRecordsByNumber(anyInt(), eq(1));
+        verify(mockBeaconCache, times(1)).evictRecordsByNumber(any(BeaconKey.class), eq(1));
 
         // and verify that the thread interrupted flag is still set
         assertThat(Thread.interrupted(), is(true)); // will also clear the interrupted flag, which we definitely want
@@ -345,14 +357,15 @@ public class SpaceEvictionStrategyTest {
             configuration.getCacheSizeLowerBound(), // second iteration
             0L // just for safety
         );
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(42, 1)));
+        when(mockBeaconCache.getBeaconKeys())
+                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(new BeaconKey(42, 0), new BeaconKey(1, 0))));
 
         // when executing the first time
         target.execute();
 
         // then
         verify(mockBeaconCache, times(8)).getNumBytesInCache();
-        verify(mockBeaconCache, times(3)).evictRecordsByNumber(anyInt(), eq(1));
+        verify(mockBeaconCache, times(3)).evictRecordsByNumber(any(BeaconKey.class), eq(1));
     }
 
     private BeaconCacheConfiguration mockBeaconCacheConfig(long maxRecordAge, long lowerSizeBound, long upperSizeBound) {

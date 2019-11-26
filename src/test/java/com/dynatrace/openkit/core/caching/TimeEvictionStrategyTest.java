@@ -32,6 +32,7 @@ import java.util.HashSet;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
@@ -230,13 +231,13 @@ public class TimeEvictionStrategyTest {
         TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2000L);
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(Collections.<Integer>emptySet());
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(Collections.<BeaconKey>emptySet());
 
         // when
         target.execute();
 
         // then verify interactions
-        verify(mockBeaconCache, times(1)).getBeaconIDs();
+        verify(mockBeaconCache, times(1)).getBeaconKeys();
         verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
         verifyNoMoreInteractions(mockBeaconCache, mockTimingProvider);
 
@@ -251,15 +252,17 @@ public class TimeEvictionStrategyTest {
         TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
+        BeaconKey keyOne = new BeaconKey(1, 0);
+        BeaconKey keyTwo = new BeaconKey(42, 0);
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
 
         // when
         target.execute();
 
         // then verify interactions
-        verify(mockBeaconCache, times(1)).getBeaconIDs();
-        verify(mockBeaconCache, times(1)).evictRecordsByAge(1, 2099L - configuration.getMaxRecordAge());
-        verify(mockBeaconCache, times(1)).evictRecordsByAge(42, 2099L - configuration.getMaxRecordAge());
+        verify(mockBeaconCache, times(1)).getBeaconKeys();
+        verify(mockBeaconCache, times(1)).evictRecordsByAge(keyOne, 2099L - configuration.getMaxRecordAge());
+        verify(mockBeaconCache, times(1)).evictRecordsByAge(keyTwo, 2099L - configuration.getMaxRecordAge());
         verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
         verifyNoMoreInteractions(mockBeaconCache, mockTimingProvider);
 
@@ -274,9 +277,11 @@ public class TimeEvictionStrategyTest {
         TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
-        when(mockBeaconCache.evictRecordsByAge(eq(1), anyLong())).thenReturn(2);
-        when(mockBeaconCache.evictRecordsByAge(eq(42), anyLong())).thenReturn(5);
+        BeaconKey keyOne = new BeaconKey(1, 0);
+        BeaconKey keyTwo = new BeaconKey(42, 0);
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.evictRecordsByAge(eq(keyOne), anyLong())).thenReturn(2);
+        when(mockBeaconCache.evictRecordsByAge(eq(keyTwo), anyLong())).thenReturn(5);
 
         when(mockLogger.isDebugEnabled()).thenReturn(true);
 
@@ -285,8 +290,8 @@ public class TimeEvictionStrategyTest {
 
         // then verify that the logger was invoked
         verify(mockLogger, times(2)).isDebugEnabled();
-        verify(mockLogger, times(1)).debug("TimeEvictionStrategy doExecute() - Removed 2 records from Beacon with ID 1");
-        verify(mockLogger, times(1)).debug("TimeEvictionStrategy doExecute() - Removed 5 records from Beacon with ID 42");
+        verify(mockLogger, times(1)).debug("TimeEvictionStrategy doExecute() - Removed 2 records from Beacon with key " + keyOne);
+        verify(mockLogger, times(1)).debug("TimeEvictionStrategy doExecute() - Removed 5 records from Beacon with key " + keyTwo);
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -297,8 +302,9 @@ public class TimeEvictionStrategyTest {
         TimeEvictionStrategy target = new TimeEvictionStrategy(mockLogger, mockBeaconCache, configuration, mockTimingProvider);
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
-        when(mockBeaconCache.getBeaconIDs()).thenReturn(new HashSet<Integer>(Arrays.asList(1, 42)));
-        when(mockBeaconCache.evictRecordsByAge(anyInt(), anyLong())).thenAnswer(new Answer<Integer>() {
+        when(mockBeaconCache.getBeaconKeys())
+                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(new BeaconKey(1, 0), new BeaconKey(42, 0))));
+        when(mockBeaconCache.evictRecordsByAge(any(BeaconKey.class), anyLong())).thenAnswer(new Answer<Integer>() {
             @Override
             public Integer answer(InvocationOnMock invocation) {
                 Thread.currentThread().interrupt();
@@ -310,8 +316,8 @@ public class TimeEvictionStrategyTest {
         target.execute();
 
         // then verify interactions
-        verify(mockBeaconCache, times(1)).getBeaconIDs();
-        verify(mockBeaconCache, times(1)).evictRecordsByAge(anyInt(), eq(2099L - configuration.getMaxRecordAge()));
+        verify(mockBeaconCache, times(1)).getBeaconKeys();
+        verify(mockBeaconCache, times(1)).evictRecordsByAge(any(BeaconKey.class), eq(2099L - configuration.getMaxRecordAge()));
         verify(mockTimingProvider, times(3)).provideTimestampInMilliseconds();
         verifyNoMoreInteractions(mockBeaconCache, mockTimingProvider);
 
