@@ -61,6 +61,10 @@ public class ServerConfiguration {
      */
     private final int maxSessionDurationInMilliseconds;
     /**
+     * indicator whether session splitting by exceeding the max session duration is enabled or not.
+     */
+    private final boolean isSessionSplitBySessionDurationEnabled;
+    /**
      * the maximum number of events per session
      */
     private final int maxEventsPerSession;
@@ -72,6 +76,10 @@ public class ServerConfiguration {
      * the session idle timeout in milliseconds
      */
     private final int sessionTimeoutInMilliseconds;
+    /**
+     * indicator whether session splitting by exceeding the idle timeout is enabled or not.
+     */
+    private final boolean isSessionSplitByIdleTimeoutEnabled;
     /**
      * version of the visit store that should be used
      */
@@ -90,9 +98,11 @@ public class ServerConfiguration {
         beaconSizeInBytes = builder.beaconSizeInBytes;
         multiplicity = builder.multiplicity;
         maxSessionDurationInMilliseconds = builder.maxSessionDurationInMilliseconds;
+        isSessionSplitBySessionDurationEnabled = builder.isSessionSplitBySessionDurationEnabled;
         maxEventsPerSession = builder.maxEventsPerSession;
         isSessionSplitByEventsEnabled = builder.isSessionSplitByEventsEnabled;
         sessionTimeoutInMilliseconds = builder.sessionTimeoutInMilliseconds;
+        isSessionSplitByIdleTimeoutEnabled = builder.isSessionSplitByIdleTimeoutEnabled;
         visitStoreVersion = builder.visitStoreVersion;
     }
 
@@ -178,6 +188,14 @@ public class ServerConfiguration {
     }
 
     /**
+     * Returns {@code true} if session splitting when exceeding the maximum session duration is enabled, {@code false}
+     * otherwise.
+     */
+    public boolean isSessionSplitBySessionDurationEnabled() {
+        return isSessionSplitBySessionDurationEnabled && maxSessionDurationInMilliseconds > 0;
+    }
+
+    /**
      * Returns the maximum number of events after which a session is to be split.
      *
      * @return the maximum number of top level events per session.
@@ -201,6 +219,13 @@ public class ServerConfiguration {
      */
     public int getSessionTimeoutInMilliseconds() {
         return sessionTimeoutInMilliseconds;
+    }
+
+    /**
+     * Returns {@code true} if session splitting by exceeding the idle timeout is enabled, {@code false} otherwise.
+     */
+    public boolean isSessionSplitByIdleTimeoutEnabled() {
+        return isSessionSplitByIdleTimeoutEnabled && sessionTimeoutInMilliseconds > 0;
     }
 
     /**
@@ -289,6 +314,8 @@ public class ServerConfiguration {
                 .withSessionTimeoutInMilliseconds(this.getSessionTimeoutInMilliseconds())
                 .withVisitStoreVersion(this.getVisitStoreVersion());
         builder.isSessionSplitByEventsEnabled = this.isSessionSplitByEventsEnabled();
+        builder.isSessionSplitBySessionDurationEnabled = this.isSessionSplitBySessionDurationEnabled;
+        builder.isSessionSplitByIdleTimeoutEnabled = this.isSessionSplitByIdleTimeoutEnabled;
 
         return builder.build();
     }
@@ -304,9 +331,11 @@ public class ServerConfiguration {
         private int beaconSizeInBytes;
         private int multiplicity;
         private int maxSessionDurationInMilliseconds;
+        private boolean isSessionSplitBySessionDurationEnabled;
         private int maxEventsPerSession;
         private boolean isSessionSplitByEventsEnabled;
         private int sessionTimeoutInMilliseconds;
+        private boolean isSessionSplitByIdleTimeoutEnabled;
         private int visitStoreVersion;
 
         /**
@@ -322,9 +351,11 @@ public class ServerConfiguration {
             beaconSizeInBytes = responseAttributes.getMaxBeaconSizeInBytes();
             multiplicity = responseAttributes.getMultiplicity();
             maxSessionDurationInMilliseconds = responseAttributes.getMaxSessionDurationInMilliseconds();
+            isSessionSplitBySessionDurationEnabled = responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION);
             maxEventsPerSession = responseAttributes.getMaxEventsPerSession();
             isSessionSplitByEventsEnabled = responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION);
             sessionTimeoutInMilliseconds = responseAttributes.getSessionTimeoutInMilliseconds();
+            isSessionSplitByIdleTimeoutEnabled = responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT);
             visitStoreVersion = responseAttributes.getVisitStoreVersion();
         }
 
@@ -339,9 +370,11 @@ public class ServerConfiguration {
             beaconSizeInBytes = serverConfiguration.getBeaconSizeInBytes();
             multiplicity = serverConfiguration.getMultiplicity();
             maxSessionDurationInMilliseconds = serverConfiguration.getMaxSessionDurationInMilliseconds();
+            isSessionSplitBySessionDurationEnabled = serverConfiguration.isSessionSplitBySessionDurationEnabled();
             maxEventsPerSession = serverConfiguration.getMaxEventsPerSession();
             isSessionSplitByEventsEnabled = serverConfiguration.isSessionSplitByEventsEnabled();
             sessionTimeoutInMilliseconds = serverConfiguration.getSessionTimeoutInMilliseconds();
+            isSessionSplitByIdleTimeoutEnabled = serverConfiguration.isSessionSplitByIdleTimeoutEnabled();
             visitStoreVersion = serverConfiguration.getVisitStoreVersion();
         }
 

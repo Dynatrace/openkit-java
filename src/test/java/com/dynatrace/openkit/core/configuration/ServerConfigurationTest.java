@@ -96,7 +96,7 @@ public class ServerConfigurationTest {
     @Test
     public void inDefaultServerConfigurationBeaconSizeIsThirtyKB() {
         // then
-        assertThat(ServerConfiguration.DEFAULT.getBeaconSizeInBytes(), is(30*1024));
+        assertThat(ServerConfiguration.DEFAULT.getBeaconSizeInBytes(), is(30 * 1024));
     }
 
     @Test
@@ -109,6 +109,12 @@ public class ServerConfigurationTest {
     public void inDefaultServerConfigurationMaxSessionDurationIsMinusOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getMaxSessionDurationInMilliseconds(), is(-1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationIsSessionSplitBySessionDurationEnabledIsFalse() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.isSessionSplitBySessionDurationEnabled(), is(false));
     }
 
     @Test
@@ -127,6 +133,12 @@ public class ServerConfigurationTest {
     public void inDefaultServerConfigurationSessionTimeoutIsMinusOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getSessionTimeoutInMilliseconds(), is(-1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationIsSessionSplitByIdleTimeoutEnabledIsFalse() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.isSessionSplitByIdleTimeoutEnabled(), is(false));
     }
 
     @Test
@@ -230,6 +242,62 @@ public class ServerConfigurationTest {
     }
 
     @Test
+    public void creatingAServerConfigurationFromResponseAttributesHasSplitBySessionDurationEnabledIfMaxSessionDurationGreaterZero() {
+        // given
+        int sessionDuration = 1;
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(true));
+        verify(responseAttributes, times(1)).getMaxSessionDurationInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDurationDisabledIfMaxDurationZero() {
+        // given
+        int sessionDuration = 0;
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+        verify(responseAttributes, times(1)).getMaxSessionDurationInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDurationDisabledIfMaxDurationEventsSmallerZero() {
+        // given
+        int sessionDuration = -1;
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+        verify(responseAttributes, times(1)).getMaxSessionDurationInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDurationDisabledIfMaxDurationIsNotSet() {
+        // given
+        int sessionDuration = 1;
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(false);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+        verify(responseAttributes, times(1)).getMaxSessionDurationInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION);
+    }
+
+    @Test
     public void creatingAServerConfigurationFromResponseAttributesCopiesMaxEventsPerSession() {
         // given
         int eventsPerSession = 37;
@@ -242,7 +310,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromResponseAttributesHasSplitBySessionEnabledIfMaxEventsGreaterZero() {
+    public void creatingAServerConfigurationFromResponseAttributesHasSplitByEventsEnabledIfMaxEventsGreaterZero() {
         // given
         int eventsPerSession = 1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -256,7 +324,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDisabledIfMaxEventsZero() {
+    public void creatingAServerConfigurationStatusResponseHasSplitByEventsDisabledIfMaxEventsZero() {
         // given
         int eventsPerSession = 0;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -270,7 +338,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDisabledIfMaxEventsEventsSmallerZero() {
+    public void creatingAServerConfigurationStatusResponseHasSplitByEventsDisabledIfMaxEventsEventsSmallerZero() {
         // given
         int eventsPerSession = -1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -284,7 +352,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDisabledIfMaxEventsIsNotSet() {
+    public void creatingAServerConfigurationStatusResponseHasSplitByEventsDisabledIfMaxEventsIsNotSet() {
         // given
         int eventsPerSession = 1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -307,6 +375,62 @@ public class ServerConfigurationTest {
         // then
         assertThat(target.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
         verify(responseAttributes, times(1)).getSessionTimeoutInMilliseconds();
+    }
+
+    @Test
+    public void creatingAServerConfigurationFromResponseAttributesHasSplitByIdleTimeoutEnabledIfTimeoutGreaterZero() {
+        // given
+        int idleTimeout = 1;
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(true));
+        verify(responseAttributes, times(1)).getSessionTimeoutInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.SESSION_TIMEOUT);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitByIdleTimeoutDisabledIfTimeoutZero() {
+        // given
+        int idleTimeout = 0;
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+        verify(responseAttributes, times(1)).getSessionTimeoutInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.SESSION_TIMEOUT);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitByIdleTimeoutDisabledIfTimeoutSmallerZero() {
+        // given
+        int idleTimeout = -1;
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)).thenReturn(true);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+        verify(responseAttributes, times(1)).getSessionTimeoutInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.SESSION_TIMEOUT);
+    }
+
+    @Test
+    public void creatingAServerConfigurationStatusResponseHasSplitByIdleTimeoutDisabledIfTimeoutIsNotSet() {
+        // given
+        int idleTimeout = 1;
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)).thenReturn(false);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+        verify(responseAttributes, times(1)).getSessionTimeoutInMilliseconds();
+        verify(responseAttributes, times(1)).isAttributeSet(ResponseAttribute.SESSION_TIMEOUT);
     }
 
     @Test
@@ -542,6 +666,54 @@ public class ServerConfigurationTest {
     }
 
     @Test
+    public void builderFromServerConfigHasSplitBySessionDurationEnabledIfMaxEventsGreaterZero() {
+        // given
+        int sessionDuration = 1;
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfig.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(true));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionDurationDisabledIfMaxEventsZero() {
+        // given
+        int sessionDuration = 0;
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfig.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionDurationDisabledIfMaxEventsEventsSmallerZero() {
+        // given
+        int sessionDuration = -1;
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfig.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitBySessionDurationDisabledIfMaxEventsIsNotSet() {
+        // given
+        int sessionDuration = 1;
+        when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfig.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+    }
+
+    @Test
     public void builderFromServerConfigCopiesMaxEventsPerSession() {
         // given
         int eventsPerSession = 37;
@@ -554,7 +726,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void builderFromServerConfigHasSplitBySessionEnabledIfMaxEventsGreaterZero() {
+    public void builderFromServerConfigHasSplitByEventsEnabledIfMaxEventsGreaterZero() {
         // given
         int eventsPerSession = 1;
         when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -566,7 +738,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void builderFromServerConfigHasSplitBySessionDisabledIfMaxEventsZero() {
+    public void builderFromServerConfigHasSplitByEventsDisabledIfMaxEventsZero() {
         // given
         int eventsPerSession = 0;
         when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -578,7 +750,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void builderFromServerConfigHasSplitBySessionDisabledIfMaxEventsEventsSmallerZero() {
+    public void builderFromServerConfigHasSplitByEventsDisabledIfMaxEventsEventsSmallerZero() {
         // given
         int eventsPerSession = -1;
         when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -590,7 +762,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void builderFromServerConfigHasSplitBySessionDisabledIfMaxEventsIsNotSet() {
+    public void builderFromServerConfigHasSplitByEventsDisabledIfMaxEventsIsNotSet() {
         // given
         int eventsPerSession = 1;
         when(mockServerConfig.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -611,6 +783,54 @@ public class ServerConfigurationTest {
         // then
         assertThat(target.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
         verify(mockServerConfig, times(1)).getSessionTimeoutInMilliseconds();
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitByIdleTimeoutEnabledIfMaxEventsGreaterZero() {
+        // given
+        int idleTimeout = 1;
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfig.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(true));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitByIdleTimeoutDisabledIfMaxEventsZero() {
+        // given
+        int idleTimeout = 0;
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfig.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitByIdleTimeoutDisabledIfMaxEventsEventsSmallerZero() {
+        // given
+        int idleTimeout = -1;
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfig.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+    }
+
+    @Test
+    public void builderFromServerConfigHasSplitByIdleTimeoutDisabledIfMaxEventsIsNotSet() {
+        // given
+        int idleTimeout = 1;
+        when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfig.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
     }
 
     @Test
@@ -906,6 +1126,63 @@ public class ServerConfigurationTest {
     }
 
     @Test
+    public void mergeKeepsIsSessionSplitBySessionDurationEnabledWhenMaxEventsIsGreaterZeroAndAttributeIsSet() {
+        // given
+        int sessionDuration = 73;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(true);
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
+
+        assertThat(other.isSessionSplitBySessionDurationEnabled(), is(false));
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(true));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitBySessionDurationEnabled(), is(true));
+    }
+
+    @Test
+    public void mergeKeepsIsSessionSplitBySessionDurationEnabledWhenMaxEventsIsSmallerZeroButAttributeIsSet() {
+        // given
+        int sessionDuration = 0;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(true);
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = mock(ServerConfiguration.class);
+        when(other.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitBySessionDurationEnabled(), is(false));
+    }
+
+    @Test
+    public void mergeKeepsIsSessionSplitBySessionDurationEnabledWhenMaxEventsIsGreaterZeroButAttributeIsNotSet() {
+        // given
+        int sessionDuration = 73;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(false);
+        when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = mock(ServerConfiguration.class);
+        when(other.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+
+        assertThat(target.isSessionSplitBySessionDurationEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitBySessionDurationEnabled(), is(false));
+    }
+
+    @Test
     public void mergeKeepsOriginalMaxEventsPerSession() {
         // given
         int eventsPerSession = 73;
@@ -960,7 +1237,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void mergeTakesOverIsSessionSplitByEventsEnabledWhenMaxEventsIsGreaterZeroButAttributeIsNotSet() {
+    public void mergeKeepsIsSessionSplitByEventsEnabledWhenMaxEventsIsGreaterZeroButAttributeIsNotSet() {
         // given
         int eventsPerSession = 73;
         when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_EVENTS_PER_SESSION)).thenReturn(false);
@@ -992,6 +1269,63 @@ public class ServerConfigurationTest {
 
         // then
         assertThat(obtained.getSessionTimeoutInMilliseconds(), is(sessionTimeout));
+    }
+
+    @Test
+    public void mergeKeepsIsSessionSplitByIdleTimeoutEnabledWhenMaxEventsIsGreaterZeroAndAttributeIsSet() {
+        // given
+        int idleTimeout = 73;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT)).thenReturn(true);
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES).build();
+
+        assertThat(other.isSessionSplitByIdleTimeoutEnabled(), is(false));
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(true));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitByIdleTimeoutEnabled(), is(true));
+    }
+
+    @Test
+    public void mergeKeepsIsSessionSplitByIdleTimeoutEnabledWhenMaxEventsIsSmallerZeroButAttributeIsSet() {
+        // given
+        int idleTimeout = 0;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(true);
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = mock(ServerConfiguration.class);
+        when(other.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitByIdleTimeoutEnabled(), is(false));
+    }
+
+    @Test
+    public void mergeKeepsIsSessionSplitByIdleTimeoutEnabledWhenMaxEventsIsGreaterZeroButAttributeIsNotSet() {
+        // given
+        int idleTimeout = 73;
+        when(responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION)).thenReturn(false);
+        when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+        ServerConfiguration other = mock(ServerConfiguration.class);
+        when(other.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+
+        assertThat(target.isSessionSplitByIdleTimeoutEnabled(), is(false));
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.isSessionSplitByIdleTimeoutEnabled(), is(false));
     }
 
     @Test
