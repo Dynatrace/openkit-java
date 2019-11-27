@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
@@ -476,6 +477,35 @@ public class SessionImplTest {
     }
 
     @Test
+    public void tryEndMarksSessionStateAsWasTriedForEndingIfSessionNotClosable() {
+        // given
+        SessionImpl target = createSession().build();
+        target.enterAction("action");
+
+        // when
+        boolean obtained = target.tryEnd();
+
+        // then
+        assertThat(obtained, is(false));
+        assertThat(target.getState().wasTriedForEnding(), is(true));
+        assertThat(target.getState().isFinished(), is(false));
+    }
+
+    @Test
+    public void tryEndDoesNotMarkSessionStateAsWasTriedForEndingIfSessionIsClosable() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        boolean obtained = target.tryEnd();
+
+        // then
+        assertThat(obtained, is(true));
+        assertThat(target.getState().wasTriedForEnding(), is(false));
+        assertThat(target.getState().isFinished(), is(true));
+    }
+
+    @Test
     public void sendBeaconForwardsCallToBeacon() {
         // given
         SessionImpl target = createSession().build();
@@ -552,6 +582,15 @@ public class SessionImplTest {
         assertThat(target.getState().isConfigured(), is(false));
         assertThat(target.getState().isConfiguredAndFinished(), is(false));
         assertThat(target.getState().isConfiguredAndOpen(), is(false));
+    }
+
+    @Test
+    public void aNewlyCreatedSessionIsNotInStateAsWasTriedForEnding() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when, then
+        assertThat(target.getState().wasTriedForEnding(), is(false));
     }
 
     @Test
@@ -869,6 +908,65 @@ public class SessionImplTest {
 
         // then
         assertThat(target.getCopyOfChildObjects(), is(empty()));
+    }
+
+    @Test
+    public void onChildClosedEndsSessionWithoutChildrenIfInStateWasTriedForEnding() {
+        // given
+        SessionImpl target = createSession().build();
+        OpenKitObject childObject = mock(OpenKitObject.class);
+        target.storeChildInList(childObject);
+
+        boolean wasClosed = target.tryEnd();
+        assertThat(wasClosed, is(false));
+        SessionState state = target.getState();
+        assertThat(state.wasTriedForEnding(), is(true));
+        assertThat(state.isFinished(), is(false));
+
+        // when
+        target.onChildClosed(childObject);
+
+        // then
+        assertThat(state.isFinished(), is(true));
+        verify(mockParent, times(1)).onChildClosed(target);
+    }
+
+    @Test
+    public void onChildClosedDoesNotEndSessionWithChildrenIfInStateWasTriedForEnding() {
+        // given
+        SessionImpl target = createSession().build();
+        OpenKitObject childObjectOne = mock(OpenKitObject.class);
+        OpenKitObject childObjectTwo = mock(OpenKitObject.class);
+        target.storeChildInList(childObjectOne);
+        target.storeChildInList(childObjectTwo);
+
+        boolean wasClosed = target.tryEnd();
+        assertThat(wasClosed, is(false));
+        SessionState state = target.getState();
+        assertThat(state.wasTriedForEnding(), is(true));
+        assertThat(state.isFinished(), is(false));
+
+        // when
+        target.onChildClosed(childObjectOne);
+
+        // then
+        assertThat(state.isFinished(), is(false));
+        verify(mockParent, times(0)).onChildClosed(any(OpenKitObject.class));
+    }
+
+    @Test
+    public void onChildClosedDoesNotEndSessionIfNotInStateWasTriedForEnding() {
+        // given
+        SessionImpl target = createSession().build();
+        OpenKitObject childObject = mock(OpenKitObject.class);
+        target.storeChildInList(childObject);
+
+        // when
+        target.onChildClosed(childObject);
+
+        // then
+        assertThat(target.getState().isFinished(), is(false));
+        verify(mockParent, times(0)).onChildClosed(any(OpenKitObject.class));
     }
 
     @Test

@@ -51,4 +51,10 @@ public interface SessionState {
      * </p>
      */
     boolean isFinished();
+
+    /**
+     * Indicates that the session was tried for ending/closing but could not be closed due to still open Actions, Web
+     * Requests.
+     */
+    boolean wasTriedForEnding();
 }

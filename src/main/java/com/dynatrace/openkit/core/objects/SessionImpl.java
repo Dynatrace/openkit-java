@@ -219,6 +219,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
                 return true;
             }
 
+            state.markAsWasTriedForEnding();
             return false;
         }
     }
@@ -294,6 +295,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
     void onChildClosed(OpenKitObject childObject) {
         synchronized (state) {
             removeChildFromList(childObject);
+
+            if (state.wasTriedForEnding() && getChildCount() == 0) {
+                end();
+            }
         }
     }
 
@@ -368,9 +373,15 @@ public class SessionImpl extends OpenKitComposite implements Session {
         private final SessionImpl session;
         private boolean isFinishing = false;
         private boolean isFinished = false;
+        private boolean wasTriedForEnding = false;
 
         private SessionStateImpl(SessionImpl session) {
             this.session = session;
+        }
+
+        @Override
+        public synchronized boolean wasTriedForEnding() {
+            return wasTriedForEnding;
         }
 
         @Override
@@ -393,12 +404,11 @@ public class SessionImpl extends OpenKitComposite implements Session {
             return isFinished;
         }
 
-
         private synchronized boolean isFinishingOrFinished() {
             return isFinishing || isFinished;
         }
 
-        private synchronized  boolean markAsIsFinishing() {
+        private synchronized boolean markAsIsFinishing() {
             if (isFinishingOrFinished()) {
                 return false;
             }
@@ -409,6 +419,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
 
         private synchronized void markAsFinished() {
             isFinished = true;
+        }
+
+        private synchronized void markAsWasTriedForEnding() {
+            wasTriedForEnding = true;
         }
     }
 }
