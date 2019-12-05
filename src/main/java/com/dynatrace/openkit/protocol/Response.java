@@ -19,6 +19,8 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -72,7 +74,18 @@ public abstract class Response {
     Response(Logger logger, int responseCode, Map<String, List<String>> headers) {
         this.logger = logger;
         this.responseCode = responseCode;
-        this.headers = headers;
+        this.headers = responseHeadersWithLowerCaseKeys(headers);
+    }
+
+    private static Map<String, List<String>> responseHeadersWithLowerCaseKeys(Map<String, List<String>> headers) {
+        Map<String, List<String>> result = new HashMap<String, List<String>>(headers.size());
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                result.put(entry.getKey().toLowerCase(), entry.getValue());
+            }
+        }
+
+        return Collections.unmodifiableMap(result);
     }
 
     // *** getter methods ***

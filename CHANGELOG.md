@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.3...release/1.4)
 
+### Changed
+- Fix taking over HTTP headers (specifically the `retry-after` field) when receiving an HTTP response with
+  response codes >= 400.
+
 ## 1.4.3 [Release date: 2019-10-31]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.3)
 

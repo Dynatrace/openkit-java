@@ -265,7 +265,7 @@ public class HTTPClient {
             || (requestType.getRequestName().equals(RequestType.STATUS.getRequestName()))
             || (requestType.getRequestName().equals(RequestType.NEW_SESSION.getRequestName()))) {
             return responseCode >= 400
-                ? new StatusResponse(logger, "", responseCode, Collections.<String, List<String>>emptyMap())
+                ? new StatusResponse(logger, "", responseCode, connection.getHeaderFields())
                 : parseStatusResponse(response, responseCode, connection.getHeaderFields());
         }
         else {
