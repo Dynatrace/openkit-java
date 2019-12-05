@@ -156,7 +156,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void sendStatusRequestAndReadResponseHeaderFields() throws IOException {
+    public void sendStatusRequestAndReadResponseHeaderFieldsOnSuccessResponse() throws IOException {
         // given
         Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
@@ -169,6 +169,35 @@ public class HTTPClientTest {
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
+        when(connection.getHeaderFields()).thenReturn(headerFields);
+
+        // when
+        StatusResponse response = client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+
+        // then verify header field keys are transformed to lower case
+        assertThat(response, notNullValue());
+
+        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
+        expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
+        expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
+        assertThat(response.getHeaders(), is(equalTo(expectedHeaderFields)));
+    }
+
+    @Test
+    public void sendStatusRequestAndReadResponseHeaderFieldsOnErrorResponse() throws IOException {
+        // given
+        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        headerFields.put("Content-Length", Collections.singletonList("1234"));
+        headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
+        headerFields.put("X-BAR", Collections.<String>emptyList());
+
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(429);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getErrorStream()).thenReturn(is);
         when(connection.getHeaderFields()).thenReturn(headerFields);
 
         // when
@@ -221,7 +250,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void sendNewSessionRequestAndReadResponseHeaderFields() throws IOException {
+    public void sendNewSessionRequestAndReadResponseHeaderFieldsOnSuccessResponse() throws IOException {
         // given
         Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
@@ -234,6 +263,35 @@ public class HTTPClientTest {
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
+        when(connection.getHeaderFields()).thenReturn(headerFields);
+
+        // when
+        StatusResponse response = client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
+
+        // then verify header field keys are transformed to lower case
+        assertThat(response, notNullValue());
+
+        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
+        expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
+        expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
+        assertThat(response.getHeaders(), is(equalTo(expectedHeaderFields)));
+    }
+
+    @Test
+    public void sendNewSessionRequestAndReadResponseHeaderFieldsOnErrorResponse() throws IOException {
+        // given
+        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        headerFields.put("Content-Length", Collections.singletonList("1234"));
+        headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
+        headerFields.put("X-BAR", Collections.<String>emptyList());
+
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(429);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getErrorStream()).thenReturn(is);
         when(connection.getHeaderFields()).thenReturn(headerFields);
 
         // when
@@ -347,7 +405,7 @@ public class HTTPClientTest {
     }
 
     @Test
-    public void sendBeaconRequestAndReadResponseHeaderFields() throws IOException {
+    public void sendBeaconRequestAndReadResponseHeaderFieldsOnSuccessResponse() throws IOException {
         // given
         Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
@@ -360,6 +418,37 @@ public class HTTPClientTest {
         when(connection.getResponseCode()).thenReturn(200);
         InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
         when(connection.getInputStream()).thenReturn(is);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        when(connection.getOutputStream()).thenReturn(os);
+        when(connection.getHeaderFields()).thenReturn(headerFields);
+
+        // when
+        StatusResponse response = client.sendRequest(RequestType.BEACON, httpURLConnectionWrapper, "127.0.0.1", "type=m".getBytes(), "POST");
+
+        // then verify header field keys are transformed to lower case
+        assertThat(response, notNullValue());
+
+        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
+        expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
+        expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
+        assertThat(response.getHeaders(), is(equalTo(expectedHeaderFields)));
+    }
+
+    @Test
+    public void sendBeaconRequestAndReadResponseHeaderFieldsOnErrorResponse() throws IOException {
+        // given
+        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        headerFields.put("Content-Length", Collections.singletonList("1234"));
+        headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
+        headerFields.put("X-BAR", Collections.<String>emptyList());
+
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(429);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getErrorStream()).thenReturn(is);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         when(connection.getOutputStream()).thenReturn(os);
         when(connection.getHeaderFields()).thenReturn(headerFields);

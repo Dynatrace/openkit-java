@@ -266,7 +266,7 @@ public class HTTPClient {
                 || requestType == RequestType.STATUS
                 || requestType == RequestType.NEW_SESSION) {
             return responseCode >= 400
-                    ? StatusResponse.createErrorResponse(logger, responseCode)
+                    ? StatusResponse.createErrorResponse(logger, responseCode, connection.getHeaderFields())
                     : parseStatusResponse(response, responseCode, connection.getHeaderFields());
         } else {
             logger.warning(getClass().getSimpleName() + " handleResponse() - Unknown request type " + requestType + " - ignoring response");
@@ -277,27 +277,11 @@ public class HTTPClient {
     private StatusResponse parseStatusResponse(String response, int responseCode, Map<String, List<String>> headers) {
         try {
             ResponseAttributes parsedAttributes = ResponseParser.parseResponse(response);
-            return StatusResponse.createSuccessResponse(
-                    logger,
-                    parsedAttributes,
-                    responseCode, responseHeadersWithLowerCaseKeys(headers)
-            );
+            return StatusResponse.createSuccessResponse(logger, parsedAttributes,responseCode, headers);
         } catch (Exception e) {
             logger.error(getClass().getSimpleName() + " parseStatusResponse() - Failed to parse StatusResponse", e);
             return StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE);
         }
-    }
-
-    private static Map<String, List<String>> responseHeadersWithLowerCaseKeys(Map<String, List<String>> headers) {
-
-        Map<String, List<String>> result = new HashMap<String, List<String>>(headers.size());
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            if (entry.getKey() != null && entry.getValue() != null) {
-                result.put(entry.getKey().toLowerCase(), entry.getValue());
-            }
-        }
-
-        return Collections.unmodifiableMap(result);
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {

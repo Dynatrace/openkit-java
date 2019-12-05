@@ -16,6 +16,8 @@
   type is used for the device ID.
 - Add OpenKit.createSession overload without IP address parameter.  
   The IP address is determined in this case on the server side.
+- Fix taking over HTTP headers (specifically the `retry-after` field) when receiving an HTTP response with
+  response codes >= 400.
 
 ### Improved
 - Fixed some javadoc/comments in the JSON parser

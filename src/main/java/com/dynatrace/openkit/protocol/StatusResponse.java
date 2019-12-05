@@ -18,6 +18,7 @@ package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,18 @@ public class StatusResponse {
         this.logger = logger;
         this.responseAttributes = responseAttributes;
         this.responseCode = responseCode;
-        this.headers = headers;
+        this.headers = responseHeadersWithLowerCaseKeys(headers);
+    }
+
+    private static Map<String, List<String>> responseHeadersWithLowerCaseKeys(Map<String, List<String>> headers) {
+        Map<String, List<String>> result = new HashMap<String, List<String>>(headers.size());
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                result.put(entry.getKey().toLowerCase(), entry.getValue());
+            }
+        }
+
+        return Collections.unmodifiableMap(result);
     }
 
     public static StatusResponse createSuccessResponse(
@@ -77,8 +89,12 @@ public class StatusResponse {
     }
 
     public static StatusResponse createErrorResponse(Logger logger, int responseCode) {
+        return createErrorResponse(logger, responseCode, new HashMap<String, List<String>>());
+    }
+
+    public static StatusResponse createErrorResponse(Logger logger, int responseCode, Map<String, List<String>> headers) {
         ResponseAttributes responseAttributes = ResponseAttributesImpl.withUndefinedDefaults().build();
-        return new StatusResponse(logger, responseAttributes, responseCode, new HashMap<String, List<String>>());
+        return new StatusResponse(logger, responseAttributes, responseCode, headers);
     }
 
     public boolean isErroneousResponse() {

@@ -82,15 +82,18 @@ public class StatusResponseTest {
     }
 
     @Test
-    public void headersAreSet() {
+    public void headerKeysAreConvertedToLowerCase() {
         // given
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
         headers.put("X-Foo", Collections.singletonList("X-BAR"));
         headers.put("X-YZ", Collections.<String>emptyList());
 
         // then
+        Map<String, List<String>> expectedHeaders = new HashMap<String, List<String>>();
+        expectedHeaders.put("x-foo", Collections.singletonList("X-BAR"));
+        expectedHeaders.put("x-yz", Collections.<String>emptyList());
         assertThat(StatusResponse.createSuccessResponse(mockLogger, attributes, 418, headers).getHeaders(),
-                is(sameInstance(headers)));
+                is(equalTo(expectedHeaders)));
     }
 
     @Test
