@@ -114,4 +114,45 @@ When the upper boundary is set to a value less than or equal to the lower bounda
 
 The cache itself is implemented in a thread safe manner. It is limiting the time when shared resources are locked to a 
 bare minimum. Furthermore the cache makes also use of Read-Write-Locks to ensure maximum parallelism when different
-Sessions (Beacons) are accessed.  
+Sessions (Beacons) are accessed.
+
+## Session splitting
+
+Session splitting describes the process of closing / trying to close the current active session and start a new session,
+when a certain split condition is met. From an OpenKit user's perspective session splitting is transparent, in the sense
+that no explicit action needs to be taken. Internally OpenKit is returning a handle to a session proxy when a new session
+is created. This session proxy is keeping track of the real current active session and is forwarding all top level event
+calls (`identifyUser`, `enterAction`, `traceWebRequest` and `reportCrash`). When a session split condition is met the 
+the current active session will be replaced wit a newly created session within the session proxy. Subsequent top level
+event calls are then forwarded to this new session. The split condition is either based on top level event count or
+on the expiration of a certain timeout. 
+
+### Session splitting by event count
+
+A session may be split after a maximum number of top level events. The concrete number is sent by the Dynatrace backend
+as response to any query (status request, new session request, beacon request) done by OpenKit. In case the maximum 
+number of top level events is not sent by Dynatrace backend, session splitting by events will not be done. 
+
+To decide when a session needs to be split, all top level event invocations are counted for the current session. 
+When the counter exceeds the maximum number of top level events, the session is split and the counter is restarted from
+zero. The old session is ended/closed immediately, if there are no more open Actions or Web Requests. Otherwise, it
+will be kept open for certain grace period. After expiration of the grace period the session will be forcefully closed
+if it was not already closed in the meantime. 
+
+### Session splitting by timeout
+
+Since sessions are automatically closed on the Dynatrace backend side after a certain idle timeout or after the 
+expiration of the maximum session timeout, it makes no sense for OpenKit to still keep recording events to such sessions.
+Instead OpenKit will close the current session and create a new one in case the idle or the maximum session timeout 
+expired, by keeping track of the times when the session was started/created and when the last top level event was
+invoked. The idle and maximum session timeout are defined by the Dynatrace backend and might be sent as response to
+any OpenKit query (status request, new session request, beacon request). If the timeout value is not sent by the Dynatrace
+backend, the concrete session split strategy will not be done. E.g. if no idle timeout is sent by the backend, sessions
+will not be split after idling.
+
+### Session watchdog thread
+
+The session watchdog is a separate thread which's task is to split sessions after expiration of the idle or maximum 
+session timeout. Additionally it keeps track of old sessions that could not be closed after session splitting by events
+(due to open Actions or Web Requests) and which are to be closed after a certain grace period. 
+ 
