@@ -277,6 +277,19 @@ public class BeaconTest {
     }
 
     @Test
+    public void getSessionStartTime() {
+        // given
+        long startTime = 73;
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(startTime, 1L);
+
+        // when
+        Beacon beacon = createBeacon().build();
+
+        // then
+        assertThat(beacon.getSessionStartTime(), is(startTime));
+    }
+
+    @Test
     public void createWebRequestTag() {
         // given
         final Beacon beacon = createBeacon().build();

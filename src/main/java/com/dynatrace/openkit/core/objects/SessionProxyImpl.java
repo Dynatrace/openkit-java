@@ -24,13 +24,19 @@ import com.dynatrace.openkit.core.SessionWatchdog;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.protocol.Beacon;
+import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.List;
 
 /**
- * Implements a surrogate for a {@link Session} to perform session splitting after a configured number of events.
+ * Implements a surrogate for a {@link Session} to perform session splitting after:
+ * <ul>
+ *     <li>a configured number of events</li>
+ *     <li>after a configured idle timeout</li>
+ *     <li>after a configured maximum session duration</li>
+ * </ul>
  */
 public class SessionProxyImpl extends OpenKitComposite implements Session, ServerConfigurationUpdateCallback {
 
@@ -42,6 +48,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     private final OpenKitComposite parent;
     // creator for split sessions
     private final SessionCreator sessionCreator;
+    // provider to obtain the current time
+    private final TimingProvider timingProvider;
     // sender of beacon data
     private final BeaconSender beaconSender;
     // watchdog to split sessions after idle/max timeout or to close split off sessions which were not closable on split
@@ -61,12 +69,14 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             Logger logger,
             OpenKitComposite parent,
             SessionCreator sessionCreator,
+            TimingProvider timingProvider,
             BeaconSender beaconSender,
             SessionWatchdog sessionWatchdog
     ) {
         this.logger = logger;
         this.parent = parent;
         this.sessionCreator = sessionCreator;
+        this.timingProvider = timingProvider;
         this.beaconSender = beaconSender;
         this.sessionWatchdog = sessionWatchdog;
 
@@ -84,7 +94,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
         synchronized (lockObject) {
             if (!isFinished) {
-                SessionImpl session = getOrSplitCurrentSession();
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInvocation();
                 return session.enterAction(actionName);
             }
@@ -104,7 +114,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
         synchronized (lockObject) {
             if (!isFinished) {
-                SessionImpl session = getOrSplitCurrentSession();
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInvocation();
                 session.identifyUser(userTag);
             }
@@ -122,7 +132,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
         synchronized (lockObject) {
             if (!isFinished) {
-                SessionImpl session = getOrSplitCurrentSession();
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInvocation();
                 session.reportCrash(errorName, reason, stacktrace);
             }
@@ -140,7 +150,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
         synchronized (lockObject) {
             if (!isFinished) {
-                SessionImpl session = getOrSplitCurrentSession();
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInvocation();
                 return session.traceWebRequest(connection);
             }
@@ -164,7 +174,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
         synchronized (lockObject) {
             if (!isFinished) {
-                Session session = getOrSplitCurrentSession();
+                Session session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInvocation();
                 return session.traceWebRequest(url);
             }
@@ -197,6 +207,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
 
         parent.onChildClosed(this);
+        sessionWatchdog.removeFromSplitByTimeout(this);
     }
 
     /**
@@ -218,37 +229,57 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             removeChildFromList(childObject);
             if (childObject instanceof SessionImpl) {
-                sessionWatchdog.dequeueFromClosing((SessionImpl)childObject);
+                sessionWatchdog.dequeueFromClosing((SessionImpl) childObject);
             }
         }
     }
 
+    /**
+     * Returns the number of top level event calls which were made to the current session. Intended to be used by unit
+     * tests only.
+     */
     int getTopLevelEventCount() {
         synchronized (lockObject) {
             return topLevelEventCount;
         }
     }
 
+    /**
+     * Returns the time when the last top level event was called. Intended to be used by unit tests only.
+     */
     long getLastInteractionTime() {
         synchronized (lockObject) {
             return lastInteractionTime;
         }
     }
 
-    private SessionImpl getOrSplitCurrentSession() {
-        if (isSessionSplitRequired()) {
+    /**
+     * Returns the server configuration of this session proxy. Intended to be used by unit tests only.
+     */
+    ServerConfiguration getServerConfiguration() {
+        return serverConfiguration;
+    }
+
+    /**
+     * Returns the current active session or creates a new session if {@link #isSessionSplitByEventsRequired()}.
+     */
+    private SessionImpl getOrSplitCurrentSessionByEvents() {
+        if (isSessionSplitByEventsRequired()) {
             SessionImpl newSession = createSession(serverConfiguration);
-            topLevelEventCount = 0;
 
             // try to close old session or wait half the max session duration time and then close it forcefully.
-            int closeGracePeriodInMillis =  serverConfiguration.getMaxSessionDurationInMilliseconds() / 2;
+            int closeGracePeriodInMillis = serverConfiguration.getMaxSessionDurationInMilliseconds() / 2;
             sessionWatchdog.closeOrEnqueueForClosing(currentSession, closeGracePeriodInMillis);
             currentSession = newSession;
         }
         return currentSession;
     }
 
-    private boolean isSessionSplitRequired() {
+    /**
+     * Indicates if the maximum number of top level events is reached and session splitting by events needs to be
+     * performed.
+     */
+    private boolean isSessionSplitByEventsRequired() {
         if (serverConfiguration == null || !serverConfiguration.isSessionSplitByEventsEnabled()) {
             return false;
         }
@@ -256,10 +287,92 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return serverConfiguration.getMaxEventsPerSession() <= topLevelEventCount;
     }
 
+    /**
+     * Will end the current active session and start a new one but only if the following conditions are met:
+     * <ul>
+     *     <li>this session proxy is not {@link #isFinished() finished}.</li>
+     *     <li>
+     *          session splitting by idle timeout is enabled and the current session's was idle for longer than the
+     *          configured timeout.
+     *     </li>
+     *     <li>
+     *         session splitting by maximum session duration is enabled and the session was open for longer than the
+     *         maximum configured session duration.
+     *     </li>
+     * </ul>
+     *
+     * @return the time when the session might be split next. This can either be the time when the maximum session
+     * duration is reached or the time when the idle timeout expires. In case this session proxy is finished, {@code -1}
+     * is returned.
+     */
+    public long splitSessionByTime() {
+        synchronized (lockObject) {
+            if (isFinished()) {
+                return -1;
+            }
+
+            long nextSplitTime = calculateNextSplitTime();
+            long now = timingProvider.provideTimestampInMilliseconds();
+            if (nextSplitTime < 0 || now < nextSplitTime) {
+                return nextSplitTime;
+            }
+
+            currentSession.end();
+
+            sessionCreator.reset();
+            currentSession = createSession(serverConfiguration);
+
+            return calculateNextSplitTime();
+        }
+    }
+
+    /**
+     * Calculates and returns the next point in time when this session is to be split. The returned time might either be
+     * <ul>
+     *     <li>the time when the session expires after the max. session duration elapsed.</li>
+     *     <li>the time when the session expires after being idle.</li>
+     * </ul>
+     * depending on which happens earlier.
+     */
+    private long calculateNextSplitTime() {
+        if (serverConfiguration == null) {
+            return -1;
+        }
+
+        boolean splitByIdleTimeout = serverConfiguration.isSessionSplitByIdleTimeoutEnabled();
+        boolean splitBySessionDuration = serverConfiguration.isSessionSplitBySessionDurationEnabled();
+
+        long idleTimeOut = lastInteractionTime + serverConfiguration.getSessionTimeoutInMilliseconds();
+        long sessionMaxTime = currentSession.getBeacon().getSessionStartTime()
+                + serverConfiguration.getMaxSessionDurationInMilliseconds();
+
+        if (splitByIdleTimeout && splitBySessionDuration) {
+            return Math.min(idleTimeOut, sessionMaxTime);
+        } else if (splitByIdleTimeout) {
+            return idleTimeOut;
+        } else if (splitBySessionDuration) {
+            return sessionMaxTime;
+        }
+
+        return -1;
+    }
+
+    /**
+     * Creates a new session and adds it to the beacon sender. In case the given server configuration is not null, the
+     * new session will be initialized with this server configuration.
+     * The top level event count is be reset to zero and the last interaction time is set to the current timestamp.
+     *
+     * @param sessionServerConfig the server configuration with which the session will be initialized. Can be {@code null}.
+     * @return the newly created session.
+     */
     private SessionImpl createSession(ServerConfiguration sessionServerConfig) {
         SessionImpl session = sessionCreator.createSession(this);
-        session.getBeacon().setServerConfigurationUpdateCallback(this);
+        Beacon beacon = session.getBeacon();
+        beacon.setServerConfigurationUpdateCallback(this);
         storeChildInList(session);
+
+        lastInteractionTime = beacon.getSessionStartTime();
+        topLevelEventCount = 0;
 
         if (sessionServerConfig != null) {
             session.updateServerConfiguration(sessionServerConfig);
@@ -272,16 +385,22 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
 
     private void recordTopLevelEventInvocation() {
         ++topLevelEventCount;
-        lastInteractionTime = currentSession.getBeacon().getCurrentTimestamp();
+        lastInteractionTime = timingProvider.provideTimestampInMilliseconds();
     }
 
     @Override
     public void onServerConfigurationUpdate(ServerConfiguration serverConfig) {
         synchronized (lockObject) {
-            if(serverConfiguration == null) {
-                serverConfiguration = serverConfig;
-            } else {
+            if (serverConfiguration != null) {
                 serverConfiguration = serverConfiguration.merge(serverConfig);
+                return;
+            }
+
+            serverConfiguration = serverConfig;
+
+            if (serverConfiguration.isSessionSplitBySessionDurationEnabled() ||
+                    serverConfiguration.isSessionSplitByIdleTimeoutEnabled()) {
+                sessionWatchdog.addToSplitByTimeout(this);
             }
         }
     }

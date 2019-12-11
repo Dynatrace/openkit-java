@@ -17,8 +17,10 @@ package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
+import com.dynatrace.openkit.core.caching.BeaconKey;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
+import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -26,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -224,6 +227,83 @@ public class SessionCreatorImplTest {
 
         // then
         assertThat(target.getSessionSequenceNumber(), is(2));
+    }
+
+    @Test
+    public void resetResetsSessionSequenceNumber() {
+        // given
+        SessionCreatorImpl target = createSessionCreator();
+
+        for (int i = 0; i < 5; i++) {
+            // when
+            SessionImpl session = target.createSession(mockParent);
+
+            // then
+            assertThat(session.getBeacon().getSessionSequenceNumber(), is(i));
+        }
+
+        // and when
+        target.reset();
+
+        // then
+        assertThat(target.getSessionSequenceNumber(), is(0));
+    }
+
+    @Test
+    public void resetMakesFixedSessionIdProviderToUseNextSessionId() {
+        // given
+        int sessionIdBeforeReset = 17;
+        int sessionIdAfterReset = 42;
+        when(mockSessionIdProvider.getNextSessionID()).thenReturn(sessionIdBeforeReset, sessionIdAfterReset);
+        when(mockPrivacyConfiguration.isSessionNumberReportingAllowed()).thenReturn(true);
+
+        SessionCreatorImpl target = createSessionCreator();
+
+        // when
+        for (int i = 0; i < 5; i++) {
+            SessionImpl session = target.createSession(mockParent);
+            Beacon beacon = session.getBeacon();
+
+            // then
+            assertThat(beacon.getSessionNumber(), is(sessionIdBeforeReset));
+            assertThat(beacon.getSessionSequenceNumber(), is(i));
+        }
+
+        // and when
+        target.reset();
+
+        // then
+        for (int i = 0; i < 5; i++) {
+            SessionImpl session = target.createSession(mockParent);
+            Beacon beacon = session.getBeacon();
+
+            // then
+            assertThat(beacon.getSessionNumber(), is(sessionIdAfterReset));
+            assertThat(beacon.getSessionSequenceNumber(), is(i));
+        }
+    }
+
+    @Test
+    public void resetMakesFixedRandomNumberGeneratorToUseNextRandomNumber() {
+        // given
+        SessionCreatorImpl target = createSessionCreator();
+        long randomNumberBeforeReset = target.getRandomNumberGenerator().nextPositiveLong();
+
+        // when
+        for (int i = 0; i < 5; i++) {
+            // then
+            assertThat(target.getRandomNumberGenerator().nextPositiveLong(), is(randomNumberBeforeReset));
+        }
+
+        // and when
+        target.reset();
+        long randomNumberAfterReset = target.getRandomNumberGenerator().nextPositiveLong();
+
+        // then
+        assertThat(randomNumberBeforeReset, not(randomNumberAfterReset));
+        for (int i = 0; i < 5; i++) {
+            assertThat(target.getRandomNumberGenerator().nextPositiveLong(), is(randomNumberAfterReset));
+        }
     }
 
     private SessionCreatorImpl createSessionCreator() {

@@ -40,7 +40,6 @@ public class ResponseAttributesImplTest {
     @Test
     public void buildWithKeyValueDefaultsHasNoAttributeSetOnInstance() {
         // given
-        ResponseAttributesDefaults defaults = ResponseAttributesDefaults.JSON_RESPONSE;
         ResponseAttributes target = ResponseAttributesImpl.withKeyValueDefaults().build();
 
         // when, then

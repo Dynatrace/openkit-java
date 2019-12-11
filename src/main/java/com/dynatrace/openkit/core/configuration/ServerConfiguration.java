@@ -213,7 +213,7 @@ public class ServerConfiguration {
     }
 
     /**
-     * Returns the idle timeout of a after which a session is to be split.
+     * Returns the idle timeout after which a session is to be split.
      *
      * @return the idle timeout of a session.
      */
@@ -455,7 +455,7 @@ public class ServerConfiguration {
         /**
          * Configures the maximum number of events per session, after which the session gets split.
          *
-         * @param maxEventsPerSession the maximum number of top level elements after which a session gets split.
+         * @param maxEventsPerSession the maximum number of top level events after which a session gets split.
          * @return {@code this}
          */
         public Builder withMaxEventsPerSession(int maxEventsPerSession) {

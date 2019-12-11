@@ -157,6 +157,7 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
                         logger,
                         this,
                         sessionCreator,
+                        timingProvider,
                         beaconSender,
                         sessionWatchdog
                 );

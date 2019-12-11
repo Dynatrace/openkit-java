@@ -17,6 +17,7 @@ package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionProxyImpl;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Currently following actions are performed:
  * <ul>
  *     <li>Sessions which could not be closed after session splitting will be closed after a certain grace period.</li>
+ *     <li>Session proxies which require splitting after a maximum session duration or by idle timeout</li>
  * </ul>
  */
 public class SessionWatchdog {
@@ -114,5 +116,24 @@ public class SessionWatchdog {
      */
     public void dequeueFromClosing(SessionImpl session) {
         context.dequeueFromClosing(session);
+    }
+
+    /**
+     * Adds the given session proxy so that it will be automatically split the underlying session when the idle timeout
+     * or the max session time is reached.
+     *
+     * @param sessionProxy the session proxy to be added.
+     */
+    public void addToSplitByTimeout(SessionProxyImpl sessionProxy) {
+        context.addToSplitByTimeout(sessionProxy);
+    }
+
+    /**
+     * Removes the given session proxy from automatically splitting it after idle or session max time expired.
+     *
+     * @param sessionProxy the session proxy to be removed.
+     */
+    public void removeFromSplitByTimeout(SessionProxyImpl sessionProxy) {
+        context.removeFromSplitByTimeout(sessionProxy);
     }
 }

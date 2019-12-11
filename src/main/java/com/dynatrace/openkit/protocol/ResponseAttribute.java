@@ -16,7 +16,7 @@
 package com.dynatrace.openkit.protocol;
 
 /**
- * Specifies an attribute of a {@link ResponseAttributes} sent by the server.
+ * Specifies an attribute in the {@link ResponseAttributes} sent by the server.
  */
 public enum ResponseAttribute {
 

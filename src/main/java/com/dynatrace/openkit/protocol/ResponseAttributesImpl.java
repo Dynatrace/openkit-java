@@ -23,7 +23,7 @@ import java.util.EnumSet;
 public class ResponseAttributesImpl implements ResponseAttributes {
 
     /**
-     * Represents the set of which are set / were sent by the server.
+     * Represents the set of attributes which are set / were sent by the server.
      */
     private final EnumSet<ResponseAttribute> setAttributes;
 
@@ -44,7 +44,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     private final long timestampInMilliseconds;
 
     private ResponseAttributesImpl(Builder builder) {
-        setAttributes = builder.setAttributes;
+        setAttributes = EnumSet.copyOf(builder.setAttributes);
 
         maxBeaconSizeInBytes = builder.maxBeaconSizeInBytes;
         maxSessionDurationInMilliseconds = builder.maxSessionDurationInMilliseconds;
@@ -254,7 +254,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     }
 
     public static class Builder {
-        private EnumSet<ResponseAttribute> setAttributes = EnumSet.noneOf(ResponseAttribute.class);
+        private final EnumSet<ResponseAttribute> setAttributes = EnumSet.noneOf(ResponseAttribute.class);
 
         private int maxBeaconSizeInBytes;
         private int maxSessionDurationInMilliseconds;
@@ -323,9 +323,9 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         }
 
         /**
-         * Sets the maximum number of top level elements after which a session is to be split.
+         * Sets the maximum number of top level events after which a session is to be split.
          *
-         * @param maxEventsPerSession maximum number of top level elements
+         * @param maxEventsPerSession maximum number of top level events
          * @return {@code this}
          */
         public Builder withMaxEventsPerSession(int maxEventsPerSession) {
@@ -453,7 +453,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         }
 
         /**
-         * Creates a new {@link ResponseAttributes} with all the attributes set in this builder.
+         * Creates a new {@link ResponseAttributes} instance with all the attributes set in this builder.
          */
         public ResponseAttributes build() {
             return new ResponseAttributesImpl(this);

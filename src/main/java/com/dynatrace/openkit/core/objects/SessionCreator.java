@@ -27,4 +27,14 @@ public interface SessionCreator {
      * @param parent the parent composite of the session to create.
      */
     SessionImpl createSession(OpenKitComposite parent);
+
+    /**
+     * Resets the internal state of this session creator. A reset includes the following:
+     * <ul>
+     *     <li>resetting the consecutive sequence session number which is increased every time a session is created.</li>
+     *     <li>use a new session ID (which will stay the same for all newly created sessions)</li>
+     *     <li>use a new randomized number (which will stay the same for all newly created sessions)</li>
+     * </ul>
+     */
+    void reset();
 }

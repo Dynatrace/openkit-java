@@ -18,7 +18,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.util.json.parser.ParserException;
 
 /**
- * Evaluates a response string and transforms it into a
+ * Evaluates a response string and transforms it into corresponding {@link ResponseAttributes}
  */
 public class ResponseParser {
 

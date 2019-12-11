@@ -38,16 +38,23 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
     private final OpenKitConfiguration openKitConfiguration;
     // privacy related configuration
     private final PrivacyConfiguration privacyConfiguration;
-
+    // provider to obtain the ID of the current thread
     private final ThreadIDProvider threadIdProvider;
+    // provider to obtain the current time
     private final TimingProvider timingProvider;
-
+    // cache for storing beacon data until it gets send
     private final BeaconCache beaconCache;
 
     private final String clientIpAddress;
     private final int serverId;
-    private final SessionIDProvider sessionIdProvider;
-    private final RandomNumberGenerator randomNumberGenerator;
+
+    private final SessionIDProvider continuousSessionIdProvider;
+    private final RandomNumberGenerator continuousRandomGenerator;
+
+    // provider which will always return the same session number
+    private SessionIDProvider fixedSessionIdProvider;
+    // provider which will always the same random number
+    private RandomNumberGenerator fixedRandomNumberGenerator;
 
     private int sessionSequenceNumber;
 
@@ -61,8 +68,15 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
         this.clientIpAddress = clientIpAddress;
 
         this.serverId = input.getCurrentServerId();
-        this.sessionIdProvider = new FixedSessionIdProvider(input.getSessionIdProvider());
-        this.randomNumberGenerator = new FixedRandomNumberGenerator(new DefaultRandomNumberGenerator());
+        this.continuousSessionIdProvider = input.getSessionIdProvider();
+        this.continuousRandomGenerator = new DefaultRandomNumberGenerator();
+
+        initializeFixedNumberProviders();
+    }
+
+    private void initializeFixedNumberProviders() {
+        fixedSessionIdProvider = new FixedSessionIdProvider(continuousSessionIdProvider);
+        fixedRandomNumberGenerator = new FixedRandomNumberGenerator(continuousRandomGenerator);
     }
 
     @Override
@@ -79,6 +93,12 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
         sessionSequenceNumber++;
 
         return session;
+    }
+
+    @Override
+    public void reset() {
+        sessionSequenceNumber = 0;
+        initializeFixedNumberProviders();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +122,7 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
 
     @Override
     public SessionIDProvider getSessionIdProvider() {
-        return sessionIdProvider;
+        return fixedSessionIdProvider;
     }
 
     @Override
@@ -122,6 +142,6 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
 
     @Override
     public RandomNumberGenerator getRandomNumberGenerator() {
-        return randomNumberGenerator;
+        return fixedRandomNumberGenerator;
     }
 }

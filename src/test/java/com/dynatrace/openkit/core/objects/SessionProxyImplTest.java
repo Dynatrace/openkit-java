@@ -22,6 +22,7 @@ import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.SessionWatchdog;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
+import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,6 +33,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -44,6 +46,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class SessionProxyImplTest {
@@ -57,6 +60,7 @@ public class SessionProxyImplTest {
     private SessionImpl mockSplitSession2;
     private Beacon mockSplitBeacon2;
     private SessionCreator mockSessionCreator;
+    private TimingProvider mockTimingProvider;
     private ServerConfiguration mockServerConfiguration;
     private BeaconSender mockBeaconSender;
     private SessionWatchdog mockSessionWatchdog;
@@ -68,6 +72,7 @@ public class SessionProxyImplTest {
         when(mockLogger.isWarnEnabled()).thenReturn(true);
 
         mockParent = mock(OpenKitComposite.class);
+        mockTimingProvider = mock(TimingProvider.class);
         mockServerConfiguration = mock(ServerConfiguration.class);
 
         mockBeacon = mock(Beacon.class);
@@ -126,6 +131,20 @@ public class SessionProxyImplTest {
 
         // then
         verify(mockBeaconSender, times(1)).addSession(mockSession);
+    }
+
+    @Test
+    public void initiallyCreatedSessionProvidesStartTimeAsLastInteractionTime() {
+        // given
+        long startTime = 73;
+        when(mockBeacon.getSessionStartTime()).thenReturn(startTime);
+
+        // when
+        SessionProxyImpl target = createSessionProxy();
+
+        // then
+        assertThat(target.getLastInteractionTime(), is(startTime));
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,17 +240,19 @@ public class SessionProxyImplTest {
     @Test
     public void enterActionSetsLastInterActionTime() {
         // given
-        long timestamp = 17;
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(timestamp);
+        long sessionCreationTime = 13;
+        long lastInteractionTme = 17;
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTme);
 
         SessionProxyImpl target = createSessionProxy();
-        assertThat(target.getLastInteractionTime(), is(0L));
+        assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
 
         // when
         target.enterAction("test");
 
         // then
-        assertThat(target.getLastInteractionTime(), is(timestamp));
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTme));
     }
 
     @Test
@@ -533,17 +554,19 @@ public class SessionProxyImplTest {
     @Test
     public void identifyUserSetsLastInterActionTime() {
         // given
-        long timestamp = 17;
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(timestamp);
+        long sessionCreationTime = 13;
+        long lastInteractionTime = 17;
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime);
 
         SessionProxyImpl target = createSessionProxy();
-        assertThat(target.getLastInteractionTime(), is(0L));
+        assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
 
         // when
         target.identifyUser("Jane Doe");
 
         // then
-        assertThat(target.getLastInteractionTime(), is(timestamp));
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
     }
 
     @Test
@@ -864,17 +887,19 @@ public class SessionProxyImplTest {
     @Test
     public void reportCrashSetsLastInterActionTime() {
         // given
-        long timestamp = 17;
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(timestamp);
+        long sessionCreationTime = 13;
+        long lastInteractionTime = 17;
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime);
 
         SessionProxyImpl target = createSessionProxy();
-        assertThat(target.getLastInteractionTime(), is(0L));
+        assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
 
         // when
         target.reportCrash("errorName", "reason", "stacktrace");
 
         // then
-        assertThat(target.getLastInteractionTime(), is(timestamp));
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
     }
 
     @Test
@@ -1202,17 +1227,19 @@ public class SessionProxyImplTest {
     @Test
     public void traceWebRequestWithStringUrlSetsLastInterActionTime() {
         // given
-        long timestamp = 17;
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(timestamp);
+        long sessionCreationTime = 13;
+        long lastInteractionTime = 17;
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime, lastInteractionTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime);
 
         SessionProxyImpl target = createSessionProxy();
-        assertThat(target.getLastInteractionTime(), is(0L));
+        assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
 
         // when
         target.traceWebRequest("https://localhost");
 
         // then
-        assertThat(target.getLastInteractionTime(), is(timestamp));
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
     }
 
     @Test
@@ -1506,17 +1533,19 @@ public class SessionProxyImplTest {
     @Test
     public void traceWebRequestWithUrlConnectionSetsLastInterActionTime() {
         // given
-        long timestamp = 17;
-        when(mockBeacon.getCurrentTimestamp()).thenReturn(timestamp);
+        long sessionCreationTime = 13;
+        long lastInteractionTime = 17;
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime);
 
         SessionProxyImpl target = createSessionProxy();
-        assertThat(target.getLastInteractionTime(), is(0L));
+        assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
 
         // when
         target.traceWebRequest(mock(URLConnection.class));
 
         // then
-        assertThat(target.getLastInteractionTime(), is(timestamp));
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
     }
 
     @Test
@@ -1819,6 +1848,18 @@ public class SessionProxyImplTest {
     }
 
     @Test
+    public void endRemovesSessionProxyFromSessionWatchdog() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.end();
+
+        // then
+        verify(mockSessionWatchdog, times(1)).removeFromSplitByTimeout(target);
+    }
+
+    @Test
     public void closeSessionEndsTheSession() {
         // given
         SessionProxyImpl target = spy(createSessionProxy());
@@ -1828,6 +1869,305 @@ public class SessionProxyImplTest {
 
         // then
         verify(target, times(1)).end();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// split session by time tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void splitSessionByTimeReturnsMinusOneIfSessionProxyIsFinished() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        target.end();
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        assertThat(obtained, is(-1L));
+        verifyNoMoreInteractions(mockSessionCreator);
+    }
+
+    @Test
+    public void splitSessionByTimeReturnsMinusOneIfServerConfigurationIsNotSet() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        assertThat(obtained, is(-1L));
+        verifyNoMoreInteractions(mockSessionCreator);
+    }
+
+    @Test
+    public void splitByTimeDoesNotPerformSplitIfNeitherSplitByIdleTimeoutNorSplitByDurationEnabled() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        assertThat(obtained, is(-1L));
+        verifyNoMoreInteractions(mockSessionCreator);
+    }
+
+    @Test
+    public void splitByTimeSplitsCurrentSessionIfIdleTimeoutReached() {
+        // given
+        long lastInteractionTimeSessionOne = 60;
+        int idleTimeout = 10;                       // time to split: last interaction + idle => 70
+        long currentTime = 70;
+        long sessionTwoCreationTime = 80;
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+                .thenReturn(lastInteractionTimeSessionOne, currentTime);
+        when(mockSplitBeacon1.getSessionStartTime()).thenReturn(sessionTwoCreationTime);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        target.identifyUser("test"); // update last interaction time
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTimeSessionOne));
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verify(mockSession, times(1)).end();
+        verify(mockSessionCreator, times(1)).reset();
+        verify(mockSessionCreator, times(2)).createSession(target);
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(sessionTwoCreationTime + idleTimeout));
+    }
+
+    @Test
+    public void splitByTimeSplitsCurrentSessionIfIdleTimeoutExceeded() {
+        // given
+        long lastInteractionTimeSessionOne = 60;
+        int idleTimeout = 10;                       // time to split: last interaction + idle => 70
+        long currentTime = 80;
+        long sessionTwoCreationTime = 90;
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+                .thenReturn(lastInteractionTimeSessionOne, currentTime);
+        when(mockSplitBeacon1.getSessionStartTime()).thenReturn(sessionTwoCreationTime);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        target.identifyUser("test"); // update last interaction time
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTimeSessionOne));
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verify(mockSession, times(1)).end();
+        verify(mockSessionCreator, times(1)).reset();
+        verify(mockSessionCreator, times(2)).createSession(target);
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(sessionTwoCreationTime + idleTimeout));
+    }
+
+    @Test
+    public void splitByTimeDoesNotSplitCurrentSessionIfIdleTimeoutNotExpired() {
+        // given
+        long lastInteractionTime = 60;
+        int idleTimeout = 20;               // time to split: list interaction + idle => 80
+        long currentTime = 70;
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+                .thenReturn(lastInteractionTime, currentTime);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        target.identifyUser("test"); // update last interaction time
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        assertThat(obtained, is(lastInteractionTime + idleTimeout));
+        verifyNoMoreInteractions(mockSessionCreator);
+    }
+
+    @Test
+    public void splitByTimeSplitsCurrentSessionIfMaxDurationReached() {
+        // given
+        long startTimeFirstSession = 60;
+        int sessionDuration = 10;           // split time: session start + duration = 70
+        long currentTime = 70;
+        long startTimeSecondSession = 80;
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+        when(mockBeacon.getSessionStartTime()).thenReturn(startTimeFirstSession);
+        when(mockSplitBeacon1.getSessionStartTime()).thenReturn(startTimeSecondSession);
+
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verify(mockSession, times(1)).end();
+        verify(mockSessionCreator, times(1)).reset();
+        verify(mockSessionCreator, times(2)).createSession(target);
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(startTimeSecondSession + sessionDuration));
+    }
+
+    @Test
+    public void splitByTimeSplitsCurrentSessionIfMaxDurationExceeded() {
+        // given
+        long startTimeFirstSession = 60;
+        int sessionDuration = 10;           // split time: session start + duration => 70
+        long currentTime = 80;
+        long startTimeSecondSession = 90;
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+        when(mockBeacon.getSessionStartTime()).thenReturn(startTimeFirstSession);
+        when(mockSplitBeacon1.getSessionStartTime()).thenReturn(startTimeSecondSession);
+
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verify(mockSession, times(1)).end();
+        verify(mockSessionCreator, times(1)).reset();
+        verify(mockSessionCreator, times(2)).createSession(target);
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(startTimeSecondSession + sessionDuration));
+    }
+
+    @Test
+    public void splitByTimeDoesNotSplitCurrentSessionIfMaxDurationNotReached() {
+        // given
+        long sessionStartTime = 60;
+        int sessionDuration = 20;       // split time: start time + duration => 80
+        long currentTime = 70;
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionStartTime);
+
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(sessionStartTime + sessionDuration));
+    }
+
+    @Test
+    public void splitBySessionTimeReturnsIdleSplitTimeWhenBeforeSessionDurationSplitTime() {
+        // given
+        long sessionStartTime = 50;
+        int sessionDuration = 40;       // duration split time: start time + duration => 90
+        long lastInteractionTime = 60;
+        int idleTimeout = 20;           // idle split time: last interaction + idle => 80
+        long currentTime = 70;
+
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionStartTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime, currentTime);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        target.identifyUser("test"); // update last interaction time
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(lastInteractionTime + idleTimeout));
+    }
+
+    @Test
+    public void splitBySessionTimeReturnsDurationSplitTimeWhenBeforeIdleSplitTime() {
+        // given
+        long sessionStartTime = 50;
+        int sessionDuration = 30;       // duration split time: start time + duration => 80
+        long lastInteractionTime = 60;
+        int idleTimeout = 50;           // idle split time: last interaction + idle => 110
+        long currentTime = 70;
+
+        when(mockBeacon.getSessionStartTime()).thenReturn(sessionStartTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime, currentTime);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        target.identifyUser("test"); // update last interaction time
+
+        // when
+        long obtained = target.splitSessionByTime();
+
+        // then
+        verifyNoMoreInteractions(mockSessionCreator);
+        assertThat(obtained, is(sessionStartTime + sessionDuration));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1869,6 +2209,108 @@ public class SessionProxyImplTest {
     }
 
     @Test
+    public void onServerConfigurationUpdateTakesOverServerConfigurationOnFirstCall() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
+
+        assertThat(target.getServerConfiguration(), is(nullValue()));
+
+        // when
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // then
+        assertThat(target.getServerConfiguration(), is(mockServerConfiguration));
+    }
+
+    @Test
+    public void onServerConfigurationUpdateMergesServerConfigurationOnConsecutiveCalls() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        ServerConfiguration mockFirstConfig = mock(ServerConfiguration.class);
+        ServerConfiguration mockSecondConfig = mock(ServerConfiguration.class);
+
+        // when
+        target.onServerConfigurationUpdate(mockFirstConfig);
+
+        // then
+        verify(mockFirstConfig, times(0)).merge(any(ServerConfiguration.class));
+        verify(mockFirstConfig, times(1)).isSessionSplitBySessionDurationEnabled();
+        verify(mockFirstConfig, times(1)).isSessionSplitByIdleTimeoutEnabled();
+
+        // and when
+        target.onServerConfigurationUpdate(mockSecondConfig);
+
+        // then
+        verify(mockFirstConfig, times(1)).merge(mockSecondConfig);
+        verifyNoMoreInteractions(mockFirstConfig);
+        verifyZeroInteractions(mockSecondConfig);
+    }
+
+    @Test
+    public void onServerConfigurationUpdateAddsSessionProxyToWatchdogIfSplitByDurationEnabled() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+
+        // when
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // then
+        verify(mockSessionWatchdog, times(1)).addToSplitByTimeout(target);
+    }
+
+    @Test
+    public void onServerConfigurationUpdateAddsSessionProxyToWatchdogIfSplitByIdleTimeoutEnabled() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+
+        // when
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // then
+        verify(mockSessionWatchdog, times(1)).addToSplitByTimeout(target);
+    }
+
+    @Test
+    public void onServerConfigurationUpdateDoesNotAddSessionProxyToWatchdogIfSplitByIdleTimeoutAndDurationDisabled() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        // when
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // then
+        verifyZeroInteractions(mockSessionWatchdog);
+    }
+
+    @Test
+    public void onServerConfigurationUpdateDoesNotAddSessionProxyToWatchdogOnConsecutiveCalls() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        ServerConfiguration mockServerConfigTwo = mock(ServerConfiguration.class);
+        when(mockServerConfigTwo.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfigTwo.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
+
+        // when
+        target.onServerConfigurationUpdate(mockServerConfigTwo);
+
+        // then
+        verifyZeroInteractions(mockSessionWatchdog);
+    }
+
+    @Test
     public void toStringReturnsAppropriateResult() {
         // given
         when(mockBeacon.getSessionNumber()).thenReturn(37);
@@ -1884,6 +2326,13 @@ public class SessionProxyImplTest {
 
 
     private SessionProxyImpl createSessionProxy() {
-        return new SessionProxyImpl(mockLogger, mockParent, mockSessionCreator, mockBeaconSender, mockSessionWatchdog);
+        return new SessionProxyImpl(
+                mockLogger,
+                mockParent,
+                mockSessionCreator,
+                mockTimingProvider,
+                mockBeaconSender,
+                mockSessionWatchdog
+        );
     }
 }

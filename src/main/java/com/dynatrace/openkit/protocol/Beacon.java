@@ -226,6 +226,13 @@ public class Beacon {
     }
 
     /**
+     * Returns the time when the session was started (in milliseconds).
+     */
+    public long getSessionStartTime() {
+        return sessionStartTime;
+    }
+
+    /**
      * Create a web request tag.
      *
      * <p>

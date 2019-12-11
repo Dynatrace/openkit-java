@@ -16,6 +16,7 @@
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionProxyImpl;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,11 +36,13 @@ public class SessionWatchdogContextTest {
 
     private TimingProvider mockTimingProvider;
     private SessionImpl mockSession;
+    private SessionProxyImpl mockSessionProxy;
 
     @Before
     public void setUp() {
         mockTimingProvider = mock(TimingProvider.class);
         mockSession = mock(SessionImpl.class);
+        mockSessionProxy = mock(SessionProxyImpl.class);
     }
 
     @Test
@@ -58,6 +61,15 @@ public class SessionWatchdogContextTest {
 
         // then
         assertThat(target.getSessionsToClose(), is(empty()));
+    }
+
+    @Test
+    public void onDefaultSessionsToSplitByTimeoutIsEmpty() {
+        // given
+        SessionWatchdogContext target = createContext();
+
+        // then
+        assertThat(target.getSessionsToSplitByTimeout(), is(empty()));
     }
 
     @Test
@@ -119,6 +131,52 @@ public class SessionWatchdogContextTest {
     }
 
     @Test
+    public void addToSplitByTimeOutAddsSessionProxyIfNotFinished() {
+        // given
+        SessionProxyImpl mockSessionProxy = mock(SessionProxyImpl.class);
+        when(mockSessionProxy.isFinished()).thenReturn(false);
+
+        SessionWatchdogContext target = createContext();
+
+        // when
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // then
+        assertThat(target.getSessionsToSplitByTimeout().size(), is(1));
+    }
+
+    @Test
+    public void addToSplitByTimeOutDoesNotAddSessionProxyIfFinished() {
+        // given
+        SessionProxyImpl mockSessionProxy = mock(SessionProxyImpl.class);
+        when(mockSessionProxy.isFinished()).thenReturn(true);
+
+        SessionWatchdogContext target = createContext();
+
+        // when
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // then
+        assertThat(target.getSessionsToSplitByTimeout().size(), is(0));
+    }
+
+    @Test
+    public void removeFromSplitByTimeoutRemovesSessionProxy() {
+        // given
+        SessionProxyImpl mockSessionProxy = mock(SessionProxyImpl.class);
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        assertThat(target.getSessionsToSplitByTimeout().size(), is(1));
+
+        // when
+        target.removeFromSplitByTimeout(mockSessionProxy);
+
+        // then
+        assertThat(target.getSessionsToSplitByTimeout().size(), is(0));
+    }
+
+    @Test
     public void executeEndsSessionsWithExpiredGracePeriod() {
         // given
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(5L);
@@ -173,18 +231,6 @@ public class SessionWatchdogContextTest {
     }
 
     @Test
-    public void executeSleepsDefaultTimeIfNoSessionToCloseExists() throws InterruptedException {
-        // given
-        SessionWatchdogContext target = createContext();
-
-        // when
-        target.execute();
-
-        // then
-        verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
-    }
-
-    @Test
     public void executeSleepsDefaultTimeIfSessionIsExpiredAndNoFurtherNonExpiredSessions() throws InterruptedException {
         // given
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(5L);
@@ -200,7 +246,6 @@ public class SessionWatchdogContextTest {
         // then
         verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
         verify(mockSession, times(1)).end();
-        ;
     }
 
     @Test
@@ -235,7 +280,195 @@ public class SessionWatchdogContextTest {
     }
 
     @Test
-    public void executeDoesNotSleepLongerThanDefaultSleepTime() throws InterruptedException {
+    public void executeRemovesSessionProxyIfNextSplitTimeIsNegative() {
+        // given
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(-1L);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        assertThat(target.getSessionsToSplitByTimeout(), is(empty()));
+    }
+
+    @Test
+    public void executeDoesNotRemoveSessionProxyIfNextSplitTimeIsNegative() {
+        // given
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(10L);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        assertThat(target.getSessionsToSplitByTimeout().size(), is(1));
+    }
+
+    @Test
+    public void executeSleepsDefaultTimeIfSessionProxySplitTimeIsNegativeAndNoFurtherSessionProxyExists() throws InterruptedException {
+        // given
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(-1L);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
+    }
+
+    @Test
+    public void executeSleepsDefaultTimeIfSleepDurationToNextSplitIsNegativeAndNoFurtherSessionProxyExists() throws InterruptedException {
+        // given
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(10L);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(20L);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
+    }
+
+    @Test
+    public void executeSleepsDurationToNextSplitByTimeout() throws InterruptedException {
+        // given
+        long nextSplitTime = 100;
+        long currentTime = 50;
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(nextSplitTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockTimingProvider, times(1)).sleep(nextSplitTime - currentTime);
+    }
+
+    @Test
+    public void executeDoesNotSleepLongerThanDefaultSleepTimeForDurationToNextSplitByTime() throws InterruptedException {
+        // given
+        long nextSplitTime = SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS + 20;
+        long currentTime = 5;
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(nextSplitTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
+    }
+
+    @Test
+    public void executeSleepsMinimumTimeToNextSplitByTime() throws InterruptedException {
+        // given
+        long nextSplitTimeProxy1 = 120;
+        long nextSplitTimeProxy2 = 100;
+        long currentTime = 50;
+
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(nextSplitTimeProxy1);
+
+        SessionProxyImpl mockSessionProxy2 = mock(SessionProxyImpl.class);
+        when(mockSessionProxy2.splitSessionByTime()).thenReturn(nextSplitTimeProxy2);
+
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+
+        SessionWatchdogContext target = createContext();
+        target.addToSplitByTimeout(mockSessionProxy);
+        target.addToSplitByTimeout(mockSessionProxy2);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockSessionProxy2, times(1)).splitSessionByTime();
+        verify(mockTimingProvider, times(1)).sleep(nextSplitTimeProxy2 - currentTime);
+    }
+
+    @Test
+    public void executeSleepsDefaultTimeIfNoSessionToCloseAndNoSessionProxyToSplitExists() throws InterruptedException {
+        // given
+        SessionWatchdogContext target = createContext();
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
+    }
+
+    @Test
+    public void executeSleepsMinimumDurationToNextSplitByTime() throws InterruptedException {
+        // given
+        long gracePeriodEndTime = 200;
+        long nextSessionProxySplitTime = 100;
+        long currentTime = 50;
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(nextSessionProxySplitTime);
+        when(mockSession.getSplitByEventsGracePeriodEndTimeInMillis()).thenReturn(gracePeriodEndTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+
+        SessionWatchdogContext target = createContext();
+        target.closeOrEnqueueForClosing(mockSession, 0/* irrelevant */);
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockSession, times(0)).end();
+        verify(mockTimingProvider, times(1)).sleep(nextSessionProxySplitTime - currentTime);
+    }
+
+    @Test
+    public void executeSleepsMinimumDurationToNextGracePeriodEnd() throws InterruptedException {
+        // given
+        long gracePeriodEndTime = 100;
+        long nextSessionProxySplitTime = 200;
+        long currentTime = 50;
+        when(mockSessionProxy.splitSessionByTime()).thenReturn(nextSessionProxySplitTime);
+        when(mockSession.getSplitByEventsGracePeriodEndTimeInMillis()).thenReturn(gracePeriodEndTime);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(currentTime);
+
+        SessionWatchdogContext target = createContext();
+        target.closeOrEnqueueForClosing(mockSession, 0/* irrelevant */);
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // when
+        target.execute();
+
+        // then
+        verify(mockSessionProxy, times(1)).splitSessionByTime();
+        verify(mockSession, times(0)).end();
+        verify(mockTimingProvider, times(1)).sleep(gracePeriodEndTime - currentTime);
+    }
+
+    @Test
+    public void executeDoesNotSleepLongerThanDefaultSleepTimeForDurationToNextSessionClose() throws InterruptedException {
         // given
         when(mockSession.tryEnd()).thenReturn(false);
         when(mockSession.getSplitByEventsGracePeriodEndTimeInMillis())

@@ -31,7 +31,7 @@ public interface ResponseAttributes {
     int getMaxSessionDurationInMilliseconds();
 
     /**
-     * Returns the maximum number of top level elements after which a session will be split.
+     * Returns the maximum number of top level events after which a session will be split.
      */
     int getMaxEventsPerSession();
 
@@ -76,10 +76,10 @@ public interface ResponseAttributes {
     int getServerId();
 
     /**
-     * Returns the timestamp of the configuration which was returned from the server with this response.
+     * Returns the timestamp of these attributes which were returned from the server.
      *
      * <p>
-     *     The timestamp is the duration  January, 1st, 1970
+     *     The timestamp is the duration from January, 1st, 1970
      * </p>
      */
     long getTimestampInMilliseconds();
@@ -88,17 +88,17 @@ public interface ResponseAttributes {
      * Checks whether the given attribute was set / sent from the server with this server response.
      *
      * @param attribute the attribute to be checked if it was sent by the server.
-     * @return {@code true} if the given attribute was sent from the server by this response, {@code false} otherwise.
+     * @return {@code true} if the given attribute was sent from the server with this attributes, {@code false} otherwise.
      */
     boolean isAttributeSet(ResponseAttribute attribute);
 
     /**
-     * Creates a new response object by merging the given response into this one. Attributes are selectively taken over
-     * from the given response as long as the attribute {@link #isAttributeSet is set}.
+     * Creates a new response attributes object by merging the given response into this one. Single attributes are
+     * selectively taken over from the given attributes as long as the respective attribute {@link #isAttributeSet is set}.
      *
      * @param responseAttributes the response attributes which will be merged together with this one into a new response
      *      attributes object.
-     * @return a new response instance by merging the given response with this response.
+     * @return a new response attributes instance by merging the given attributes with this attributes.
      */
     ResponseAttributes merge(ResponseAttributes responseAttributes);
 }

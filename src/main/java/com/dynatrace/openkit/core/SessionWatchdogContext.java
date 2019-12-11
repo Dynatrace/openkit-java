@@ -1,22 +1,22 @@
 /**
- *   Copyright 2018-2019 Dynatrace LLC
+ * Copyright 2018-2019 Dynatrace LLC
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.dynatrace.openkit.core;
 
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionProxyImpl;
 import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.util.Iterator;
@@ -41,15 +41,19 @@ public class SessionWatchdogContext {
     private final TimingProvider timingProvider;
     // holds all sessions which are to be closed after a certain grace period
     private final LinkedBlockingQueue<SessionImpl> sessionsToClose = new LinkedBlockingQueue<SessionImpl>();
+    // holds all session which are to be split after after expiration of either session duration or idle timeout.
+    private final LinkedBlockingQueue<SessionProxyImpl> sessionsToSplitByTimeout = new LinkedBlockingQueue<SessionProxyImpl>();
 
     public SessionWatchdogContext(TimingProvider timingProvider) {
         this.timingProvider = timingProvider;
     }
 
-    public void execute()  {
-        long sleepTime = closeExpiredSessions();
+    public void execute() {
+        long durationToNextCloseInMillis = closeExpiredSessions();
+        long durationToNextSplitInMillis = splitTimedOutSessions();
 
         try {
+            long sleepTime = Math.min(durationToNextCloseInMillis, durationToNextSplitInMillis);
             timingProvider.sleep(sleepTime);
         } catch (InterruptedException e) {
             requestShutdown();
@@ -57,30 +61,54 @@ public class SessionWatchdogContext {
         }
     }
 
+    private long splitTimedOutSessions() {
+        long sleepTimeInMillis = DEFAULT_SLEEP_TIME_IN_MILLIS;
+        Iterator<SessionProxyImpl> sessionProxyIterator = sessionsToSplitByTimeout.iterator();
+        while (sessionProxyIterator.hasNext()) {
+            SessionProxyImpl sessionProxy = sessionProxyIterator.next();
+
+            long nextSessionSplitTimeInMillis = sessionProxy.splitSessionByTime();
+            if (nextSessionSplitTimeInMillis < 0) {
+                sessionProxyIterator.remove();
+                continue;
+            }
+
+            long nowInMillis = timingProvider.provideTimestampInMilliseconds();
+            long durationToNextSplit = nextSessionSplitTimeInMillis - nowInMillis;
+            if (durationToNextSplit < 0) {
+                continue;
+            }
+
+            sleepTimeInMillis = Math.min(sleepTimeInMillis, durationToNextSplit);
+        }
+
+        return sleepTimeInMillis;
+    }
+
     private long closeExpiredSessions() {
-        long sleepTime = DEFAULT_SLEEP_TIME_IN_MILLIS;
+        long sleepTimeInMillis = DEFAULT_SLEEP_TIME_IN_MILLIS;
         List<SessionImpl> sessionsToEnd = new LinkedList<SessionImpl>();
         Iterator<SessionImpl> sessionIterator = sessionsToClose.iterator();
         while (sessionIterator.hasNext()) {
             SessionImpl session = sessionIterator.next();
-            long now = timingProvider.provideTimestampInMilliseconds();
-            long gracePeriodEndTime = session.getSplitByEventsGracePeriodEndTimeInMillis();
-            boolean isGracePeriodExpired = gracePeriodEndTime <= now;
+            long nowInMillis = timingProvider.provideTimestampInMilliseconds();
+            long gracePeriodEndTimeInMillis = session.getSplitByEventsGracePeriodEndTimeInMillis();
+            boolean isGracePeriodExpired = gracePeriodEndTimeInMillis <= nowInMillis;
             if (isGracePeriodExpired) {
                 sessionIterator.remove();
                 sessionsToEnd.add(session);
                 continue;
             }
 
-            long sleepTimeToGracePeriodEnd = gracePeriodEndTime - now;
-            sleepTime = Math.min(sleepTime, sleepTimeToGracePeriodEnd);
+            long sleepTimeToGracePeriodEndInMillis = gracePeriodEndTimeInMillis - nowInMillis;
+            sleepTimeInMillis = Math.min(sleepTimeInMillis, sleepTimeToGracePeriodEndInMillis);
         }
 
         for (SessionImpl session : sessionsToEnd) {
             session.end();
         }
 
-        return sleepTime;
+        return sleepTimeInMillis;
     }
 
     /**
@@ -124,5 +152,31 @@ public class SessionWatchdogContext {
 
     LinkedBlockingQueue<SessionImpl> getSessionsToClose() {
         return sessionsToClose;
+    }
+
+    /**
+     * Adds the given session proxy so that it will be automatically split the underlying session when the idle timeout
+     * or the max session time is reached.
+     *
+     * @param sessionProxy the session proxy to be added.
+     */
+    public void addToSplitByTimeout(SessionProxyImpl sessionProxy) {
+        if (sessionProxy.isFinished()) {
+            return;
+        }
+        sessionsToSplitByTimeout.add(sessionProxy);
+    }
+
+    /**
+     * Removes the given session proxy from automatically splitting it after idle or session max time expired.
+     *
+     * @param sessionProxy the session proxy to be removed.
+     */
+    public void removeFromSplitByTimeout(SessionProxyImpl sessionProxy) {
+        sessionsToSplitByTimeout.remove(sessionProxy);
+    }
+
+    LinkedBlockingQueue<SessionProxyImpl> getSessionsToSplitByTimeout() {
+        return sessionsToSplitByTimeout;
     }
 }

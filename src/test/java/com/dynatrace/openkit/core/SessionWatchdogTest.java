@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.SessionProxyImpl;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -126,6 +127,32 @@ public class SessionWatchdogTest {
 
         // then
         verify(mockContext, times(1)).dequeueFromClosing(mockSession);
+    }
+
+    @Test
+    public void addToSplitByTimeoutDelegatesToSessionWatchdogContext() {
+        // given
+        SessionProxyImpl mockSessionProxy = mock(SessionProxyImpl.class);
+        SessionWatchdog target = createWatchdog();
+
+        // when
+        target.addToSplitByTimeout(mockSessionProxy);
+
+        // then
+        verify(mockContext, times(1)).addToSplitByTimeout(mockSessionProxy);
+    }
+
+    @Test
+    public void removeFromSplitByTimeoutDelegatesToSessionWatchdogContext() {
+        // given
+        SessionProxyImpl mockSessionProxy = mock(SessionProxyImpl.class);
+        SessionWatchdog target = createWatchdog();
+
+        // when
+        target.removeFromSplitByTimeout(mockSessionProxy);
+
+        // then
+        verify(mockContext, times(1)).removeFromSplitByTimeout(mockSessionProxy);
     }
 
     private SessionWatchdog createWatchdog() {
