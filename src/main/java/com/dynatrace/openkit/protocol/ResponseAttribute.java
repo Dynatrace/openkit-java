@@ -31,7 +31,7 @@ public enum ResponseAttribute {
     MAX_SESSION_DURATION,
 
     /**
-     * Maximum number of top level events after which a session is split.
+     * Maximum number of top level actions after which a session is split.
      */
     MAX_EVENTS_PER_SESSION,
 

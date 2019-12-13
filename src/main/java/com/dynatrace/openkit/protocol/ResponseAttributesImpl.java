@@ -323,9 +323,9 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         }
 
         /**
-         * Sets the maximum number of top level events after which a session is to be split.
+         * Sets the maximum number of top level actions after which a session is to be split.
          *
-         * @param maxEventsPerSession maximum number of top level events
+         * @param maxEventsPerSession maximum number of top level actions
          * @return {@code this}
          */
         public Builder withMaxEventsPerSession(int maxEventsPerSession) {

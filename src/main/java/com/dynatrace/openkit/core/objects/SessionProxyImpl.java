@@ -56,8 +56,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     private final SessionWatchdog sessionWatchdog;
     // the current session instance
     private SessionImpl currentSession;
-    // holds the number of received calls to any of the top level events (identify user, enter action, ...)
-    private int topLevelEventCount = 0;
+    // holds the number of received calls to enterAction
+    private int topLevelActionCount = 0;
     // specifies the timestamp when the last top level event happened
     private long lastInteractionTime;
     // the server configuration of the first session (will be initialized when first session is updated with server config)
@@ -95,7 +95,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if (!isFinished) {
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
-                recordTopLevelEventInvocation();
+                recordTopActionEvent();
                 return session.enterAction(actionName);
             }
         }
@@ -115,7 +115,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if (!isFinished) {
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
-                recordTopLevelEventInvocation();
+                recordTopLevelEventInteraction();
                 session.identifyUser(userTag);
             }
         }
@@ -133,7 +133,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if (!isFinished) {
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
-                recordTopLevelEventInvocation();
+                recordTopLevelEventInteraction();
                 session.reportCrash(errorName, reason, stacktrace);
             }
         }
@@ -151,7 +151,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if (!isFinished) {
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
-                recordTopLevelEventInvocation();
+                recordTopLevelEventInteraction();
                 return session.traceWebRequest(connection);
             }
         }
@@ -175,7 +175,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if (!isFinished) {
                 Session session = getOrSplitCurrentSessionByEvents();
-                recordTopLevelEventInvocation();
+                recordTopLevelEventInteraction();
                 return session.traceWebRequest(url);
             }
         }
@@ -235,12 +235,12 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     }
 
     /**
-     * Returns the number of top level event calls which were made to the current session. Intended to be used by unit
+     * Returns the number of top level action calls which were made to the current session. Intended to be used by unit
      * tests only.
      */
-    int getTopLevelEventCount() {
+    int getTopLevelActionCount() {
         synchronized (lockObject) {
-            return topLevelEventCount;
+            return topLevelActionCount;
         }
     }
 
@@ -276,7 +276,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     }
 
     /**
-     * Indicates if the maximum number of top level events is reached and session splitting by events needs to be
+     * Indicates if the maximum number of top level actions is reached and session splitting by events needs to be
      * performed.
      */
     private boolean isSessionSplitByEventsRequired() {
@@ -284,7 +284,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             return false;
         }
 
-        return serverConfiguration.getMaxEventsPerSession() <= topLevelEventCount;
+        return serverConfiguration.getMaxEventsPerSession() <= topLevelActionCount;
     }
 
     /**
@@ -360,7 +360,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     /**
      * Creates a new session and adds it to the beacon sender. In case the given server configuration is not null, the
      * new session will be initialized with this server configuration.
-     * The top level event count is be reset to zero and the last interaction time is set to the current timestamp.
+     * The top level action count is reset to zero and the last interaction time is set to the current timestamp.
      *
      * @param sessionServerConfig the server configuration with which the session will be initialized. Can be {@code null}.
      * @return the newly created session.
@@ -372,7 +372,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         storeChildInList(session);
 
         lastInteractionTime = beacon.getSessionStartTime();
-        topLevelEventCount = 0;
+        topLevelActionCount = 0;
 
         if (sessionServerConfig != null) {
             session.updateServerConfiguration(sessionServerConfig);
@@ -383,9 +383,13 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return session;
     }
 
-    private void recordTopLevelEventInvocation() {
-        ++topLevelEventCount;
+    private void recordTopLevelEventInteraction() {
         lastInteractionTime = timingProvider.provideTimestampInMilliseconds();
+    }
+
+    private void recordTopActionEvent() {
+        ++topLevelActionCount;
+        recordTopLevelEventInteraction();
     }
 
     @Override

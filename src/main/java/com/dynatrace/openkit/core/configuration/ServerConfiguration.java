@@ -198,7 +198,7 @@ public class ServerConfiguration {
     /**
      * Returns the maximum number of events after which a session is to be split.
      *
-     * @return the maximum number of top level events per session.
+     * @return the maximum number of top level actions per session.
      */
     public int getMaxEventsPerSession() {
         return maxEventsPerSession;
@@ -455,7 +455,7 @@ public class ServerConfiguration {
         /**
          * Configures the maximum number of events per session, after which the session gets split.
          *
-         * @param maxEventsPerSession the maximum number of top level events after which a session gets split.
+         * @param maxEventsPerSession the maximum number of top level actions after which a session gets split.
          * @return {@code this}
          */
         public Builder withMaxEventsPerSession(int maxEventsPerSession) {

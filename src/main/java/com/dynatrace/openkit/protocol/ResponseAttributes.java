@@ -31,7 +31,7 @@ public interface ResponseAttributes {
     int getMaxSessionDurationInMilliseconds();
 
     /**
-     * Returns the maximum number of top level events after which a session will be split.
+     * Returns the maximum number of top level actions after which a session will be split.
      */
     int getMaxEventsPerSession();
 
