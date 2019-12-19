@@ -148,13 +148,13 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationFromNullStatusResponseGivesNull() {
+    public void creatingAServerConfigurationFromNullRequestAttributesGivesNull() {
         // when, then
         assertThat(ServerConfiguration.from(null), is(nullValue()));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// creating server config from status response
+    /// creating server config from response attributes
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
@@ -256,7 +256,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDurationDisabledIfMaxDurationZero() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitBySessionDurationDisabledIfMaxDurationZero() {
         // given
         int sessionDuration = 0;
         when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
@@ -270,7 +270,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDurationDisabledIfMaxDurationEventsSmallerZero() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitBySessionDurationDisabledIfMaxDurationEventsSmallerZero() {
         // given
         int sessionDuration = -1;
         when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
@@ -284,7 +284,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitBySessionDurationDisabledIfMaxDurationIsNotSet() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitBySessionDurationDisabledIfMaxDurationIsNotSet() {
         // given
         int sessionDuration = 1;
         when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
@@ -324,7 +324,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitByEventsDisabledIfMaxEventsZero() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitByEventsDisabledIfMaxEventsZero() {
         // given
         int eventsPerSession = 0;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -338,7 +338,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitByEventsDisabledIfMaxEventsEventsSmallerZero() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitByEventsDisabledIfMaxEventsEventsSmallerZero() {
         // given
         int eventsPerSession = -1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -352,7 +352,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitByEventsDisabledIfMaxEventsIsNotSet() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitByEventsDisabledIfMaxEventsIsNotSet() {
         // given
         int eventsPerSession = 1;
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(eventsPerSession);
@@ -392,7 +392,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitByIdleTimeoutDisabledIfTimeoutZero() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitByIdleTimeoutDisabledIfTimeoutZero() {
         // given
         int idleTimeout = 0;
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
@@ -406,7 +406,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitByIdleTimeoutDisabledIfTimeoutSmallerZero() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitByIdleTimeoutDisabledIfTimeoutSmallerZero() {
         // given
         int idleTimeout = -1;
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
@@ -420,7 +420,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingAServerConfigurationStatusResponseHasSplitByIdleTimeoutDisabledIfTimeoutIsNotSet() {
+    public void creatingAServerConfigurationFromRequestAttributesHasSplitByIdleTimeoutDisabledIfTimeoutIsNotSet() {
         // given
         int idleTimeout = 1;
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);

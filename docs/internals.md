@@ -123,7 +123,7 @@ when a certain split condition is met. From an OpenKit user's perspective sessio
 that no explicit action needs to be taken. Internally OpenKit is returning a handle to a session proxy when a new session
 is created. This session proxy is keeping track of the real current active session and is forwarding all top level event
 calls (`identifyUser`, `enterAction`, `traceWebRequest` and `reportCrash`). When a session split condition is met the 
-the current active session will be replaced with a newly created session within the session proxy. Subsequent top level
+current active session will be replaced with a newly created session within the session proxy. Subsequent top level
 event calls are then forwarded to this new session. The split condition is either based on top level action (`RootAction`)
 count or on the expiration of a certain timeout. 
 

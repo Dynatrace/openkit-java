@@ -144,7 +144,6 @@ public class SessionProxyImplTest {
 
         // then
         assertThat(target.getLastInteractionTime(), is(startTime));
-
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,9 +240,9 @@ public class SessionProxyImplTest {
     public void enterActionSetsLastInterActionTime() {
         // given
         long sessionCreationTime = 13;
-        long lastInteractionTme = 17;
+        long lastInteractionTime = 17;
         when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime);
-        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTme);
+        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime);
 
         SessionProxyImpl target = createSessionProxy();
         assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
@@ -252,7 +251,7 @@ public class SessionProxyImplTest {
         target.enterAction("test");
 
         // then
-        assertThat(target.getLastInteractionTime(), is(lastInteractionTme));
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
     }
 
     @Test
@@ -569,8 +568,8 @@ public class SessionProxyImplTest {
         assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
     }
 
-       @Test
-    public void identifyUserSplitsSessionDoesNotSplitSession() {
+    @Test
+    public void identifyUserDoesNotSplitSession() {
         // given
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
@@ -714,7 +713,7 @@ public class SessionProxyImplTest {
     }
 
     @Test
-    public void reportCrashSplitsSessionDoesNotSplitSession() {
+    public void reportCrashDoesNotSplitSession() {
         // given
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
@@ -1026,7 +1025,6 @@ public class SessionProxyImplTest {
 
         // when ending a session twice
         target.end();
-
 
         // then
         verify(mockParent, times(1)).onChildClosed(target);

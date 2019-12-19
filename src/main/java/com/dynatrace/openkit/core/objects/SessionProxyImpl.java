@@ -292,7 +292,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
      * <ul>
      *     <li>this session proxy is not {@link #isFinished() finished}.</li>
      *     <li>
-     *          session splitting by idle timeout is enabled and the current session's was idle for longer than the
+     *          session splitting by idle timeout is enabled and the current session was idle for longer than the
      *          configured timeout.
      *     </li>
      *     <li>

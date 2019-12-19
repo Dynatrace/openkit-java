@@ -41,7 +41,7 @@ public class SessionWatchdogContext {
     private final TimingProvider timingProvider;
     // holds all sessions which are to be closed after a certain grace period
     private final LinkedBlockingQueue<SessionImpl> sessionsToClose = new LinkedBlockingQueue<SessionImpl>();
-    // holds all session which are to be split after after expiration of either session duration or idle timeout.
+    // holds all session proxies which are to be split after expiration of either session duration or idle timeout.
     private final LinkedBlockingQueue<SessionProxyImpl> sessionsToSplitByTimeout = new LinkedBlockingQueue<SessionProxyImpl>();
 
     public SessionWatchdogContext(TimingProvider timingProvider) {

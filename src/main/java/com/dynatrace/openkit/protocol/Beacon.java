@@ -132,7 +132,7 @@ public class Beacon {
     private final BeaconCache beaconCache;
 
     /**
-     * Constructor additionally taking a Random object, used for testing
+     * Creates a new beacon instance
      *
      * @param initializer           provider of relevant parameters to initialize / create the beacon
      * @param configuration         OpenKit related configuration.

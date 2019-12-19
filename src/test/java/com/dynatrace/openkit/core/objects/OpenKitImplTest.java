@@ -234,7 +234,7 @@ public class OpenKitImplTest {
     }
 
     @Test
-    public void shudownShutsDownSessionWatchdog() {
+    public void shutdownShutsDownSessionWatchdog() {
         // given
         OpenKitImpl target = createOpenKit().build();
 
