@@ -49,7 +49,7 @@ public class HTTPClientConfiguration {
     /**
      * Creates a new builder instance and initializes it from the given {@link OpenKitConfiguration}
      *
-     * @param openKitConfig the {@link OpenKitConfiguration} form which the builder will be initialized.
+     * @param openKitConfig the {@link OpenKitConfiguration} from which the builder will be initialized.
      * @return a pre initialized builder instance for creating a new {@link HTTPClientConfiguration}
      */
     public static Builder modifyWith(OpenKitConfiguration openKitConfig) {
@@ -63,7 +63,7 @@ public class HTTPClientConfiguration {
     /**
      * Creates a new builder instance and initializes it from the given {@link HTTPClientConfiguration}
      *
-     * @param httpClientConfig the {@link HTTPClientConfiguration} form which the builder will be initialized.
+     * @param httpClientConfig the {@link HTTPClientConfiguration} from which the builder will be initialized.
      * @return a pre initialized builder instance for creating a new {@link HTTPClientConfiguration}
      */
     public static Builder modifyWith(HTTPClientConfiguration httpClientConfig) {
