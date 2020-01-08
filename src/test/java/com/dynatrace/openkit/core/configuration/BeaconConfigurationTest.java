@@ -141,6 +141,94 @@ public class BeaconConfigurationTest {
     }
 
     @Test
+    public void initializeServerConfigurationDoesNotSetIsServerConfigurationSet() {
+        // given
+        ServerConfiguration serverConfig = mock(ServerConfiguration.class);
+        BeaconConfiguration target = createBeaconConfig();
+
+        // when
+        target.initializeServerConfiguration(serverConfig);
+
+        // then
+        assertThat(target.isServerConfigurationSet(), is(equalTo(false)));
+        verifyZeroInteractions(serverConfig);
+    }
+
+    @Test
+    public void initializeServerConfigurationSetsServerConfiguration() {
+        // given
+        ServerConfiguration serverConfig = mock(ServerConfiguration.class);
+        BeaconConfiguration target = createBeaconConfig();
+
+        // when
+        target.initializeServerConfiguration(serverConfig);
+
+        // then
+        assertThat(target.getServerConfiguration(), is(equalTo(serverConfig)));
+    }
+
+    @Test
+    public void initializeServerConfigurationWithNullConfigurationDoesNothing() {
+        // given
+        ServerConfigurationUpdateCallback updateCallback = mock(ServerConfigurationUpdateCallback.class);
+        BeaconConfiguration target = createBeaconConfig();
+        target.setServerConfigurationUpdateCallback(updateCallback);
+
+        // when
+        target.initializeServerConfiguration(null);
+
+        // then
+        verifyZeroInteractions(updateCallback);
+        assertThat(target.getServerConfiguration(), is(equalTo(ServerConfiguration.DEFAULT)));
+    }
+
+    @Test
+    public void initializeServerConfigurationWithDefaultConfigurationDoesNothing() {
+        // given
+        ServerConfigurationUpdateCallback updateCallback = mock(ServerConfigurationUpdateCallback.class);
+        BeaconConfiguration target = createBeaconConfig();
+        target.setServerConfigurationUpdateCallback(updateCallback);
+
+        // when
+        target.initializeServerConfiguration(ServerConfiguration.DEFAULT);
+
+        // then
+        verifyZeroInteractions(updateCallback);
+    }
+
+    @Test
+    public void initializeServerConfigurationDoesNotSetServerConfigurationIfAlreadySet() {
+        // given
+        ServerConfiguration updatedServerConfig = mock(ServerConfiguration.class);
+        ServerConfiguration initialServerConfig = mock(ServerConfiguration.class);
+
+        BeaconConfiguration target = createBeaconConfig();
+        target.updateServerConfiguration(updatedServerConfig);
+        assertThat(target.isServerConfigurationSet(), is(equalTo(true)));
+
+        // when
+        target.initializeServerConfiguration(initialServerConfig);
+
+        // then
+        assertThat(target.getServerConfiguration(), is(equalTo(updatedServerConfig)));
+    }
+
+    @Test
+    public void initializeServerConfigurationDoesInvokeCallbackIfCallbackIsSet() {
+        // given
+        ServerConfiguration serverConfig = mock(ServerConfiguration.class);
+        ServerConfigurationUpdateCallback callback = mock(ServerConfigurationUpdateCallback.class);
+        BeaconConfiguration target = createBeaconConfig();
+        target.setServerConfigurationUpdateCallback(callback);
+
+        // when
+        target.initializeServerConfiguration(serverConfig);
+
+        // then
+        verify(callback, times(1)).onServerConfigurationUpdate(serverConfig);
+    }
+
+    @Test
     public void updateServerConfigurationSetsIsServerConfigurationSet() {
         // given
         ServerConfiguration serverConfiguration = mock(ServerConfiguration.class);

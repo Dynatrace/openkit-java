@@ -1987,6 +1987,22 @@ public class BeaconTest {
     }
 
     @Test
+    public void initializeServerConfigurationDelegatesToBeacon() {
+        // given
+        Beacon target = createBeacon().build();
+        ServerConfiguration serverConfig = mock(ServerConfiguration.class);
+        reset(mockBeaconConfiguration);
+
+        // when
+        target.initializeServerConfiguration(serverConfig);
+
+        // then
+        verify(mockBeaconConfiguration, times(1)).initializeServerConfiguration(serverConfig);
+        verifyNoMoreInteractions(mockBeaconConfiguration);
+        verifyZeroInteractions(serverConfig);
+    }
+
+    @Test
     public void updateServerConfigurationDelegatesToBeaconConfig() {
         // given
         Beacon target = createBeacon().build();

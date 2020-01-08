@@ -281,6 +281,13 @@ public class SessionImpl extends OpenKitComposite implements Session {
     }
 
     /**
+     * Initializes the {@link Beacon} with the given {@link ServerConfiguration}
+     */
+    public void initializeServerConfiguration(ServerConfiguration initialServerConfig) {
+        beacon.initializeServerConfiguration(initialServerConfig);
+    }
+
+    /**
      * Update the {@link Beacon} with the given {@link ServerConfiguration}
      */
     public void updateServerConfiguration(ServerConfiguration serverConfiguration) {

@@ -54,11 +54,12 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
     static final long DEFAULT_SLEEP_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
     private final Logger logger;
+
+    /** synchronization object for updating and reading server configuration and last response attributes */
+    private final Object lockObject = new Object();
+
     /**
      * Configuration storing last valid server side configuration.
-     *
-     * This field is initialized in the CTOR and must only be modified within the context of the
-     * BeaconSending thread.
      */
     private ServerConfiguration serverConfiguration;
 
@@ -70,18 +71,11 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      * Subsequent server responses (e.g. from session requests) will update the last server response by merging
      * received fields.
      * </p>
-     * <p>
-     * Modification of this field must only happen within the context of the BeaconSending thread.
-     * </p>
      */
     private ResponseAttributes lastResponseAttributes;
 
     /**
      * Configuration storing last valid HTTP client configuration, independent of a session.
-     * <p>
-     * This field is initialized in the CTOR and must only be modified within the context of the
-     * BeaconSending thread.
-     * </p>
      */
     private HTTPClientConfiguration httpClientConfiguration;
     private final HTTPClientProvider httpClientProvider;
@@ -260,7 +254,9 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      * @return {@code true} if capturing is turned on, {@code false} otherwise.
      */
     boolean isCaptureOn() {
-        return serverConfiguration.isCaptureEnabled();
+        synchronized (lockObject) {
+            return serverConfiguration.isCaptureEnabled();
+        }
     }
 
     /**
@@ -395,14 +391,27 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      * Get the send interval for open sessions.
      */
     int getSendInterval() {
-        return lastResponseAttributes.getSendIntervalInMilliseconds();
+        synchronized (lockObject) {
+            return lastResponseAttributes.getSendIntervalInMilliseconds();
+        }
     }
 
     /**
      * Returns the last {@link ResponseAttributes} received from the server.
      */
     ResponseAttributes getLastResponseAttributes() {
-        return lastResponseAttributes;
+        synchronized (lockObject) {
+            return lastResponseAttributes;
+        }
+    }
+
+    /**
+     * Returns the last known {@link ServerConfiguration}.
+     */
+    public ServerConfiguration getLastServerConfiguration() {
+        synchronized (lockObject) {
+            return serverConfiguration;
+        }
     }
 
     /**
@@ -418,9 +427,11 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      * Disables data capturing
      */
     private void disableCapture() {
-        serverConfiguration = new ServerConfiguration.Builder(serverConfiguration)
-                .withCapture(false)
-                .build();
+        synchronized (lockObject) {
+            serverConfiguration = new ServerConfiguration.Builder(serverConfiguration)
+                    .withCapture(false)
+                    .build();
+        }
     }
 
     /**
@@ -432,36 +443,40 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
             return;
         }
 
-        ResponseAttributes updatedAttributes = updateLastResponseAttributesFrom(receivedResponse);
+        updateFrom(receivedResponse);
 
-        serverConfiguration = new ServerConfiguration.Builder(updatedAttributes).build();
         if (!isCaptureOn()) {
             // capturing was turned off
             clearAllSessionData();
         }
-
-        int serverId = serverConfiguration.getServerID();
-        if (serverId != httpClientConfiguration.getServerID()) {
-            httpClientConfiguration = createHttpClientConfigurationWith(serverId);
-        }
     }
 
     /**
-     * Updates the last known response attributes of this context from the given status response if the given status
-     * response {@link BeaconSendingResponseUtil#isSuccessfulResponse(StatusResponse) is succesful}.
+     * Updates the {@link #getLastResponseAttributes() last known response attributes} as well as the
+     * {@link ServerConfiguration} and {@link HTTPClientConfiguration} in case the given status response
+     * {@link BeaconSendingResponseUtil#isSuccessfulResponse(StatusResponse) is succesful}.
      *
      * @param statusResponse the status response from which to update the last response attributes.
      * @return in case the given status response was successful the updated response attributes are returned. Otherwise
      * the current response attributes are returned.
      */
-    ResponseAttributes updateLastResponseAttributesFrom(StatusResponse statusResponse) {
-        ResponseAttributes currentAttributes = lastResponseAttributes;
-        if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-            currentAttributes = currentAttributes.merge(statusResponse.getResponseAttributes());
-            lastResponseAttributes = currentAttributes;
-        }
+    ResponseAttributes updateFrom(StatusResponse statusResponse) {
+        synchronized (lockObject) {
+            if (!BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
+                return lastResponseAttributes;
+            }
 
-        return currentAttributes;
+            lastResponseAttributes = lastResponseAttributes.merge(statusResponse.getResponseAttributes());
+
+            serverConfiguration = new ServerConfiguration.Builder(lastResponseAttributes).build();
+
+            int serverId = serverConfiguration.getServerID();
+            if (serverId != httpClientConfiguration.getServerID()) {
+                httpClientConfiguration = createHttpClientConfigurationWith(serverId);
+            }
+
+            return lastResponseAttributes;
+        }
     }
 
     HTTPClientConfiguration createHttpClientConfigurationWith(int serverId) {
@@ -472,7 +487,6 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      * Clear captured data from all sessions.
      */
     private void clearAllSessionData() {
-
         // iterate over the elements
         Iterator<SessionImpl> iterator = sessions.iterator();
         while (iterator.hasNext()) {
@@ -586,6 +600,8 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
 
     @Override
     public long getConfigurationTimestamp() {
-        return lastResponseAttributes.getTimestampInMilliseconds();
+        synchronized (lockObject) {
+            return lastResponseAttributes.getTimestampInMilliseconds();
+        }
     }
 }

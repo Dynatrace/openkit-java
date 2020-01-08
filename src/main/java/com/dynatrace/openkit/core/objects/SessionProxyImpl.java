@@ -80,7 +80,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         this.beaconSender = beaconSender;
         this.sessionWatchdog = sessionWatchdog;
 
-        this.currentSession = createSession(null);
+        ServerConfiguration currentServerConfig = beaconSender.getLastServerConfiguration();
+        this.currentSession = createInitialSession(currentServerConfig);
     }
 
     @Override
@@ -265,7 +266,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
      */
     private SessionImpl getOrSplitCurrentSessionByEvents() {
         if (isSessionSplitByEventsRequired()) {
-            SessionImpl newSession = createSession(serverConfiguration);
+            SessionImpl newSession = createSplitSession(serverConfiguration);
 
             // try to close old session or wait half the max session duration time and then close it forcefully.
             int closeGracePeriodInMillis = serverConfiguration.getMaxSessionDurationInMilliseconds() / 2;
@@ -320,7 +321,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             currentSession.end();
 
             sessionCreator.reset();
-            currentSession = createSession(serverConfiguration);
+            currentSession = createSplitSession(serverConfiguration);
 
             return calculateNextSplitTime();
         }
@@ -357,15 +358,34 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return -1;
     }
 
+    private SessionImpl createInitialSession(ServerConfiguration initialServerConfig) {
+        return createSession(initialServerConfig, null);
+    }
+
+    private SessionImpl createSplitSession(ServerConfiguration updatedServerConfig) {
+        return createSession(null, updatedServerConfig);
+    }
+
     /**
-     * Creates a new session and adds it to the beacon sender. In case the given server configuration is not null, the
-     * new session will be initialized with this server configuration.
-     * The top level action count is reset to zero and the last interaction time is set to the current timestamp.
+     * Creates a new session and adds it to the beacon sender. The top level action count is reset to zero and the last
+     * interaction time is set to the current timestamp.
      *
-     * @param sessionServerConfig the server configuration with which the session will be initialized. Can be {@code null}.
+     * <p>
+     * In case the given {@code initialServerConfig} is not null, the new session will be initialized with this server
+     * configuration. The created session however will not be in state {@link SessionState#isConfigured() configured},
+     * meaning new session requests will be performed for this session.
+     * </p>
+     * <p>
+     * In case the given {@code updatedServerConfig} is not null, the new session will be updated with this server
+     * configuration. The created session will be in state {@link SessionState#isConfigured()}, meaning new session
+     * requests will be omitted.
+     * </p>
+     *
+     * @param initialServerConfig the server configuration with which the session will be initialized. Can be {@code null}.
+     * @param updatedServerConfig the server configuration with which the session will be updated. Can be {@code null}.
      * @return the newly created session.
      */
-    private SessionImpl createSession(ServerConfiguration sessionServerConfig) {
+    private SessionImpl createSession(ServerConfiguration initialServerConfig, ServerConfiguration updatedServerConfig) {
         SessionImpl session = sessionCreator.createSession(this);
         Beacon beacon = session.getBeacon();
         beacon.setServerConfigurationUpdateCallback(this);
@@ -374,8 +394,12 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         lastInteractionTime = beacon.getSessionStartTime();
         topLevelActionCount = 0;
 
-        if (sessionServerConfig != null) {
-            session.updateServerConfiguration(sessionServerConfig);
+        if (initialServerConfig != null) {
+            session.initializeServerConfiguration(initialServerConfig);
+        }
+
+        if (updatedServerConfig != null) {
+            session.updateServerConfiguration(updatedServerConfig);
         }
 
         this.beaconSender.addSession(session);

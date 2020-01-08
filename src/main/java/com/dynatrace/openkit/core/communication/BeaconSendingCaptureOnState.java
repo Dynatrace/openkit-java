@@ -106,7 +106,7 @@ class BeaconSendingCaptureOnState extends AbstractBeaconSendingState {
 
             statusResponse = context.getHTTPClient().sendNewSessionRequest(context);
             if (BeaconSendingResponseUtil.isSuccessfulResponse(statusResponse)) {
-                ResponseAttributes updatedAttributes = context.updateLastResponseAttributesFrom(statusResponse);
+                ResponseAttributes updatedAttributes = context.updateFrom(statusResponse);
                 ServerConfiguration newServerConfig = ServerConfiguration.from(updatedAttributes);
                 session.updateServerConfiguration(newServerConfig);
             } else if (BeaconSendingResponseUtil.isTooManyRequestsResponse(statusResponse)) {

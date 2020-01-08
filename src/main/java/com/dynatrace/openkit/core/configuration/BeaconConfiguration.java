@@ -29,6 +29,9 @@ public class BeaconConfiguration {
     private final HTTPClientConfiguration httpClientConfiguration;
     /** Server configuration, which can be updated by the server. */
     private ServerConfiguration serverConfiguration;
+    /** indicator if the {@link ServerConfiguration} was set or not */
+    private boolean isServerConfigurationSet;
+
     /** callback when the server configuration is updated. */
     private ServerConfigurationUpdateCallback serverConfigUpdateCallback;
     /** Object for synchronization */
@@ -97,14 +100,14 @@ public class BeaconConfiguration {
     }
 
     /**
-     * Enables the capturing and implicitly sets {@link #isServerConfigurationSet()}
+     * Enables the capturing and sets {@link #isServerConfigurationSet()}
      */
     public void enableCapture() {
         updateCaptureWith(true);
     }
 
     /**
-     * Disables capturing and implicitly sets {@link #isServerConfigurationSet()}
+     * Disables capturing and sets {@link #isServerConfigurationSet()}
      */
     public void disableCapture() {
         updateCaptureWith(false);
@@ -121,6 +124,34 @@ public class BeaconConfiguration {
             serverConfiguration = new ServerConfiguration.Builder(currentServerConfig)
                     .withCapture(captureState)
                     .build();
+
+            isServerConfigurationSet = true;
+        }
+    }
+
+    /**
+     * Initializes this beacon configuration with the given server configuration. This will not set
+     * {@link #isServerConfigurationSet()} to {@code true} so that new session requests to the server will still be done.
+     *
+     * In case the {@link #isServerConfigurationSet()} was already set, this method does nothing.
+     *
+     * @param initialServerConfiguration the server configuration to initialize this beacon configuration with.
+     */
+    public void initializeServerConfiguration(ServerConfiguration initialServerConfiguration) {
+        if (initialServerConfiguration == null || initialServerConfiguration.equals(ServerConfiguration.DEFAULT)) {
+            // ignore DEFAULT configuration since server configuration update does not take over certain attributes
+            // when merging and the configuration already exists.
+            return;
+        }
+
+        synchronized (lockObject) {
+            if (isServerConfigurationSet) {
+                return;
+            }
+
+            serverConfiguration = initialServerConfiguration;
+
+            notifyServerConfigurationUpdate(serverConfiguration);
         }
     }
 
@@ -148,9 +179,15 @@ public class BeaconConfiguration {
                 serverConfiguration = serverConfiguration.merge(newServerConfiguration);
             }
 
-            if (serverConfigUpdateCallback != null) {
-                serverConfigUpdateCallback.onServerConfigurationUpdate(serverConfiguration);
-            }
+            isServerConfigurationSet = true;
+
+            notifyServerConfigurationUpdate(serverConfiguration);
+        }
+    }
+
+    private void notifyServerConfigurationUpdate(ServerConfiguration serverConfig) {
+        if (serverConfigUpdateCallback != null) {
+            serverConfigUpdateCallback.onServerConfigurationUpdate(serverConfig);
         }
     }
 
@@ -161,7 +198,7 @@ public class BeaconConfiguration {
      */
     public boolean isServerConfigurationSet() {
         synchronized (lockObject) {
-            return serverConfiguration != null;
+            return isServerConfigurationSet;
         }
     }
 

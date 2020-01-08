@@ -1034,6 +1034,14 @@ public class Beacon {
     }
 
     /**
+     * Initializes the beacon with the given {@link ServerConfiguration}.
+     * @param serverConfiguration the server configuration which will be used for initialization.
+     */
+    public void initializeServerConfiguration(ServerConfiguration serverConfiguration) {
+        configuration.initializeServerConfiguration(serverConfiguration);
+    }
+
+    /**
      * Updates this beacon with the given {@link ServerConfiguration}
      *
      * @param serverConfiguration the server configuration which will be used to update this beacon.

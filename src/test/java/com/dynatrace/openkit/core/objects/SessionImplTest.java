@@ -549,6 +549,21 @@ public class SessionImplTest {
     }
 
     @Test
+    public void initializeServerConfigurationForwardsCallToBeacon() {
+        // given
+        SessionImpl target = createSession().build();
+        ServerConfiguration mockServerConfiguration = mock(ServerConfiguration.class);
+
+        // when
+        target.initializeServerConfiguration(mockServerConfiguration);
+
+        // then
+        verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).initializeServerConfiguration(mockServerConfiguration);
+        verifyNoMoreInteractions(mockBeacon);
+    }
+
+    @Test
     public void updateServerConfigurationForwardsCallToBeacon() {
         // given
         SessionImpl target = createSession().build();

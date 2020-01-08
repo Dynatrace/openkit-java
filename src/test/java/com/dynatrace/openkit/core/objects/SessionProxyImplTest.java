@@ -107,6 +107,20 @@ public class SessionProxyImplTest {
     }
 
     @Test
+    public void initiallyCreatedSessionIsInitializedWithServerConfiguration() {
+        // given
+        ServerConfiguration initialServerConfig = mock(ServerConfiguration.class);
+        when(mockBeaconSender.getLastServerConfiguration()).thenReturn(initialServerConfig);
+
+        // when
+        SessionProxyImpl target = createSessionProxy();
+
+        // then
+        verify(mockSessionCreator, times(1)).createSession(target);
+        verify(mockSession, times(1)).initializeServerConfiguration(initialServerConfig);
+    }
+
+    @Test
     public void aNewlyCreatedSessionProxyIsNotFinished() {
         // given
         SessionProxyImpl target = createSessionProxy();
@@ -127,7 +141,7 @@ public class SessionProxyImplTest {
     @Test
     public void initiallyCreatedSessionIsAddedToTheBeaconSender() {
         // given
-        SessionProxyImpl target = createSessionProxy();
+        createSessionProxy();
 
         // then
         verify(mockBeaconSender, times(1)).addSession(mockSession);

@@ -19,6 +19,7 @@ package com.dynatrace.openkit.core;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.communication.BeaconSendingContext;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
+import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -146,6 +147,13 @@ public class BeaconSender {
             }
             beaconSenderThread = null;
         }
+    }
+
+    /**
+     * Returns the last known server configuration.
+     */
+    public ServerConfiguration getLastServerConfiguration() {
+        return context.getLastServerConfiguration();
     }
 
     /**

@@ -914,20 +914,20 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void updateResponseAttributesFromDoesNothingIfStatusResponseIsNull() {
+    public void updateFromDoesNothingIfStatusResponseIsNull() {
         // given
         BeaconSendingContext target = createBeaconSendingContext().build();
         ResponseAttributes initialAttributes = target.getLastResponseAttributes();
 
         // when
-        ResponseAttributes obtained = target.updateLastResponseAttributesFrom(null);
+        ResponseAttributes obtained = target.updateFrom(null);
 
         // then
         assertThat(obtained, is(equalTo(initialAttributes)));
     }
 
     @Test
-    public void updateResponseAttributesFromDoesNothingIfStatusResponseIsNotSuccessful() {
+    public void updateFromDoesNothingIfStatusResponseIsNotSuccessful() {
         // given
         StatusResponse response = mock(StatusResponse.class);
         when(response.isErroneousResponse()).thenReturn(true);
@@ -935,7 +935,7 @@ public class BeaconSendingContextTest {
         ResponseAttributes initialAttributes = target.getLastResponseAttributes();
 
         // when
-        ResponseAttributes obtained = target.updateLastResponseAttributesFrom(response);
+        ResponseAttributes obtained = target.updateFrom(response);
 
         // then
         assertThat(obtained, is(equalTo(initialAttributes)));
@@ -944,7 +944,7 @@ public class BeaconSendingContextTest {
     }
 
     @Test
-    public void updateResponseAttributesFromMergesResponseAttributesFromStatusResponse() {
+    public void updateFromMergesResponseAttributesFromStatusResponse() {
         // given
         int serverId = 9999;
         ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
@@ -957,7 +957,7 @@ public class BeaconSendingContextTest {
         ResponseAttributes initialAttributes  = target.getLastResponseAttributes();
 
         // when
-        ResponseAttributes obtained = target.updateLastResponseAttributesFrom(response);
+        ResponseAttributes obtained = target.updateFrom(response);
 
         // then
         assertThat(obtained, is(equalTo(target.getLastResponseAttributes())));
@@ -989,7 +989,7 @@ public class BeaconSendingContextTest {
         BeaconSendingContext target = createBeaconSendingContext().build();
 
         // when
-        target.updateLastResponseAttributesFrom(response);
+        target.updateFrom(response);
 
         // then
         assertThat(target.getConfigurationTimestamp(), is(timestamp));

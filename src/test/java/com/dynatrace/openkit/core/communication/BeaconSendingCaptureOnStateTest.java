@@ -132,7 +132,7 @@ public class BeaconSendingCaptureOnStateTest {
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockContext.getHTTPClient()).thenReturn(mockClient);
         when(mockContext.getAllNotConfiguredSessions()).thenReturn(Arrays.asList(mockSession5New, mockSession6New));
-        when(mockContext.updateLastResponseAttributesFrom(any(StatusResponse.class))).thenReturn(successResponse.getResponseAttributes());
+        when(mockContext.updateFrom(any(StatusResponse.class))).thenReturn(successResponse.getResponseAttributes());
         when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class)))
                 .thenReturn(successResponse) // first response valid
                 .thenReturn(StatusResponse.createErrorResponse(mock(Logger.class), StatusResponse.HTTP_BAD_REQUEST)); // second response invalid
@@ -166,7 +166,7 @@ public class BeaconSendingCaptureOnStateTest {
         StatusResponse sessionRequestResponse = mock(StatusResponse.class);
         when(sessionRequestResponse.getResponseAttributes()).thenReturn(responseAttributes);
 
-        when(mockContext.updateLastResponseAttributesFrom(any(StatusResponse.class))).thenReturn(responseAttributes);
+        when(mockContext.updateFrom(any(StatusResponse.class))).thenReturn(responseAttributes);
 
         HTTPClient mockClient = mock(HTTPClient.class);
         when(mockClient.sendNewSessionRequest(any(AdditionalQueryParameters.class))).thenReturn(sessionRequestResponse);
@@ -179,7 +179,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // then
-        verify(mockContext, times(1)).updateLastResponseAttributesFrom(sessionRequestResponse);
+        verify(mockContext, times(1)).updateFrom(sessionRequestResponse);
         verify(mockSession5New, times(1)).updateServerConfiguration(serverConfigCaptor.capture());
 
         ServerConfiguration serverConfig = serverConfigCaptor.getValue();
