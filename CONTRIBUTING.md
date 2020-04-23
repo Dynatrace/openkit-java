@@ -36,10 +36,10 @@ Pull requests are the best way to propose changes to the codebase (we use [Githu
 
 Any contributions you make will be under the [Apache 2.0 license][license] that covers the project.
 
-[mail]: (mailto:openkit@dynatrace.com)
-[gh-issues]: (https://github.com/Dynatrace/openkit-java/issues)
-[gh-flow]: (https://guides.github.com/introduction/flow/index.html)
-[dt-support]: (https://www.dynatrace.com/services-support/#get-support)
-[code_of_conduct]: (./CODE_OF_CONDUCT.md)
-[license]: (./LICENSE)
-[building]: (./docs/building.md)
+[mail]: mailto:openkit@dynatrace.com
+[gh-issues]: https://github.com/Dynatrace/openkit-java/issues
+[gh-flow]: https://guides.github.com/introduction/flow/index.html
+[dt-support]: https://www.dynatrace.com/services-support/#get-support
+[code_of_conduct]: ./CODE_OF_CONDUCT.md
+[license]: ./LICENSE
+[building]: ./docs/building.md

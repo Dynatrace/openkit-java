@@ -95,4 +95,4 @@ session.end();
 openKit.shutdown();
 ``` 
 
-[example]: (./example.md)
+[example]: ./example.md

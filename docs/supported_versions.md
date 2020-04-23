@@ -16,4 +16,4 @@ Example: Version `1.4.3` supersedes `1.4.2` and therefore only `1.4.3` will be m
 | 1.0.X   |        :x:         |        :x:         | Upgrade to 1.4.X |
 
 
-[semver]: (https://semver.org/)
+[semver]: https://semver.org/

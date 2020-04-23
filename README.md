@@ -58,10 +58,10 @@ This repository contains the reference implementation in pure Java. Other implem
 * problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
   * fixed in Java 6u171, which is only available via Oracle support (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8182231)
  
-[installing]: (./docs/installing.md)
-[concepts]: (./docs/concepts.md)
-[example]: (./docs/example.md)
-[contributing]: (./CONTRIBUTING.md)
-[supported_versions]: (./docs/supported_versions.md)
-[building]: (./docs/building.md)
-[internals]: (./docs/internals.md)
+[installing]: ./docs/installing.md
+[concepts]: ./docs/concepts.md
+[example]: ./docs/example.md
+[contributing]: ./CONTRIBUTING.md
+[supported_versions]: ./docs/supported_versions.md
+[building]: ./docs/building.md
+[internals]: ./docs/internals.md

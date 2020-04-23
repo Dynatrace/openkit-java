@@ -19,6 +19,6 @@ the jar file from [GitHub Releases][gh-releases].
 GitHub offers the possibility to receive notifications for new releases. Detailed instructions are available
 on the [Watching and unwatching releases for a repository][gh-release-notification] page. 
 
-[jcenter]: (https://bintray.com/dynatrace/openkit/com.dynatrace.openkit)
-[gh-releases]: (https://github.com/Dynatrace/openkit-java/releases)
-[gh-release-notification]: (https://help.github.com/en/github/receiving-notifications-about-activity-on-github/watching-and-unwatching-releases-for-a-repository)
+[jcenter]: https://bintray.com/dynatrace/openkit/com.dynatrace.openkit
+[gh-releases]: https://github.com/Dynatrace/openkit-java/releases
+[gh-release-notification]: https://help.github.com/en/github/receiving-notifications-about-activity-on-github/watching-and-unwatching-releases-for-a-repository
