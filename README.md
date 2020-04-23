@@ -41,142 +41,27 @@ This repository contains the reference implementation in pure Java. Other implem
 * Design reentrant APIs and document them
 
 ## General Remarks
+* All non binary files within the repository are formatted with UNIX style (LF) line endings.
 
-* All non binary files within the repository are formatted with unix style (LF) line endings.
+## Getting started
+* [Installing and updating OpenKit Java][installing]
+* [General concepts][concepts]
+* [Detailed example][example]
+* [Contributing to OpenKit Java][contributing]
+* [Supported versions][supported_versions]
 
-## Prerequisites
-
-### Running the OpenKit
-* Java Runtime Environment (JRE) 6, 7 or 8
-
-### Building the Source/Generating the JavaDoc
-* Java Development Kit (JDK) 6, 7 or 8
-  * Environment Variable JAVA_HOME set to JDK install directory
-
-### (Unit-)Testing the OpenKit
-* Java Runtime Environment (JRE) 6, 7 or 8  
-  Dependencies for testing (JUnit, Hamcrest, Mockito) are managed by Gradle.
-  
-## Obtaining OpenKit from JCenter
-
-OpenKit is available as Maven package on [JCenter](https://bintray.com/dynatrace/openkit/com.dynatrace.openkit) and should
-be used via Maven, Gradle or Ivy.
-
-## Building the Source
-
-Assuming you are in OpenKit's top level directory  
-
-```shell
-gradlew jar
-```
-
-The built jar file(s) `openkit-<version>-java<java_version>.jar` will be located in the `build/dist` directory.
-
-## Generating the JavaDoc
-
-```shell
-gradlew javadoc
-```
-
-The generated javadoc will be located in the `build/docs/javadoc` directory.
-
-## General Concepts
-
-In this part the concepts used throughout OpenKit are explained. A short sample how to use OpenKit is
-also provided. For detailed code samples have a look into [example.md](docs/example.md).
-
-### DynatraceOpenKitBuilder / AppMonOpenKitBuilder
-A `DynatraceOpenKitBuilder`/`AppMonOpenKitBuilder` instance is responsible for setting 
-application relevant information, e.g. the application's version and device specific information, and to create
-an `OpenKit` instance.
-
-### OpenKit
-
-The OpenKit is responsible for creating user sessions (see Session).
-  
-Although it would be possible to have multiple `OpenKit` instances connected to the same endpoint
-(Dynatrace/AppMon) within one process, there should be one unique instance. `OpenKit` is designed to be
-thread safe and therefore the instance can be shared among threads.  
-
-On application shutdown, `shutdown()` needs to be called on the OpenKit instance.
-
-### Session
-
-A `Session` represents kind of a user session, similar to a browser session in a web application.
-However the application developer is free to choose how to treat a `Session`.  
-The `Session` is used to create `RootAction` instances and report application crashes.  
-
-When a `Session` is no longer required, it's highly recommended to end it, using the `Session.end()` method. 
-
-### RootAction and Action
-
-The `RootAction` and `Action` are named hierarchical nodes for timing and attaching further details.
-A `RootAction` is created from the `Session` and it can create `Action` instances. Both, `RootAction` and
-`Action`, provide the possibility to attach key-value pairs, named events and errors, and can be used 
-for tracing web requests.
-
-### WebRequestTracer
-
-When the application developer wants to trace a web request, which is served by a service 
-instrumented by Dynatrace, a `WebRequestTracer` should be used, which can be
-requested from a `Session` or an `Action`.  
-
-### Named Events
-
-A named `Event` is attached to an `Action` and contains a name.
-
-### Key-Value Pairs
-
-For an `Action` key-value pairs can also be reported. The key is always a String
-and the value may be an Integer (int), a floating point (double) or a String.
-
-### Errors & Crashes
-
-Errors are a way to report an erroneous condition on an `Action`.  
-Crashes are used to report (unhandled) exceptions on a `Session`.
-
-### Identify Users
-
-OpenKit enables you to tag sessions with unique user tags. The user tag is a String 
-that allows to uniquely identify a single user.
-
-## Example
-
-This small example provides a rough overview how OpenKit can be used.  
-Detailed explanation is available in [example.md](docs/example.md).
-
-```java
-String applicationName = "My OpenKit application";
-String applicationID = "application-id";
-long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
-
-OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
-    .withApplicationName(applicationName)
-    .withApplicationVersion("1.0.0.0")
-    .withOperatingSystem("Windows 10")
-    .withManufacturer("MyCompany")
-    .withModelID("MyModelID")
-    .build();
-
-String clientIP = "8.8.8.8";
-Session session = openKit.createSession(clientIP);
-
-session.identifyUser("jane.doe@example.com");
-
-String rootActionName = "rootActionName";
-RootAction rootAction = session.enterAction(rootActionName);
-
-String childActionName = "childAction";
-Action childAction = rootAction.enterAction(childActionName);
-
-childAction.leaveAction();
-rootAction.leaveAction();
-session.end();
-openKit.shutdown();
-``` 
+## Advanced topics
+* [Building OpenKit Java][building]
+* [OpenKit Java internals][internals]
 
 ## Known Current Limitations
 * problem with SSL keysize > 1024 for Diffie-Hellman (used by Dynatrace) in Java 6 (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044060)
   * fixed in Java 6u171, which is only available via Oracle support (http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8182231)
  
+[installing]: (./docs/installing.md)
+[concepts]: (./docs/concepts.md)
+[example]: (./docs/example.md)
+[contributing]: (./CONTRIBUTING.md)
+[supported_versions]: (./docs/supported_versions.md)
+[building]: (./docs/building.md)
+[internals]: (./docs/internals.md)
