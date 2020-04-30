@@ -19,6 +19,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.util.json.JSONParser;
 import com.dynatrace.openkit.util.json.objects.JSONNumberValue;
 import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
+import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 import com.dynatrace.openkit.util.json.parser.ParserException;
 
@@ -38,6 +39,7 @@ public class JsonResponseParser {
     static final String RESPONSE_KEY_CAPTURE = "capture";
     static final String RESPONSE_KEY_REPORT_CRASHES = "reportCrashes";
     static final String RESPONSE_KEY_REPORT_ERRORS = "reportErrors";
+    static final String RESPONSE_KEY_APPLICATION_ID = "applicationId";
 
     static final String RESPONSE_KEY_DYNAMIC_CONFIG = "dynamicConfig";
     static final String RESPONSE_KEY_MULTIPLICITY = "multiplicity";
@@ -163,6 +165,7 @@ public class JsonResponseParser {
         applyCapture(builder, appConfigObject);
         applyReportCrashes(builder, appConfigObject);
         applyReportErrors(builder, appConfigObject);
+        applyApplicationId(builder, appConfigObject);
     }
 
     private static void applyCapture(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {
@@ -196,6 +199,16 @@ public class JsonResponseParser {
         JSONNumberValue numberValue = (JSONNumberValue) value;
         int reportErrors = numberValue.getIntValue();
         builder.withCaptureErrors(reportErrors != 0);
+    }
+
+    private static void applyApplicationId(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {
+        JSONValue value = appConfigObject.get(RESPONSE_KEY_APPLICATION_ID);
+        if (value == null) {
+            return;
+        }
+
+        JSONStringValue stringValue = (JSONStringValue) value;
+        builder.withApplicationId(stringValue.getValue());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

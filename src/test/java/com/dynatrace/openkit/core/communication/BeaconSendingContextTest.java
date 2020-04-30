@@ -967,6 +967,27 @@ public class BeaconSendingContextTest {
     }
 
     @Test
+    public void updateFromDisablesCapturingIfReceivedApplicationIdMismatches() {
+        // given
+        when(httpClientConfig.getApplicationID()).thenReturn("some application id");
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                                                              .withApplicationId("different application id").build();
+        StatusResponse response = mock(StatusResponse.class);
+        when(response.getResponseAttributes()).thenReturn(attributes);
+        when(response.isErroneousResponse()).thenReturn(false);
+
+        BeaconSendingContext target = createBeaconSendingContext().build();
+        boolean initialCaptureOn = target.isCaptureOn();
+
+        // when
+        target.updateFrom(response);
+
+        // then
+        assertThat(initialCaptureOn, is(true));
+        assertThat(target.isCaptureOn(), is(false));
+    }
+
+    @Test
     public void getConfigurationTimestampReturnsZeroOnDefault() {
         // given
         BeaconSendingContext target = createBeaconSendingContext().build();
@@ -993,6 +1014,54 @@ public class BeaconSendingContextTest {
 
         // then
         assertThat(target.getConfigurationTimestamp(), is(timestamp));
+    }
+
+    @Test
+    public void applicationIdMatchesIfApplicationIdWasNotReceived() {
+        // given
+        when(httpClientConfig.getApplicationID()).thenReturn("application id");
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults().build();
+
+        BeaconSendingContext target = createBeaconSendingContext().build();
+
+        // when
+        boolean obtained = target.isApplicationIdMismatch(attributes);
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void applicationIdMatchesIfStoredAndReceivedApplicationIdsAreEqual() {
+        // given
+        String applicationId = "application id";
+        when(httpClientConfig.getApplicationID()).thenReturn(applicationId);
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                                                              .withApplicationId(applicationId).build();
+
+        BeaconSendingContext target = createBeaconSendingContext().build();
+
+        // when
+        boolean obtained = target.isApplicationIdMismatch(attributes);
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void applicationIdMismatchesIfStoredAndReceivedApplicationIdsAreNotEqual() {
+        // given
+        when(httpClientConfig.getApplicationID()).thenReturn("application id");
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                                                              .withApplicationId("application ID").build();
+
+        BeaconSendingContext target = createBeaconSendingContext().build();
+
+        // when
+        boolean obtained = target.isApplicationIdMismatch(attributes);
+
+        // then
+        assertThat(obtained, is(true));
     }
 
     private TestBeaconSendingContextBuilder createBeaconSendingContext() {

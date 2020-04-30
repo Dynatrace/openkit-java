@@ -66,6 +66,11 @@ public enum ResponseAttribute {
     IS_CAPTURE_ERRORS,
 
     /**
+     * The ID of the application to which a configuration applies.
+     */
+    APPLICATION_ID,
+
+    /**
      * Multiplicity
      */
     MULTIPLICITY,

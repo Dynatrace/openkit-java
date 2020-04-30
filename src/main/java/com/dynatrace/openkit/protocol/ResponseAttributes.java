@@ -66,6 +66,16 @@ public interface ResponseAttributes {
     boolean isCaptureErrors();
 
     /**
+     * Returns the ID of the application to which this configuration applies.
+     *
+     * <p>
+     *     This is sent by the JSON configuration only, as sanity check to fix
+     *     a weird Jetty bug.
+     * </p>
+     */
+    String getApplicationId();
+
+    /**
      * Returns the multiplicity
      */
     int getMultiplicity();

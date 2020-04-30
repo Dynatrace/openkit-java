@@ -37,6 +37,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     private final boolean isCapture;
     private final boolean isCaptureCrashes;
     private final boolean isCaptureErrors;
+    private final String applicationId;
 
     private final int multiplicity;
     private final int serverId;
@@ -56,6 +57,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         isCapture = builder.isCapture;
         isCaptureCrashes = builder.isCaptureCrashes;
         isCaptureErrors = builder.isCaptureErrors;
+        applicationId = builder.applicationId;
 
         multiplicity = builder.multiplicity;
         serverId = builder.serverId;
@@ -109,6 +111,11 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     }
 
     @Override
+    public String getApplicationId() {
+        return applicationId;
+    }
+
+    @Override
     public int getMultiplicity() {
         return multiplicity;
     }
@@ -141,6 +148,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         applyCapture(builder, responseAttributes);
         applyCaptureCrashes(builder, responseAttributes);
         applyCaptureErrors(builder, responseAttributes);
+        applyApplicationId(builder, responseAttributes);
         applyMultiplicity(builder, responseAttributes);
         applyServerId(builder, responseAttributes);
         applyTimestamp(builder, responseAttributes);
@@ -211,6 +219,13 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         builder.withCaptureErrors(responseAttributes.isCaptureErrors());
     }
 
+    private void applyApplicationId(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.APPLICATION_ID)) {
+            return;
+        }
+        builder.withApplicationId(responseAttributes.getApplicationId());
+    }
+
     private void applyMultiplicity(Builder builder, ResponseAttributes responseAttributes) {
         if (!responseAttributes.isAttributeSet(ResponseAttribute.MULTIPLICITY)) {
             return;
@@ -266,6 +281,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         private boolean isCapture;
         private boolean isCaptureCrashes;
         private boolean isCaptureErrors;
+        private String applicationId;
 
         private int multiplicity;
         private int serverId;
@@ -283,6 +299,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
             isCapture = defaults.isCapture();
             isCaptureCrashes = defaults.isCaptureCrashes();
             isCaptureErrors = defaults.isCaptureErrors();
+            applicationId = defaults.getApplicationId();
 
             multiplicity = defaults.getMultiplicity();
             serverId = defaults.getServerId();
@@ -409,6 +426,19 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         public Builder withCaptureErrors(boolean isCaptureErrors) {
             this.isCaptureErrors = isCaptureErrors;
             setAttribute(ResponseAttribute.IS_CAPTURE_ERRORS);
+
+            return this;
+        }
+
+        /**
+         * Set application UUID to which this configuration belongs to.
+         *
+         * @param applicationId application's UUID
+         * @return {@code this}
+         */
+        public Builder withApplicationId(String applicationId) {
+            this.applicationId = applicationId;
+            setAttribute(ResponseAttribute.APPLICATION_ID);
 
             return this;
         }

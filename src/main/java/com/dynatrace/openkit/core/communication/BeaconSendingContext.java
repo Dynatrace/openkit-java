@@ -23,6 +23,7 @@ import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.SessionState;
 import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.HTTPClient;
+import com.dynatrace.openkit.protocol.ResponseAttribute;
 import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesImpl;
 import com.dynatrace.openkit.protocol.StatusResponse;
@@ -468,7 +469,12 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
 
             lastResponseAttributes = lastResponseAttributes.merge(statusResponse.getResponseAttributes());
 
-            serverConfiguration = new ServerConfiguration.Builder(lastResponseAttributes).build();
+            ServerConfiguration.Builder builder = new ServerConfiguration.Builder(lastResponseAttributes);
+            if (isApplicationIdMismatch(lastResponseAttributes)) {
+                builder.withCapture(false);
+            }
+
+            serverConfiguration = builder.build();
 
             int serverId = serverConfiguration.getServerID();
             if (serverId != httpClientConfiguration.getServerID()) {
@@ -477,6 +483,27 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
 
             return lastResponseAttributes;
         }
+    }
+
+    /**
+     * Ensure that the application id coming with the response matches the one that was configured for OpenKit.
+     *
+     * <p>
+     *     Mismatch check prevents a rare Jetty bug, where responses might be dispatched to the wrong receiver.
+     * </p>
+     *
+     * @param lastResponseAttributes The last response attributes received from Dynatrace/AppMon.
+     *
+     * @return {@code false} if application id is matching, {@code true} if a mismatch occurred.
+     */
+    boolean isApplicationIdMismatch(ResponseAttributes lastResponseAttributes) {
+        if (lastResponseAttributes.isAttributeSet(ResponseAttribute.APPLICATION_ID)) {
+            return !httpClientConfiguration.getApplicationID().equals(lastResponseAttributes.getApplicationId());
+        }
+
+        // if it's not set it's either the old response format, or an older Dynatrace version
+        // in this case no mismatch is happening and everything is fine
+        return false;
     }
 
     HTTPClientConfiguration createHttpClientConfigurationWith(int serverId) {

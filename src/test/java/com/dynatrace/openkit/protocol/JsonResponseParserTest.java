@@ -21,8 +21,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -262,6 +264,22 @@ public class JsonResponseParserTest {
     }
 
     @Test
+    public void parseExtractsApplicationId() throws ParserException {
+        // given
+        String applicationId = UUID.randomUUID().toString();
+        begin(JsonResponseParser.RESPONSE_KEY_APP_CONFIG);
+        appendLastParameter(JsonResponseParser.RESPONSE_KEY_APPLICATION_ID, applicationId);
+        close(2);
+
+        // when
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
+    }
+
+    @Test
     public void parseExtractsMultiplicity() throws ParserException {
         // given
         int multiplicity = 73;
@@ -320,6 +338,7 @@ public class JsonResponseParserTest {
         int multiplicity = 79;
         int serverId = 80;
         long timestamp = 81;
+        String applicationId = UUID.randomUUID().toString();
 
         begin(JsonResponseParser.RESPONSE_KEY_AGENT_CONFIG);
         appendParameter(JsonResponseParser.RESPONSE_KEY_MAX_BEACON_SIZE_IN_KB, beaconSize);
@@ -334,7 +353,8 @@ public class JsonResponseParserTest {
         begin(JsonResponseParser.RESPONSE_KEY_APP_CONFIG);
         appendParameter(JsonResponseParser.RESPONSE_KEY_CAPTURE, 0);
         appendParameter(JsonResponseParser.RESPONSE_KEY_REPORT_CRASHES, 1);
-        appendLastParameter(JsonResponseParser.RESPONSE_KEY_REPORT_ERRORS, 0);
+        appendParameter(JsonResponseParser.RESPONSE_KEY_REPORT_ERRORS, 0);
+        appendLastParameter(JsonResponseParser.RESPONSE_KEY_APPLICATION_ID, applicationId);
         close();
         inputBuilder.append(",");
 
@@ -362,6 +382,7 @@ public class JsonResponseParserTest {
         assertThat(obtained.isCapture(), is(false));
         assertThat(obtained.isCaptureCrashes(), is(true));
         assertThat(obtained.isCaptureErrors(), is(false));
+        assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
 
         assertThat(obtained.getMultiplicity(), is(multiplicity));
         assertThat(obtained.getServerId(), is(serverId));
@@ -407,6 +428,10 @@ public class JsonResponseParserTest {
 
     private void appendLastParameter(String key, long value) {
         inputBuilder.append("\"").append(key).append("\":").append(value);
+    }
+
+    private void appendLastParameter(String key, String value) {
+        inputBuilder.append("\"").append(key).append("\":\"").append(value).append("\"");
     }
 
     private void appendParameter(String key, long value) {

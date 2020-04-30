@@ -17,6 +17,9 @@ package com.dynatrace.openkit.protocol;
 
 import org.junit.Test;
 
+import java.util.UUID;
+
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -68,6 +71,7 @@ public class ResponseAttributesImplTest {
         assertThat(obtained.isCapture(), is(defaults.isCapture()));
         assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
         assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+        assertThat(obtained.getApplicationId(), is(defaults.getApplicationId()));
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
         assertThat(obtained.getServerId(), is(defaults.getServerId()));
@@ -95,6 +99,7 @@ public class ResponseAttributesImplTest {
         assertThat(obtained.isCapture(), is(defaults.isCapture()));
         assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
         assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+        assertThat(obtained.getApplicationId(), is(defaults.getApplicationId()));
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
         assertThat(obtained.getServerId(), is(defaults.getServerId()));
@@ -387,6 +392,39 @@ public class ResponseAttributesImplTest {
 
         // when
         ResponseAttributes obtained = target.withCaptureErrors(!ResponseAttributesDefaults.JSON_RESPONSE.isCaptureErrors()).build();
+
+        // then
+        assertThat(obtained.isAttributeSet(attribute), is(true));
+
+        for (ResponseAttribute unsetAttribute : ResponseAttribute.values()) {
+            if (attribute == unsetAttribute) {
+                continue;
+            }
+            assertThat(obtained.isAttributeSet(unsetAttribute), is(false));
+        }
+    }
+
+    @Test
+    public void buildPropagatesApplicationIdToInstance() {
+        // given
+        String applicationId = UUID.randomUUID().toString();
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
+
+        // when
+        ResponseAttributes obtained = target.withApplicationId(applicationId).build();
+
+        // then
+        assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
+    }
+
+    @Test
+    public void withApplicationIdSetsAttributeOnInstance() {
+        // given
+        ResponseAttribute attribute = ResponseAttribute.APPLICATION_ID;
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
+
+        // when
+        ResponseAttributes obtained = target.withApplicationId(UUID.randomUUID().toString()).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -968,6 +1006,55 @@ public class ResponseAttributesImplTest {
         // then
         assertThat(obtained, notNullValue());
         assertThat(obtained.isCaptureErrors(), is(captureErrors));
+    }
+
+    @Test
+    public void mergeTakesApplicationIdFromMergeTargetIfNotSetInSource() {
+        // given
+        String applicationId = UUID.randomUUID().toString();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withApplicationId(applicationId).build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
+    }
+
+    @Test
+    public void mergeTakesApplicationIdFromMergeSourceIfSetInSource() {
+        // given
+        String applicationId = UUID.randomUUID().toString();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withApplicationId(applicationId).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
+    }
+
+    @Test
+    public void mergeTakesApplicationIdFromMergeSourceIfSetInSourceAndTarget() {
+        // given
+        String applicationId = UUID.randomUUID().toString();
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withApplicationId(applicationId).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withApplicationId(UUID.randomUUID().toString()).build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
     }
 
     @Test

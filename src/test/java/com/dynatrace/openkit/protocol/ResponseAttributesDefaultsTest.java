@@ -17,9 +17,8 @@ package com.dynatrace.openkit.protocol;
 
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -72,6 +71,11 @@ public class ResponseAttributesDefaultsTest {
     @Test
     public void defaultJsonIsCaptureErrors() {
         assertThat(ResponseAttributesDefaults.JSON_RESPONSE.isCaptureErrors(), is(true));
+    }
+
+    @Test
+    public void defaultJsonApplicationId() {
+        assertThat(ResponseAttributesDefaults.JSON_RESPONSE.getApplicationId(), is(nullValue()));
     }
 
     @Test
@@ -151,6 +155,11 @@ public class ResponseAttributesDefaultsTest {
     }
 
     @Test
+    public void defaultKeyValueApplicationId() {
+        assertThat(ResponseAttributesDefaults.KEY_VALUE_RESPONSE.getApplicationId(), is(nullValue()));
+    }
+
+    @Test
     public void defaultKeyValueMultiplicity() {
         assertThat(ResponseAttributesDefaults.KEY_VALUE_RESPONSE.getMultiplicity(), is(1));
     }
@@ -224,6 +233,11 @@ public class ResponseAttributesDefaultsTest {
     @Test
     public void defaultUndefinedIsCaptureErrors() {
         assertThat(ResponseAttributesDefaults.UNDEFINED.isCaptureErrors(), is(true));
+    }
+
+    @Test
+    public void defaultUndefinedApplicationId() {
+        assertThat(ResponseAttributesDefaults.UNDEFINED.getApplicationId(), is(nullValue()));
     }
 
     @Test
