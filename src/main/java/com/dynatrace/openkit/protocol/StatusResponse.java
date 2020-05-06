@@ -53,6 +53,15 @@ public class StatusResponse {
      */
     static final long DEFAULT_RETRY_AFTER_IN_MILLISECONDS = 10L * 60L * 1000L;
 
+    /**
+     * Value that is sent if response status indicates an error.
+     *
+     * <p>
+     *     The status is part of the payload {@link ResponseAttributes}.
+     * </p>
+     */
+    static final String RESPONSE_STATUS_ERROR = "ERROR";
+
     private final Logger logger;
 
     private final int responseCode;
@@ -98,7 +107,16 @@ public class StatusResponse {
     }
 
     public boolean isErroneousResponse() {
-        return getResponseCode() >= HTTP_BAD_REQUEST;
+        return getResponseCode() >= HTTP_BAD_REQUEST || isStatusSetToError();
+    }
+
+    private boolean isStatusSetToError() {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.STATUS)) {
+            // no status sent - therefore no error
+            return false;
+        }
+
+        return RESPONSE_STATUS_ERROR.equals(responseAttributes.getStatus());
     }
 
     public int getResponseCode() {

@@ -86,6 +86,11 @@ public interface ResponseAttributes {
     int getServerId();
 
     /**
+     * Returns the status of the new session configuration request.
+     */
+    String getStatus();
+
+    /**
      * Returns the timestamp of these attributes which were returned from the server.
      *
      * <p>

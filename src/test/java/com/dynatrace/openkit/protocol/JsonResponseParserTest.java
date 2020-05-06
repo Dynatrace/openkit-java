@@ -312,6 +312,22 @@ public class JsonResponseParserTest {
     }
 
     @Test
+    public void parseExtractsStatus() throws ParserException {
+        // given
+        String status = "foobar";
+        begin(JsonResponseParser.RESPONSE_KEY_DYNAMIC_CONFIG);
+        appendLastParameter(JsonResponseParser.RESPONSE_KEY_STATUS, status);
+        close(2);
+
+        // when
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getStatus(), is(equalTo(status)));
+    }
+
+    @Test
     public void parseExtractsTimestamp() throws ParserException {
         // given
         long timestamp = 73;
@@ -335,10 +351,11 @@ public class JsonResponseParserTest {
         int sessionTimeout = 76;
         int sendInterval = 77;
         int visitStoreVersion = 78;
+        String applicationId = UUID.randomUUID().toString();
         int multiplicity = 79;
         int serverId = 80;
+        String status = "some status";
         long timestamp = 81;
-        String applicationId = UUID.randomUUID().toString();
 
         begin(JsonResponseParser.RESPONSE_KEY_AGENT_CONFIG);
         appendParameter(JsonResponseParser.RESPONSE_KEY_MAX_BEACON_SIZE_IN_KB, beaconSize);
@@ -360,7 +377,8 @@ public class JsonResponseParserTest {
 
         begin(JsonResponseParser.RESPONSE_KEY_DYNAMIC_CONFIG);
         appendParameter(JsonResponseParser.RESPONSE_KEY_MULTIPLICITY, multiplicity);
-        appendLastParameter(JsonResponseParser.RESPONSE_KEY_SERVER_ID, serverId);
+        appendParameter(JsonResponseParser.RESPONSE_KEY_SERVER_ID, serverId);
+        appendLastParameter(JsonResponseParser.RESPONSE_KEY_STATUS, status);
         close();
         inputBuilder.append(",");
 
@@ -386,6 +404,7 @@ public class JsonResponseParserTest {
 
         assertThat(obtained.getMultiplicity(), is(multiplicity));
         assertThat(obtained.getServerId(), is(serverId));
+        assertThat(obtained.getStatus(), is(equalTo(status)));
 
         assertThat(obtained.getTimestampInMilliseconds(), is(timestamp));
 

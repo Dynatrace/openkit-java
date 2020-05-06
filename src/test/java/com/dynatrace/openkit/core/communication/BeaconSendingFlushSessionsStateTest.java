@@ -55,7 +55,8 @@ public class BeaconSendingFlushSessionsStateTest {
         when(mockSession3Closed.isDataSendingAllowed()).thenReturn(true);
 
         StatusResponse mockStatusResponse = mock(StatusResponse.class);
-        when(mockStatusResponse.getResponseCode()).thenReturn(200);
+        when(mockStatusResponse.getResponseCode()).thenReturn(StatusResponse.HTTP_OK);
+        when(mockStatusResponse.isErroneousResponse()).thenReturn(false);
 
         when(mockSession1Open.sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class)))
                 .thenReturn(mockStatusResponse);

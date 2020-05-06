@@ -89,6 +89,11 @@ public class ResponseAttributesDefaultsTest {
     }
 
     @Test
+    public void defaultJsonStatus() {
+        assertThat(ResponseAttributesDefaults.JSON_RESPONSE.getStatus(), is(nullValue()));
+    }
+
+    @Test
     public void defaultJsonTimestamp() {
         assertThat(ResponseAttributesDefaults.JSON_RESPONSE.getTimestampInMilliseconds(), is(0L));
     }
@@ -170,6 +175,11 @@ public class ResponseAttributesDefaultsTest {
     }
 
     @Test
+    public void defaultKeyValueStatus() {
+        assertThat(ResponseAttributesDefaults.KEY_VALUE_RESPONSE.getStatus(), is(nullValue()));
+    }
+
+    @Test
     public void defaultKeyValueTimestamp() {
         assertThat(ResponseAttributesDefaults.KEY_VALUE_RESPONSE.getTimestampInMilliseconds(), is(0L));
     }
@@ -248,6 +258,11 @@ public class ResponseAttributesDefaultsTest {
     @Test
     public void defaultUndefinedServerId() {
         assertThat(ResponseAttributesDefaults.UNDEFINED.getServerId(), is(-1));
+    }
+
+    @Test
+    public void defaultUndefinedStatus() {
+        assertThat(ResponseAttributesDefaults.UNDEFINED.getStatus(), is(nullValue()));
     }
 
     @Test

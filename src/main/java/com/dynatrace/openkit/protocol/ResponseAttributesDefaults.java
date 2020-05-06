@@ -119,6 +119,7 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
     private static final String DEFAULT_APPLICATION_ID = null;
     private static final int DEFAULT_MULTIPLICITY = 1;
     private static final int DEFAULT_SERVER_ID = 1;
+    private static final String DEFAULT_STATUS = null;
     private static final int DEFAULT_TIMESTAMP = 0;
     private final int DEFAULT_SEND_INTERVAL_IN_MILLIS = (int) TimeUnit.SECONDS.toMillis(120); // 120 seconds
 
@@ -160,6 +161,10 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
 
     public int getServerId() {
         return DEFAULT_SERVER_ID;
+    }
+
+    public String getStatus() {
+        return DEFAULT_STATUS;
     }
 
     public long getTimestampInMilliseconds() {

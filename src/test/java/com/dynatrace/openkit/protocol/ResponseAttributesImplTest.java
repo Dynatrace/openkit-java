@@ -75,6 +75,7 @@ public class ResponseAttributesImplTest {
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
         assertThat(obtained.getServerId(), is(defaults.getServerId()));
+        assertThat(obtained.getStatus(), is(defaults.getStatus()));
 
         assertThat(obtained.getTimestampInMilliseconds(), is(defaults.getTimestampInMilliseconds()));
     }
@@ -103,6 +104,7 @@ public class ResponseAttributesImplTest {
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
         assertThat(obtained.getServerId(), is(defaults.getServerId()));
+        assertThat(obtained.getStatus(), is(defaults.getStatus()));
 
         assertThat(obtained.getTimestampInMilliseconds(), is(defaults.getTimestampInMilliseconds()));
     }
@@ -491,6 +493,39 @@ public class ResponseAttributesImplTest {
 
         // when
         ResponseAttributes obtained = target.withServerId(37).build();
+
+        // then
+        assertThat(obtained.isAttributeSet(attribute), is(true));
+
+        for (ResponseAttribute unsetAttribute : ResponseAttribute.values()) {
+            if (attribute == unsetAttribute) {
+                continue;
+            }
+            assertThat(obtained.isAttributeSet(unsetAttribute), is(false));
+        }
+    }
+
+    @Test
+    public void buildPropagatesStatusToInstance() {
+        // given
+        String status = "status";
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
+
+        // when
+        ResponseAttributes obtained = target.withStatus(status).build();
+
+        // then
+        assertThat(obtained.getStatus(), is(equalTo(status)));
+    }
+
+    @Test
+    public void withStatusSetsAttributeOnInstance() {
+        // given
+        ResponseAttribute attribute = ResponseAttribute.STATUS;
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
+
+        // when
+        ResponseAttributes obtained = target.withStatus("status").build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -1153,6 +1188,55 @@ public class ResponseAttributesImplTest {
         // then
         assertThat(obtained, notNullValue());
         assertThat(obtained.getServerId(), is(serverId));
+    }
+
+    @Test
+    public void mergeTakesStatusFromMergeTargetIfNotSetInSource() {
+        // given
+        String status = "status";
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withStatus(status).build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getStatus(), is(equalTo(status)));
+    }
+
+    @Test
+    public void mergeTakesStatusFromMergeSourceIfSetInSource() {
+        // given
+        String status = "status";
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withStatus(status).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getStatus(), is(equalTo(status)));
+    }
+
+    @Test
+    public void mergeTakesStatusFromMergeSourceIfSetInSourceAndTarget() {
+        // given
+        String status = "status";
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withStatus(status).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withStatus("foobar").build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getStatus(), is(equalTo(status)));
     }
 
     @Test

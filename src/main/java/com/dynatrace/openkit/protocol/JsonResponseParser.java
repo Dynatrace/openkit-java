@@ -44,6 +44,7 @@ public class JsonResponseParser {
     static final String RESPONSE_KEY_DYNAMIC_CONFIG = "dynamicConfig";
     static final String RESPONSE_KEY_MULTIPLICITY = "multiplicity";
     static final String RESPONSE_KEY_SERVER_ID = "serverId";
+    static final String RESPONSE_KEY_STATUS = "status";
 
     static final String RESPONSE_KEY_TIMESTAMP_IN_MILLIS = "timestamp";
 
@@ -224,6 +225,7 @@ public class JsonResponseParser {
         JSONObjectValue dynConfigObject = (JSONObjectValue) dynConfigValue;
         applyMultiplicity(builder, dynConfigObject);
         applyServerId(builder, dynConfigObject);
+        applyStatus(builder, dynConfigObject);
     }
 
     private static void applyMultiplicity(ResponseAttributesImpl.Builder builder, JSONObjectValue dynConfigObject) {
@@ -246,6 +248,16 @@ public class JsonResponseParser {
         JSONNumberValue numberValue = (JSONNumberValue) value;
         int serverId = numberValue.getIntValue();
         builder.withServerId(serverId);
+    }
+
+    private static void applyStatus(ResponseAttributesImpl.Builder builder, JSONObjectValue dynConfigObject) {
+        JSONValue value = dynConfigObject.get(RESPONSE_KEY_STATUS);
+        if (value == null) {
+            return;
+        }
+
+        JSONStringValue stringValue = (JSONStringValue) value;
+        builder.withStatus(stringValue.getValue());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -535,7 +535,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseDisablesCaptureIfResponseCodeIsNotOk() {
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(404);
+        when(response.isErroneousResponse()).thenReturn(true);
 
         BeaconSendingContext target = createBeaconSendingContext().build();
         assertThat(target.isCaptureOn(), is(true));
@@ -551,7 +551,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseClearsSessionDataIfResponseCodeIsNotOk() {
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(404);
+        when(response.isErroneousResponse()).thenReturn(true);
 
         SessionState state = mock(SessionState.class);
         SessionImpl session = mock(SessionImpl.class);
@@ -572,7 +572,7 @@ public class BeaconSendingContextTest {
     public void handleStatusResponseRemovesFinishedSessionsIfResponseCodeIsNotOk() {
         // given
         StatusResponse response = mock(StatusResponse.class);
-        when(response.getResponseCode()).thenReturn(404);
+        when(response.isErroneousResponse()).thenReturn(true);
 
         SessionState state = mock(SessionState.class);
         when(state.isFinished()).thenReturn(true);

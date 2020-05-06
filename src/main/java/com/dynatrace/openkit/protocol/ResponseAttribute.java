@@ -81,6 +81,11 @@ public enum ResponseAttribute {
     SERVER_ID,
 
     /**
+     * Status of the new session configuration request.
+     */
+    STATUS,
+
+    /**
      * Timestamp of the configuration sent by the server.
      */
     TIMESTAMP

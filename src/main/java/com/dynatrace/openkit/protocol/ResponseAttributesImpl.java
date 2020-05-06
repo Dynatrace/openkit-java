@@ -41,6 +41,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
 
     private final int multiplicity;
     private final int serverId;
+    private final String status;
 
     private final long timestampInMilliseconds;
 
@@ -61,6 +62,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
 
         multiplicity = builder.multiplicity;
         serverId = builder.serverId;
+        status = builder.status;
 
         timestampInMilliseconds = builder.timestampInMilliseconds;
     }
@@ -126,6 +128,11 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     }
 
     @Override
+    public String getStatus() {
+        return status;
+    }
+
+    @Override
     public long getTimestampInMilliseconds() {
         return timestampInMilliseconds;
     }
@@ -151,6 +158,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         applyApplicationId(builder, responseAttributes);
         applyMultiplicity(builder, responseAttributes);
         applyServerId(builder, responseAttributes);
+        applyStatus(builder, responseAttributes);
         applyTimestamp(builder, responseAttributes);
 
         return builder.build();
@@ -240,6 +248,13 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         builder.withServerId(responseAttributes.getServerId());
     }
 
+    private void applyStatus(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.STATUS)) {
+            return;
+        }
+        builder.withStatus(responseAttributes.getStatus());
+    }
+
     private void applyTimestamp(Builder builder, ResponseAttributes responseAttributes) {
         if (!responseAttributes.isAttributeSet(ResponseAttribute.TIMESTAMP)) {
             return;
@@ -285,6 +300,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
 
         private int multiplicity;
         private int serverId;
+        private String status;
 
         private long timestampInMilliseconds;
 
@@ -303,6 +319,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
 
             multiplicity = defaults.getMultiplicity();
             serverId = defaults.getServerId();
+            status = defaults.getStatus();
 
             timestampInMilliseconds = defaults.getTimestampInMilliseconds();
 
@@ -465,6 +482,19 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         public Builder withServerId(int serverId) {
             this.serverId = serverId;
             setAttribute(ResponseAttribute.SERVER_ID);
+
+            return this;
+        }
+
+        /**
+         * Sets the response status received for a new session request.
+         *
+         * @param status the status received for new session request.
+         * @return {@code this}
+         */
+        public Builder withStatus(String status) {
+            this.status = status;
+            setAttribute(ResponseAttribute.STATUS);
 
             return this;
         }

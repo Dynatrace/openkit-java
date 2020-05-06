@@ -439,7 +439,7 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      * Handle the status response received from the server.
      */
     void handleStatusResponse(StatusResponse receivedResponse) {
-        if (receivedResponse == null || (receivedResponse.getResponseCode() != StatusResponse.HTTP_OK)) {
+        if (receivedResponse == null || receivedResponse.isErroneousResponse()) {
             disableCaptureAndClear();
             return;
         }

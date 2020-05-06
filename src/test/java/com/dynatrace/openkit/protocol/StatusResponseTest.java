@@ -30,14 +30,8 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class StatusResponseTest {
 
@@ -57,22 +51,56 @@ public class StatusResponseTest {
     @Test
     public void isErroneousResponseGivesTrueForErrorCodeEqualTo400() {
         // when, then
-        assertThat(StatusResponse.createErrorResponse(mockLogger, 400).isErroneousResponse(),
-                is(true));
+        assertThat(StatusResponse.createErrorResponse(mockLogger, 400).isErroneousResponse(), is(true));
     }
 
     @Test
     public void isErroneousResponseGivesTrueForErrorCodeGreaterThan400() {
         // when, then
-        assertThat(StatusResponse.createErrorResponse(mockLogger, 401).isErroneousResponse(),
-                is(true));
+        assertThat(StatusResponse.createErrorResponse(mockLogger, 401).isErroneousResponse(), is(true));
     }
 
     @Test
     public void isErroneousResponseGivesFalseForErrorCodeLessThan400() {
         // when, then
-        assertThat(StatusResponse.createSuccessResponse(mockLogger, attributes, 399, Collections.<String, List<String>>emptyMap()).isErroneousResponse(),
-                is(false));
+        assertThat(StatusResponse.createSuccessResponse(mockLogger, attributes, 399, Collections.<String, List<String>>emptyMap())
+                                 .isErroneousResponse(), is(false));
+    }
+
+    @Test
+    public void isErroneousResponseGivesTrueIfStatusResponseAttributeIndicatesError() {
+        // given
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                                                              .withStatus(StatusResponse.RESPONSE_STATUS_ERROR)
+                                                              .build();
+
+        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, StatusResponse.HTTP_OK, Collections.<String, List<String>>emptyMap());
+
+        // when, then
+        assertThat(target.isErroneousResponse(), is(true));
+    }
+
+    @Test
+    public void isErroneousResponseGivesFalseIfStatusResponseAttributeDoesNotIndicateError() {
+        // given
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults()
+                                                              .withStatus(StatusResponse.RESPONSE_STATUS_ERROR.toLowerCase())
+                                                              .build();
+
+        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, StatusResponse.HTTP_OK, Collections.<String, List<String>>emptyMap());
+
+        // when, then
+        assertThat(target.isErroneousResponse(), is(false));
+    }
+
+    @Test
+    public void isErroneousResponseGivesFalseIfStatusResponseAttributeIsNotSet() {
+        // given
+        ResponseAttributes attributes = ResponseAttributesImpl.withUndefinedDefaults().build();
+        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, StatusResponse.HTTP_OK, Collections.<String, List<String>>emptyMap());
+
+        // when, then
+        assertThat(target.isErroneousResponse(), is(false));
     }
 
     @Test
@@ -92,20 +120,15 @@ public class StatusResponseTest {
         Map<String, List<String>> expectedHeaders = new HashMap<String, List<String>>();
         expectedHeaders.put("x-foo", Collections.singletonList("X-BAR"));
         expectedHeaders.put("x-yz", Collections.<String>emptyList());
-        assertThat(StatusResponse.createSuccessResponse(mockLogger, attributes, 418, headers).getHeaders(),
-                is(equalTo(expectedHeaders)));
+        assertThat(StatusResponse.createSuccessResponse(mockLogger, attributes, 418, headers)
+                                 .getHeaders(), is(equalTo(expectedHeaders)));
     }
 
     @Test
     public void getRetryAfterReturnsDefaultValueIfResponseKeyDoesNotExist() {
 
         // given
-        StatusResponse target = StatusResponse.createSuccessResponse(
-                mockLogger,
-                attributes,
-                429,
-                Collections.<String, List<String>>emptyMap()
-        );
+        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, 429, Collections.<String, List<String>>emptyMap());
 
         // when
         long obtained = target.getRetryAfterInMilliseconds();
@@ -118,7 +141,8 @@ public class StatusResponseTest {
     public void getRetryAfterReturnsDefaultValueIfMultipleValuesWereRetrieved() {
 
         // given
-        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Arrays.asList("100", "200"));
+        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Arrays
+            .asList("100", "200"));
         StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, 429, responseHeaders);
 
         // when
@@ -132,7 +156,8 @@ public class StatusResponseTest {
     public void getRetryAfterReturnsDefaultValueIfValueIsNotParsableAsInteger() {
 
         // given
-        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Collections.singletonList("a"));
+        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Collections
+            .singletonList("a"));
         StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, 429, responseHeaders);
 
         // when
@@ -146,7 +171,8 @@ public class StatusResponseTest {
     public void getRetryAfterReturnsParsedValue() {
 
         // given
-        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Collections.singletonList("1234"));
+        Map<String, List<String>> responseHeaders = Collections.singletonMap(StatusResponse.RESPONSE_KEY_RETRY_AFTER, Collections
+            .singletonList("1234"));
         StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, 429, responseHeaders);
 
         // when
@@ -222,12 +248,7 @@ public class StatusResponseTest {
     @Test
     public void successResponseGetResponseAttributesReturnsAttributesPassedInConstructor() {
         // given
-        StatusResponse target = StatusResponse.createSuccessResponse(
-                mockLogger,
-                attributes,
-                200,
-                Collections.<String, List<String>>emptyMap()
-        );
+        StatusResponse target = StatusResponse.createSuccessResponse(mockLogger, attributes, 200, Collections.<String, List<String>>emptyMap());
 
         // then
         assertThat(target.getResponseAttributes(), is(attributes));

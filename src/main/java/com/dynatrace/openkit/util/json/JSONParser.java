@@ -52,9 +52,9 @@ public class JSONParser {
     private JSONValue parsedValue = null;
 
     /** stack storing JSON values (keep in mind there are nested values) */
-    private LinkedList<JSONValueContainer> valueContainerStack = new LinkedList<JSONValueContainer>();
+    private final LinkedList<JSONValueContainer> valueContainerStack = new LinkedList<JSONValueContainer>();
     /** stack storing state. This is required to parse nested objects */
-    private LinkedList<JSONParserState> stateStack = new LinkedList<JSONParserState>();
+    private final LinkedList<JSONParserState> stateStack = new LinkedList<JSONParserState>();
 
     /**
      * Constructor taking the JSON input string.
