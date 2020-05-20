@@ -171,18 +171,18 @@ public class BeaconConfiguration {
         }
 
         synchronized (lockObject) {
-            if (serverConfiguration == null) {
-                // no server configuration has been set so far
-                // no need to merge something -> just store it
-                serverConfiguration = newServerConfiguration;
-            } else {
-                serverConfiguration = serverConfiguration.merge(newServerConfiguration);
+            if (serverConfiguration != null) {
+                // server configuration already exists,
+                // therefore merge new one with the existing one.
+                newServerConfiguration = serverConfiguration.merge(newServerConfiguration);
             }
-
+            serverConfiguration = newServerConfiguration;
             isServerConfigurationSet = true;
-
-            notifyServerConfigurationUpdate(serverConfiguration);
         }
+
+        // notify has to be called outside of the synchronized block
+        // to avoid deadlock situations with SessionProxyImpl
+        notifyServerConfigurationUpdate(newServerConfiguration);
     }
 
     private void notifyServerConfigurationUpdate(ServerConfiguration serverConfig) {
