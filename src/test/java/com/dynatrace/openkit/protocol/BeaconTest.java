@@ -1195,10 +1195,53 @@ public class BeaconTest {
     }
 
     @Test
-    public void beaconDataPrefix() {
+    public void beaconDataPrefixVS1() {
         // given
         int sessionSequence = 1213;
-        int visitStoreVersion = 9;
+        int visitStoreVersion = 1;
+        String appVersion = "1111";
+        String ipAddress = "192.168.0.1";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
+        when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
+        when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
+        Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
+
+        // when
+        target.send(mock(HTTPClientProvider.class), null);
+
+        // then
+        String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
+            "&va=" + ProtocolConstants.OPENKIT_VERSION +
+            "&ap=" + APP_ID +
+            "&an=" + APP_NAME +
+            "&vn=" + appVersion +
+            "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
+            "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
+            "&vi=" + DEVICE_ID +
+            "&sn=" + SESSION_ID +
+            "&ip=" + ipAddress +
+            "&os=system" +
+            "&mf=manufacturer" +
+            "&md=model" +
+            "&dl=2" +
+            "&cl=2" +
+            "&vs=" + visitStoreVersion +
+            "&tx=0" +
+            "&tv=0" +
+            "&mp=0";
+
+        verify(mockBeaconCache, times(1))
+            .getNextBeaconChunk(eq(new BeaconKey(SESSION_ID, sessionSequence)), eq(expectedPrefix), anyInt(), anyChar());
+    }
+
+    @Test
+    public void beaconDataPrefixVS2() {
+        // given
+        int sessionSequence = 1213;
+        int visitStoreVersion = 2;
         String appVersion = "1111";
         String ipAddress = "192.168.0.1";
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
@@ -1222,7 +1265,6 @@ public class BeaconTest {
                 "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
                 "&vi=" + DEVICE_ID +
                 "&sn=" + SESSION_ID +
-                "&ss=" + sessionSequence +
                 "&ip=" + ipAddress +
                 "&os=system" +
                 "&mf=manufacturer" +
@@ -1230,6 +1272,7 @@ public class BeaconTest {
                 "&dl=2" +
                 "&cl=2" +
                 "&vs=" + visitStoreVersion +
+                "&ss=" + sessionSequence +
                 "&tx=0" +
                 "&tv=0" +
                 "&mp=0";

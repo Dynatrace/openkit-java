@@ -683,6 +683,9 @@ public class Beacon {
 
         StringBuilder mutableBeaconDataBuilder = new StringBuilder(immutableBasicBeaconData);
         addKeyValuePair(mutableBeaconDataBuilder, BEACON_KEY_VISIT_STORE_VERSION, getVisitStoreVersion());
+        if (getVisitStoreVersion() > 1) {
+            addKeyValuePair(mutableBeaconDataBuilder, BEACON_KEY_SESSION_SEQUENCE, getSessionSequenceNumber());
+        }
 
         mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER);
 
@@ -788,7 +791,6 @@ public class Beacon {
         // device/visitor ID, session number and IP address
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getDeviceID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionNumber());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_SEQUENCE, getSessionSequenceNumber());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
