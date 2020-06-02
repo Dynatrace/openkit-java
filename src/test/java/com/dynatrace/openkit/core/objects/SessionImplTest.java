@@ -1027,9 +1027,9 @@ public class SessionImplTest {
     }
 
     @Test
-    public void isDataSendingAllowedReturnsTrueForConfiguredAndCaptureEnabledSession() {
+    public void isDataSendingAllowedReturnsTrueForConfiguredAndDataCaptureEnabledSession() {
         // given
-        when(mockBeacon.isCaptureEnabled()).thenReturn(true);
+        when(mockBeacon.isDataCapturingEnabled()).thenReturn(true);
         when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
 
         SessionImpl target = createSession().build();
@@ -1044,7 +1044,7 @@ public class SessionImplTest {
     @Test
     public void isDataSendingAllowedReturnsFalseForNotConfiguredSession() {
         // given
-        when(mockBeacon.isCaptureEnabled()).thenReturn(true);
+        when(mockBeacon.isDataCapturingEnabled()).thenReturn(true);
         when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
         SessionImpl target = createSession().build();
 
@@ -1056,9 +1056,9 @@ public class SessionImplTest {
     }
 
     @Test
-    public void isDataSendingAllowedReturnsFalseForCaptureDisabledSession() {
+    public void isDataSendingAllowedReturnsFalseForDataCaptureDisabledSession() {
         // given
-        when(mockBeacon.isCaptureEnabled()).thenReturn(false);
+        when(mockBeacon.isDataCapturingEnabled()).thenReturn(false);
         when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
         SessionImpl target = createSession().build();
 
@@ -1070,9 +1070,9 @@ public class SessionImplTest {
     }
 
     @Test
-    public void isDataSendingAllowedReturnsFalseForNotConfiguredAndCaptureDisabledSession() {
+    public void isDataSendingAllowedReturnsFalseForNotConfiguredAndDataCaptureDisabledSession() {
         // given
-        when(mockBeacon.isCaptureEnabled()).thenReturn(false);
+        when(mockBeacon.isDataCapturingEnabled()).thenReturn(false);
         when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
         SessionImpl target = createSession().build();
 

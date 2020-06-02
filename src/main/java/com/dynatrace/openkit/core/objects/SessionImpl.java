@@ -313,7 +313,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
      * Indicates whether sending data for this session is allowed or not.
      */
     public boolean isDataSendingAllowed() {
-        return state.isConfigured() && beacon.isCaptureEnabled();
+        return state.isConfigured() && beacon.isDataCapturingEnabled();
     }
 
     /**

@@ -150,9 +150,9 @@ public class BeaconConfiguration {
             }
 
             serverConfiguration = initialServerConfiguration;
-
-            notifyServerConfigurationUpdate(serverConfiguration);
         }
+
+        notifyServerConfigurationUpdate(initialServerConfiguration);
     }
 
     /**
@@ -171,7 +171,7 @@ public class BeaconConfiguration {
         }
 
         synchronized (lockObject) {
-            if (serverConfiguration != null) {
+            if (isServerConfigurationSet) {
                 // server configuration already exists,
                 // therefore merge new one with the existing one.
                 newServerConfiguration = serverConfiguration.merge(newServerConfiguration);

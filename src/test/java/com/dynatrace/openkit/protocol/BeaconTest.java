@@ -124,6 +124,7 @@ public class BeaconTest {
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
         when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(true);
         when(mockServerConfiguration.isCaptureEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMultiplicity()).thenReturn(1);
         when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(true);
         when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(true);
         when(mockServerConfiguration.getServerID()).thenReturn(SERVER_ID);
@@ -164,7 +165,7 @@ public class BeaconTest {
         Beacon target = createBeacon().build();
 
         // then
-        assertThat(target.isCaptureEnabled(), is(true));
+        assertThat(target.isDataCapturingEnabled(), is(true));
     }
 
     @Test
@@ -1066,9 +1067,9 @@ public class BeaconTest {
     }
 
     @Test
-    public void cannotAddRootActionIfCapturingIsDisabled() {
+    public void cannotAddRootActionIfDataSendingIsDisallowed() {
         // given
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
         String actionName = "rootAction";
         RootActionImpl rootAction = mock(RootActionImpl.class);
         when(rootAction.getName()).thenReturn(actionName);
@@ -1231,7 +1232,7 @@ public class BeaconTest {
             "&vs=" + visitStoreVersion +
             "&tx=0" +
             "&tv=0" +
-            "&mp=0";
+            "&mp=1";
 
         verify(mockBeaconCache, times(1))
             .getNextBeaconChunk(eq(new BeaconKey(SESSION_ID, sessionSequence)), eq(expectedPrefix), anyInt(), anyChar());
@@ -1275,7 +1276,7 @@ public class BeaconTest {
                 "&ss=" + sessionSequence +
                 "&tx=0" +
                 "&tv=0" +
-                "&mp=0";
+                "&mp=1";
 
         verify(mockBeaconCache, times(1))
                 .getNextBeaconChunk(eq(new BeaconKey(SESSION_ID, sessionSequence)), eq(expectedPrefix), anyInt(), anyChar());
@@ -1311,9 +1312,9 @@ public class BeaconTest {
     }
 
     @Test
-    public void noSessionIsAddedIfCapturingDisabled() {
+    public void noSessionIsAddedIfDataSendingIsDisallowed() {
         // given
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
         Beacon target = createBeacon().build();
 
         // when
@@ -1324,10 +1325,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noActionIsAddedIfCapturingIsDisabled() {
+    public void noActionIsAddedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()).thenReturn(ACTION_ID);
 
@@ -1339,10 +1340,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noIntValueIsReportedIfCapturingIsDisabled() {
+    public void noIntValueIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         int intValue = 42;
 
@@ -1354,10 +1355,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noDoubleValueIsReportedIfCapturingDisabled() {
+    public void noDoubleValueIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         double doubleValue = Math.E;
 
@@ -1369,10 +1370,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noStringValueIsReportedIfCapturingDisabled() {
+    public void noStringValueIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         String stringValue = "Write once, debug everywhere";
 
@@ -1384,10 +1385,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noEventIsReportedIfCapturingDisabled() {
+    public void noEventIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
         target.reportEvent(ACTION_ID, "Event name");
@@ -1410,10 +1411,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noErrorIsReportedIfCapturingDisabled() {
+    public void noErrorIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
         target.reportError(ACTION_ID, "Error name", 123, "The reason for this error");
@@ -1436,10 +1437,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noCrashIsReportedIfCapturingDisabled() {
+    public void noCrashIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
@@ -1462,10 +1463,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noWebRequestIsReportedIfCapturingDisabled() {
+    public void noWebRequestIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
 
         // when
@@ -1477,10 +1478,10 @@ public class BeaconTest {
     }
 
     @Test
-    public void noUserIdentificationIsReportedIfCapturingDisabled() {
+    public void noUserIdentificationIsReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
         target.identifyUser("jane.doe@acme.com");
@@ -2017,9 +2018,9 @@ public class BeaconTest {
     }
 
     @Test
-    public void noSessionStartIsReportedIfCapturingDisabled() {
+    public void noSessionStartIsReportedIfDataSendingIsDisallowed() {
         // given
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
         Beacon target = createBeacon().build();
 
         // when
@@ -2083,20 +2084,26 @@ public class BeaconTest {
     }
 
     @Test
-    public void isCaptureEnabledReturnsValueFromServerConfig() {
+    public void isDataCaptureEnabledReturnsFalseIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
 
         // when
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(false);
-        boolean obtained = target.isCaptureEnabled();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+        boolean obtained = target.isDataCapturingEnabled();
 
         // then
         assertThat(obtained, is(false));
+    }
 
-        // and when
-        when(mockServerConfiguration.isCaptureEnabled()).thenReturn(true);
-        obtained = target.isCaptureEnabled();
+    @Test
+    public void isDataCaptureEnabledReturnsTrueIfDataSendingIsAllowed() {
+        // given
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
+        boolean obtained = target.isDataCapturingEnabled();
 
         // then
         assertThat(obtained, is(true));

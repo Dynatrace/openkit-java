@@ -309,7 +309,7 @@ public class Beacon {
      */
     public void startSession() {
 
-        if (!isCaptureEnabled()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -558,7 +558,7 @@ public class Beacon {
             return;
         }
 
-        if (!isCaptureEnabled()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -594,7 +594,7 @@ public class Beacon {
             return;
         }
 
-        if (!isCaptureEnabled()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -705,7 +705,7 @@ public class Beacon {
      * @param actionBuilder Contains the serialized action data.
      */
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
-        if (isCaptureEnabled()) {
+        if (isDataCapturingEnabled()) {
             beaconCache.addActionData(beaconKey, timestamp, actionBuilder.toString());
         }
     }
@@ -717,7 +717,7 @@ public class Beacon {
      * @param eventBuilder Contains the serialized event data.
      */
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
-        if (isCaptureEnabled()) {
+        if (isDataCapturingEnabled()) {
             beaconCache.addEventData(beaconKey, timestamp, eventBuilder.toString());
         }
     }
@@ -1071,8 +1071,8 @@ public class Beacon {
     /**
      * Indicates whether data capturing for this beacon is currently enabled or not.
      */
-    public boolean isCaptureEnabled() {
-        return configuration.getServerConfiguration().isCaptureEnabled();
+    public boolean isDataCapturingEnabled() {
+        return configuration.getServerConfiguration().isSendingDataAllowed();
     }
 
     /**
