@@ -64,6 +64,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     private ServerConfiguration serverConfiguration;
     // indicates if this session proxy was already finished
     private boolean isFinished;
+    // last user tag reported via identifyUser
+    private String lastUserTag = null;
 
     SessionProxyImpl(
             Logger logger,
@@ -118,6 +120,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInteraction();
                 session.identifyUser(userTag);
+                lastUserTag = userTag;
             }
         }
     }
@@ -272,6 +275,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             int closeGracePeriodInMillis = serverConfiguration.getMaxSessionDurationInMilliseconds() / 2;
             sessionWatchdog.closeOrEnqueueForClosing(currentSession, closeGracePeriodInMillis);
             currentSession = newSession;
+            reTagCurrentSession();
         }
         return currentSession;
     }
@@ -322,6 +326,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
 
             sessionCreator.reset();
             currentSession = createInitialSession(serverConfiguration);
+
+            reTagCurrentSession();
 
             return calculateNextSplitTime();
         }
@@ -414,6 +420,14 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     private void recordTopActionEvent() {
         ++topLevelActionCount;
         recordTopLevelEventInteraction();
+    }
+
+    private void reTagCurrentSession() {
+        if (lastUserTag == null || currentSession == null) {
+            return;
+        }
+
+        currentSession.identifyUser(lastUserTag);
     }
 
     @Override

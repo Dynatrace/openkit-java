@@ -1428,6 +1428,73 @@ public class SessionProxyImplTest {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// identifyUser on split sessions
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void splitByTimeReAppliesUserIdentificationTag() {
+        // given
+        long lastInteractionTimeSessionOne = 60;
+        int idleTimeout = 10;                       // time to split: last interaction + idle => 70
+        long currentTime = 80;
+        long sessionTwoCreationTime = 90;
+        when(mockTimingProvider.provideTimestampInMilliseconds())
+            .thenReturn(lastInteractionTimeSessionOne, currentTime);
+        when(mockSplitBeacon1.getSessionStartTime()).thenReturn(sessionTwoCreationTime);
+
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(idleTimeout);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        target.identifyUser("test"); // update last interaction time
+        assertThat(target.getLastInteractionTime(), is(lastInteractionTimeSessionOne));
+
+        // when
+        target.splitSessionByTime();
+
+        // then
+        verify(mockSplitSession1, times(1)).identifyUser("test");
+    }
+
+    @Test
+    public void splitByEventCountReAppliesUserIdentificationTag() {
+        // given
+        int maxEventCount = 1;
+        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(maxEventCount);
+        when(mockServerConfiguration.merge(any(ServerConfiguration.class))).thenCallRealMethod();
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        ServerConfiguration ignoredServerConfig = mock(ServerConfiguration.class);
+        when(ignoredServerConfig.isSessionSplitByEventsEnabled()).thenReturn(true);
+        when(ignoredServerConfig.getMaxEventsPerSession()).thenReturn(5);
+
+        target.onServerConfigurationUpdate(ignoredServerConfig);
+
+        // when
+        target.identifyUser("test1");
+        target.enterAction("action 1");
+        target.enterAction("action 2");
+
+        // then
+        verify(mockSplitSession1, times(1)).identifyUser("test1");
+
+        // and when
+        target.enterAction("action 3");
+
+        // then
+        verify(mockSplitSession2, times(1)).identifyUser("test1");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// further tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

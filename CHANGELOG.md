@@ -5,7 +5,9 @@
 ### Added
 - Technology type support for error and crashes
 - Support for session splitting. Sessions are split transparently after either the maximum session duration,
-  the idle timeout or the number of top level actions are exceeded.
+  the idle timeout or the number of top level actions are exceeded. Session splitting is only applicable,
+  if it is also supported by Dynatrace. The internal details are described [here](./docs/internals.md#session-splitting).
+- Re-apply user tag on split sessions.
 
 ### Changed
 - Response code is now a parameter of WebRequestTracer's stop method.
