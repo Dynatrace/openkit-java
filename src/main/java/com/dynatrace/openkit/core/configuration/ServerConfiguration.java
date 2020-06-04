@@ -57,6 +57,10 @@ public class ServerConfiguration {
      */
     private final int multiplicity;
     /**
+     * The send interval in milliseconds.
+     */
+    private final int sendIntervalInMilliseconds;
+    /**
      * the maximum duration of a session
      */
     private final int maxSessionDurationInMilliseconds;
@@ -97,6 +101,7 @@ public class ServerConfiguration {
         serverID = builder.serverID;
         beaconSizeInBytes = builder.beaconSizeInBytes;
         multiplicity = builder.multiplicity;
+        sendIntervalInMilliseconds = builder.sendIntervalInMilliseconds;
         maxSessionDurationInMilliseconds = builder.maxSessionDurationInMilliseconds;
         isSessionSplitBySessionDurationEnabled = builder.isSessionSplitBySessionDurationEnabled;
         maxEventsPerSession = builder.maxEventsPerSession;
@@ -176,6 +181,15 @@ public class ServerConfiguration {
      */
     public int getMultiplicity() {
         return multiplicity;
+    }
+
+    /**
+     * Returns the send interval in milliseconds.
+     *
+     * @return send interval in milliseconds.
+     */
+    public int getSendIntervalInMilliseconds() {
+        return sendIntervalInMilliseconds;
     }
 
     /**
@@ -330,6 +344,7 @@ public class ServerConfiguration {
         private int serverID;
         private int beaconSizeInBytes;
         private int multiplicity;
+        private int sendIntervalInMilliseconds;
         private int maxSessionDurationInMilliseconds;
         private boolean isSessionSplitBySessionDurationEnabled;
         private int maxEventsPerSession;
@@ -350,6 +365,7 @@ public class ServerConfiguration {
             serverID = responseAttributes.getServerId();
             beaconSizeInBytes = responseAttributes.getMaxBeaconSizeInBytes();
             multiplicity = responseAttributes.getMultiplicity();
+            sendIntervalInMilliseconds = responseAttributes.getSendIntervalInMilliseconds();
             maxSessionDurationInMilliseconds = responseAttributes.getMaxSessionDurationInMilliseconds();
             isSessionSplitBySessionDurationEnabled = responseAttributes.isAttributeSet(ResponseAttribute.MAX_SESSION_DURATION);
             maxEventsPerSession = responseAttributes.getMaxEventsPerSession();
@@ -369,6 +385,7 @@ public class ServerConfiguration {
             serverID = serverConfiguration.getServerID();
             beaconSizeInBytes = serverConfiguration.getBeaconSizeInBytes();
             multiplicity = serverConfiguration.getMultiplicity();
+            sendIntervalInMilliseconds = serverConfiguration.getSendIntervalInMilliseconds();
             maxSessionDurationInMilliseconds = serverConfiguration.getMaxSessionDurationInMilliseconds();
             isSessionSplitBySessionDurationEnabled = serverConfiguration.isSessionSplitBySessionDurationEnabled();
             maxEventsPerSession = serverConfiguration.getMaxEventsPerSession();
@@ -438,6 +455,17 @@ public class ServerConfiguration {
          */
         public Builder withMultiplicity(int multiplicity) {
             this.multiplicity = multiplicity;
+            return this;
+        }
+
+        /**
+         * Configure the send interval in milliseconds.
+         *
+         * @param sendIntervalInMilliseconds Send interval in milliseconds
+         * @return {@code this}
+         */
+        public Builder withSendIntervalInMilliseconds(int sendIntervalInMilliseconds) {
+            this.sendIntervalInMilliseconds = sendIntervalInMilliseconds;
             return this;
         }
 

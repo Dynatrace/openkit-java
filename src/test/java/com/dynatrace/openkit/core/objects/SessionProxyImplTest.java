@@ -42,6 +42,7 @@ import static org.mockito.Matchers.endsWith;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -425,10 +426,10 @@ public class SessionProxyImplTest {
     @Test
     public void enterActionCallsWatchdogToCloseOldSessionOnSplitByEvents() {
         // given
-        int sessionDuration = 10;
+        int sessionIdleTimeout = 10;
         when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
-        when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
+        when(mockServerConfiguration.getSessionTimeoutInMilliseconds()).thenReturn(sessionIdleTimeout);
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -447,7 +448,7 @@ public class SessionProxyImplTest {
         // then
         verify(mockSessionCreator, times(2)).createSession(target);
         verifyNoMoreInteractions(mockSessionCreator);
-        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, sessionDuration / 2);
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, sessionIdleTimeout / 2);
     }
 
     @Test
@@ -642,6 +643,8 @@ public class SessionProxyImplTest {
         String stacktrace = null;
         SessionProxyImpl target = createSessionProxy();
 
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
         // when reporting a crash, passing null values
         target.reportCrash(errorName, errorReason, stacktrace);
 
@@ -656,6 +659,8 @@ public class SessionProxyImplTest {
         String errorReason = "";
         String stacktrace = "";
         SessionProxyImpl target = createSessionProxy();
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
 
         // when reporting a crash, passing null values
         target.reportCrash(errorName, errorReason, stacktrace);
@@ -672,6 +677,8 @@ public class SessionProxyImplTest {
         String errorName = "error name";
         String reason = "error reason";
         String stacktrace = "the stacktrace causing the error";
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
 
         // when
         target.reportCrash(errorName, reason, stacktrace);
@@ -701,6 +708,8 @@ public class SessionProxyImplTest {
         SessionProxyImpl target = createSessionProxy();
         assertThat(target.getTopLevelActionCount(), is(0));
 
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
         // when
         target.reportCrash("errorName", "reason", "stacktrace");
 
@@ -709,28 +718,13 @@ public class SessionProxyImplTest {
     }
 
     @Test
-    public void reportCrashSetsLastInterActionTime() {
+    public void reportCrashAlwaysSplitsSessionAfterReportingCrash() {
         // given
-        long sessionCreationTime = 13;
-        long lastInteractionTime = 17;
-        when(mockBeacon.getSessionStartTime()).thenReturn(sessionCreationTime);
-        when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(lastInteractionTime);
-
-        SessionProxyImpl target = createSessionProxy();
-        assertThat(target.getLastInteractionTime(), is(sessionCreationTime));
-
-        // when
-        target.reportCrash("errorName", "reason", "stacktrace");
-
-        // then
-        assertThat(target.getLastInteractionTime(), is(lastInteractionTime));
-    }
-
-    @Test
-    public void reportCrashDoesNotSplitSession() {
-        // given
-        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
-        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
+        // explicitly disable session splitting
+        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(-1);
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -738,12 +732,20 @@ public class SessionProxyImplTest {
         target.onServerConfigurationUpdate(mockServerConfiguration);
 
         // when
-        for (int i = 0; i < 10; i++) {
-            target.reportCrash("error 1", "reason 1", "stacktrace 1");
-        }
+        target.reportCrash("error 1", "reason 1", "stacktrace 1");
 
         // then
-        verifyNoMoreInteractions(mockSessionCreator);
+        verify(mockSession, times(1)).reportCrash("error 1", "reason 1", "stacktrace 1");
+        verify(mockSessionCreator, times(2)).createSession(target);
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, mockServerConfiguration.getSendIntervalInMilliseconds());
+
+        // and when
+        target.reportCrash("error 2", "reason 2", "stacktrace 2");
+
+        // then
+        verify(mockSplitSession1, times(1)).reportCrash("error 2", "reason 2", "stacktrace 2");
+        verify(mockSessionCreator, times(3)).createSession(target);
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSplitSession1, mockServerConfiguration.getSendIntervalInMilliseconds());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

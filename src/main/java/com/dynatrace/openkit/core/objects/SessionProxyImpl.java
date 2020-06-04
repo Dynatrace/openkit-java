@@ -139,6 +139,9 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
                 recordTopLevelEventInteraction();
                 session.reportCrash(errorName, reason, stacktrace);
+
+                // create new session after crash report
+                splitAndCreateNewInitialSession();
             }
         }
     }
@@ -269,12 +272,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
      */
     private SessionImpl getOrSplitCurrentSessionByEvents() {
         if (isSessionSplitByEventsRequired()) {
-            SessionImpl newSession = createSplitSession(serverConfiguration);
-
-            // try to close old session or wait half the max session duration time and then close it forcefully.
-            int closeGracePeriodInMillis = serverConfiguration.getMaxSessionDurationInMilliseconds() / 2;
-            sessionWatchdog.closeOrEnqueueForClosing(currentSession, closeGracePeriodInMillis);
-            currentSession = newSession;
+            closeOrEnqueueCurrentSessionForClosing();
+            currentSession = createSplitSession(serverConfiguration);
             reTagCurrentSession();
         }
         return currentSession;
@@ -291,6 +290,38 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
 
         return serverConfiguration.getMaxEventsPerSession() <= topLevelActionCount;
     }
+
+    /**
+     * Will end the current active session, enque the old one for closing, and create a new session.
+     *
+     * <p>
+     *     The new session is created using the {@see #createInitialSession}.
+     * </p>
+     *
+     * <p>
+     *     This method must be called only when the {@link #lockObject} is held.
+     * </p>
+     */
+    private void splitAndCreateNewInitialSession() {
+        closeOrEnqueueCurrentSessionForClosing();
+
+        // create a completely new SessionImpl
+        sessionCreator.reset();
+        currentSession = createInitialSession(serverConfiguration);
+
+        reTagCurrentSession();
+    }
+
+    private void closeOrEnqueueCurrentSessionForClosing() {
+        // for grace period use half of the idle timeout
+        // or fallback to session interval if not configured
+        int closeGracePeriodInMillis = serverConfiguration.getSessionTimeoutInMilliseconds() > 0
+            ? serverConfiguration.getSessionTimeoutInMilliseconds() / 2
+            : serverConfiguration.getSendIntervalInMilliseconds();
+
+        sessionWatchdog.closeOrEnqueueForClosing(currentSession, closeGracePeriodInMillis);
+    }
+
 
     /**
      * Will end the current active session and start a new one but only if the following conditions are met:

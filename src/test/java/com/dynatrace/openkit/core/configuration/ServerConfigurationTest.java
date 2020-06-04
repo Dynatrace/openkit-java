@@ -47,6 +47,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getServerId()).thenReturn(DEFAULT_VALUES.getServerId());
         when(responseAttributes.getMaxBeaconSizeInBytes()).thenReturn(DEFAULT_VALUES.getMaxBeaconSizeInBytes());
         when(responseAttributes.getMultiplicity()).thenReturn(DEFAULT_VALUES.getMultiplicity());
+        when(responseAttributes.getSendIntervalInMilliseconds()).thenReturn(DEFAULT_VALUES.getSendIntervalInMilliseconds());
         when(responseAttributes.getMaxSessionDurationInMilliseconds()).thenReturn(DEFAULT_VALUES.getMaxSessionDurationInMilliseconds());
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(DEFAULT_VALUES.getMaxEventsPerSession());
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(DEFAULT_VALUES.getSessionTimeoutInMilliseconds());
@@ -59,6 +60,7 @@ public class ServerConfigurationTest {
         when(mockServerConfig.getServerID()).thenReturn(DEFAULT_VALUES.getServerId());
         when(mockServerConfig.getBeaconSizeInBytes()).thenReturn(DEFAULT_VALUES.getMaxBeaconSizeInBytes());
         when(mockServerConfig.getMultiplicity()).thenReturn(DEFAULT_VALUES.getMultiplicity());
+        when(mockServerConfig.getSendIntervalInMilliseconds()).thenReturn(DEFAULT_VALUES.getSendIntervalInMilliseconds());
         when(mockServerConfig.getMaxSessionDurationInMilliseconds()).thenReturn(DEFAULT_VALUES.getMaxSessionDurationInMilliseconds());
         when(mockServerConfig.getMaxEventsPerSession()).thenReturn(DEFAULT_VALUES.getMaxEventsPerSession());
         when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(false);
@@ -103,6 +105,12 @@ public class ServerConfigurationTest {
     public void inDefaultServerConfigurationMultiplicityIsOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getMultiplicity(), is(1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationSendIntervalIs120Seconds() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.getSendIntervalInMilliseconds(), is(120 * 1000));
     }
 
     @Test
@@ -227,6 +235,18 @@ public class ServerConfigurationTest {
         assertThat(target.getMultiplicity(), is(7));
 
         verify(responseAttributes, times(1)).getMultiplicity();
+    }
+
+    @Test
+    public void creatingAServerConfigurationFromResponseAttributesCopiesSendInterval() {
+        // given
+        int sendInterval = 1234;
+        when(responseAttributes.getSendIntervalInMilliseconds()).thenReturn(sendInterval);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.getSendIntervalInMilliseconds(), is(sendInterval));
+        verify(responseAttributes, times(1)).getSendIntervalInMilliseconds();
     }
 
     @Test
@@ -651,6 +671,18 @@ public class ServerConfigurationTest {
         // then
         assertThat(target.getMultiplicity(), is(7));
         verify(mockServerConfig, times(1)).getMultiplicity();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesSendInterval() {
+        // given
+        int sendInterval = 4321;
+        when(mockServerConfig.getSendIntervalInMilliseconds()).thenReturn(sendInterval);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getSendIntervalInMilliseconds(), is(sendInterval));
+        verify(mockServerConfig, times(1)).getSendIntervalInMilliseconds();
     }
 
     @Test
@@ -1423,6 +1455,19 @@ public class ServerConfigurationTest {
 
         // then
         assertThat(obtained.getMultiplicity(), is(multiplicity));
+    }
+
+    @Test
+    public void buildPropagatesSendIntervalToInstance() {
+        // given
+        int sendInterval = 777;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+            .withSendIntervalInMilliseconds(sendInterval).build();
+
+        // then
+        assertThat(obtained.getSendIntervalInMilliseconds(), is(sendInterval));
     }
 
     @Test
