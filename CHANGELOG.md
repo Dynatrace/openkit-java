@@ -22,6 +22,7 @@
   The IP address is determined in this case on the server side.
 - Fix taking over HTTP headers (specifically the `retry-after` field) when receiving an HTTP response with
   response codes >= 400.
+- Reporting a crash causes a session split, which is transparently handled
 
 ### Improved
 - Fixed some javadoc/comments in the JSON parser
