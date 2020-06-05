@@ -353,12 +353,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
                 return nextSplitTime;
             }
 
-            currentSession.end();
-
-            sessionCreator.reset();
-            currentSession = createInitialSession(serverConfiguration);
-
-            reTagCurrentSession();
+            splitAndCreateNewInitialSession();
 
             return calculateNextSplitTime();
         }

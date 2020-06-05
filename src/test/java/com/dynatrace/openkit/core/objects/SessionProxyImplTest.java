@@ -1209,7 +1209,7 @@ public class SessionProxyImplTest {
         long obtained = target.splitSessionByTime();
 
         // then
-        verify(mockSession, times(1)).end();
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, idleTimeout / 2);
         verify(mockSessionCreator, times(1)).reset();
         verify(mockSessionCreator, times(2)).createSession(target);
         verifyNoMoreInteractions(mockSessionCreator);
@@ -1242,7 +1242,7 @@ public class SessionProxyImplTest {
         long obtained = target.splitSessionByTime();
 
         // then
-        verify(mockSession, times(1)).end();
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, idleTimeout / 2);
         verify(mockSessionCreator, times(1)).reset();
         verify(mockSessionCreator, times(2)).createSession(target);
         verifyNoMoreInteractions(mockSessionCreator);
@@ -1282,6 +1282,7 @@ public class SessionProxyImplTest {
         // given
         long startTimeFirstSession = 60;
         int sessionDuration = 10;           // split time: session start + duration = 70
+        int sendInterval = 15;
         long currentTime = 70;
         long startTimeSecondSession = 80;
 
@@ -1292,6 +1293,7 @@ public class SessionProxyImplTest {
         when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
         when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        when(mockServerConfiguration.getSendIntervalInMilliseconds()).thenReturn(sendInterval);
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -1301,7 +1303,7 @@ public class SessionProxyImplTest {
         long obtained = target.splitSessionByTime();
 
         // then
-        verify(mockSession, times(1)).end();
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, sendInterval);
         verify(mockSessionCreator, times(1)).reset();
         verify(mockSessionCreator, times(2)).createSession(target);
         verifyNoMoreInteractions(mockSessionCreator);
@@ -1313,6 +1315,7 @@ public class SessionProxyImplTest {
         // given
         long startTimeFirstSession = 60;
         int sessionDuration = 10;           // split time: session start + duration => 70
+        int sendInterval = 15;
         long currentTime = 80;
         long startTimeSecondSession = 90;
 
@@ -1323,7 +1326,7 @@ public class SessionProxyImplTest {
         when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(true);
         when(mockServerConfiguration.getMaxSessionDurationInMilliseconds()).thenReturn(sessionDuration);
         when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
-
+        when(mockServerConfiguration.getSendIntervalInMilliseconds()).thenReturn(sendInterval);
 
         SessionProxyImpl target = createSessionProxy();
         verify(mockSessionCreator, times(1)).createSession(target);
@@ -1333,7 +1336,7 @@ public class SessionProxyImplTest {
         long obtained = target.splitSessionByTime();
 
         // then
-        verify(mockSession, times(1)).end();
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, sendInterval);
         verify(mockSessionCreator, times(1)).reset();
         verify(mockSessionCreator, times(2)).createSession(target);
         verifyNoMoreInteractions(mockSessionCreator);
