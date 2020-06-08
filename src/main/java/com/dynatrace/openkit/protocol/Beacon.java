@@ -1096,4 +1096,13 @@ public class Beacon {
     public void disableCapture() {
         configuration.disableCapture();
     }
+
+    /**
+     * Get a boolean, indicating if action reporting is enabled by the privacy configuration
+     *
+     * @return {@code true} if action reporting is enabled by privacy configuration, {@code false} otherwise.
+     */
+    public boolean isActionReportingAllowedByPrivacySettings() {
+        return configuration.getPrivacyConfiguration().isActionReportingAllowed();
+    }
 }

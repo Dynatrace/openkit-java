@@ -98,7 +98,12 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         synchronized (lockObject) {
             if (!isFinished) {
                 SessionImpl session = getOrSplitCurrentSessionByEvents();
-                recordTopActionEvent();
+                if (session.getBeacon().isActionReportingAllowedByPrivacySettings()) {
+                    // avoid session splitting by action count, if user opted out of action collection
+                    recordTopActionEvent();
+                } else {
+                    recordTopLevelEventInteraction();
+                }
                 return session.enterAction(actionName);
             }
         }

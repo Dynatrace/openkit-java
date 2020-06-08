@@ -2150,6 +2150,28 @@ public class BeaconTest {
         verify(mockBeaconConfiguration, times(1)).setServerConfigurationUpdateCallback(callback);
     }
 
+    @Test
+    public void isActionReportingAllowedByPrivacySettingsReturnsSettingFromPrivacyConfiguration() {
+        // given
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockPrivacyConfiguration.isActionReportingAllowed()).thenReturn(true);
+        boolean obtained = target.isActionReportingAllowedByPrivacySettings();
+
+        // then
+        assertThat(obtained, is(true));
+        verify(mockPrivacyConfiguration, times(1)).isActionReportingAllowed();
+
+        // and when
+        when(mockPrivacyConfiguration.isActionReportingAllowed()).thenReturn(false);
+        obtained = target.isActionReportingAllowedByPrivacySettings();
+
+        // then
+        assertThat(obtained, is(false));
+        verify(mockPrivacyConfiguration, times(2)).isActionReportingAllowed();
+    }
+
     private BeaconBuilder createBeacon() {
         BeaconBuilder builder = new BeaconBuilder();
         builder.logger = mockLogger;
