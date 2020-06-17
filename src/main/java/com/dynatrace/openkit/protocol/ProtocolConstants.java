@@ -19,7 +19,7 @@ package com.dynatrace.openkit.protocol;
 public class ProtocolConstants {
 
     // version constants
-    public static final String OPENKIT_VERSION = "7.0.0000";
+    public static final String OPENKIT_VERSION = "8.197.20000";
     public static final int PROTOCOL_VERSION = 3;
     public static final int PLATFORM_TYPE_OPENKIT = 1;
     public static final String AGENT_TECHNOLOGY_TYPE = "okjava";
