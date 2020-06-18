@@ -21,6 +21,7 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class DynatraceOpenKitBuilderTest {
@@ -68,12 +69,12 @@ public class DynatraceOpenKitBuilderTest {
     }
 
     @Test
-    public void defaultApplicationNameIsEmptyString() {
+    public void defaultApplicationNameIsNull() {
         // given
         DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
 
         // then
-        assertThat(target.getApplicationName(), isEmptyString());
+        assertThat(target.getApplicationName(), is(nullValue()));
     }
 
     @Test
@@ -87,14 +88,15 @@ public class DynatraceOpenKitBuilderTest {
     }
 
     @Test
-    public void withApplicationNameIgnoresNullAsArgument() {
+    public void withApplicationNameAllowsOverwritingWithNull() {
         // given
         DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
+        target.withApplicationName(APPLICATION_NAME); // initialize with non-null value
 
         // when
         target.withApplicationName(null);
 
         // then
-        assertThat(target.getApplicationName(), isEmptyString());
+        assertThat(target.getApplicationName(), is(nullValue()));
     }
 }

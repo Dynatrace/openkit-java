@@ -32,7 +32,7 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
     public static final String OPENKIT_TYPE = "DynatraceOpenKit";
 
     private final String applicationID;
-    private String applicationName = "";
+    private String applicationName = null;
 
     /**
      * Creates a new instance of type DynatraceOpenKitBuilder
@@ -71,11 +71,12 @@ public class DynatraceOpenKitBuilder extends AbstractOpenKitBuilder {
      *
      * @param applicationName name of the application
      * @return {@code this}
+     *
+     * @deprecated with version 2.0.0 This value is set in Dynatrace when creating a Custom application.
      */
+    @Deprecated
     public AbstractOpenKitBuilder withApplicationName(String applicationName) {
-        if (applicationName != null) {
-            this.applicationName = applicationName;
-        }
+        this.applicationName = applicationName;
         return this;
     }
 

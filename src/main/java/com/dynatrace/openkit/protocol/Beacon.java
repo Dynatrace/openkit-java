@@ -783,7 +783,7 @@ public class Beacon {
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PROTOCOL_VERSION, ProtocolConstants.PROTOCOL_VERSION);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_OPENKIT_VERSION, ProtocolConstants.OPENKIT_VERSION);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_ID, openKitConfiguration.getApplicationID());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, openKitConfiguration.getApplicationName());
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_APPLICATION_NAME, openKitConfiguration.getApplicationName());
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_APPLICATION_VERSION, openKitConfiguration.getApplicationVersion());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_PLATFORM_TYPE, ProtocolConstants.PLATFORM_TYPE_OPENKIT);
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_AGENT_TECHNOLOGY_TYPE, ProtocolConstants.AGENT_TECHNOLOGY_TYPE);
