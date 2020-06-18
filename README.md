@@ -4,6 +4,9 @@
 [![Build Status](https://travis-ci.org/Dynatrace/openkit-java.svg?branch=main)](https://travis-ci.org/Dynatrace/openkit-java)
 [![Coverage Status](https://coveralls.io/repos/github/Dynatrace/openkit-java/badge.svg)](https://coveralls.io/github/Dynatrace/openkit-java)
 
+:information_source: We changed the default branch name to `main`. You can find the necessary steps to update your local clone on [Scott Hanselman's Blog](https://www.hanselman.com/blog/EasilyRenameYourGitDefaultBranchFromMasterToMain.aspx).  
+We encourage you to rename the default branch in your forks too.
+
 ## What is the OpenKit?
 
 The OpenKit provides an easy and lightweight way to get insights into applications with Dynatrace/AppMon by instrumenting the source code of those applications.
