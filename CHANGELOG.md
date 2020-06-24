@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.0...HEAD)
+
+## 2.0.0 [Release date: 2020-06-24]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.0)
 
 ### Added
 - Technology type support for error and crashes

@@ -52,6 +52,7 @@ This repository contains the reference implementation in pure Java. Other implem
 * [Detailed example][example]
 * [Contributing to OpenKit Java][contributing]
 * [Supported versions][supported_versions]
+* [Upgrade guide][upgrade_guide]
 
 ## Advanced topics
 * [Building OpenKit Java][building]
@@ -68,3 +69,4 @@ This repository contains the reference implementation in pure Java. Other implem
 [supported_versions]: ./docs/supported_versions.md
 [building]: ./docs/building.md
 [internals]: ./docs/internals.md
+[upgrade_guide]: ./docs/upgrade_guide.md
