@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.1...HEAD)
+
+## 2.0.1 [Release date: 2020-07-07]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.1)
 
 ### Changed
 - Fix issue with sessions being closed after splitting.
