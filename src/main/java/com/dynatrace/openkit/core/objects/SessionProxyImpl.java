@@ -28,6 +28,7 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.IOException;
 import java.net.URLConnection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -208,18 +209,46 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             isFinished = true;
         }
 
-        List<OpenKitObject> childObjects = getCopyOfChildObjects();
-        for (OpenKitObject childObject : childObjects) {
-            try {
-                childObject.close();
-            } catch (IOException e) {
-                // should not happen, nevertheless let's log an error
-                logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
-            }
-        }
+        closeChildObjects();
 
         parent.onChildClosed(this);
         sessionWatchdog.removeFromSplitByTimeout(this);
+    }
+
+    /**
+     * Close all child objects of this {@link SessionProxyImpl} which are still open.
+     */
+    void closeChildObjects() {
+        List<OpenKitObject> childObjects = getCopyOfChildObjects();
+
+        SessionImpl lastSession = null;
+        Iterator<OpenKitObject> childObjectsIterator = childObjects.iterator();
+        while (childObjectsIterator.hasNext()) {
+            OpenKitObject childObject = childObjectsIterator.next();
+            if (childObject instanceof SessionImpl) {
+                // child object is a session - special treatment is needed for sessions
+                SessionImpl childSession = (SessionImpl)childObject;
+                // end the child session and send the end session event
+                // if the child session is the current session
+                childSession.end(childSession == currentSession);
+            } else {
+                closeChildObject(childObject);
+            }
+        }
+    }
+
+    /**
+     * Close single child object.
+     *
+     * @param childObject Child object to close.
+     */
+    private void closeChildObject(OpenKitObject childObject) {
+        try {
+            childObject.close();
+        } catch (IOException e) {
+            // should not happen, nevertheless let's log an error
+            logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
+        }
     }
 
     /**
