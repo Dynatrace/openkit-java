@@ -105,7 +105,7 @@ public class SessionWatchdogContext {
         }
 
         for (SessionImpl session : sessionsToEnd) {
-            session.end();
+            session.end(false);
         }
 
         return sleepTimeInMillis;

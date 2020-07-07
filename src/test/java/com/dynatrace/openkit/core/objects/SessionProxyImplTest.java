@@ -17,6 +17,7 @@ package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
+import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.SessionWatchdog;
@@ -1073,7 +1074,7 @@ public class SessionProxyImplTest {
     @Test
     public void endingASessionImplicitlyClosesAllOpenChildObjects() throws IOException {
         // given
-        final OpenKitObject childObjectOne = mock(OpenKitObject.class);
+        OpenKitObject childObjectOne = mock(OpenKitObject.class);
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
         SessionProxyImpl target = createSessionProxy();
 
@@ -1146,6 +1147,26 @@ public class SessionProxyImplTest {
 
         // then
         verify(target, times(1)).end();
+    }
+
+    @Test
+    public void endCallsDifferentMethodsForSessions() {
+        // given
+        SessionImpl childObjectOne = mock(SessionImpl.class);
+        SessionImpl childObjectTwo = mock(SessionImpl.class);
+        SessionProxyImpl target = createSessionProxy();
+
+        target.storeChildInList(childObjectOne);
+        target.storeChildInList(childObjectTwo);
+
+        // when
+        target.end();
+
+        // then
+        verify(mockSession, times(1)).end(true);
+        verify(childObjectOne, times(1)).end(false);
+        verify(childObjectTwo, times(1)).end(false);
+        verifyNoMoreInteractions(childObjectOne, childObjectTwo);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1666,7 +1687,6 @@ public class SessionProxyImplTest {
         // then
         assertThat(obtained, is(equalTo("SessionProxyImpl [sn=37, seq=73]")));
     }
-
 
     private SessionProxyImpl createSessionProxy() {
         return new SessionProxyImpl(mockLogger, mockParent, mockSessionCreator, mockTimingProvider, mockBeaconSender, mockSessionWatchdog);

@@ -170,6 +170,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
 
     @Override
     public void end() {
+        end(true);
+    }
+
+    public void end(boolean sendSessionEndEvent) {
         if (logger.isDebugEnabled()) {
             logger.debug(this + "end()");
         }
@@ -191,8 +195,10 @@ public class SessionImpl extends OpenKitComposite implements Session {
             }
         }
 
-        // create end session data on beacon
-        beacon.endSession();
+        // send the end event, only if a session is explicitly ended
+        if (sendSessionEndEvent) {
+            beacon.endSession();
+        }
 
         state.markAsFinished();
 
@@ -215,7 +221,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
             }
 
             if (getChildCount() == 0) {
-                end();
+                end(false);
                 return true;
             }
 
@@ -304,7 +310,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
             removeChildFromList(childObject);
 
             if (state.wasTriedForEnding() && getChildCount() == 0) {
-                end();
+                end(false);
             }
         }
     }

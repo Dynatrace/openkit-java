@@ -347,13 +347,27 @@ public class SessionImplTest {
     public void endSessionFinishesSessionOnBeacon() {
         // given
         when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
-        SessionImpl target = createSession().build();
+        SessionImpl target = spy(createSession().build());
 
         // when
         target.end();
 
         // then
         verify(mockBeacon, times(1)).endSession();
+        verify(target, times(1)).end(true);
+    }
+
+    @Test
+    public void endSessionDoesNotFinishSessionOnBeacon() {
+        // given
+        when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);
+        SessionImpl target = spy(createSession().build());
+
+        // when
+        target.end(false);
+
+        // then
+        verify(mockBeacon, times(0)).endSession();
     }
 
     @Test
@@ -460,7 +474,9 @@ public class SessionImplTest {
 
         // then
         assertThat(obtained, is(true));
-        verify(mockBeacon, times(1)).endSession();
+        verify(mockBeacon, times(0)).endSession(); // no end session event is sent
+        verify(mockParent, times(1)).onChildClosed(target);
+
     }
 
     @Test

@@ -190,7 +190,7 @@ public class SessionWatchdogContextTest {
         target.execute();
 
         // then
-        verify(mockSession, times(1)).end();
+        verify(mockSession, times(1)).end(false);
         assertThat(target.getSessionsToClose().size(), is(0));
     }
 
@@ -208,7 +208,7 @@ public class SessionWatchdogContextTest {
         target.execute();
 
         // then
-        verify(mockSession, times(1)).end();
+        verify(mockSession, times(1)).end(false);
         assertThat(target.getSessionsToClose().size(), is(0));
     }
 
@@ -245,7 +245,7 @@ public class SessionWatchdogContextTest {
 
         // then
         verify(mockTimingProvider, times(1)).sleep(SessionWatchdogContext.DEFAULT_SLEEP_TIME_IN_MILLIS);
-        verify(mockSession, times(1)).end();
+        verify(mockSession, times(1)).end(false);
     }
 
     @Test

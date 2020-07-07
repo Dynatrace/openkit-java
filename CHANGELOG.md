@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.0...HEAD)
 
+### Changed
+- Fix issue with sessions being closed after splitting.
+  This happened because OpenKit was sending an end session event right after splitting.
+  New behavior is to only send the end session event if explicitly requested via
+  the `Session.end()` method and only for the active session.
+
 ## 2.0.0 [Release date: 2020-06-24]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.0)
 

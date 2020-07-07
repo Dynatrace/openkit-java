@@ -49,7 +49,7 @@ class BeaconSendingFlushSessionsState extends AbstractBeaconSendingState {
         // end open sessions -> will be flushed afterwards
         List<SessionImpl> openSessions = context.getAllOpenAndConfiguredSessions();
         for (SessionImpl openSession : openSessions) {
-            openSession.end();
+            openSession.end(false);
         }
 
         // flush already finished (and previously ended) sessions

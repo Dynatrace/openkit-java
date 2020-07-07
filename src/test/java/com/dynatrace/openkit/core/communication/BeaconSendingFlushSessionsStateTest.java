@@ -127,8 +127,8 @@ public class BeaconSendingFlushSessionsStateTest {
         target.doExecute(mockContext);
 
         // verify that open sessions are closed
-        verify(mockSession1Open, times(1)).end();
-        verify(mockSession2Open, times(1)).end();
+        verify(mockSession1Open, times(1)).end(false);
+        verify(mockSession2Open, times(1)).end(false);
     }
 
     @Test
