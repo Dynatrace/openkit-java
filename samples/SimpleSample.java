@@ -43,7 +43,6 @@ public class SimpleSample {
 
         // create an OpenKit instance
         OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
-            .withApplicationName("SimpleSampleApp")
             .withApplicationVersion("1.0")
             .withOperatingSystem(System.getProperty("os.name"))
             .build();
