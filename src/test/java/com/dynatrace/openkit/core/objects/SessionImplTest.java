@@ -173,7 +173,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void identifyUserWithNullTagDoesNothing() {
+    public void identifyUserWithNullTagReportsUser() {
         // given
         SessionImpl target = createSession().build();
 
@@ -181,15 +181,15 @@ public class SessionImplTest {
         target.identifyUser(null);
 
         // then
-        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] identifyUser(null)");
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).identifyUser(null);
         verifyNoMoreInteractions(mockBeacon);
-        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test
-    public void identifyUserWithEmptyTagDoesNothing() {
+    public void identifyUserWithEmptyTagReportsUser() {
         // given
         SessionImpl target = createSession().build();
 
@@ -197,11 +197,11 @@ public class SessionImplTest {
         target.identifyUser("");
 
         // then
-        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] identifyUser: userTag must not be null or empty");
+        verify(mockLogger, times(1)).debug("SessionImpl [sn=0] identifyUser()");
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
+        verify(mockBeacon, times(1)).identifyUser("");
         verifyNoMoreInteractions(mockBeacon);
-        verifyNoMoreInteractions(mockLogger);
     }
 
     @Test

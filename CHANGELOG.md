@@ -2,11 +2,15 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.1...HEAD)
 
+### Changed
+- `identifyUser` can be called with `null` or an empty string.  
+   This simulates a log off event and no longer re-applies the user tag on split sessions.
+
 ## 2.0.1 [Release date: 2020-07-07]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.1)
 
 ### Changed
-- Fix issue with sessions being closed after splitting.
+- Fix issue with sessions being closed after splitting.  
   This happened because OpenKit was sending an end session event right after splitting.
   New behavior is to only send the end session event if explicitly requested via
   the `Session.end()` method and only for the active session.

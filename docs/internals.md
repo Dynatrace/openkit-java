@@ -136,7 +136,7 @@ number of top level events is not sent by Dynatrace backend, session splitting b
 To decide when a session needs to be split, all top level action invocations (calling `enterAction` on the session) are 
 counted for the current session. When the counter exceeds the maximum number of top level actions, the session is split 
 and the counter is restarted from zero. The old session is ended/closed immediately, if there are no more open Actions 
-or Web Requests. Otherwise, it will be kept open for certain grace period. After expiration of the grace period the 
+or Web Requests. Otherwise, it will be kept open for a certain grace period. After expiration of the grace period the 
 session will be forcefully closed if it was not already closed manually in the meantime. 
 
 ### Session splitting by timeout
@@ -160,5 +160,6 @@ session timeout. Additionally it keeps track of old sessions that could not be c
 ### Identify Users on split sessions
 
 OpenKit re-applies the last user identification, which was reported with `identifyUser` on every session, split after
-the API call. This is implemented as a workaround as long as this functionality is missing in the backend.  
-Please keep in mind that this will be visible in the visit details.
+the API call. This behavior is only implemented for client-side session splitting and will implicitly send the
+same data as an `identifyUser` API does, therefore it is shown as first event in the split session. 
+To stop re-tagging sessions `identifyUser` can be called with `null` or an empty string.

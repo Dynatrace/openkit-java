@@ -114,10 +114,6 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
 
     @Override
     public void identifyUser(String userTag) {
-        if (userTag == null || userTag.isEmpty()) {
-            logger.warning(this + " identifyUser: userTag must not be null or empty");
-            return;
-        }
         if (logger.isDebugEnabled()) {
             logger.debug(this + " identifyUser(" + userTag + ")");
         }
@@ -483,7 +479,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     }
 
     private void reTagCurrentSession() {
-        if (lastUserTag == null || currentSession == null) {
+        if (lastUserTag == null || lastUserTag.length() == 0 || currentSession == null) {
             return;
         }
 

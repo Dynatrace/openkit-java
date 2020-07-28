@@ -505,7 +505,7 @@ public class SessionProxyImplTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    public void identifyUserWithNullTagDoesNothing() {
+    public void identifyUserWithNullTagReportsUser() {
         // given
         SessionProxyImpl target = createSessionProxy();
 
@@ -513,13 +513,12 @@ public class SessionProxyImplTest {
         target.identifyUser(null);
 
         // then
-        verify(mockLogger, times(1)).warning(endsWith("identifyUser: userTag must not be null or empty"));
-        verifyNoMoreInteractions(mockLogger);
-        verify(mockSession, times(0)).identifyUser(anyString());
+        verify(mockLogger, times(1)).debug(endsWith("identifyUser(null)"));
+        verify(mockSession, times(1)).identifyUser(null);
     }
 
     @Test
-    public void identifyUserWithEmptyTagDoesNothing() {
+    public void identifyUserWithEmptyTagReportsUser() {
         // given
         SessionProxyImpl target = createSessionProxy();
 
@@ -527,9 +526,8 @@ public class SessionProxyImplTest {
         target.identifyUser("");
 
         // then
-        verify(mockLogger, times(1)).warning(endsWith("identifyUser: userTag must not be null or empty"));
-        verifyNoMoreInteractions(mockLogger);
-        verify(mockSession, times(0)).identifyUser(anyString());
+        verify(mockLogger, times(1)).debug(endsWith("identifyUser()"));
+        verify(mockSession, times(1)).identifyUser("");
     }
 
     @Test
