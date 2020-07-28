@@ -94,10 +94,6 @@ public class SessionImpl extends OpenKitComposite implements Session {
 
     @Override
     public void identifyUser(String userTag) {
-        if (userTag == null || userTag.isEmpty()) {
-            logger.warning(this + "identifyUser: userTag must not be null or empty");
-            return;
-        }
         if (logger.isDebugEnabled()) {
             logger.debug(this + "identifyUser(" + userTag + ")");
         }

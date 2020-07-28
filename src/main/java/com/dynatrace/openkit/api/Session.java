@@ -42,10 +42,15 @@ public interface Session extends Closeable {
      *
      * <p>
      *     If the given {@code userTag} is {@code null} or an empty string,
-     *     no user identification will be reported to the server.
+     *     this is equivalent to logging off the user.
+     * </p>
+     * <p>
+     *     The last non-empty {@code userTag} is re-applied to split sessions.
+     *     Details are described in
+     *     https://github.com/Dynatrace/openkit-java/blob/main/docs/internals.md#identify-users-on-split-sessions.
      * </p>
      *
-     * @param userTag id of the user
+     * @param userTag id of the user or {@code null}/{@code ""} to simulate a log off.
      */
     void identifyUser(String userTag);
 
