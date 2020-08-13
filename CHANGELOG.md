@@ -9,6 +9,7 @@
   the `Session.end()` method and only for the active session.
 - `identifyUser` can be called with `null` or an empty string.  
   This simulates a log off event and no longer re-applies the user tag on split sessions.
+- Improve handling of client IP in combination with server-side detection.
 
 ## 2.0.0 [Release date: 2020-06-24]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.0)

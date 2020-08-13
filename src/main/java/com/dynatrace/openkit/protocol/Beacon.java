@@ -157,14 +157,14 @@ public class Beacon {
         if (ipAddress == null) {
             // A client IP address, which is a null, is valid.
             // The real IP address is determined on the server side.
-            this.clientIPAddress = "";
+            this.clientIPAddress = null;
         } else if (InetAddressValidator.isValidIP(ipAddress)) {
             this.clientIPAddress = ipAddress;
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warning(getClass().getSimpleName() + ": Client IP address validation failed: " + ipAddress);
             }
-            this.clientIPAddress = "";
+            this.clientIPAddress = null; // determined on server side, based on remote IP address
         }
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
@@ -791,7 +791,7 @@ public class Beacon {
         // device/visitor ID, session number and IP address
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_VISITOR_ID, getDeviceID());
         addKeyValuePair(basicBeaconBuilder, BEACON_KEY_SESSION_NUMBER, getSessionNumber());
-        addKeyValuePair(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
+        addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_CLIENT_IP_ADDRESS, clientIPAddress);
 
         // platform information
         addKeyValuePairIfNotNull(basicBeaconBuilder, BEACON_KEY_DEVICE_OS, openKitConfiguration.getOperatingSystem());

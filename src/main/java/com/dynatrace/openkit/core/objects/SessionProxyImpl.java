@@ -217,7 +217,6 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     void closeChildObjects() {
         List<OpenKitObject> childObjects = getCopyOfChildObjects();
 
-        SessionImpl lastSession = null;
         Iterator<OpenKitObject> childObjectsIterator = childObjects.iterator();
         while (childObjectsIterator.hasNext()) {
             OpenKitObject childObject = childObjectsIterator.next();

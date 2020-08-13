@@ -196,7 +196,7 @@ public class BeaconTest {
                 .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters));
 
         String capturedIp = ipCaptor.getValue();
-        assertThat(capturedIp, is(""));
+        assertThat(capturedIp, is(nullValue()));
     }
 
     @Test
@@ -226,7 +226,7 @@ public class BeaconTest {
                 .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters));
 
         String capturedIp = ipCaptor.getValue();
-        assertThat(capturedIp, is(""));
+        assertThat(capturedIp, is(nullValue()));
     }
 
     @Test
@@ -1158,7 +1158,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void sendCatchesUnsupportedEncodingException() throws Exception {
+    public void sendCatchesUnsupportedEncodingException() {
         // given
         String beaconChunk = "some beacon string";
         when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(beaconChunk);
