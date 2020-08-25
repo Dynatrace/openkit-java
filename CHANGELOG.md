@@ -1,10 +1,14 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.3...release/1.4)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v1.4.4...release/1.4)
+
+## 1.4.4 [Release date: 2020-08-25]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.4)
 
 ### Changed
 - Fix taking over HTTP headers (specifically the `retry-after` field) when receiving an HTTP response with
   response codes >= 400.
+- Fix potential NPE occurring with empty response body.
 
 ## 1.4.3 [Release date: 2019-10-31]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v1.4.3)
