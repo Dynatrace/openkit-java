@@ -253,7 +253,7 @@ public class HTTPClient {
         int responseCode = connection.getResponseCode();
 
         String response = responseCode >= 400
-                ? readResponse(connection.getErrorStream()) // error stream is closed in readResponse
+                ? null
                 : readResponse(connection.getInputStream()); // input stream is closed in readResponse
 
         if (logger.isDebugEnabled()) {
@@ -363,6 +363,10 @@ public class HTTPClient {
     }
 
     private static String readResponse(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            return "";
+        }
+
         StringBuilder responseBuilder = new StringBuilder();
 
         // reading HTTP response
