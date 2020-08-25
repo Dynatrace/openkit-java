@@ -1,10 +1,14 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.1...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.2...HEAD)
+
+## 2.0.2 [Release date: 2020-08-25]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.2)
 
 ### Changed
 - `identifyUser` can be called with `null` or an empty string.  
    This simulates a log off event and no longer re-applies the user tag on split sessions.
+- Fix potential NPE occurring with empty response body.
 
 ## 2.0.1 [Release date: 2020-07-07]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.1)
