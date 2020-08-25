@@ -54,8 +54,8 @@ customize OpenKit. This includes device specific information like operating syst
 
 | Method Name                           | Description                                                           | Default Value |
 | -------------                         | -------------                                                         | ---------- |
-| `withApplicationVersion`              | sets the application version                                          | `"2.0.2"` |
-| `withOperatingSystem`                 | sets the operating system name                                        | `"OpenKit 2.0.2"` |
+| `withApplicationVersion`              | sets the application version                                          | `"2.0.3"` |
+| `withOperatingSystem`                 | sets the operating system name                                        | `"OpenKit 2.0.3"` |
 | `withManufacturer`                    | sets the manufacturer                                                 | `"Dynatrace"` |
 | `withModelID`                         | sets the model id                                                     | `"OpenKitDevice"` |
 | `withDataCollectionLevel`             | sets the data collection level                                        | `DataCollectionLevel.USER_BEHAVIOR` |
