@@ -107,7 +107,7 @@ indicates whether the OpenKit instance has been initialized or `shutdown` has be
 An overloaded method exists to wait a given amount of time for OpenKit to initialize as shown in the
 following example.
 ```java
-// wait 10 seconds for OpenKit to complete initialization
+// wait up to 10 seconds for OpenKit to complete initialization
 long timeoutInMilliseconds = 10 * 1000;
 boolean success = openKit.waitForInitCompletion(timeoutInMilliseconds);
 ```

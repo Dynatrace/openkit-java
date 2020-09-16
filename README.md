@@ -145,10 +145,10 @@ This small example provides a rough overview how OpenKit can be used.
 Detailed explanation is available in [example.md](docs/example.md).
 
 ```java
-String applicationName = "My OpenKit application";
-String applicationID = "application-id";
-long deviceID = 42;
-String endpointURL = "https://tenantid.beaconurl.com/mbeacon";
+String applicationName = "My OpenKit application";             // Your application's name
+String applicationID = "application-id";                       // Your application's ID
+long deviceID = 42;                                            // Replace with a unique value per device/installation
+String endpointURL = "https://tenantid.beaconurl.com/mbeacon"; // Dynatrace endpoint URL
 
 OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, deviceID)
     .withApplicationName(applicationName)
@@ -157,6 +157,10 @@ OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, device
     .withManufacturer("MyCompany")
     .withModelID("MyModelID")
     .build();
+
+// Wait up to 10 seconds for OpenKit to complete initialization
+long timeoutInMilliseconds = 10 * 1000;
+boolean success = openKit.waitForInitCompletion(timeoutInMilliseconds);
 
 String clientIP = "8.8.8.8";
 Session session = openKit.createSession(clientIP);
