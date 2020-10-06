@@ -49,6 +49,11 @@ class NullAction implements Action {
     }
 
     @Override
+    public Action reportValue(String valueName, long value) {
+        return this;
+    }
+
+    @Override
     public Action reportValue(String valueName, double value) {
         return this;
     }

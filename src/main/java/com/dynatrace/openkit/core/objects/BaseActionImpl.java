@@ -129,6 +129,23 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
     }
 
     @Override
+    public Action reportValue(String valueName, long value) {
+        if (valueName == null || valueName.isEmpty()) {
+            logger.warning(this + "reportValue (long): valueName must not be null or empty");
+            return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportValue (long) (" + valueName + ", " + value + ")");
+        }
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportValue(getID(), valueName, value);
+            }
+        }
+        return this;
+    }
+
+    @Override
     public Action reportValue(String valueName, double value) {
         if (valueName == null || valueName.isEmpty()) {
             logger.warning(this + "reportValue (double): valueName must not be null or empty");

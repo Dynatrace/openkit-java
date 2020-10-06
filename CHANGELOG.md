@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.0...HEAD)
 
+### Added
+- Support for reporting `long` values.
+
 ### Changed
 - Fix issue with sessions being closed after splitting.
   This happened because OpenKit was sending an end session event right after splitting.

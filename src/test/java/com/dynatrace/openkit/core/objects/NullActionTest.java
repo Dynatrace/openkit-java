@@ -77,6 +77,19 @@ public class NullActionTest {
     }
 
     @Test
+    public void reportLongValueReturnsSelf() {
+        // given
+        NullAction target = createNullAction();
+
+        // when
+        Action obtained = target.reportValue("value name", Long.MAX_VALUE);
+
+        // then
+        assertThat(obtained, is(instanceOf(NullAction.class)));
+        assertThat((NullAction)obtained, is(sameInstance(target)));
+    }
+
+    @Test
     public void reportDoubleValueReturnsSelf() {
         // given
         NullAction target = createNullAction();

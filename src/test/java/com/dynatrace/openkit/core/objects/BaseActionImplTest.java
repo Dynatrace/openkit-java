@@ -41,6 +41,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.endsWith;
@@ -212,6 +213,73 @@ public class BaseActionImplTest {
         // verify that beacon within the action is called properly
         verify(logger, times(1)).isDebugEnabled();
         verify(logger, times(1)).debug(endsWith("reportValue (int) (" + valueName + ", " + value + ")"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportValueLongWithNullNameDoesNotReportValue() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when reporting integer value
+        Action obtained = target.reportValue(null, Long.MIN_VALUE);
+
+        // verify that beacon within the action is called properly
+        verify(beacon, times(0)).reportValue(anyInt(), anyString(), anyLong());
+        assertThat(obtained, is(sameInstance((Action) target)));
+
+        // verify that a log message has been generated
+        verify(logger, times(1)).warning(endsWith("reportValue (long): valueName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportValueLongWithEmptyNameDoesNotReportValue() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when reporting integer value
+        Action obtained = target.reportValue("", Long.MIN_VALUE);
+
+        // verify that beacon within the action is called properly
+        verify(beacon, times(0)).reportValue(anyInt(), anyString(), anyLong());
+        assertThat(obtained, is(sameInstance((Action) target)));
+
+        // verify that a log message has been generated
+        verify(logger, times(1)).warning(endsWith("reportValue (long): valueName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportValueLongWithValidValue() {
+        // given
+        String valueName = "IntegerValue";
+        long value = Long.MAX_VALUE;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportValue(valueName, value);
+
+        // verify that beacon within the action is called properly
+        verify(beacon, times(1)).reportValue(eq(ID_BASE_OFFSET), eq(valueName), eq(value));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportValueLongLogsInvocation() {
+        // given
+        String valueName = "IntegerValue";
+        long value = 42L;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportValue(valueName, value);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportValue (long) (" + valueName + ", " + value + ")"));
         verifyNoMoreInteractions(logger);
     }
 
@@ -868,6 +936,23 @@ public class BaseActionImplTest {
 
         // when
         int value = 42;
+        Action obtained = target.reportValue("intValue", value);
+
+        // then
+        assertThat(obtained, is(sameInstance((Action) target)));
+        verify(beacon, times(0)).reportValue(anyInt(), anyString(), anyInt());
+    }
+
+    @Test
+    public void reportLongValueDoesNothingIfActionIsLeft() {
+        // given
+        when(beacon.getCurrentTimestamp()).thenReturn(1234L);
+        when(beacon.createSequenceNumber()).thenReturn(42);
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        target.leaveAction();
+
+        // when
+        long value = Long.MIN_VALUE;
         Action obtained = target.reportValue("intValue", value);
 
         // then

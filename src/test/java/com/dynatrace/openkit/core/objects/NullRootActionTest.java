@@ -85,6 +85,19 @@ public class NullRootActionTest {
     }
 
     @Test
+    public void reportLongValueReturnsSelf() {
+        // given
+        NullRootAction target = NullRootAction.INSTANCE;
+
+        // when
+        Action obtained = target.reportValue("value name", Long.MIN_VALUE);
+
+        // then
+        assertThat(obtained, is(instanceOf(NullRootAction.class)));
+        assertThat((NullRootAction)obtained, is(sameInstance(target)));
+    }
+
+    @Test
     public void reportDoubleValueReturnsSelf() {
         // given
         NullRootAction target = NullRootAction.INSTANCE;

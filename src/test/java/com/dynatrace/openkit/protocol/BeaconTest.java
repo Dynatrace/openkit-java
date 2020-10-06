@@ -480,6 +480,33 @@ public class BeaconTest {
     }
 
     @Test
+    public void reportValidValueLong() {
+        // given
+        final Beacon beacon = createBeacon().build();
+        String valueName = "IntValue";
+        long value = Long.MAX_VALUE;
+
+        // when
+        beacon.reportValue(ACTION_ID, valueName, value);
+
+        // then
+        String expectedEventData =
+            "et=12&" +                      // event type
+                "na=" + valueName + "&" +       // name of reported value
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of reported value event
+                "t0=0&" +                       // event time since session start
+                "vl=" + value                   // reported value
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // event time
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
     public void reportValidValueDouble() {
         // given
         final Beacon beacon = createBeacon().build();
@@ -1292,6 +1319,7 @@ public class BeaconTest {
         when(action.getID()).thenReturn(ACTION_ID);
         beacon.addAction(action);
         beacon.reportValue(ACTION_ID, "IntValue", 42);
+        beacon.reportValue(ACTION_ID, "LongValue", 42L);
         beacon.reportValue(ACTION_ID, "DoubleValue", 3.1415);
         beacon.reportValue(ACTION_ID, "StringValue", "HelloWorld");
         beacon.reportEvent(ACTION_ID, "SomeEvent");
@@ -1349,6 +1377,21 @@ public class BeaconTest {
 
         // when
         target.reportValue(ACTION_ID, "intValue", intValue);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void noLongValueIsReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        long longValue = 21L;
+
+        // when
+        target.reportValue(ACTION_ID, "longValue", longValue);
 
         // then ensure nothing has been serialized
         verifyZeroInteractions(mockBeaconCache);
@@ -1848,7 +1891,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void IntValueIsNotReportedIfReportValueDisallowed() {
+    public void intValueIsNotReportedIfReportValueDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
@@ -1861,7 +1904,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void IntValueNotReportedIfDataSendingDisallowed() {
+    public void intValueNotReportedIfDataSendingDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
@@ -1874,7 +1917,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void IntValueIsReportedIfReportValueAllowed() {
+    public void intValueIsReportedIfReportValueAllowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
@@ -1886,9 +1929,47 @@ public class BeaconTest {
         verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
     }
 
+    @Test
+    public void longValueIsNotReportedIfReportValueDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
 
     @Test
-    public void DoubleValueIsNotReportedIfReportValueDisallowed() {
+    public void longValueNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void longValueIsReportedIfReportValueAllowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
+
+        // when
+        target.reportValue(ACTION_ID, "testValue", Long.MIN_VALUE);
+
+        // then ensure that error was serialized
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
+    }
+
+    @Test
+    public void doubleValueIsNotReportedIfReportValueDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
@@ -1901,7 +1982,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void DoubleValueIsNotReportedIfDataSendingDisallowed() {
+    public void doubleValueIsNotReportedIfDataSendingDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
@@ -1914,7 +1995,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void DoubleValueIsReportedIfValueReportingAllowed() {
+    public void doubleValueIsReportedIfValueReportingAllowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
@@ -1927,7 +2008,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void StringValueIsNotReportedIfValueReportingDisallowed() {
+    public void stringValueIsNotReportedIfValueReportingDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
@@ -1940,7 +2021,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void StringValueIsNotReportedIfDataSendingDisallowed() {
+    public void stringValueIsNotReportedIfDataSendingDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
@@ -1953,7 +2034,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void StringValueIsReportedIfValueReportingAllowed() {
+    public void stringValueIsReportedIfValueReportingAllowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
@@ -1966,7 +2047,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void NamedEventIsNotReportedIfEventReportingDisallowed() {
+    public void namedEventIsNotReportedIfEventReportingDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
@@ -1979,7 +2060,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void NamedEventIsReportedIfEventReportingAllowed() {
+    public void namedEventIsReportedIfEventReportingAllowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(true);

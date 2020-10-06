@@ -365,6 +365,21 @@ public class Beacon {
      * @param value          Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, int value) {
+        reportValue(parentActionID, valueName, (long)value);
+    }
+
+    /**
+     * Add key-value-pair to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
+     * @param valueName      Value's name.
+     * @param value          Actual value to report.
+     */
+    public void reportValue(int parentActionID, String valueName, long value) {
 
         if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;

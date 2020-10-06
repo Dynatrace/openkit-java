@@ -240,6 +240,7 @@ rootAction.reportEvent(eventName);
 Key-value pairs can also be reported via an `Action` as shown in the example below.
 Overloaded methods exist for the following value types:
 * int
+* long
 * double
 * String
 ```java
@@ -247,6 +248,11 @@ Overloaded methods exist for the following value types:
 String keyIntType = "intType";
 int valueInt = 42;
 action.reportValue(keyIntType, valueInt);
+
+// let's also report a long value 
+String keyLongType = "longType";
+long valueLong = Long.MAX_VALUE;
+action.reportValue(keyLongType, valueLong);
 
 // then let's report a double value
 String keyDoubleType = "doubleType";
