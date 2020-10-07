@@ -750,7 +750,7 @@ public class BeaconTest {
         CrashFormatter crashFormatter = new CrashFormatter(t);
         String errorName = crashFormatter.getName();
         String reason = crashFormatter.getReason();
-        String stacktrace = PercentEncoder.encode(crashFormatter.getStackTrace(), "UTF-8");
+        String stacktrace = PercentEncoder.encode(crashFormatter.getStackTrace(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
 
         final Beacon beacon = createBeacon().build();
 

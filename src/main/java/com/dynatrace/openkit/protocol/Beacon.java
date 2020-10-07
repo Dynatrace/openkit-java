@@ -102,7 +102,7 @@ public class Beacon {
     private static final String TAG_PREFIX = "MT";
 
     // web request tag reserved characters
-    private static final char[] RESERVED_CHARACTERS = {'_'};
+    static final char[] RESERVED_CHARACTERS = {'_'};
 
     private static final char BEACON_DATA_DELIMITER = '&';
 
