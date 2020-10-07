@@ -69,6 +69,17 @@ public interface Session extends Closeable {
     void reportCrash(String errorName, String reason, String stacktrace);
 
     /**
+     * Reports a crash with error name, crash reason and stacktrace determined from given {@link Throwable}.
+     *
+     * <p>
+     *     This method is offered as convenience method for {@link #reportCrash(Throwable)}.
+     * </p>
+     *
+     * @param throwable The {@link Throwable} causing the crash.
+     */
+    void reportCrash(Throwable throwable);
+
+    /**
      * Traces a web request - which is provided as a URLConnection - and allows adding timing information to this request.
      * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
      * the resulting server-side PurePath.

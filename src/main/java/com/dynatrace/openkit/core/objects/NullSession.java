@@ -50,6 +50,11 @@ public enum NullSession implements Session {
     }
 
     @Override
+    public void reportCrash(Throwable throwable) {
+        // intentionally left empty, due to NullObject pattern
+    }
+
+    @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
         return NullWebRequestTracer.INSTANCE;
     }

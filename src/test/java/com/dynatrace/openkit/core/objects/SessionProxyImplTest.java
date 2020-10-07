@@ -17,7 +17,6 @@ package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
-import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
 import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.SessionWatchdog;
@@ -59,7 +58,6 @@ public class SessionProxyImplTest {
     private SessionImpl mockSplitSession1;
     private Beacon mockSplitBeacon1;
     private SessionImpl mockSplitSession2;
-    private Beacon mockSplitBeacon2;
     private SessionCreator mockSessionCreator;
     private TimingProvider mockTimingProvider;
     private ServerConfiguration mockServerConfiguration;
@@ -86,7 +84,7 @@ public class SessionProxyImplTest {
         mockSplitSession1 = mock(SessionImpl.class);
         when(mockSplitSession1.getBeacon()).thenReturn(mockSplitBeacon1);
 
-        mockSplitBeacon2 = mock(Beacon.class);
+        Beacon mockSplitBeacon2 = mock(Beacon.class);
         when(mockSplitBeacon2.isActionReportingAllowedByPrivacySettings()).thenReturn(true);
         mockSplitSession2 = mock(SessionImpl.class);
         when(mockSplitSession2.getBeacon()).thenReturn(mockSplitBeacon2);
@@ -763,6 +761,102 @@ public class SessionProxyImplTest {
 
         // then
         verify(mockSplitSession1, times(1)).reportCrash("error 2", "reason 2", "stacktrace 2");
+        verify(mockSessionCreator, times(3)).createSession(target);
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSplitSession1, mockServerConfiguration.getSendIntervalInMilliseconds());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// report crash (with Throwable) tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportingCrashWithNullThrowableDoesNotReportAnything() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when reporting a crash, passing null values
+        target.reportCrash(null);
+
+        // then verify the correct methods being called
+        verify(mockLogger, times(1)).warning(endsWith("reportCrash: throwable must not be null"));
+        verifyNoMoreInteractions(mockLogger);
+        verify(mockSession, times(0)).reportCrash(any(Throwable.class));
+    }
+
+    @Test
+    public void reportCrashThrowableLogsInvocation() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        Throwable crash = new NullPointerException("does not work");
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        target.reportCrash(crash);
+
+        // verify the correct methods being called
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(endsWith("reportCrash(" + crash + ")"));
+    }
+
+    @Test
+    public void reportCrashThrowableDoesNothingIfSessionIsEnded() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        target.end();
+
+        // when trying to identify a user on an ended session
+        target.reportCrash(new Exception());
+
+        // then
+        verify(mockSession, times(0)).reportCrash(any(Throwable.class));
+    }
+
+    @Test
+    public void reportCrashThrowableDoesNotIncreaseTopLevelEventCount() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        assertThat(target.getTopLevelActionCount(), is(0));
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        target.reportCrash(new IllegalArgumentException());
+
+        // then
+        assertThat(target.getTopLevelActionCount(), is(0));
+    }
+
+    @Test
+    public void reportCrashThrowableSplitsSessionAfterReporting() {
+        // given
+        // explicitly disable session splitting
+        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitByIdleTimeoutEnabled()).thenReturn(false);
+        when(mockServerConfiguration.isSessionSplitBySessionDurationEnabled()).thenReturn(false);
+        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(-1);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        Throwable crash = new IllegalStateException();
+        target.reportCrash(crash);
+
+        // then
+        verify(mockSession, times(1)).reportCrash(crash);
+        verify(mockSessionCreator, times(2)).createSession(target);
+        verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSession, mockServerConfiguration.getSendIntervalInMilliseconds());
+
+        // and when
+        crash = new IllegalArgumentException();
+        target.reportCrash(crash);
+
+        // then
+        verify(mockSplitSession1, times(1)).reportCrash(crash);
         verify(mockSessionCreator, times(3)).createSession(target);
         verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSplitSession1, mockServerConfiguration.getSendIntervalInMilliseconds());
     }

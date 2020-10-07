@@ -34,6 +34,8 @@ import com.dynatrace.openkit.core.objects.RootActionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerStringURL;
 import com.dynatrace.openkit.core.objects.WebRequestTracerURLConnection;
+import com.dynatrace.openkit.core.util.PercentEncoder;
+import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
@@ -83,7 +85,6 @@ public class BeaconTest {
     private OpenKitConfiguration mockOpenKitConfiguration;
     private PrivacyConfiguration mockPrivacyConfiguration;
     private ServerConfiguration mockServerConfiguration;
-    private HTTPClientConfiguration mockHttpClientConfiguration;
     private AdditionalQueryParameters mockAdditionalParameters;
 
     private SessionIDProvider mockSessionIdProvider;
@@ -130,7 +131,7 @@ public class BeaconTest {
         when(mockServerConfiguration.getServerID()).thenReturn(SERVER_ID);
         when(mockServerConfiguration.getBeaconSizeInBytes()).thenReturn(30 * 1024); // 30kB
 
-        mockHttpClientConfiguration = mock(HTTPClientConfiguration.class);
+        HTTPClientConfiguration mockHttpClientConfiguration = mock(HTTPClientConfiguration.class);
         when(mockHttpClientConfiguration.getServerID()).thenReturn(SERVER_ID);
 
         mockBeaconConfiguration = mock(BeaconConfiguration.class);
@@ -724,6 +725,40 @@ public class BeaconTest {
         beacon.reportCrash(errorName, reason, stacktrace);
 
         // then
+        String expectedEventData =
+                "et=50&" +                  // event type
+                "na=" + errorName + "&" +   // reported crash name
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // sequence number of reported crash
+                "t0=0&" +                   // timestamp of crash since session start
+                "rs=" + reason + "&" +      // reported reason
+                "st=" + stacktrace + "&" +  // reported stacktrace
+                "tt=c"                      // crash technology type
+        ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // crash event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportValidThrowableCrash() {
+        // given
+        Throwable t = new NullPointerException("SomethingIsNull");
+        CrashFormatter crashFormatter = new CrashFormatter(t);
+        String errorName = crashFormatter.getName();
+        String reason = crashFormatter.getReason();
+        String stacktrace = PercentEncoder.encode(crashFormatter.getStackTrace(), "UTF-8");
+
+        final Beacon beacon = createBeacon().build();
+
+        // when
+        beacon.reportCrash(t);
+
+        // then
+
         String expectedEventData =
                 "et=50&" +                  // event type
                 "na=" + errorName + "&" +   // reported crash name
@@ -1500,6 +1535,32 @@ public class BeaconTest {
 
         // when
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void noCrashThrowableIsReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportCrash(new IllegalArgumentException("illegalArgument"));
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void noCrashThrowableIsReportedIfSendingCrashDataDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(false);
+
+        // when
+        target.reportCrash(new IllegalArgumentException("illegalArgument"));
 
         // then
         verifyZeroInteractions(mockBeaconCache);

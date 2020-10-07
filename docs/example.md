@@ -171,6 +171,7 @@ session = null; // not needed, just used to indicate that the session is no long
 
 Unexpected application crashes can be reported via a `Session` by invoking the `reportCrash` method.  
 The example below shows how an exception might be reported.
+
 ```java
     private static int div(int numerator, int denominator) {
         return numerator / denominator;
@@ -190,6 +191,29 @@ The example below shows how an exception might be reported.
         }
     }
 ```
+
+Alternatively the `reportCrash(Throwable)` overloaded method can be used, which is provided for convenience.
+The example below shows how to report a `Throwable` as crash.
+
+```java
+    private static int div(int numerator, int denominator) {
+        return numerator / denominator;
+    }
+
+    public static void divWithCrash() {
+        int numerator = 5;
+        int denominator = 0;
+        try {
+            System.out.println("Got: " + div(numerator, denominator));
+        } catch (Exception e) {
+            // report the caught Exception as crash
+            session.reportCrash(e);
+        }
+    }
+```
+
+
+
 
 ## Starting a RootAction
 

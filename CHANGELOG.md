@@ -4,6 +4,7 @@
 
 ### Added
 - Support for reporting `long` values.
+- Convenience method reporting a `Throwable` as crash.
 
 ### Changed
 - Fix issue with sessions being closed after splitting.

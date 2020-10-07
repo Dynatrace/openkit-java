@@ -29,6 +29,7 @@ import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.core.util.PercentEncoder;
+import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -533,6 +534,27 @@ public class Beacon {
      * @param stacktrace Crash stacktrace.
      */
     public void reportCrash(String errorName, String reason, String stacktrace) {
+        reportCrash(errorName, reason, stacktrace, ProtocolConstants.ERROR_TECHNOLOGY_TYPE);
+    }
+
+    /**
+     * Add crash to Beacon.
+     *
+     * <p>
+     * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
+     * </p>
+     *
+     * @param throwable  {@link Throwable} to report.
+     */
+    public void reportCrash(Throwable throwable) {
+        CrashFormatter crashFormatter = new CrashFormatter(throwable);
+        reportCrash(crashFormatter.getName(),
+            crashFormatter.getReason(),
+            crashFormatter.getStackTrace(),
+            ProtocolConstants.ERROR_TECHNOLOGY_TYPE); // TODO stefan.eberl - report better crash technology type
+    }
+
+    private void reportCrash(String errorName, String reason, String stacktrace, String crashTechnologyType) {
 
         if (!configuration.getPrivacyConfiguration().isCrashReportingAllowed()) {
             return;
@@ -552,7 +574,7 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
         addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
-        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, ProtocolConstants.ERROR_TECHNOLOGY_TYPE);
+        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, crashTechnologyType);
 
         addEventData(timestamp, eventBuilder);
     }

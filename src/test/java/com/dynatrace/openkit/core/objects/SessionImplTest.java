@@ -344,6 +344,53 @@ public class SessionImplTest {
     }
 
     @Test
+    public void reportingCrashThrowableWithNullThrowableDoesNotReportAnything() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when reporting a crash, passing null values
+        target.reportCrash(null);
+
+        // then verify the correct methods being called
+        verify(mockLogger, times(1)).warning("SessionImpl [sn=0] reportCrash: throwable must not be null");
+        verify(mockBeacon, times(1)).getSessionNumber();
+        verify(mockBeacon, times(1)).startSession();
+        verifyZeroInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockLogger);
+    }
+
+    @Test
+    public void reportingCrashThrowableWithSameDataMultipleTimesForwardsEachCallToBeacon() {
+        // given
+        SessionImpl target = createSession().build();
+
+        Throwable crash = new NullPointerException();
+
+        // when
+        target.reportCrash(crash);
+        target.reportCrash(crash);
+
+        // verify the correct methods being called
+        verify(mockBeacon, times(2)).reportCrash(crash);
+    }
+
+    @Test
+    public void reportCrashThrowableLogsInvocation() {
+        // given
+        SessionImpl target = createSession().build();
+
+        Throwable crash = new NullPointerException("damn it!");
+
+        // when
+        target.reportCrash(crash);
+
+        // verify the correct methods being called
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+            "SessionImpl [sn=0] reportCrash(" + crash + ")");
+    }
+
+    @Test
     public void endSessionFinishesSessionOnBeacon() {
         // given
         when(mockBeacon.getCurrentTimestamp()).thenReturn(1234L);

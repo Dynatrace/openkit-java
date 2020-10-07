@@ -149,6 +149,27 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     }
 
     @Override
+    public void reportCrash(Throwable throwable) {
+        if (throwable == null) {
+            logger.warning(this + " reportCrash: throwable must not be null");
+            return;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + " reportCrash(" + throwable + ")");
+        }
+        synchronized (lockObject) {
+            if (!isFinished) {
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
+                recordTopLevelEventInteraction();
+                session.reportCrash(throwable);
+
+                // create new session after crash report
+                splitAndCreateNewInitialSession();
+            }
+        }
+    }
+
+    @Override
     public WebRequestTracer traceWebRequest(URLConnection connection) {
         if (connection == null) {
             logger.warning(this + " traceWebRequest (URLConnection): connection must not be null");
