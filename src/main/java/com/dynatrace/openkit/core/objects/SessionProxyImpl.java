@@ -28,7 +28,6 @@ import com.dynatrace.openkit.providers.TimingProvider;
 
 import java.io.IOException;
 import java.net.URLConnection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -84,7 +83,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         this.sessionWatchdog = sessionWatchdog;
 
         ServerConfiguration currentServerConfig = beaconSender.getLastServerConfiguration();
-        this.currentSession = createInitialSession(currentServerConfig);
+        createInitialSessionAndMakeCurrent(currentServerConfig);
     }
 
     @Override
@@ -238,12 +237,10 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     void closeChildObjects() {
         List<OpenKitObject> childObjects = getCopyOfChildObjects();
 
-        Iterator<OpenKitObject> childObjectsIterator = childObjects.iterator();
-        while (childObjectsIterator.hasNext()) {
-            OpenKitObject childObject = childObjectsIterator.next();
+        for (OpenKitObject childObject : childObjects) {
             if (childObject instanceof SessionImpl) {
                 // child object is a session - special treatment is needed for sessions
-                SessionImpl childSession = (SessionImpl)childObject;
+                SessionImpl childSession = (SessionImpl) childObject;
                 // end the child session and send the end session event
                 // if the child session is the current session
                 childSession.end(childSession == currentSession);
@@ -323,7 +320,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
     private SessionImpl getOrSplitCurrentSessionByEvents() {
         if (isSessionSplitByEventsRequired()) {
             closeOrEnqueueCurrentSessionForClosing();
-            currentSession = createSplitSession(serverConfiguration);
+            createSplitSessionAndMakeCurrent(serverConfiguration);
             reTagCurrentSession();
         }
         return currentSession;
@@ -357,8 +354,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
 
         // create a completely new SessionImpl
         sessionCreator.reset();
-        currentSession = createInitialSession(serverConfiguration);
-
+        createInitialSessionAndMakeCurrent(serverConfiguration);
         reTagCurrentSession();
     }
 
@@ -440,12 +436,12 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return -1;
     }
 
-    private SessionImpl createInitialSession(ServerConfiguration initialServerConfig) {
-        return createSession(initialServerConfig, null);
+    private void createInitialSessionAndMakeCurrent(ServerConfiguration initialServerConfig) {
+        createAndAssignCurrentSession(initialServerConfig, null);
     }
 
-    private SessionImpl createSplitSession(ServerConfiguration updatedServerConfig) {
-        return createSession(null, updatedServerConfig);
+    private void createSplitSessionAndMakeCurrent(ServerConfiguration updatedServerConfig) {
+        createAndAssignCurrentSession(null, updatedServerConfig);
     }
 
     /**
@@ -465,9 +461,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
      *
      * @param initialServerConfig the server configuration with which the session will be initialized. Can be {@code null}.
      * @param updatedServerConfig the server configuration with which the session will be updated. Can be {@code null}.
-     * @return the newly created session.
      */
-    private SessionImpl createSession(ServerConfiguration initialServerConfig, ServerConfiguration updatedServerConfig) {
+    private void createAndAssignCurrentSession(ServerConfiguration initialServerConfig, ServerConfiguration updatedServerConfig) {
         SessionImpl session = sessionCreator.createSession(this);
         Beacon beacon = session.getBeacon();
         beacon.setServerConfigurationUpdateCallback(this);
@@ -484,9 +479,12 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             session.updateServerConfiguration(updatedServerConfig);
         }
 
-        this.beaconSender.addSession(session);
+        synchronized (lockObject) {
+            // synchronize access
+            currentSession = session;
+        }
 
-        return session;
+        this.beaconSender.addSession(session);
     }
 
     private void recordTopLevelEventInteraction() {
@@ -515,6 +513,10 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
             }
 
             serverConfiguration = serverConfig;
+
+            if (isFinished()) {
+                return;
+            }
 
             if (serverConfiguration.isSessionSplitBySessionDurationEnabled() ||
                     serverConfiguration.isSessionSplitByIdleTimeoutEnabled()) {
