@@ -30,19 +30,18 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
-import com.dynatrace.openkit.core.objects.RootActionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
-import com.dynatrace.openkit.core.objects.WebRequestTracerStringURL;
-import com.dynatrace.openkit.core.objects.WebRequestTracerURLConnection;
-import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.core.util.CrashFormatter;
+import com.dynatrace.openkit.core.util.PercentEncoder;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import java.io.UnsupportedEncodingException;
@@ -51,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.emptyArray;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -91,10 +91,12 @@ public class BeaconTest {
     private ThreadIDProvider mockThreadIDProvider;
     private TimingProvider mockTimingProvider;
     private RandomNumberGenerator mockRandom;
-    private OpenKitComposite parentOpenKitObject;
 
     private Logger mockLogger;
     private BeaconCache mockBeaconCache;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -154,11 +156,15 @@ public class BeaconTest {
         mockLogger = mock(Logger.class);
         mockBeaconCache = mock(BeaconCache.class);
 
-        parentOpenKitObject = mock(OpenKitComposite.class);
+        OpenKitComposite parentOpenKitObject = mock(OpenKitComposite.class);
         when(parentOpenKitObject.getActionID()).thenReturn(0);
 
         mockRandom = mock(RandomNumberGenerator.class);
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// generic defaults, instance creation and smaller getters/creators
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void defaultBeaconConfigurationDoesNotDisableCapturing() {
@@ -233,16 +239,16 @@ public class BeaconTest {
     @Test
     public void createIDs() {
         // create test environment
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // verify that the created sequence numbers are incremented
-        int id1 = beacon.createID();
+        int id1 = target.createID();
         assertThat(id1, is(1));
 
-        int id2 = beacon.createID();
+        int id2 = target.createID();
         assertThat(id2, is(2));
 
-        int id3 = beacon.createID();
+        int id3 = target.createID();
         assertThat(id3, is(3));
     }
 
@@ -250,10 +256,10 @@ public class BeaconTest {
     public void getCurrentTimestamp() {
         // given
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(42L);
-        Beacon beacon = createBeacon().build();
+        Beacon target = createBeacon().build();
 
         // when obtaining the timestamp
-        long timestamp = beacon.getCurrentTimestamp();
+        long timestamp = target.getCurrentTimestamp();
 
         // then verify
         assertThat(timestamp, is(42L));
@@ -265,16 +271,16 @@ public class BeaconTest {
     @Test
     public void createSequenceNumbers() {
         // create test environment
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // verify that the created sequence numbers are incremented
-        int id1 = beacon.createSequenceNumber();
+        int id1 = target.createSequenceNumber();
         assertThat(id1, is(1));
 
-        int id2 = beacon.createSequenceNumber();
+        int id2 = target.createSequenceNumber();
         assertThat(id2, is(2));
 
-        int id3 = beacon.createSequenceNumber();
+        int id3 = target.createSequenceNumber();
         assertThat(id3, is(3));
     }
 
@@ -285,20 +291,24 @@ public class BeaconTest {
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(startTime, 1L);
 
         // when
-        Beacon beacon = createBeacon().build();
+        Beacon target = createBeacon().build();
 
         // then
-        assertThat(beacon.getSessionStartTime(), is(startTime));
+        assertThat(target.getSessionStartTime(), is(startTime));
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// createTag - creating web request tag tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void createWebRequestTag() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // when
         int sequenceNo = 42;
-        String tag = beacon.createTag(ACTION_ID, sequenceNo);
+        String tag = target.createTag(ACTION_ID, sequenceNo);
 
         // then
         assertThat(tag, is(
@@ -319,11 +329,11 @@ public class BeaconTest {
         // given
         long deviceId = -42;
         when(mockOpenKitConfiguration.getDeviceID()).thenReturn(deviceId);
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // when
         int sequenceNo = 42;
-        String tag = beacon.createTag(ACTION_ID, sequenceNo);
+        String tag = target.createTag(ACTION_ID, sequenceNo);
 
         // then
         assertThat(tag, is(
@@ -398,9 +408,75 @@ public class BeaconTest {
     }
 
     @Test
+    public void beaconReturnsEmptyTagIfWebRequestTracingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(false);
+
+        //when
+        String returnedTag = target.createTag(ACTION_ID, 1);
+
+        //then
+        assertThat(returnedTag, isEmptyString());
+    }
+
+    @Test
+    public void beaconReturnsValidTagIfWebRequestTracingIsAllowed() {
+        //given
+        int sequenceNo = 1;
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(true);
+
+        //when
+        String returnedTag = target.createTag(ACTION_ID, sequenceNo);
+
+        //then
+        assertThat(returnedTag, is(
+            "MT" +
+                "_" + ProtocolConstants.PROTOCOL_VERSION +
+                "_" + SERVER_ID +
+                "_" + DEVICE_ID +
+                "_" + SESSION_ID +
+                "_" + APP_ID +
+                "_" + ACTION_ID +
+                "_" + THREAD_ID +
+                "_" + sequenceNo
+        ));
+    }
+
+    @Test
+    public void beaconReturnsValidTagWithSessionNumberOneIfSessionNumberReportingDisallowed() {
+        //given
+        int sequenceNo = 1;
+        when(mockPrivacyConfiguration.isSessionNumberReportingAllowed()).thenReturn(false);
+
+        Beacon target = createBeacon().build();
+
+        //when
+        String returnedTag = target.createTag(ACTION_ID, sequenceNo);
+
+        //then
+        assertThat(returnedTag, is(
+            "MT" +
+                "_" + ProtocolConstants.PROTOCOL_VERSION +
+                "_" + SERVER_ID +
+                "_" + DEVICE_ID +
+                "_1" +                      // session number must always be 1
+                "_" + APP_ID +
+                "_" + ACTION_ID +
+                "_" + THREAD_ID +
+                "_" + sequenceNo
+        ));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// addAction tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void addValidActionEvent() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()).thenReturn(ACTION_ID);
         int parentID = 13;
@@ -409,13 +485,13 @@ public class BeaconTest {
         when(action.getName()).thenReturn(actionName);
 
         // when
-        beacon.addAction(action);
+        target.addAction(action);
 
         // then
         String expectedActionData =
                 "et=1&" +                       // event type
-                "na=" + actionName + "&" +      // action name
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + actionName + "&" +      // action name
                 "ca=" + ACTION_ID + "&" +       // action ID
                 "pa=" + parentID + "&" +        // parent action ID
                 "s0=0&" +                       // action start sequence number
@@ -431,12 +507,147 @@ public class BeaconTest {
     }
 
     @Test
-    public void addEndSessionEvent() {
+    public void addingNullActionThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("action is null or action.getName() is null or empty"));
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // when
-        beacon.endSession();
+        target.addAction(null);
+    }
+
+    @Test
+    public void addingActionWithNullNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("action is null or action.getName() is null or empty"));
+
+        // given
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getName()).thenReturn(null);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addAction(null);
+    }
+
+    @Test
+    public void addingActionWithEmptyNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("action is null or action.getName() is null or empty"));
+
+        // given
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getName()).thenReturn("");
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addAction(null);
+    }
+
+    @Test
+    public void actionNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()).thenReturn(ACTION_ID);
+        when(action.getName()).thenReturn("actionName");
+
+        // when
+        target.addAction(action);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void actionNotReportedIfActionReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isActionReportingAllowed()).thenReturn(false);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()).thenReturn(ACTION_ID);
+        when(action.getName()).thenReturn("actionName");
+
+        //when
+        target.addAction(action);
+
+        //then
+        //verify action has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// startSession tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void addStartSessionEvent() {
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.startSession();
+
+        // then
+        String expectedEventData =
+                "et=18&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "pa=0&" +                       // parent action
+                "s0=1&" +                       // end session sequence number
+                "t0=0"                          // session end time
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // session end time
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void sessionStartIsReportedRegardlessOfPrivacyConfiguration() {
+        // given
+        Beacon target = createBeacon().build();
+        reset(mockPrivacyConfiguration);
+
+        // when
+        target.startSession();
+
+        // then ensure session start has been serialized
+        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
+        verifyNoMoreInteractions(mockPrivacyConfiguration);
+    }
+
+    @Test
+    public void sessionStartIsNotReportedReportedIfDataSendingIsDisallowed() {
+        // given
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.startSession();
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// endSession tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void addEndSessionEvent() {
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.endSession();
 
         // then
         String expectedEventData =
@@ -454,20 +665,51 @@ public class BeaconTest {
     }
 
     @Test
+    public void sessionNotReportedIfSessionReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isSessionReportingAllowed()).thenReturn(false);
+
+        //when
+        target.endSession();
+
+        //then
+        //verify session has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void sessionNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.endSession();
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportValue(int) tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void reportValidValueInt() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         String valueName = "IntValue";
         int value = 42;
 
         // when
-        beacon.reportValue(ACTION_ID, valueName, value);
+        target.reportValue(ACTION_ID, valueName, value);
 
         // then
         String expectedEventData =
                 "et=12&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + valueName + "&" +       // name of reported value
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported value event
                 "t0=0&" +                       // event time since session start
@@ -481,20 +723,76 @@ public class BeaconTest {
     }
 
     @Test
+    public void reportingIntValueWithNullValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, null, 42);
+    }
+
+    @Test
+    public void reportingIntValueWithEmptyValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "", 42);
+    }
+
+    @Test
+    public void intValueIsNotReportedIfReportValueDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", 123);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void intValueNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", 123);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportValue(long) tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void reportValidValueLong() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         String valueName = "IntValue";
         long value = Long.MAX_VALUE;
 
         // when
-        beacon.reportValue(ACTION_ID, valueName, value);
+        target.reportValue(ACTION_ID, valueName, value);
 
         // then
         String expectedEventData =
-            "et=12&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
+                "et=12&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + valueName + "&" +       // name of reported value
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported value event
                 "t0=0&" +                       // event time since session start
@@ -508,20 +806,76 @@ public class BeaconTest {
     }
 
     @Test
+    public void reportingLongValueWithNullValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, null, (long)42);
+    }
+
+    @Test
+    public void reportingLongValueWithEmptyValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "", (long)42);
+    }
+
+    @Test
+    public void longValueIsNotReportedIfReportValueDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void longValueNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportValue(double) tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void reportValidValueDouble() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         String valueName = "DoubleValue";
         double value = 3.1415;
 
         // when
-        beacon.reportValue(ACTION_ID, valueName, value);
+        target.reportValue(ACTION_ID, valueName, value);
 
         // then
         String expectedEventData =
                 "et=13&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + valueName + "&" +       // name of reported value
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported value event
                 "t0=0&" +                       // event time since session start
@@ -535,20 +889,76 @@ public class BeaconTest {
     }
 
     @Test
+    public void reportingDoubleValueWithNullValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, null, Math.PI);
+    }
+
+    @Test
+    public void reportingDoubleValueWithEmptyValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "", Math.E);
+    }
+
+    @Test
+    public void doubleValueIsNotReportedIfReportValueDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", 2.71);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void doubleValueIsNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", 2.71);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportValue(String) tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void reportValidValueString() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         String valueName = "StringValue";
         String value = "HelloWorld";
 
         // when
-        beacon.reportValue(ACTION_ID, valueName, value);
+        target.reportValue(ACTION_ID, valueName, value);
 
         // then
         String expectedEventData =
                 "et=11&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + valueName + "&" +       // name of reported value
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported value
                 "t0=0&" +                       // event time since session start
@@ -562,19 +972,45 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportValueStringWithValueNull() {
+    public void reportingStringValueWithNullValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, null, "some value");
+    }
+
+    @Test
+    public void reportingStringValueWithEmptyValueNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("valueName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "", "some other value");
+    }
+
+    @Test
+    public void reportValueStringWithNullValueWorks() {
+        // given
+        final Beacon target = createBeacon().build();
         String valueName = "StringValue";
 
         // when
-        beacon.reportValue(ACTION_ID, valueName, null);
+        target.reportValue(ACTION_ID, valueName, null);
 
         // then
         String expectedEventData =
                 "et=11&" +                      // event type
-                "na=" + valueName + "&" +       // name of reported value
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + valueName + "&" +       // name of reported value
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported value
                 "t0=0"                          // event time since session start
@@ -587,42 +1023,49 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportValueStringWithValueNullAndNameNull() {
+    public void stringValueIsNotReportedIfValueReportingDisallowed() {
         // given
-        final Beacon beacon = createBeacon().build();
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
 
         // when
-        beacon.reportValue(ACTION_ID, null, null);
+        target.reportValue(ACTION_ID, "test value", "test data");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void stringValueIsNotReportedIfDataSendingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", "test data");
 
         // then
-        String expectedEventData =
-                "et=11&" +                      // event type
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported value
-                "t0=0"                          // event time since session start
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                         // event timestamp
-                eq(expectedEventData)
-        );
+        verifyZeroInteractions(mockBeaconCache);
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportEvent tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void reportValidEvent() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         String eventName = "SomeEvent";
 
         // when
-        beacon.reportEvent(ACTION_ID, eventName);
+        target.reportEvent(ACTION_ID, eventName);
 
         // then
         String expectedEventData =
                 "et=10&" +                      // event type
-                "na=" + eventName + "&" +       // name of event
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + eventName + "&" +       // name of event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of reported event
                 "t0=0"                          // event time since session start
@@ -635,49 +1078,80 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportEventWithNameNull() {
+    public void reportingEventWithNullEventNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("eventName is null or empty"));
+
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // when
-        beacon.reportEvent(ACTION_ID, null);
-
-        // then
-        String expectedEventData =
-                "et=10&" +                      // event type
-                "it=" + THREAD_ID + "&" +       // thread ID
-                "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported event
-                "t0=0"                          // event time since session start
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                         // event timestamp
-                eq(expectedEventData)
-        );
+        target.reportEvent(ACTION_ID, null);
     }
 
     @Test
-    public void reportError() {
+    public void reportingEventWithEmptyEventNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("eventName is null or empty"));
+
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportEvent(ACTION_ID, "");
+    }
+
+    @Test
+    public void namedEventIsNotReportedIfEventReportingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
+
+        // when
+        target.reportEvent(ACTION_ID, "test event");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void namedEventIsNotReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportEvent(ACTION_ID, "Event name");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportError with errorCode tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportErrorCode() {
+        // given
+        final Beacon target = createBeacon().build();
         String errorName = "SomeEvent";
         int errorCode = -123;
-        String reason = "SomeReason";
 
         // when
-        beacon.reportError(ACTION_ID, errorName, errorCode, reason);
+        target.reportError(ACTION_ID, errorName, errorCode);
 
         // then
         String expectedEventData =
                 "et=40&" +                      // event type
-                "na=" + errorName + "&" +       // name of error event
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
                 "s0=1&" +                       // sequence number of error event
                 "t0=0&" +                       // timestamp of error event since session start
                 "ev=" + errorCode + "&" +       // reported error value
-                "rs=" + reason + "&" +          // reported reason
                 "tt=c"                          // error technology type
         ;
         verify(mockBeaconCache, times(1)).addEventData(
@@ -688,47 +1162,413 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportErrorWithoutName() {
+    public void reportingErrorCodeWithNullErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
         // given
-        final Beacon beacon = createBeacon().build();
-        int errorCode = -123;
+        final Beacon target = createBeacon().build();
 
         // when
-        beacon.reportError(ACTION_ID, null, errorCode, null);
+        target.reportError(ACTION_ID, null, 1234);
+    }
+
+    @Test
+    public void reportingErrorCodeWithEmptyErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportError(ACTION_ID, "", 1234);
+    }
+
+    @Test
+    public void errorCodeNotReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportError(ACTION_ID, "Error name", 123);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorCodeNotReportedIfErrorSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(false);
+
+        // when
+        target.reportError(ACTION_ID, "Error name", 123);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorCodeNotReportedIfErrorReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportError(ACTION_ID, "DivByZeroError", 127);
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportError with cause tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportErrorWithCause() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeName = "CausedBy";
+        String causeReason = "SomeReason";
+        String causeStackTrace = "HereComesTheTrace";
+
+        // when
+        target.reportError(ACTION_ID, errorName, causeName, causeReason, causeStackTrace);
 
         // then
         String expectedEventData =
-                "et=40&" +                      // event type
+            "et=40&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
-                "s0=1&" +                       // sequence number of reported event
+                "s0=1&" +                       // sequence number of error event
                 "t0=0&" +                       // timestamp of error event since session start
-                "ev=" + errorCode + "&" +       // reported error value
+                "ev=" + causeName + "&" +       // reported error value
+                "rs=" + causeReason + "&" +     // reported error reason
+                "st=" + causeStackTrace + "&" + // reported error stack trace
                 "tt=c"                          // error technology type
-        ;
+            ;
         verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                              // error event timestamp
-                eq(expectedEventData)
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // error event timestamp
+            eq(expectedEventData)
         );
     }
 
     @Test
+    public void reportingErrorWithCauseWithNullErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportError(ACTION_ID, null, "causeName", "causeDescription", "stackTrace");
+    }
+
+    @Test
+    public void reportingErrorWithCauseWithEmptyErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportError(ACTION_ID, "", "causeName", "causeDescription", "stackTrace");
+    }
+
+    @Test
+    public void reportErrorWithNullCauseNameWorks() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeReason = "SomeReason";
+        String causeStackTrace = "HereComesTheTrace";
+
+        // when
+        target.reportError(ACTION_ID, errorName, null, causeReason, causeStackTrace);
+
+        // then
+        String expectedEventData =
+            "et=40&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of error event
+                "t0=0&" +                       // timestamp of error event since session start
+                "rs=" + causeReason + "&" +     // reported error reason
+                "st=" + causeStackTrace + "&" + // reported error stack trace
+                "tt=c"                          // error technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // error event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportErrorWithNullCauseDescriptionWorks() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeName = "CausedBy";
+        String causeStackTrace = "HereComesTheTrace";
+
+        // when
+        target.reportError(ACTION_ID, errorName, causeName, null, causeStackTrace);
+
+        // then
+        String expectedEventData =
+            "et=40&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of error event
+                "t0=0&" +                       // timestamp of error event since session start
+                "ev=" + causeName + "&" +       // reported error value
+                "st=" + causeStackTrace + "&" + // reported error stack trace
+                "tt=c"                          // error technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // error event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportErrorWithNullCauseStackTraceWorks() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeName = "CausedBy";
+        String causeReason = "SomeReason";
+
+        // when
+        target.reportError(ACTION_ID, errorName, causeName, causeReason, null);
+
+        // then
+        String expectedEventData =
+            "et=40&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of error event
+                "t0=0&" +                       // timestamp of error event since session start
+                "ev=" + causeName + "&" +       // reported error value
+                "rs=" + causeReason + "&" +     // reported error reason
+                "tt=c"                          // error technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // error event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void errorWithCauseNotReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorWithCauseNotReportedIfErrorSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(false);
+
+        // when
+        target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorWithCauseNotReportedIfErrorReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportError with Throwable tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportErrorWithThrowable() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        Throwable t = new IllegalArgumentException("someArg");
+        CrashFormatter crashFormatter = new CrashFormatter(t);
+        String causeName = crashFormatter.getName();
+        String causeReason = crashFormatter.getReason();
+        String causeStackTrace = PercentEncoder.encode(crashFormatter.getStackTrace(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+
+        // when
+        target.reportError(ACTION_ID, errorName, t);
+
+        // then
+        String expectedEventData =
+            "et=40&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of error event
+                "t0=0&" +                       // timestamp of error event since session start
+                "ev=" + causeName + "&" +       // reported error value
+                "rs=" + causeReason + "&" +     // reported error reason
+                "st=" + causeStackTrace + "&" + // reported error stack trace
+                "tt=c"                          // error technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // error event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportingErrorWithThrowableWithNullErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportError(ACTION_ID, null, new IllegalStateException("illegal"));
+    }
+
+    @Test
+    public void reportingErrorWithThrowableWithEmptyErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportError(ACTION_ID, "", new IllegalStateException("illegal"));
+    }
+
+    @Test
+    public void reportErrorWithNullThrowableWorks() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+
+        // when
+        target.reportError(ACTION_ID, errorName, null);
+
+        // then
+        String expectedEventData =
+            "et=40&" +                      // event type
+                "it=" + THREAD_ID + "&" +       // thread ID
+                "na=" + errorName + "&" +       // name of error event
+                "pa=" + ACTION_ID + "&" +       // parent action ID
+                "s0=1&" +                       // sequence number of error event
+                "t0=0&" +                       // timestamp of error event since session start
+                "tt=c"                          // error technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                         // error event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void errorWithThrowableNotReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportError(ACTION_ID, "error", new IllegalStateException("illegal"));
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorWithThrowableNotReportedIfErrorSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(false);
+
+        // when
+        target.reportError(ACTION_ID, "error", new IllegalStateException("illegal"));
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorWithThrowableNotReportedIfErrorReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportError(ACTION_ID, "error", new IllegalStateException("illegal"));
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportCrash with String tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void reportValidCrash() {
         // given
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
         String errorName = "SomeEvent";
         String reason = "SomeReason";
         String stacktrace = "SomeStacktrace";
 
         // when
-        beacon.reportCrash(errorName, reason, stacktrace);
+        target.reportCrash(errorName, reason, stacktrace);
 
         // then
         String expectedEventData =
                 "et=50&" +                  // event type
-                "na=" + errorName + "&" +   // reported crash name
                 "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + errorName + "&" +   // reported crash name
                 "pa=0&" +                   // parent action ID
                 "s0=1&" +                   // sequence number of reported crash
                 "t0=0&" +                   // timestamp of crash since session start
@@ -744,7 +1584,139 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportValidThrowableCrash() {
+    public void reportingCrashWithNullErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        String reason = "SomeReason";
+        String stacktrace = "SomeStacktrace";
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportCrash(null, reason, stacktrace);
+    }
+
+    @Test
+    public void reportingCrashWithEmptyErrorNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("errorName is null or empty"));
+
+        // given
+        String reason = "SomeReason";
+        String stacktrace = "SomeStacktrace";
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.reportCrash("", reason, stacktrace);
+    }
+
+    @Test
+    public void reportCrashWithNullReasonWorks() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String stacktrace = "SomeStacktrace";
+
+        // when
+        target.reportCrash(errorName, null, stacktrace);
+
+        // then
+        String expectedEventData =
+            "et=50&" +                  // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + errorName + "&" +   // reported crash name
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // sequence number of reported crash
+                "t0=0&" +                   // timestamp of crash since session start
+                "st=" + stacktrace + "&" +  // reported stacktrace
+                "tt=c"                      // crash technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // crash event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportCrashWithNullStacktraceWorks() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String reason = "SomeReason";
+
+        // when
+        target.reportCrash(errorName, reason, null);
+
+        // then
+        String expectedEventData =
+            "et=50&" +                  // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + errorName + "&" +   // reported crash name
+                "pa=0&" +                   // parent action ID
+                "s0=1&" +                   // sequence number of reported crash
+                "t0=0&" +                   // timestamp of crash since session start
+                "rs=" + reason + "&" +      // reported reason
+                "tt=c"                      // crash technology type
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // crash event timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportCrashDoesNotReportIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportCrash("Error name", "The reason for this error", "the stack trace");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void reportCrashDoesNotReportIfCrashSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(false);
+
+        // when
+        target.reportCrash("Error name", "The reason for this error", "the stack trace");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void reportCrashDoesNotReportIfCrashReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isCrashReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportCrash("Error name", "The reason for this error", "the stack trace");
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// reportCrash with Throwable tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportValidCrashWithThrowable() {
         // given
         Throwable t = new NullPointerException("SomethingIsNull");
         CrashFormatter crashFormatter = new CrashFormatter(t);
@@ -752,17 +1724,17 @@ public class BeaconTest {
         String reason = crashFormatter.getReason();
         String stacktrace = PercentEncoder.encode(crashFormatter.getStackTrace(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
 
-        final Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
 
         // when
-        beacon.reportCrash(t);
+        target.reportCrash(t);
 
         // then
 
         String expectedEventData =
                 "et=50&" +                  // event type
-                "na=" + errorName + "&" +   // reported crash name
                 "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + errorName + "&" +   // reported crash name
                 "pa=0&" +                   // parent action ID
                 "s0=1&" +                   // sequence number of reported crash
                 "t0=0&" +                   // timestamp of crash since session start
@@ -778,47 +1750,83 @@ public class BeaconTest {
     }
 
     @Test
-    public void reportCrashWithDetailsNull() {
+    public void reportCrashWithNullThrowableThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("throwable is null"));
+
         // given
-        final Beacon beacon = createBeacon().build();
-        String errorName = "errorName";
+        Beacon target = createBeacon().build();
 
         // when
-        beacon.reportCrash(errorName, null, null);
-
-        // then
-        String expectedEventData =
-                "et=50&" +                  // event type
-                "na=" + errorName + "&" +   // reported crash name
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // sequence number of reported crash
-                "t0=0&" +                   // timestamp of crash since session start
-                "tt=c"                      // crash technology type
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // crash event timestamp
-                eq(expectedEventData)
-        );
+        target.reportCrash(null);
     }
 
     @Test
-    public void addWebRequest() {
+    public void reportCrashWithThrowableDoesNotReportIfDataSendingIsDisallowed() {
         // given
-        final Beacon beacon = createBeacon().build();
-        WebRequestTracerURLConnection webRequestTracer = mock(WebRequestTracerURLConnection.class);
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportCrash(new IllegalStateException("illegal"));
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void reportCrashWithThrowableDoesNotReportIfCrashSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(false);
+
+        // when
+        target.reportCrash(new IllegalStateException("illegal"));
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void reportCrashWithThrowableDoesNotReportIfCrashReportingDisallowed() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isCrashReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportCrash(new IllegalStateException("illegal"));
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// addWebRequest tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void addWebRequest() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
         when(webRequestTracer.getBytesSent()).thenReturn(13);
         when(webRequestTracer.getBytesReceived()).thenReturn(14);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
+        final Beacon target = createBeacon().build();
+
         // when
-        beacon.addWebRequest(ACTION_ID, webRequestTracer);
+        target.addWebRequest(ACTION_ID, webRequestTracer);
 
         // then
         String expectedEventData =
                 "et=30&" +                  // event type
                 "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" +  // reported URL
                 "pa=" + ACTION_ID + "&" +   // parent action ID
                 "s0=0&" +                   // web request start sequence number
                 "t0=0&" +                   // web request start time (since session start)
@@ -836,19 +1844,328 @@ public class BeaconTest {
     }
 
     @Test
-    public void addUserIdentifyEvent() {
+    public void addWebRequestWithNullWebRequestTracerThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("webRequestTracer is null or webRequestTracer.getURL() is null or empty"));
+
         // given
-        Beacon beacon = createBeacon().build();
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, null);
+    }
+
+    @Test
+    public void addWebRequestWithNullUrlThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("webRequestTracer is null or webRequestTracer.getURL() is null or empty"));
+
+        // given
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(null);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, null);
+    }
+
+    @Test
+    public void addWebRequestWithEmptyUrlThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("webRequestTracer is null or webRequestTracer.getURL() is null or empty"));
+
+        // given
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn("");
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, null);
+    }
+
+    @Test
+    public void canAddSentBytesEqualToZeroToWebRequestTracer() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
+        when(webRequestTracer.getBytesSent()).thenReturn(0);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then
+        String expectedEventData =
+            "et=30&" +                      // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" +  // reported URL
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "bs=0&" +                   // number of bytes sent
+                "br=14&" +                  // number of bytes received
+                "rc=15"                     // response code
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // web request start timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void cannotAddSentBytesLessThanZeroToWebRequestTracer() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
+        when(webRequestTracer.getBytesSent()).thenReturn(-1);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then
+        String expectedEventData =
+            "et=30&" +                      // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" +  // reported URL
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "br=14&" +                  // number of bytes received
+                "rc=15"                     // response code
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // web request start timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void canAddReceivedBytesEqualToZeroToWebRequestTracer() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(0);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then
+        String expectedEventData =
+            "et=30&" +                      // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" +  // reported URL
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "bs=13&" +                  // number of bytes sent
+                "br=0&" +                   // number of bytes received
+                "rc=15"                     // response code
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // web request start timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void cannotAddReceivedBytesLessThanZeroToWebRequestTracer() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(-1);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then
+        String expectedEventData =
+            "et=30&" +                  // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" + // reported URL
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "bs=13&" +                  // number of bytes sent
+                "rc=15"                     // response code
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // web request start timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void canAddResponseCodeEqualToZeroToWebRequestTracer() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(0);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then
+        String expectedEventData =
+            "et=30&" +                      // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" +  // reported URL
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "bs=13&" +                  // number of bytes sent
+                "br=14&" +                  // number of bytes received
+                "rc=0"                      // response code
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // web request start timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void cannotAddResponseCodeLessThanZeroToWebRequestTracer() throws UnsupportedEncodingException {
+        // given
+        String rawUrl = "https://www.google.com";
+        String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn(rawUrl);
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(-1);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then
+        String expectedEventData =
+            "et=30&" +                      // event type
+                "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + encodedUrl + "&" +  // reported URL
+                "pa=" + ACTION_ID + "&" +   // parent action ID
+                "s0=0&" +                   // web request start sequence number
+                "t0=0&" +                   // web request start time (since session start)
+                "s1=0&" +                   // web request end sequence number
+                "t1=0&" +                   // web request end time (relative to start time)
+                "bs=13&" +                  // number of bytes sent
+                "br=14"                     // number of bytes received
+            ;
+        verify(mockBeaconCache, times(1)).addEventData(
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // web request start timestamp
+            eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void noWebRequestIsReportedIfDataSendingIsDisallowed() {
+        // given
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn("https://www.google.com");
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void noWebRequestIsReportedIfWebRequestTracingDisallowed() {
+        // given
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn("https://www.google.com");
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(false);
+
+        Beacon target = createBeacon().build();
+
+        //when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        //then
+        //verify nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// identifyUser tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void validIdentifyUserEvent() {
+        // given
+        Beacon target = createBeacon().build();
         String userID = "myTestUser";
 
         // when
-        beacon.identifyUser(userID);
+        target.identifyUser(userID);
 
         // then
         String expectedEventData =
                 "et=60&" +                  // event type
-                "na=" + userID + "&" +      // reported user ID
                 "it=" + THREAD_ID + "&" +   // thread ID
+                "na=" + userID + "&" +      // reported user ID
                 "pa=0&" +                   // parent action ID
                 "s0=1&" +                   // identify user sequence number
                 "t0=0"                      // event timestamp since session start
@@ -861,12 +2178,12 @@ public class BeaconTest {
     }
 
     @Test
-    public void addUserIdentifyWithNullUserIDEvent() {
+    public void identifyUserWithNullUserTagWorks() {
         // given
-        Beacon beacon = createBeacon().build();
+        Beacon target = createBeacon().build();
 
         // when
-        beacon.identifyUser(null);
+        target.identifyUser(null);
 
         // then
         String expectedEventData =
@@ -884,277 +2201,71 @@ public class BeaconTest {
     }
 
     @Test
-    public void canAddSentBytesToWebRequestTracer() throws UnsupportedEncodingException {
+    public void identifyUserWithEmptyUserTagWorks() {
         // given
-        Beacon beacon = createBeacon().build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-        int bytesSent = 12321;
+        Beacon target = createBeacon().build();
+        String userID = "";
 
         // when
-        webRequest.start().setBytesSent(bytesSent).stop(-1); // stop will add the web request to the beacon
+        target.identifyUser(userID);
 
         // then
         String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
+            "et=60&" +                      // event type
                 "it=" + THREAD_ID + "&" +   // thread ID
+                "na=&" +                    // reported user ID
                 "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "bs=" + bytesSent           // number bytes sent
-        ;
+                "s0=1&" +                   // identify user sequence number
+                "t0=0"                      // event timestamp since session start
+            ;
         verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // web request start timestamp
-                eq(expectedEventData)
+            eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+            eq(0L),                     // identify user event timestamp
+            eq(expectedEventData)
         );
     }
 
     @Test
-    public void canAddSentBytesValueZeroToWebRequestTracer() throws UnsupportedEncodingException {
+    public void cannotIdentifyUserIfDataSendingIsDisallowed() {
         // given
-        Beacon beacon = createBeacon().build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-        int bytesSent = 0;
-
-        // when
-        webRequest.start().setBytesSent(bytesSent).stop(-1); // stop will add the web request to the beacon
-
-        // then
-        String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "bs=" + bytesSent           // number bytes sent
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // web request start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void cannotAddSentBytesWithInvalidValueSmallerZeroToWebRequestTracer() throws UnsupportedEncodingException {
-        // given
-        BeaconCache beaconCache = mock(BeaconCache.class);
-        Beacon beacon = createBeacon().with(beaconCache).build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-
-        // when
-        webRequest.start().setBytesSent(-5).stop(-1); // stop will add the web request to the beacon
-
-        // then
-        String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0"                      // web request end timestamp (relative to start time)
-        ;
-        verify(beaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // web request start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void canAddReceivedBytesToWebRequestTracer() throws UnsupportedEncodingException {
-        // given
-        Beacon beacon = createBeacon().build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-        int bytesReceived = 12321;
-
-        // when
-        webRequest.start().setBytesReceived(bytesReceived).stop(-1); // stop will add the web request to the beacon
-
-        // then
-        String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "br=" + bytesReceived       // number of received bytes
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // web request start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void canAddReceivedBytesValueZeroToWebRequestTracer() throws UnsupportedEncodingException {
-        // given
-        Beacon beacon = createBeacon().build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-        int bytesReceived = 0;
-
-        // when
-        webRequest.start().setBytesReceived(bytesReceived).stop(-1); // stop will add the web request to the beacon
-
-        // then
-        String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "br=" + bytesReceived       // number of received bytes
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // web request start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void cannotAddReceivedBytesWithInvalidValueSmallerZeroToWebRequestTracer() throws UnsupportedEncodingException {
-        // given
-        BeaconCache beaconCache = mock(BeaconCache.class);
-        Beacon beacon = createBeacon().with(beaconCache).build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-
-        // when
-        webRequest.start().setBytesReceived(-1).stop(-1); // stop will add the web request to the beacon
-
-        // then
-        String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0"                      // web request end timestamp (relative to start time)
-        ;
-        verify(beaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                          // web request start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void canAddBothSentBytesAndReceivedBytesToWebRequestTracer() throws UnsupportedEncodingException {
-        // given
-        Beacon beacon = createBeacon().build();
-        String testURL = "https://localhost";
-        WebRequestTracerStringURL webRequest = new WebRequestTracerStringURL(mockLogger, parentOpenKitObject, beacon, testURL);
-        int bytesReceived = 12321;
-        int bytesSent = 123;
-
-        // when
-        webRequest.start()
-                .setBytesSent(bytesSent)
-                .setBytesReceived(bytesReceived)
-                .stop(-1); // stop will add the web request to the beacon
-
-        // then
-        String expectedEventData =
-                "et=30&" +                  // event type
-                "na=" + URLEncoder.encode(testURL, "UTF-8") + "&" + // reported URL
-                "it=" + THREAD_ID + "&" +   // thread ID
-                "pa=0&" +                   // parent action ID
-                "s0=1&" +                   // web request start sequence number
-                "t0=0&" +                   // web request start timestamp (relative to session start)
-                "s1=2&" +                   // web request end sequence number
-                "t1=0&" +                   // web request end timestamp (relative to start time)
-                "bs=" + bytesSent + "&" +   // number of sent bytes
-                "br=" + bytesReceived       // number of received bytes
-        ;
-        verify(mockBeaconCache, times(1)).addEventData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // web request start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void canAddRootActionIfDataSendingIsAllowed() {
-        // given
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
-        String actionName = "rootAction";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        when(rootAction.getName()).thenReturn(actionName);
-
-        Beacon beacon = createBeacon().build();
-
-        // when
-        beacon.addAction(rootAction);
-
-        // then
-        String expectedEventData =
-                "et=1&" +                   // event type
-                "na=" + actionName + "&" +  // action name
-                "it=" + THREAD_ID + "&" +   // thread Id
-                "ca=0&" +                   // action ID
-                "pa=0&" +                   // parent action ID
-                "s0=0&" +                   // action start sequence number
-                "t0=0&" +                   // action start time (relative to session start)
-                "s1=0&" +                   // action end sequence number
-                "t1=0"                      // action end time (relative to start time)
-        ;
-        verify(mockBeaconCache, times(1)).addActionData(
-                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
-                eq(0L),                     // action start timestamp
-                eq(expectedEventData)
-        );
-    }
-
-    @Test
-    public void cannotAddRootActionIfDataSendingIsDisallowed() {
-        // given
+        Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-        String actionName = "rootAction";
-        RootActionImpl rootAction = mock(RootActionImpl.class);
-        when(rootAction.getName()).thenReturn(actionName);
-
-        Beacon beacon = createBeacon().build();
 
         // when
-        beacon.addAction(rootAction);
+        target.identifyUser("jane.doe@acme.com");
 
-        // then
+        // then ensure nothing has been serialized
         verifyZeroInteractions(mockBeaconCache);
     }
 
     @Test
+    public void cannotIdentifyUserIfUserIdentificationDisabled() {
+        //given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isUserIdentificationAllowed()).thenReturn(false);
+
+        //when
+        target.identifyUser("jane@doe.com");
+
+        //then
+        //verify nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// send tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
     public void canHandleNoDataInBeaconSend() {
         // given
-        Beacon beacon = createBeacon().build();
+        Beacon target = createBeacon().build();
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
         HTTPClient mockClient = mock(HTTPClient.class);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(mockClient);
 
         // when
-        StatusResponse response = beacon.send(httpClientProvider, mockAdditionalParameters);
+        StatusResponse response = target.send(httpClientProvider, mockAdditionalParameters);
 
         // then (verify, that null is returned as no data was sent)
         assertThat(response, nullValue());
@@ -1165,7 +2276,7 @@ public class BeaconTest {
         // given
         String ipAddress = "127.0.0.1";
         BeaconCache beaconCache = new BeaconCacheImpl(mockLogger);
-        Beacon beacon = createBeacon()
+        Beacon target = createBeacon()
                 .withIpAddress(ipAddress)
                 .with(beaconCache)
                 .build();
@@ -1183,8 +2294,8 @@ public class BeaconTest {
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
-        beacon.reportCrash("errorName", "errorReason", "errorStackTrace");
-        StatusResponse response = beacon.send(httpClientProvider, mockAdditionalParameters);
+        target.reportCrash("errorName", "errorReason", "errorStackTrace");
+        StatusResponse response = target.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         assertThat(response, notNullValue());
@@ -1197,7 +2308,7 @@ public class BeaconTest {
         // given
         String ipAddress = "127.0.0.1";
         BeaconCache beaconCache = new BeaconCacheImpl(mockLogger);
-        Beacon beacon = createBeacon()
+        Beacon target = createBeacon()
                 .withIpAddress(ipAddress)
                 .with(beaconCache)
                 .build();
@@ -1210,8 +2321,8 @@ public class BeaconTest {
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
         // when (add data and try to send it)
-        beacon.reportCrash("errorName", "errorReason", "errorStackTrace");
-        StatusResponse response = beacon.send(httpClientProvider, mockAdditionalParameters);
+        target.reportCrash("errorName", "errorReason", "errorStackTrace");
+        StatusResponse response = target.send(httpClientProvider, mockAdditionalParameters);
 
         // then
         assertThat(response, notNullValue());
@@ -1256,6 +2367,10 @@ public class BeaconTest {
         verify(mockBeaconCache, times(1)).resetChunkedData(eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)));
         verify(mockLogger, times(1)).error(": Required charset \"UTF-8\" is not supported.", exception);
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// misc tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void beaconDataPrefixVS1() {
@@ -1348,22 +2463,23 @@ public class BeaconTest {
     public void clearDataFromBeaconCache() {
         // given
         BeaconCacheImpl beaconCache = new BeaconCacheImpl(mockLogger);
-        Beacon beacon = createBeacon().with(beaconCache).build();
+        Beacon target = createBeacon().with(beaconCache).build();
         // add various data
         BaseActionImpl action = mock(BaseActionImpl.class);
         when(action.getID()).thenReturn(ACTION_ID);
-        beacon.addAction(action);
-        beacon.reportValue(ACTION_ID, "IntValue", 42);
-        beacon.reportValue(ACTION_ID, "LongValue", 42L);
-        beacon.reportValue(ACTION_ID, "DoubleValue", 3.1415);
-        beacon.reportValue(ACTION_ID, "StringValue", "HelloWorld");
-        beacon.reportEvent(ACTION_ID, "SomeEvent");
-        beacon.reportError(ACTION_ID, "SomeError", -123, "SomeReason");
-        beacon.reportCrash("SomeCrash", "SomeReason", "SomeStacktrace");
-        beacon.endSession();
+        when(action.getName()).thenReturn("actionName");
+        target.addAction(action);
+        target.reportValue(ACTION_ID, "IntValue", 42);
+        target.reportValue(ACTION_ID, "LongValue", 42L);
+        target.reportValue(ACTION_ID, "DoubleValue", 3.1415);
+        target.reportValue(ACTION_ID, "StringValue", "HelloWorld");
+        target.reportEvent(ACTION_ID, "SomeEvent");
+        target.reportError(ACTION_ID, "SomeError", -123);
+        target.reportCrash("SomeCrash", "SomeReason", "SomeStacktrace");
+        target.endSession();
 
         // when
-        beacon.clearData();
+        target.clearData();
 
         // then (verify, all data is cleared)
         BeaconKey key = new BeaconKey(SESSION_ID, SESSION_SEQ_NO);
@@ -1371,377 +2487,7 @@ public class BeaconTest {
         assertThat(events, emptyArray());
         String[] actions = beaconCache.getActions(key);
         assertThat(actions, emptyArray());
-        assertThat(beacon.isEmpty(), is(true));
-    }
-
-    @Test
-    public void noSessionIsAddedIfDataSendingIsDisallowed() {
-        // given
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-        Beacon target = createBeacon().build();
-
-        // when
-        target.endSession();
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noActionIsAddedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-        BaseActionImpl action = mock(BaseActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
-
-        // when
-        target.addAction(action);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noIntValueIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        int intValue = 42;
-
-        // when
-        target.reportValue(ACTION_ID, "intValue", intValue);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noLongValueIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        long longValue = 21L;
-
-        // when
-        target.reportValue(ACTION_ID, "longValue", longValue);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noDoubleValueIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        double doubleValue = Math.E;
-
-        // when
-        target.reportValue(ACTION_ID, "doubleValue", doubleValue);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noStringValueIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        String stringValue = "Write once, debug everywhere";
-
-        // when
-        target.reportValue(ACTION_ID, "doubleValue", stringValue);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noEventIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportEvent(ACTION_ID, "Event name");
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noEventIsReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportEvent(ACTION_ID, "Event name");
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noErrorIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportError(ACTION_ID, "Error name", 123, "The reason for this error");
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noErrorIsReportedIfSendingErrorDataDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(false);
-
-        // when
-        target.reportError(ACTION_ID, "Error name", 123, "The reason for this error");
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noCrashIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportCrash("Error name", "The reason for this error", "the stack trace");
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noCrashIsReportedIfSendingCrashDataDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(false);
-
-        // when
-        target.reportCrash("Error name", "The reason for this error", "the stack trace");
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noCrashThrowableIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportCrash(new IllegalArgumentException("illegalArgument"));
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noCrashThrowableIsReportedIfSendingCrashDataDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(false);
-
-        // when
-        target.reportCrash(new IllegalArgumentException("illegalArgument"));
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noWebRequestIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
-
-        // when
-        target.addWebRequest(ACTION_ID, webRequestTracer);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-        verifyZeroInteractions(webRequestTracer);
-    }
-
-    @Test
-    public void noUserIdentificationIsReportedIfDataSendingIsDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.identifyUser("jane.doe@acme.com");
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void noWebRequestIsReportedIfWebRequestTracingDisallowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(false);
-        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
-        //when
-        target.addWebRequest(ACTION_ID, mockWebRequestTracer);
-
-        //then
-        //verify nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-        verifyZeroInteractions(mockWebRequestTracer);
-    }
-
-    @Test
-    public void webRequestIsReportedIfWebRequestTracingAllowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(true);
-        WebRequestTracerURLConnection mockWebRequestTracer = mock(WebRequestTracerURLConnection.class);
-
-        //when
-        target.addWebRequest(ACTION_ID, mockWebRequestTracer);
-
-        //then
-        verify(mockWebRequestTracer, times(1)).getBytesReceived();
-        verify(mockWebRequestTracer, times(1)).getBytesSent();
-        verify(mockWebRequestTracer, times(1)).getResponseCode();
-
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void beaconReturnsEmptyTagIfWebRequestTracingDisallowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(false);
-
-        //when
-        String returnedTag = target.createTag(ACTION_ID, 1);
-
-        //then
-        assertThat(returnedTag, isEmptyString());
-    }
-
-    @Test
-    public void beaconReturnsValidTagIfWebRequestTracingIsAllowed() {
-        //given
-        int sequenceNo = 1;
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(true);
-
-        //when
-        String returnedTag = target.createTag(ACTION_ID, sequenceNo);
-
-        //then
-        assertThat(returnedTag, is(
-                "MT" +
-                        "_" + ProtocolConstants.PROTOCOL_VERSION +
-                        "_" + SERVER_ID +
-                        "_" + DEVICE_ID +
-                        "_" + SESSION_ID +
-                        "_" + APP_ID +
-                        "_" + ACTION_ID +
-                        "_" + THREAD_ID +
-                        "_" + sequenceNo
-        ));
-    }
-
-    @Test
-    public void beaconReturnsValidTagWithSessionNumberIfSessionNumberReportingAllowed() {
-        //given
-        int sequenceNo = 1;
-        when(mockPrivacyConfiguration.isSessionNumberReportingAllowed()).thenReturn(true);
-        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(true);
-
-        Beacon target = createBeacon().build();
-
-        //when
-        String returnedTag = target.createTag(ACTION_ID, sequenceNo);
-
-        //then
-        assertThat(returnedTag, is(
-                "MT" +
-                        "_" + ProtocolConstants.PROTOCOL_VERSION +
-                        "_" + SERVER_ID +
-                        "_" + DEVICE_ID +
-                        "_" + SESSION_ID +
-                        "_" + APP_ID +
-                        "_" + ACTION_ID +
-                        "_" + THREAD_ID +
-                        "_" + sequenceNo
-        ));
-    }
-
-    @Test
-    public void beaconReturnsValidTagWithSessionNumberOneIfSessionNumberReportingDisallowed() {
-        //given
-        int sequenceNo = 1;
-        when(mockPrivacyConfiguration.isSessionNumberReportingAllowed()).thenReturn(false);
-        when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(true);
-
-        Beacon target = createBeacon().build();
-
-        //when
-        String returnedTag = target.createTag(ACTION_ID, sequenceNo);
-
-        //then
-        assertThat(returnedTag, is(
-                "MT" +
-                        "_" + ProtocolConstants.PROTOCOL_VERSION +
-                        "_" + SERVER_ID +
-                        "_" + DEVICE_ID +
-                        "_1" +                      // session number must always be 1
-                        "_" + APP_ID +
-                        "_" + ACTION_ID +
-                        "_" + THREAD_ID +
-                        "_" + sequenceNo
-        ));
-    }
-
-    @Test
-    public void cannotIdentifyUserIfUserIdentificationDisabled() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isUserIdentificationAllowed()).thenReturn(false);
-
-        //when
-        target.identifyUser("jane@doe.com");
-
-        //then
-        //verify nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void canIdentifyUserIfUserIdentificationIsAllowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isUserIdentificationAllowed()).thenReturn(true);
-
-        //when
-        target.identifyUser("jane@doe.com");
-
-        //then
-        //verify user tag has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
+        assertThat(target.isEmpty(), is(true));
     }
 
     @Test
@@ -1804,372 +2550,6 @@ public class BeaconTest {
 
         //then
         assertThat(sessionNumber, is(SESSION_ID));
-    }
-
-    @Test
-    public void reportCrashDoesNotReportIfCrashReportingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isCrashReportingAllowed()).thenReturn(false);
-
-        //when
-        target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
-
-        //then
-        verify(mockTimingProvider, times(1)).provideTimestampInMilliseconds();
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void reportCrashDoesReportIfCrashReportingAllowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isCrashReportingAllowed()).thenReturn(true);
-
-        //when
-        target.reportCrash("OutOfMemory exception", "insufficient memory", "stacktrace:123");
-
-        //then
-        verify(mockTimingProvider, times(2)).provideTimestampInMilliseconds();
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void actionNotReportedIfActionReportingDisallowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isActionReportingAllowed()).thenReturn(false);
-        BaseActionImpl action = mock(BaseActionImpl.class);
-
-        //when
-        target.addAction(action);
-
-        //then
-        //verify action has not been serialized
-        verifyZeroInteractions(action);
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void actionNotReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-        BaseActionImpl action = mock(BaseActionImpl.class);
-
-        // when
-        target.addAction(action);
-
-        // then
-        verifyZeroInteractions(action);
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void actionReportedIfActionReportingAllowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isActionReportingAllowed()).thenReturn(true);
-        BaseActionImpl action = mock(BaseActionImpl.class);
-        when(action.getID()).thenReturn(ACTION_ID);
-
-        //when
-        target.addAction(action);
-
-        //then
-        //verify action has been serialized
-        verify(action, times(1)).getID();
-        verify(mockBeaconCache, times(1)).addActionData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void sessionNotReportedIfSessionReportingDisallowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isSessionReportingAllowed()).thenReturn(false);
-
-        //when
-        target.endSession();
-
-        //then
-        //verify session has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void sessionNotReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.endSession();
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void sessionReportedIfSessionReportingAllowed() {
-        //given
-        when(mockPrivacyConfiguration.isSessionReportingAllowed()).thenReturn(true);
-        Beacon target = createBeacon().build();
-
-        //when
-        target.endSession();
-
-        //then
-        //verify serialized session get added to beacon
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void errorNotReportedIfErrorReportingDisallowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(false);
-
-        //when
-        target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
-
-        //then
-        //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void errorReportedIfErrorReportingAllowed() {
-        //given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(true);
-
-        //when
-        target.reportError(ACTION_ID, "DivByZeroError", 127, "out of math");
-
-        //then
-        //verify error has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void intValueIsNotReportedIfReportValueDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", 123);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void intValueNotReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", 123);
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void intValueIsReportedIfReportValueAllowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
-
-        // when
-        target.reportValue(ACTION_ID, "testValue", 123);
-
-        // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void longValueIsNotReportedIfReportValueDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void longValueNotReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void longValueIsReportedIfReportValueAllowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
-
-        // when
-        target.reportValue(ACTION_ID, "testValue", Long.MIN_VALUE);
-
-        // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void doubleValueIsNotReportedIfReportValueDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", 2.71);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void doubleValueIsNotReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", 2.71);
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void doubleValueIsReportedIfValueReportingAllowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", 2.71);
-
-        // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void stringValueIsNotReportedIfValueReportingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", "test data");
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void stringValueIsNotReportedIfDataSendingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", "test data");
-
-        // then
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void stringValueIsReportedIfValueReportingAllowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isValueReportingAllowed()).thenReturn(true);
-
-        // when
-        target.reportValue(ACTION_ID, "test value", "test data");
-
-        // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void namedEventIsNotReportedIfEventReportingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
-
-        // when
-        target.reportEvent(ACTION_ID, "test event");
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
-    public void namedEventIsReportedIfEventReportingAllowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(true);
-
-        // when
-        target.reportEvent(ACTION_ID, "test event");
-
-        // then ensure that error was serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void sessionStartIsReported() {
-        // given
-        Beacon target = createBeacon().build();
-
-        // when
-        target.startSession();
-
-        // then ensure session start has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-    }
-
-    @Test
-    public void sessionStartIsReportedRegardlessOfPrivacyConfiguration() {
-        // given
-        Beacon target = createBeacon().build();
-        reset(mockPrivacyConfiguration);
-
-        // when
-        target.startSession();
-
-        // then ensure session start has been serialized
-        verify(mockBeaconCache, times(1)).addEventData(any(BeaconKey.class), anyLong(), anyString());
-        verifyNoMoreInteractions(mockPrivacyConfiguration);
-    }
-
-    @Test
-    public void noSessionStartIsReportedIfDataSendingIsDisallowed() {
-        // given
-        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
-        Beacon target = createBeacon().build();
-
-        // when
-        target.startSession();
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
     }
 
     @Test

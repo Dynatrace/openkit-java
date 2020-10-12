@@ -27,9 +27,9 @@ import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallbac
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
+import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
 import com.dynatrace.openkit.core.util.PercentEncoder;
-import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -82,7 +82,7 @@ public class Beacon {
 
     // data, error & crash capture constants
     private static final String BEACON_KEY_VALUE = "vl";
-    private static final String BEACON_KEY_ERROR_CODE = "ev";
+    private static final String BEACON_KEY_ERROR_VALUE = "ev"; // can be an integer code or string (Exception class name)
     private static final String BEACON_KEY_ERROR_REASON = "rs";
     private static final String BEACON_KEY_ERROR_STACKTRACE = "st";
     private static final String BEACON_KEY_ERROR_TECHNOLOGY_TYPE = "tt";
@@ -135,15 +135,14 @@ public class Beacon {
     /**
      * Creates a new beacon instance
      *
-     * @param initializer           provider of relevant parameters to initialize / create the beacon
-     * @param configuration         OpenKit related configuration.
+     * @param initializer provider of relevant parameters to initialize / create the beacon
+     * @param configuration OpenKit related configuration.
      */
-    public Beacon(BeaconInitializer initializer,
-                  BeaconConfiguration configuration) {
+    public Beacon(BeaconInitializer initializer, BeaconConfiguration configuration) {
 
         this.logger = initializer.getLogger();
         this.beaconCache = initializer.getBeaconCache();
-        int sessionNumber  = initializer.getSessionIdProvider().getNextSessionID();
+        int sessionNumber = initializer.getSessionIdProvider().getNextSessionID();
         int sessionSequenceNumber = initializer.getSessionSequenceNumber();
         this.beaconKey = new BeaconKey(sessionNumber, sessionSequenceNumber);
         this.timingProvider = initializer.getTimingProvider();
@@ -174,8 +173,9 @@ public class Beacon {
     /**
      * Create a device ID.
      *
-     * @param random        Pseudo random number generator.
+     * @param random Pseudo random number generator.
      * @param configuration Configuration.
+     *
      * @return A device ID, which might either be the one set when building OpenKit or a randomly generated one.
      */
     private static long createDeviceID(RandomNumberGenerator random, BeaconConfiguration configuration) {
@@ -243,7 +243,8 @@ public class Beacon {
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} for which to create a web request tag
      *                       or {@code 0} if no parent action exists.
-     * @param tracerSeqNo    Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
+     * @param tracerSeqNo Sequence number of the {@link com.dynatrace.openkit.api.WebRequestTracer}.
+     *
      * @return A web request tracer tag.
      */
     public String createTag(int parentActionID, int tracerSeqNo) {
@@ -278,6 +279,10 @@ public class Beacon {
      * @param action The action to add.
      */
     public void addAction(BaseActionImpl action) {
+
+        if (action == null || action.getName() == null || action.getName().length() == 0) {
+            throw new IllegalArgumentException("action is null or action.getName() is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isActionReportingAllowed()) {
             return;
@@ -316,7 +321,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildBasicEventData(eventBuilder, EventType.SESSION_START, null);
+        buildBasicEventDataWithoutName(eventBuilder, EventType.SESSION_START);
 
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
@@ -344,7 +349,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildBasicEventData(eventBuilder, EventType.SESSION_END, null);
+        buildBasicEventDataWithoutName(eventBuilder, EventType.SESSION_END);
 
         long sessionEndTime = getCurrentTimestamp();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
@@ -362,11 +367,11 @@ public class Beacon {
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName      Value's name.
-     * @param value          Actual value to report.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, int value) {
-        reportValue(parentActionID, valueName, (long)value);
+        reportValue(parentActionID, valueName, (long) value);
     }
 
     /**
@@ -377,10 +382,13 @@ public class Beacon {
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName      Value's name.
-     * @param value          Actual value to report.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, long value) {
+        if (valueName == null || valueName.length() == 0) {
+            throw new IllegalArgumentException("valueName is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;
@@ -406,10 +414,14 @@ public class Beacon {
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName      Value's name.
-     * @param value          Actual value to report.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, double value) {
+
+        if (valueName == null || valueName.length() == 0) {
+            throw new IllegalArgumentException("valueName is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;
@@ -435,10 +447,14 @@ public class Beacon {
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this value was reported.
-     * @param valueName      Value's name.
-     * @param value          Actual value to report.
+     * @param valueName Value's name.
+     * @param value Actual value to report.
      */
     public void reportValue(int parentActionID, String valueName, String value) {
+
+        if (valueName == null || valueName.length() == 0) {
+            throw new IllegalArgumentException("valueName is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isValueReportingAllowed()) {
             return;
@@ -466,9 +482,13 @@ public class Beacon {
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this event was reported.
-     * @param eventName      Event's name.
+     * @param eventName Event's name.
      */
     public void reportEvent(int parentActionID, String eventName) {
+
+        if (eventName == null || eventName.length() == 0) {
+            throw new IllegalArgumentException("eventName is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
             return;
@@ -493,11 +513,14 @@ public class Beacon {
      * </p>
      *
      * @param parentActionID The ID of the {@link com.dynatrace.openkit.api.Action} on which this error was reported.
-     * @param errorName      Error's name.
-     * @param errorCode      Some error code.
-     * @param reason         Reason for that error.
+     * @param errorName Error's name.
+     * @param errorCode Some error code.
      */
-    public void reportError(int parentActionID, String errorName, int errorCode, String reason) {
+    public void reportError(int parentActionID, String errorName, int errorCode) {
+
+        if (errorName == null || errorName.length() == 0) {
+            throw new IllegalArgumentException("errorName is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isErrorReportingAllowed()) {
             return;
@@ -515,9 +538,62 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentActionID);
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
-        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_CODE, errorCode);
-        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
+        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_VALUE, errorCode);
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, ProtocolConstants.ERROR_TECHNOLOGY_TYPE);
+
+        addEventData(timestamp, eventBuilder);
+    }
+
+    public void reportError(int parentActionID, String errorName, String causeName, String causeDescription, String causeStackTrace) {
+        reportError(parentActionID, errorName, causeName, causeDescription, causeStackTrace, ProtocolConstants.ERROR_TECHNOLOGY_TYPE);
+    }
+
+    public void reportError(int parentActionID, String errorName, Throwable throwable) {
+        String causeName = null;
+        String causeDescription = null;
+        String causeStackTrace = null;
+
+        if (throwable != null) {
+            CrashFormatter crashFormatter = new CrashFormatter(throwable);
+            causeName = crashFormatter.getName();
+            causeDescription = crashFormatter.getReason();
+            causeStackTrace = crashFormatter.getStackTrace();
+        }
+
+        reportError(parentActionID,
+            errorName,
+            causeName,
+            causeDescription,
+            causeStackTrace,
+            ProtocolConstants.ERROR_TECHNOLOGY_TYPE); // TODO stefan.eberl - report better crash technology type
+    }
+
+    private void reportError(int parentActionID, String errorName, String causeName, String causeDescription, String causeStackTrace, String errorTechnologyType) {
+
+        if (errorName == null || errorName.length() == 0) {
+            throw new IllegalArgumentException("errorName is null or empty");
+        }
+
+        if (!configuration.getPrivacyConfiguration().isErrorReportingAllowed()) {
+            return;
+        }
+
+        if (!configuration.getServerConfiguration().isSendingErrorsAllowed()) {
+            return;
+        }
+
+        StringBuilder eventBuilder = new StringBuilder();
+
+        buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
+
+        long timestamp = timingProvider.provideTimestampInMilliseconds();
+        addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentActionID);
+        addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
+        addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_VALUE, causeName);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, causeDescription);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, causeStackTrace);
+        addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, errorTechnologyType);
 
         addEventData(timestamp, eventBuilder);
     }
@@ -529,8 +605,8 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param errorName  Error's name.
-     * @param reason     Reason for that error.
+     * @param errorName Error's name.
+     * @param reason Reason for that error.
      * @param stacktrace Crash stacktrace.
      */
     public void reportCrash(String errorName, String reason, String stacktrace) {
@@ -544,9 +620,13 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param throwable  {@link Throwable} to report.
+     * @param throwable {@link Throwable} to report.
      */
     public void reportCrash(Throwable throwable) {
+        if (throwable == null) {
+            throw new IllegalArgumentException("throwable is null");
+        }
+
         CrashFormatter crashFormatter = new CrashFormatter(throwable);
         reportCrash(crashFormatter.getName(),
             crashFormatter.getReason(),
@@ -555,6 +635,10 @@ public class Beacon {
     }
 
     private void reportCrash(String errorName, String reason, String stacktrace, String crashTechnologyType) {
+
+        if (errorName == null || errorName.length() == 0) {
+            throw new IllegalArgumentException("errorName is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isCrashReportingAllowed()) {
             return;
@@ -586,10 +670,14 @@ public class Beacon {
      * The serialized data is added to {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      * </p>
      *
-     * @param parentActionID   The id of the parent {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
+     * @param parentActionID The id of the parent {@link com.dynatrace.openkit.api.Action} on which this web request was reported.
      * @param webRequestTracer Web request tracer to serialize.
      */
     public void addWebRequest(int parentActionID, WebRequestTracerBaseImpl webRequestTracer) {
+
+        if (webRequestTracer == null || webRequestTracer.getURL() == null || webRequestTracer.getURL().length() == 0) {
+            throw new IllegalArgumentException("webRequestTracer is null or webRequestTracer.getURL() is null or empty");
+        }
 
         if (!configuration.getPrivacyConfiguration().isWebRequestTracingAllowed()) {
             return;
@@ -624,6 +712,7 @@ public class Beacon {
      * </p>
      *
      * @param userTag User tag containing data to serialize.
+     *                The {@code userTag} is the only name-beacon data that can be null/empty.
      */
     public void identifyUser(String userTag) {
 
@@ -637,7 +726,11 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
+        if (userTag != null) {
+            buildBasicEventData(eventBuilder, EventType.IDENTIFY_USER, userTag);
+        } else {
+            buildBasicEventDataWithoutName(eventBuilder, EventType.IDENTIFY_USER);
+        }
 
         long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);
@@ -654,8 +747,9 @@ public class Beacon {
      * This method tries to send all so far collected and serialized data.
      * </p>
      *
-     * @param provider             Provider for getting an {@link HTTPClient} required to send the data.
+     * @param provider Provider for getting an {@link HTTPClient} required to send the data.
      * @param additionalParameters additional parameters that will be send with the beacon request (can be {@code null}).
+     *
      * @return Returns the last status response retrieved from the server side, or {@code null} if an error occurred.
      */
     public StatusResponse send(HTTPClientProvider provider, AdditionalQueryParameters additionalParameters) {
@@ -670,7 +764,8 @@ public class Beacon {
             // subtract 1024 to ensure that the chunk does not exceed the send size configured on server side?
             // i guess that was the original intention, but i'm not sure about this
             // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
-            String chunk = beaconCache.getNextBeaconChunk(beaconKey, prefix, configuration.getServerConfiguration().getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
+            String chunk = beaconCache.getNextBeaconChunk(beaconKey, prefix, configuration.getServerConfiguration()
+                                                                                          .getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
             if (chunk == null || chunk.isEmpty()) {
                 // no data added so far or no data to send
                 return response;
@@ -710,6 +805,7 @@ public class Beacon {
      * </p>
      *
      * @param chunkToEncode the beacon chunk to encode
+     *
      * @return the encoded beacon chunk
      */
     protected byte[] encodeBeaconChunk(String chunkToEncode) throws UnsupportedEncodingException {
@@ -738,7 +834,7 @@ public class Beacon {
     /**
      * Add previously serialized action data to the beacon cache.
      *
-     * @param timestamp     The timestamp when the action data occurred.
+     * @param timestamp The timestamp when the action data occurred.
      * @param actionBuilder Contains the serialized action data.
      */
     private void addActionData(long timestamp, StringBuilder actionBuilder) {
@@ -750,7 +846,7 @@ public class Beacon {
     /**
      * Add previously serialized event data to the beacon cache.
      *
-     * @param timestamp    The timestamp when the event data occurred.
+     * @param timestamp The timestamp when the event data occurred.
      * @param eventBuilder Contains the serialized event data.
      */
     private void addEventData(long timestamp, StringBuilder eventBuilder) {
@@ -774,10 +870,11 @@ public class Beacon {
     /**
      * Serialization helper for event data.
      *
-     * @param builder        String builder storing the serialized data.
-     * @param eventType      The event's type.
-     * @param name           Event name
+     * @param builder String builder storing the serialized data.
+     * @param eventType The event's type.
+     * @param name Event name
      * @param parentActionID The unique Action identifier on which this event was reported.
+     *
      * @return The timestamp associated with the event (timestamp since session start time).
      */
     private long buildEvent(StringBuilder builder, EventType eventType, String name, int parentActionID) {
@@ -795,15 +892,23 @@ public class Beacon {
     /**
      * Serialization for building basic event data.
      *
-     * @param builder   String builder storing serialized data.
+     * @param builder String builder storing serialized data.
      * @param eventType The event's type.
-     * @param name      Event's name.
+     * @param name Event's name.
      */
     private void buildBasicEventData(StringBuilder builder, EventType eventType, String name) {
+        buildBasicEventDataWithoutName(builder, eventType);
+        addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
+    }
+
+    /**
+     * Serialization for building basic event data that has no name.
+     *
+     * @param builder String builder storing serialized data.
+     * @param eventType The event's type.
+     */
+    private void buildBasicEventDataWithoutName(StringBuilder builder, EventType eventType) {
         addKeyValuePair(builder, BEACON_KEY_EVENT_TYPE, eventType.protocolValue());
-        if (name != null) {
-            addKeyValuePair(builder, BEACON_KEY_NAME, truncate(name));
-        }
         addKeyValuePair(builder, BEACON_KEY_THREAD_ID, threadIDProvider.getThreadID());
     }
 
@@ -925,8 +1030,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with string values
      *
-     * @param builder     The string builder storing serialized data.
-     * @param key         The key to add.
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
      * @param stringValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, String stringValue) {
@@ -947,8 +1052,8 @@ public class Beacon {
      * if the string value turns out to be null the key value pair is not added
      * to the string builder
      *
-     * @param builder     The string builder storing serialized data.
-     * @param key         The key to add.
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
      * @param stringValue The value to add.
      */
     private void addKeyValuePairIfNotNull(StringBuilder builder, String key, String stringValue) {
@@ -960,8 +1065,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with long values
      *
-     * @param builder   The string builder storing serialized data.
-     * @param key       The key to add.
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
      * @param longValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, long longValue) {
@@ -972,8 +1077,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with int values
      *
-     * @param builder  The string builder storing serialized data.
-     * @param key      The key to add.
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
      * @param intValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, int intValue) {
@@ -986,8 +1091,8 @@ public class Beacon {
      * {@link SerializableBeaconValue} interface.
      *
      * @param builder the string builder storing the serialized data.
-     * @param key     the key to add.
-     * @param value   the value to add.
+     * @param key the key to add.
+     * @param value the value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, SerializableBeaconValue value) {
         if (value == null) {
@@ -1001,8 +1106,8 @@ public class Beacon {
      *
      * the key value pair is only added to the string builder when the int is not negative
      *
-     * @param builder  The string builder storing serialized data.
-     * @param key      The key to add.
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
      * @param intValue The value to add.
      */
     private void addKeyValuePairIfNotNegative(StringBuilder builder, String key, int intValue) {
@@ -1015,8 +1120,8 @@ public class Beacon {
     /**
      * Serialization helper method for adding key/value pairs with double values
      *
-     * @param builder     The string builder storing serialized data.
-     * @param key         The key to add.
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
      * @param doubleValue The value to add.
      */
     private void addKeyValuePair(StringBuilder builder, String key, double doubleValue) {
@@ -1028,7 +1133,7 @@ public class Beacon {
      * Serialization helper method for appending a key.
      *
      * @param builder The string builder storing serialized data.
-     * @param key     The key to add.
+     * @param key The key to add.
      */
     private void appendKey(StringBuilder builder, String key) {
         if (builder.length() > 0) {
@@ -1053,6 +1158,7 @@ public class Beacon {
      * Get a timestamp relative to the time this session (aka. beacon) was created.
      *
      * @param timestamp The absolute timestamp for which to get a relative one.
+     *
      * @return Relative timestamp.
      */
     private long getTimeSinceSessionStartTime(long timestamp) {
@@ -1074,6 +1180,7 @@ public class Beacon {
 
     /**
      * Initializes the beacon with the given {@link ServerConfiguration}.
+     *
      * @param serverConfiguration the server configuration which will be used for initialization.
      */
     public void initializeServerConfiguration(ServerConfiguration serverConfiguration) {

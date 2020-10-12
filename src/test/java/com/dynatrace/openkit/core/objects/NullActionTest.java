@@ -116,12 +116,38 @@ public class NullActionTest {
     }
 
     @Test
-    public void reportErrorReturnsSelf() {
+    public void deprecatedReportErrorReturnsSelf() {
         // given
         NullAction target = createNullAction();
 
         // when
         Action obtained = target.reportError("error name", 1337, "something bad");
+
+        // then
+        assertThat(obtained, is(instanceOf(NullAction.class)));
+        assertThat((NullAction)obtained, is(sameInstance(target)));
+    }
+
+    @Test
+    public void reportErrorReturnsSelf() {
+        // given
+        NullAction target = createNullAction();
+
+        // when
+        Action obtained = target.reportError("error name", 1337);
+
+        // then
+        assertThat(obtained, is(instanceOf(NullAction.class)));
+        assertThat((NullAction)obtained, is(sameInstance(target)));
+    }
+
+    @Test
+    public void reportErrorThrowableReturnsSelf() {
+        // given
+        NullAction target = createNullAction();
+
+        // when
+        Action obtained = target.reportError("error name", new IllegalArgumentException());
 
         // then
         assertThat(obtained, is(instanceOf(NullAction.class)));

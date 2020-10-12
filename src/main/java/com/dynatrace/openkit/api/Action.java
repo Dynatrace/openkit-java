@@ -28,7 +28,7 @@ public interface Action extends Closeable {
      * Reports an event with a specified name (but without any value).
      *
      * <p>
-     *     If given {@code eventName} is {@code null} then no event is reported to the system.
+     *     If given {@code eventName} is {@code null} or an empty String then no event is reported to the system.
      * </p>
      *
      * @param eventName name of the event
@@ -39,6 +39,10 @@ public interface Action extends Closeable {
     /**
      * Reports an {@code int} value with a specified name.
      *
+     * <p>
+     *     If given {@code valueName} is {@code null} or an empty String then no event is reported to the system.
+     * </p>
+     *
      * @param valueName name of this value
      * @param value     value itself
      * @return this Action (for usage as fluent API)
@@ -47,6 +51,10 @@ public interface Action extends Closeable {
 
     /**
      * Reports a {@code long} value with a specified name.
+     *
+     * <p>
+     *     If given {@code valueName} is {@code null} or an empty String then no event is reported to the system.
+     * </p>
      *
      * @param valueName name of this value
      * @param value     value itself
@@ -57,6 +65,10 @@ public interface Action extends Closeable {
     /**
      * Reports a {@code double} value with a specified name.
      *
+     * <p>
+     *     If given {@code valueName} is {@code null} or an empty String then no event is reported to the system.
+     * </p>
+     *
      * @param valueName name of this value
      * @param value     value itself
      * @return this Action (for usage as fluent API)
@@ -66,8 +78,13 @@ public interface Action extends Closeable {
     /**
      * Reports a {@link String} value with a specified name.
      *
+     * <p>
+     *     If given {@code valueName} is {@code null} or an empty String then no event is reported to the system.
+     * </p>
+     *
      * @param valueName name of this value
      * @param value     value itself
+     *                  The {@code value} can be {@code null} or an empty String.
      * @return this Action (for usage as fluent API)
      */
     Action reportValue(String valueName, String value);
@@ -75,12 +92,59 @@ public interface Action extends Closeable {
     /**
      * Reports an error with a specified name, error code and reason.
      *
+     * <p>
+     *     If given {@code errorName} is {@code null} or an empty String then no event is reported to the system.
+     * </p>
+     *
      * @param errorName name of this error
      * @param errorCode numeric error code of this error
      * @param reason    reason for this error
      * @return this Action (for usage as fluent API)
+     *
+     * @deprecated Prefer {@link #reportError(String, int)}, since reason is unhandled.
      */
+    @Deprecated
     Action reportError(String errorName, int errorCode, String reason);
+
+    /**
+     * Reports an error with a specified name and error code.
+     *
+     * <p>
+     *     If given {@code errorName} is {@code null} or an empty String then no event is reported to the system.
+     * </p>
+     *
+     * @param errorName name of this error
+     * @param errorCode numeric error code of this error
+     * @return this Action (for usage as fluent API)
+     */
+    Action reportError(String errorName, int errorCode);
+
+    /**
+     * Reports an error with a specified name and fields describing the cause of this error.
+     *
+     * <p>
+     *     If given {@code errorName} is {@code null} or an empty string then no event is reported to the system.
+     * </p>
+     *
+     * @param errorName name of this error
+     * @param causeName name describing the cause of the error.
+     *                  E.g. the class name of a caught exception.
+     * @param causeDescription description what cause the error
+     *                  E.g. {@link Throwable#getMessage()} of a caught exception.
+     * @param causeStackTrace stack trace of the error
+     *                  E.g. the {@link Throwable} stack trace
+     * @return this Action (for usage as fluent API)
+     */
+    Action reportError(String errorName, String causeName, String causeDescription, String causeStackTrace);
+
+    /**
+     * Reports an error with a specified name and a {@link Throwable}.
+     *
+     * @param errorName name of this error
+     * @param throwable {@link Throwable} causing this error
+     * @return this Action (for usage as fluent API)
+     */
+    Action reportError(String errorName, Throwable throwable);
 
     /**
      * Traces a web request - which is provided as a URLConnection - and allows adding timing information to this request.

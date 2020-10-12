@@ -179,18 +179,58 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
         return this;
     }
 
+    @Deprecated
     @Override
     public Action reportError(String errorName, int errorCode, String reason) {
+        return reportError(errorName, errorCode);
+    }
+
+    @Override
+    public Action reportError(String errorName, int errorCode) {
         if (errorName == null || errorName.isEmpty()) {
             logger.warning(this + "reportError: errorName must not be null or empty");
             return this;
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(this + "reportError(" + errorName + ", " + errorCode + ", " + reason + ")");
+            logger.debug(this + "reportError(" + errorName + ", " + errorCode + ")");
         }
         synchronized (lockObject) {
             if (!isActionLeft()) {
-                beacon.reportError(getID(), errorName, errorCode, reason);
+                beacon.reportError(getID(), errorName, errorCode);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Action reportError(String errorName, String causeName, String causeDescription, String causeStackTrace) {
+        if (errorName == null || errorName.isEmpty()) {
+            logger.warning(this + "reportError: errorName must not be null or empty");
+            return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportError(" + errorName + ", " + causeName + ", " + causeDescription + ", " + causeStackTrace + ")");
+        }
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportError(getID(), errorName, causeName, causeDescription, causeStackTrace);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Action reportError(String errorName, Throwable throwable) {
+        if (errorName == null || errorName.isEmpty()) {
+            logger.warning(this + "reportError: errorName must not be null or empty");
+            return this;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportError(" + errorName + ", " + throwable + ")");
+        }
+        synchronized (lockObject) {
+            if (!isActionLeft()) {
+                beacon.reportError(getID(), errorName, throwable);
             }
         }
         return this;

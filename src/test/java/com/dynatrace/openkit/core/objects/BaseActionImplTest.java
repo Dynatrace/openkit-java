@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -208,7 +209,7 @@ public class BaseActionImplTest {
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        Action obtained = target.reportValue(valueName, value);
+        target.reportValue(valueName, value);
 
         // verify that beacon within the action is called properly
         verify(logger, times(1)).isDebugEnabled();
@@ -275,7 +276,7 @@ public class BaseActionImplTest {
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        Action obtained = target.reportValue(valueName, value);
+        target.reportValue(valueName, value);
 
         // verify that beacon within the action is called properly
         verify(logger, times(1)).isDebugEnabled();
@@ -338,7 +339,7 @@ public class BaseActionImplTest {
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        Action obtained = target.reportValue(valueName, value);
+        target.reportValue(valueName, value);
 
         // verify that beacon within the action is called properly
         verify(logger, times(1)).isDebugEnabled();
@@ -406,7 +407,78 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void reportErrorWithAllValuesSet() {
+    public void reportErrorCodeWithAllValuesSet() {
+        // given
+        String errorName = "FATAL ERROR";
+        int errorCode = 0x8005037;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError(errorName, errorCode);
+
+        // verify that beacon within the action is called properly
+        verify(beacon, times(1)).reportError(eq(ID_BASE_OFFSET), eq(errorName), eq(errorCode));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportErrorCodeWithNullErrorNameDoesNotReportTheError() {
+        // given
+        int errorCode = 0x8005037;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError(null, errorCode);
+
+        // verify that beacon within the action is not called
+        verify(beacon, times(0)).reportError(anyInt(), anyString(), anyInt());
+        assertThat(obtained, is(sameInstance((Action)target)));
+
+        // verify that a log message has been generated
+        verify(logger, times(1)).warning(endsWith("reportError: errorName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportErrorCodeWithEmptyErrorNameDoesNotReportTheError() {
+        // given
+        int errorCode = 0x8005037;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError("", errorCode);
+
+        // verify that beacon within the action is not called at all
+        verify(beacon, times(0)).reportError(anyInt(), anyString(), anyInt());
+        assertThat(obtained, is(sameInstance((Action)target)));
+
+        // verify that a log message has been generated
+        verify(logger, times(1)).warning(endsWith("reportError: errorName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportErrorCodeLogsInvocation() {
+        // given
+        String errorName = "error name";
+        int errorCode = 42;
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+       target.reportError(errorName, errorCode);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportError(" + errorName + ", " + errorCode + ")"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void deprecatedReportErrorCodeWithReasonDoesNotForwardReason() {
         // given
         String errorName = "FATAL ERROR";
         int errorCode = 0x8005037;
@@ -418,23 +490,44 @@ public class BaseActionImplTest {
         Action obtained = target.reportError(errorName, errorCode, reason);
 
         // verify that beacon within the action is called properly
-        verify(beacon, times(1)).reportError(eq(ID_BASE_OFFSET), eq(errorName), eq(errorCode), eq(reason));
+        verify(beacon, times(1)).reportError(eq(ID_BASE_OFFSET), eq(errorName), eq(errorCode));
         assertThat(obtained, is(sameInstance((Action)target)));
     }
 
     @Test
-    public void reportErrorWithNullErrorNameDoesNotReportTheError() {
+    public void reportErrorCauseWithAllValuesSet() {
         // given
-        int errorCode = 0x8005037;
-        String reason = "Some reason for this fatal error";
+        String errorName = "FATAL ERROR";
+        String causeName = "name";
+        String causeDescription = "description";
+        String causeStackTrace = "stackTrace";
 
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        Action obtained = target.reportError(null, errorCode, reason);
+        Action obtained = target.reportError(errorName, causeName, causeDescription, causeStackTrace);
 
         // verify that beacon within the action is called properly
-        verify(beacon, times(0)).reportError(ID_BASE_OFFSET, null, errorCode, reason);
+        verify(beacon, times(1))
+            .reportError(eq(ID_BASE_OFFSET), eq(errorName), eq(causeName), eq(causeDescription), eq(causeStackTrace));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportErrorCauseWithNullErrorNameDoesNotReportTheError() {
+        // given
+        String causeName = "name";
+        String causeDescription = "description";
+        String causeStackTrace = "stackTrace";
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError(null, causeName, causeDescription, causeStackTrace);
+
+        // verify that beacon within the action is not called
+        verify(beacon, times(0))
+            .reportError(anyInt(), anyString(), anyString(), anyString(), anyString());
         assertThat(obtained, is(sameInstance((Action)target)));
 
         // verify that a log message has been generated
@@ -443,18 +536,20 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void reportErrorWithEmptyErrorNameDoesNotReportTheError() {
+    public void reportErrorCauseWithEmptyErrorNameDoesNotReportTheError() {
         // given
-        int errorCode = 0x8005037;
-        String reason = "Some reason for this fatal error";
+        String causeName = "name";
+        String causeDescription = "description";
+        String causeStackTrace = "stackTrace";
 
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        Action obtained = target.reportError(null, errorCode, reason);
+        Action obtained = target.reportError("", causeName, causeDescription, causeStackTrace);
 
-        // verify that beacon within the action is called properly
-        verify(beacon, times(0)).reportError(ID_BASE_OFFSET, "", errorCode, reason);
+        // verify that beacon within the action is not called at all
+        verify(beacon, times(0))
+            .reportError(anyInt(), anyString(), anyString(), anyString(), anyString());
         assertThat(obtained, is(sameInstance((Action)target)));
 
         // verify that a log message has been generated
@@ -463,33 +558,125 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void reportErrorWithEmptyNullErrorReasonDoesReport() {
+    public void reportErrorCauseWithNullValuesWork() {
         // given
+        String errorName = "FATAL ERROR";
+
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        Action obtained = target.reportError("errorName", 42, null);
+        Action obtained = target.reportError(errorName, null, null, null);
 
         // verify that beacon within the action is called properly
-        verify(beacon, times(1)).reportError(ID_BASE_OFFSET, "errorName", 42, null);
+        verify(beacon, times(1))
+            .reportError(ID_BASE_OFFSET, errorName, null, null, null);
         assertThat(obtained, is(sameInstance((Action)target)));
     }
 
     @Test
-    public void reportErrorLogsInvocation() {
+    public void reportErrorCauseWithEmptyValuesWork() {
+        // given
+        String errorName = "FATAL ERROR";
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError(errorName, "", "", "");
+
+        // verify that beacon within the action is called properly
+        verify(beacon, times(1))
+            .reportError(ID_BASE_OFFSET, errorName, "", "", "");
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportErrorCauseLogsInvocation() {
         // given
         String errorName = "error name";
-        int errorCode = 42;
-        String reason = "reason";
+        String causeName = "name";
+        String causeDescription = "description";
+        String causeStackTrace = "stackTrace";
 
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-       target.reportError(errorName, errorCode, reason);
+        target.reportError(errorName, causeName, causeDescription, causeStackTrace);
 
         // verify that beacon within the action is called properly
         verify(logger, times(1)).isDebugEnabled();
-        verify(logger, times(1)).debug(endsWith("reportError(" + errorName + ", " + errorCode + ", " + reason + ")"));
+        verify(logger, times(1)).debug(
+            endsWith("reportError(" + errorName + ", " + causeName + ", " + causeDescription + ", " + causeStackTrace + ")"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportErrorThrowableDelegatesToBeacon() {
+        // given
+        String errorName = "FATAL ERROR";
+        Throwable throwable = new IllegalStateException();
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError(errorName, throwable);
+
+        // verify that beacon within the action is called properly
+        verify(beacon, times(1)).reportError(eq(ID_BASE_OFFSET), eq(errorName), eq(throwable));
+        assertThat(obtained, is(sameInstance((Action)target)));
+    }
+
+    @Test
+    public void reportErrorThrowableWithNullErrorNameDoesNotReportTheError() {
+        // given
+        Throwable throwable = new IllegalStateException();
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError(null, throwable);
+
+        // verify that beacon within the action is not called
+        verify(beacon, times(0)).reportError(anyInt(), anyString(), any(Throwable.class));
+        assertThat(obtained, is(sameInstance((Action)target)));
+
+        // verify that a log message has been generated
+        verify(logger, times(1)).warning(endsWith("reportError: errorName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportErrorThrowableWithEmptyErrorNameDoesNotReportTheError() {
+        // given
+        Throwable throwable = new IllegalStateException();
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        Action obtained = target.reportError("", throwable);
+
+        // verify that beacon within the action is not called at all
+        verify(beacon, times(0)).reportError(anyInt(), anyString(), any(Throwable.class));
+        assertThat(obtained, is(sameInstance((Action)target)));
+
+        // verify that a log message has been generated
+        verify(logger, times(1)).warning(endsWith("reportError: errorName must not be null or empty"));
+        verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    public void reportErrorThrowableLogsInvocation() {
+        // given
+        String errorName = "error name";
+        Throwable throwable = new IllegalStateException();
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.reportError(errorName, throwable);
+
+        // verify that beacon within the action is called properly
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("reportError(" + errorName + ", " + throwable + ")"));
         verifyNoMoreInteractions(logger);
     }
 
@@ -590,7 +777,7 @@ public class BaseActionImplTest {
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        WebRequestTracer obtained = target.traceWebRequest(url);
+        target.traceWebRequest(url);
 
         // then
         verify(logger, times(1)).isDebugEnabled();
@@ -655,7 +842,7 @@ public class BaseActionImplTest {
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
         // when
-        WebRequestTracer obtained = target.traceWebRequest(connection);
+        target.traceWebRequest(connection);
 
         // then
         verify(logger, times(1)).debug(endsWith("traceWebRequest (URLConnection) (" + connectionString + ")"));
@@ -1003,11 +1190,11 @@ public class BaseActionImplTest {
         target.leaveAction();
 
         // when
-        Action obtained = target.reportError("teapot", 418, "I'm a teapot");
+        Action obtained = target.reportError("teapot", 418);
 
         // then
         assertThat(obtained, is(sameInstance((Action) target)));
-        verify(beacon, times(0)).reportError(anyInt(), anyString(), anyInt(), anyString());
+        verify(beacon, times(0)).reportError(anyInt(), anyString(), anyInt());
     }
 
     @Test
@@ -1043,7 +1230,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void closeActionLeavesTheAction() throws IOException {
+    public void closeActionLeavesTheAction() {
         // given
         when(beacon.getCurrentTimestamp()).thenReturn(1234L);
         when(beacon.createSequenceNumber()).thenReturn(42);

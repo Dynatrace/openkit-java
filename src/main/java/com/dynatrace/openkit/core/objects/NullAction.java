@@ -63,8 +63,24 @@ class NullAction implements Action {
         return this;
     }
 
+    @Deprecated
     @Override
     public Action reportError(String errorName, int errorCode, String reason) {
+        return this;
+    }
+
+    @Override
+    public Action reportError(String errorName, int errorCode) {
+        return this;
+    }
+
+    @Override
+    public Action reportError(String errorName, String causeName, String causeDescription, String causeStackTrace) {
+        return this;
+    }
+
+    @Override
+    public Action reportError(String errorName, Throwable throwable) {
         return this;
     }
 
