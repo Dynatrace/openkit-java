@@ -1,6 +1,13 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.2...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.3...HEAD)
+
+## 2.0.3 [Release date: 2020-10-13]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.3)
+
+### Changed
+- Fix multithreading issues in `SessionProxy`, leading to a potential NPE.
+- Fix potential memory leak for very short-lived sessions in `SessionProxy`.
 
 ## 2.0.2 [Release date: 2020-08-25]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.2)
@@ -9,8 +16,6 @@
 - `identifyUser` can be called with `null` or an empty string.  
    This simulates a log off event and no longer re-applies the user tag on split sessions.
 - Fix potential NPE occurring with empty response body.
-- Fix multithreading issues in `SessionProxy`, leading to a potential NPE.
-- Fix potential memory leak for very short-lived sessions in `SessionProxy`.
 
 ## 2.0.1 [Release date: 2020-07-07]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.0.1)
