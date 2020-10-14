@@ -129,7 +129,7 @@ public interface Action extends Closeable {
      * @param errorName name of this error
      * @param causeName name describing the cause of the error.
      *                  E.g. the class name of a caught exception.
-     * @param causeDescription description what cause the error
+     * @param causeDescription description what caused the error
      *                  E.g. {@link Throwable#getMessage()} of a caught exception.
      * @param causeStackTrace stack trace of the error
      *                  E.g. the {@link Throwable} stack trace
@@ -139,6 +139,10 @@ public interface Action extends Closeable {
 
     /**
      * Reports an error with a specified name and a {@link Throwable}.
+     *
+     * <p>
+     *     If given {@code errorName} is {@code null} or an empty string then no event is reported to the system.
+     * </p>
      *
      * @param errorName name of this error
      * @param throwable {@link Throwable} causing this error
@@ -151,6 +155,10 @@ public interface Action extends Closeable {
      * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
      * the resulting server-side PurePath.
      *
+     * <p>
+     *     If given {@code connection} is {@code null} then no event is reported to the system.
+     * </p>
+     *
      * @param connection the URLConnection of the HTTP request to be tagged and timed
      * @return a WebRequestTracer which allows adding timing information
      */
@@ -162,6 +170,10 @@ public interface Action extends Closeable {
      * tag value of this WebRequestTracer. <br>
      * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
      * the resulting server-side PurePath.
+     *
+     * <p>
+     *     If given {@code url} is {@code null} or an empty string then no event is reported to the system.
+     * </p>
      *
      * @param url the URL of the web request to be tagged and timed
      * @return a WebRequestTracer which allows getting the tag value and adding timing information

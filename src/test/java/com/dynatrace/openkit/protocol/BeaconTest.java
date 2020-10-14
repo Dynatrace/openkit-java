@@ -1245,7 +1245,7 @@ public class BeaconTest {
 
         // then
         String expectedEventData =
-            "et=40&" +                      // event type
+            "et=42&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
@@ -1302,7 +1302,7 @@ public class BeaconTest {
 
         // then
         String expectedEventData =
-            "et=40&" +                      // event type
+            "et=42&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
@@ -1332,7 +1332,7 @@ public class BeaconTest {
 
         // then
         String expectedEventData =
-            "et=40&" +                      // event type
+            "et=42&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
@@ -1362,7 +1362,7 @@ public class BeaconTest {
 
         // then
         String expectedEventData =
-            "et=40&" +                      // event type
+            "et=42&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
@@ -1439,7 +1439,7 @@ public class BeaconTest {
 
         // then
         String expectedEventData =
-            "et=40&" +                      // event type
+            "et=42&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID
@@ -1494,7 +1494,7 @@ public class BeaconTest {
 
         // then
         String expectedEventData =
-            "et=40&" +                      // event type
+            "et=42&" +                      // event type
                 "it=" + THREAD_ID + "&" +       // thread ID
                 "na=" + errorName + "&" +       // name of error event
                 "pa=" + ACTION_ID + "&" +       // parent action ID

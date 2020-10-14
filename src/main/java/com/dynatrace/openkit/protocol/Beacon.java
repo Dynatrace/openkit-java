@@ -584,7 +584,7 @@ public class Beacon {
 
         StringBuilder eventBuilder = new StringBuilder();
 
-        buildBasicEventData(eventBuilder, EventType.ERROR, errorName);
+        buildBasicEventData(eventBuilder, EventType.EXCEPTION, errorName);
 
         long timestamp = timingProvider.provideTimestampInMilliseconds();
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, parentActionID);

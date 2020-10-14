@@ -57,6 +57,10 @@ public enum EventType implements SerializableBeaconValue {
      */
     ERROR(40),
     /**
+     * Report exception event
+     */
+    EXCEPTION(42),
+    /**
      * Report crash event
      */
     CRASH(50),

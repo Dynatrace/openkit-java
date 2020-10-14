@@ -49,6 +49,7 @@ public class EventTypeTest {
                 {19,    EventType.SESSION_END},
                 {30,    EventType.WEB_REQUEST},
                 {40,    EventType.ERROR},
+                {42,    EventType.EXCEPTION},
                 {50,    EventType.CRASH},
                 {60,    EventType.IDENTIFY_USER}
         });
