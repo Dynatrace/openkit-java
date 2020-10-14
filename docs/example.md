@@ -304,6 +304,7 @@ Errors can also be reported with the method
 * `causeName` is an optional short name of the cause, typically an `Exception` class name
 * `causeDescription` is an optional short description of the cause, typically `Exception.getMessage()`
 * `causeStackTrace` is an optional stack trace of the cause
+
 The fragment below shows how to report such an error.
 
 ```java
