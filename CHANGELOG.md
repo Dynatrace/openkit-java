@@ -5,6 +5,11 @@
 ### Added
 - Support for reporting `long` values.
 - Convenience method reporting a `Throwable` as crash.
+- Overloaded `Action.reportError(String, int)` method for reporting an integer error code without description.  
+  The old `Action.reportError(String, int, String)` has been deprecated in favor of the new one.
+- Overloaded `Action.reportError(String, Throwable)` for reporting caught exceptions as error.
+- Overloaded `Action.reportError(String, String, String, String)` for reporting generic errors to
+  Dynatrace.
 
 ### Changed
 - Fix issue with sessions being closed after splitting.

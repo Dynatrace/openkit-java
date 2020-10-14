@@ -212,9 +212,6 @@ The example below shows how to report a `Throwable` as crash.
     }
 ```
 
-
-
-
 ## Starting a RootAction
 
 As mentioned in the [README](#../README.md) root actions and actions are hierarchical named events, where
@@ -291,15 +288,56 @@ action.reportValue(keyStringType, valueString);
 
 ## Report an Error
 
-An `Action` also has the possibility to report an error with a given 
-name, code and a reason. The code fragment below shows how.
+An `Action` has the possibility to report an error with a given 
+name and error code.  
+The code fragment below shows how.
 ```java
 String errorName = "Unknown Error";
 int errorCode = 42;
-String reason = "Not sure what's going on here";
 
-action.reportError(errorName, errorCode, reason);
+action.reportError(errorName, errorCode);
 ```
+
+Errors can also be reported with the method
+`Action.reportError(String errorName, String causeName, String causeDescription, String causeStackTrace)`, where 
+* `errorName` is the name of the reported error
+* `causeName` is an optional short name of the cause, typically an `Exception` class name
+* `causeDescription` is an optional short description of the cause, typically `Exception.getMessage()`
+* `causeStackTrace` is an optional stack trace of the cause
+The fragment below shows how to report such an error.
+
+```java
+public void restrictedMethod() {
+    if (!isUserAuthorized()) {
+        // user is not authorized - report this as an error
+        String errorName = "Authorization error";
+        String causeName = "User not authorized";
+        String causeDescription = "The current user is not authorized to call restrictedMethod.";
+        String stackTrace = null; // no stack trace is reported
+
+        action.reportError(errorName, causeName, causeDescription, stackTrace);
+
+        return;
+    }
+
+    // ... further processing ...
+}
+```
+
+It is also possible to report a caught exception as error. This is a convenience method for the
+`Action.reportError(String, String, String, String)` method mentioned above.
+The example below demonstrates how to report a `Throwable` as error.
+
+```java
+try {
+    // call a method that is throwing an exception 
+    callMethodThrowingException();
+} catch(Exception caughtException) {
+    // report the caught exception as error via OpenKit
+    String errorName = "Unknown Error";
+    action.reportError(errorName, caughtException);
+}
+``` 
 
 ## Tracing Web Requests
 

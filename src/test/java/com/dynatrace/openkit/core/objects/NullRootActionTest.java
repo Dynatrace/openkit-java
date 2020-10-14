@@ -150,6 +150,19 @@ public class NullRootActionTest {
     }
 
     @Test
+    public void reportErrorCauseReturnSelf() {
+        // given
+        NullRootAction target = NullRootAction.INSTANCE;
+
+        // when
+        Action obtained = target.reportError("error name", "error cause", "error description", "stacktrace");
+
+        // then
+        assertThat(obtained, is(instanceOf(NullRootAction.class)));
+        assertThat((NullRootAction)obtained, is(sameInstance(target)));
+    }
+
+    @Test
     public void reportErrorThrowableReturnsSelf() {
         // given
         NullRootAction target = NullRootAction.INSTANCE;

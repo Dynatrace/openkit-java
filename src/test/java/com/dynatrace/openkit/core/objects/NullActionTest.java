@@ -142,6 +142,19 @@ public class NullActionTest {
     }
 
     @Test
+    public void reportErrorCauseReturnSelf() {
+        // given
+        NullAction target = createNullAction();
+
+        // when
+        Action obtained = target.reportError("error name", "error cause", "error description", "stacktrace");
+
+        // then
+        assertThat(obtained, is(instanceOf(NullAction.class)));
+        assertThat((NullAction)obtained, is(sameInstance(target)));
+    }
+
+    @Test
     public void reportErrorThrowableReturnsSelf() {
         // given
         NullAction target = createNullAction();
