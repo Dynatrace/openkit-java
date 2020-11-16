@@ -101,7 +101,7 @@ public interface Action extends Closeable {
      * @param reason    reason for this error
      * @return this Action (for usage as fluent API)
      *
-     * @deprecated Prefer {@link #reportError(String, int)}, since reason is unhandled.
+     * @deprecated with version 2.1.0 Prefer {@link #reportError(String, int)}, since {@code reason} is unhandled.
      */
     @Deprecated
     Action reportError(String errorName, int errorCode, String reason);

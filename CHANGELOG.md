@@ -1,10 +1,13 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.1.0...HEAD)
+
+## 2.1.0 [Release date: 2020-11-16]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.1.0)
 
 ### Added
-- Support for reporting `long` values.
-- Convenience method reporting a `Throwable` as crash.
+- Overloaded `Action.reportValue(String, long`) method for reporting 64-bit integer values.
+- Overloaded `Session.reportCrash(Throwable)` as convenience method for reporting a `Throwable` as crash.
 - Overloaded `Action.reportError(String, int)` method for reporting an integer error code without description.  
   The old `Action.reportError(String, int, String)` has been deprecated in favor of the new one.
 - Overloaded `Action.reportError(String, Throwable)` for reporting caught exceptions as error.
