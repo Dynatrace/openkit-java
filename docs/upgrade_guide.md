@@ -9,6 +9,8 @@ to the latest 2.0 release.
   Use `WebRequestTracer#stop(int responseCode)` instead as replacement.
 * `DynatraceOpenKitBuilder#withApplicationName(String applicationName)`  
   The application name is configured in Dynatrace Web UI.
+* `AbstractOpenKitBuilder#enableVerbose()`
+  Use `AbstractOpenKitBuilder#withLogLevel(LogLevel.DEBUG)` instead.
 
 ## OpenKit Java 1.3 and below to 1.4
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
