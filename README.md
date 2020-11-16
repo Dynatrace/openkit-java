@@ -1,8 +1,8 @@
 # Dynatrace OpenKit - Java Reference Implementation
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://travis-ci.org/Dynatrace/openkit-java.svg?branch=main)](https://travis-ci.org/Dynatrace/openkit-java)
-[![Coverage Status](https://coveralls.io/repos/github/Dynatrace/openkit-java/badge.svg)](https://coveralls.io/github/Dynatrace/openkit-java)
+[![Build Status](https://travis-ci.org/Dynatrace/openkit-java.svg?branch=release%2F2.0)](https://travis-ci.org/Dynatrace/openkit-java)
+[![Coverage Status](https://coveralls.io/repos/github/Dynatrace/openkit-java/badge.svg?branch=release%2F2.0)](https://coveralls.io/github/Dynatrace/openkit-java?branch=release%2F2.0)
 
 :information_source: We changed the default branch name to `main`. You can find the necessary steps to update your local clone on [Scott Hanselman's Blog](https://www.hanselman.com/blog/EasilyRenameYourGitDefaultBranchFromMasterToMain.aspx).  
 We encourage you to rename the default branch in your forks too.
