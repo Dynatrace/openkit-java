@@ -1,5 +1,14 @@
 # Upgrade guide for OpenKit Java
 
+## OpenKit Java 2.0 to 2.1
+There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
+to the latest 2.1 release.
+
+### Deprecated API
+* ` Action#reportError(String errorName, int errorCode, String reason)`
+  Use ` Action#reportError(String errorName, int errorCode)` without `String reason` argument, as
+  `reason` is unhandled in Dynatrace.
+
 ## OpenKit Java 1.4 to 2.0
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
 to the latest 2.0 release.
@@ -9,6 +18,8 @@ to the latest 2.0 release.
   Use `WebRequestTracer#stop(int responseCode)` instead as replacement.
 * `DynatraceOpenKitBuilder#withApplicationName(String applicationName)`  
   The application name is configured in Dynatrace Web UI.
+* `AbstractOpenKitBuilder#enableVerbose()`
+  Use `AbstractOpenKitBuilder#withLogLevel(LogLevel.DEBUG)` instead.
 
 ## OpenKit Java 1.3 and below to 1.4
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
