@@ -18,9 +18,23 @@ package com.dynatrace.openkit.providers;
 
 public class DefaultTimingProvider implements TimingProvider {
 
+    /**
+     * Factor used to convert between milliseconds and nanoseconds.
+     */
+    static final long MILLIS_TO_NANOS_FACTOR = 1000L * 1000L;
+
+    /**
+     * Reference timestamp in nanoseconds.
+     */
+    private final long referenceTimestampNanos;
+
+    public DefaultTimingProvider() {
+        referenceTimestampNanos = (System.currentTimeMillis() * MILLIS_TO_NANOS_FACTOR) - System.nanoTime();
+    }
+
     @Override
     public long provideTimestampInMilliseconds() {
-        return System.currentTimeMillis();
+        return (referenceTimestampNanos + System.nanoTime()) / MILLIS_TO_NANOS_FACTOR;
     }
 
     @Override
