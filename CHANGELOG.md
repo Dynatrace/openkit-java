@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.1.0...HEAD)
 
+### Changed
+- Provide a more reliable way to determine monotonic timestamps.
+
 ## 2.1.0 [Release date: 2020-11-16]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.1.0)
 
