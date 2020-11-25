@@ -46,11 +46,11 @@ public class DefaultTimingProviderTest {
         DefaultTimingProvider target = new DefaultTimingProvider();
 
         // when
-        long timeInMillisBefore = System.currentTimeMillis();
+        long timeInNanosBefore = System.nanoTime();
         target.sleep(sleepTimeInMillis);
-        long sleptTimeInMillis = System.currentTimeMillis() - timeInMillisBefore;
+        long sleptTimeInNanos = System.nanoTime() - timeInNanosBefore;
 
         // then
-        assertThat(sleptTimeInMillis, greaterThanOrEqualTo(sleepTimeInMillis));
+        assertThat(sleptTimeInNanos, greaterThanOrEqualTo(sleepTimeInMillis * DefaultTimingProvider.MILLIS_TO_NANOS_FACTOR));
     }
 }
