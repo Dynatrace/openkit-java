@@ -4,6 +4,8 @@
 
 ### Changed
 - Provide a more reliable way to determine monotonic timestamps.
+- Fix potential endless loop in beacon sending, when lots of data
+  is generated in a short period of time.
 
 ## 2.1.0 [Release date: 2020-11-16]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.1.0)

@@ -55,6 +55,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyChar;
@@ -193,6 +194,7 @@ public class BeaconTest {
         verify(mockLogger, times(1)).warning("Beacon: Client IP address validation failed: " + ipAddress);
 
         // and when
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
         when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn("dummy");
 
         target.send(httpClientProvider, mockAdditionalParameters);
@@ -223,6 +225,7 @@ public class BeaconTest {
         verify(mockLogger, times(0)).warning(any(String.class));
 
         // and when
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
         when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn("dummy");
 
         target.send(httpClientProvider, mockAdditionalParameters);
@@ -2335,6 +2338,7 @@ public class BeaconTest {
         // given
         String beaconChunk = "some beacon string";
         when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(beaconChunk);
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
 
         HTTPClient httpClient = mock(HTTPClient.class);
         HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
@@ -2368,6 +2372,50 @@ public class BeaconTest {
         verify(mockLogger, times(1)).error(": Required charset \"UTF-8\" is not supported.", exception);
     }
 
+    @Test
+    public void sendCanHandleMultipleChunks() {
+        // given
+        String firstChunk = "some beacon string";
+        String secondChunk = "some more beacon string";
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar()))
+            .thenReturn(firstChunk, secondChunk);
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, true, false);
+
+        HTTPClientProvider httpClientProvider = mock(HTTPClientProvider.class);
+        HTTPClient httpClient = mock(HTTPClient.class);
+        int responseCode = 200;
+        StatusResponse firstResponse = StatusResponse.createSuccessResponse(
+            mockLogger,
+            ResponseAttributesImpl.withJsonDefaults().build(),
+            responseCode,
+            Collections.<String, List<String>>emptyMap()
+        );
+        StatusResponse secondResponse = StatusResponse.createSuccessResponse(
+            mockLogger,
+            ResponseAttributesImpl.withJsonDefaults().build(),
+            responseCode,
+            Collections.<String, List<String>>emptyMap()
+        );
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+            .thenReturn(firstResponse, secondResponse);
+        when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
+
+        Beacon target = createBeacon().build();
+
+        // when
+        StatusResponse response = target.send(httpClientProvider, mockAdditionalParameters);
+
+        // then
+        assertThat(response, is(notNullValue()));
+        assertThat(response, is(sameInstance(secondResponse)));
+
+        verify(httpClient, times(2)).sendBeaconRequest(any(String.class), any(byte[].class), eq(mockAdditionalParameters));
+
+        verify(mockBeaconCache, times(1)).prepareDataForSending(any(BeaconKey.class));
+        verify(mockBeaconCache, times(3)).hasDataForSending(any(BeaconKey.class));
+        verify(mockBeaconCache, times(2)).getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar());
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// misc tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2384,6 +2432,7 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
         when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
         when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
         when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
         Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
 
@@ -2411,8 +2460,11 @@ public class BeaconTest {
             "&tv=0" +
             "&mp=1";
 
+        BeaconKey expectedBeaconKey = new BeaconKey(SESSION_ID, sessionSequence);
+        verify(mockBeaconCache, times(1)).prepareDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1)).hasDataForSending(eq(expectedBeaconKey));
         verify(mockBeaconCache, times(1))
-            .getNextBeaconChunk(eq(new BeaconKey(SESSION_ID, sessionSequence)), eq(expectedPrefix), anyInt(), anyChar());
+            .getNextBeaconChunk(eq(expectedBeaconKey), eq(expectedPrefix), anyInt(), anyChar());
     }
 
     @Test
@@ -2426,6 +2478,7 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
         when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
         when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
         when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
         when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
         Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
@@ -2455,8 +2508,11 @@ public class BeaconTest {
                 "&tv=0" +
                 "&mp=1";
 
+        BeaconKey expectedBeaconKey = new BeaconKey(SESSION_ID, sessionSequence);
+        verify(mockBeaconCache, times(1)).prepareDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1)).hasDataForSending(eq(expectedBeaconKey));
         verify(mockBeaconCache, times(1))
-                .getNextBeaconChunk(eq(new BeaconKey(SESSION_ID, sessionSequence)), eq(expectedPrefix), anyInt(), anyChar());
+            .getNextBeaconChunk(eq(expectedBeaconKey), eq(expectedPrefix), anyInt(), anyChar());
     }
 
     @Test
