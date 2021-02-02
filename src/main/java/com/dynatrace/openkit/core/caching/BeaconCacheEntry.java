@@ -108,14 +108,14 @@ class BeaconCacheEntry {
      *
      * @return {@code true} if data must be copied, {@code false} otherwise.
      */
-    boolean needsDataCopyBeforeChunking() {
-        return actionDataBeingSent == null && eventDataBeingSent == null;
+    boolean needsDataCopyBeforeSending() {
+        return !hasDataToSend();
     }
 
     /**
      * Copy data for sending.
      */
-    void copyDataForChunking() {
+    void copyDataForSending() {
         actionDataBeingSent = actionData;
         eventDataBeingSent = eventData;
         actionData = new LinkedList<BeaconCacheRecord>();
@@ -139,9 +139,6 @@ class BeaconCacheEntry {
     String getChunk(String chunkPrefix, int maxSize, char delimiter) {
 
         if (!hasDataToSend()) {
-            // nothing to send - reset to null, so next time lists get copied again
-            eventDataBeingSent = null;
-            actionDataBeingSent = null;
             return "";
         }
         return getNextChunk(chunkPrefix, maxSize, delimiter);
@@ -152,10 +149,9 @@ class BeaconCacheEntry {
      *
      * @return {@code true} if there is more data, {@code false} otherwise.
      */
-    private boolean hasDataToSend() {
-
-        return (eventDataBeingSent != null && !eventDataBeingSent.isEmpty()) || (actionDataBeingSent != null && !actionDataBeingSent
-            .isEmpty());
+    boolean hasDataToSend() {
+        return (eventDataBeingSent != null && !eventDataBeingSent.isEmpty())
+            || (actionDataBeingSent != null && !actionDataBeingSent.isEmpty());
     }
 
     /**

@@ -366,6 +366,8 @@ public class BeaconCacheImplTest {
         target.addEventData(keyOne, 1000L, "b");
         target.addEventData(keyOne, 1001L, "jjj");
 
+        target.prepareDataForSending(keyOne);
+
         // when
         String obtained = target.getNextBeaconChunk(keyOne, "prefix", 0, '&');
 
@@ -392,6 +394,8 @@ public class BeaconCacheImplTest {
         target.addEventData(keyOne, 1000L, "b");
         target.addEventData(keyOne, 1001L, "jjj");
 
+        target.prepareDataForSending(keyOne);
+
         // when
         target.getNextBeaconChunk(keyOne, "prefix", 0, '&');
 
@@ -412,6 +416,8 @@ public class BeaconCacheImplTest {
         target.addActionData(keyTwo, 2000L, "z");
         target.addEventData(keyOne, 1000L, "b");
         target.addEventData(keyOne, 1001L, "jjj");
+
+        target.prepareDataForSending(keyOne);
 
         // when retrieving the first chunk
         String obtained = target.getNextBeaconChunk(keyOne, "prefix", 10, '&');
@@ -441,6 +447,8 @@ public class BeaconCacheImplTest {
         target.addActionData(keyTwo, 2000L, "z");
         target.addEventData(keyOne, 1000L, "b");
         target.addEventData(keyOne, 1001L, "jjj");
+
+        target.prepareDataForSending(keyOne);
 
         // when retrieving the first chunk and removing retrieved chunks
         String obtained = target.getNextBeaconChunk(keyOne, "prefix", 10, '&');
@@ -476,6 +484,8 @@ public class BeaconCacheImplTest {
         target.addActionData(keyTwo, 2000L, "z");
         target.addEventData(keyOne, 1000L, "b");
         target.addEventData(keyOne, 1001L, "jjj");
+
+        target.prepareDataForSending(keyOne);
 
         // when retrieving the first chunk and removing the wrong beacon chunk
         target.getNextBeaconChunk(keyOne, "prefix", 10, '&');
@@ -586,6 +596,7 @@ public class BeaconCacheImplTest {
         target.addEventData(key, 1001L, "jjj");
 
         // do same step we'd do when we send the
+        target.prepareDataForSending(key);
         target.getNextBeaconChunk(key, "prefix", 10, '&');
 
         // data has been copied, but still add some new event & action data
@@ -718,6 +729,7 @@ public class BeaconCacheImplTest {
         target.addActionData(key, 1000L, "a");
         target.addEventData(key, 1000L, "b");
 
+        target.prepareDataForSending(key);
         target.getNextBeaconChunk(key, "prefix", 0, '&');
 
         // then
