@@ -61,6 +61,26 @@ public interface BeaconCache {
     void deleteCacheEntry(BeaconKey key);
 
     /**
+     * Prepare all data, that has been recorded so far, for sending.
+     *
+     * <p>
+     * Note: This method must only be invoked from the beacon sending thread.
+     * </p>
+     *
+     * @param key The beacon's ID (aka Session ID and Session seq. no.) for which to copy the collected data.
+     */
+    void prepareDataForSending(BeaconKey key);
+
+    /**
+     * Test if there is more data to send.
+     *
+     * @param key key The beacon's ID (aka Session ID and Session seq. no.) for which to copy the collected data.
+     * @return {@code true} if there is data for sending,
+     *         {@code false} if {@link BeaconKey} does not exist or there is no data for sending.
+     */
+    boolean hasDataForSending(BeaconKey key);
+
+    /**
      * Get the next chunk for sending to the backend.
      *
      * <p>

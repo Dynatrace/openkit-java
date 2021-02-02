@@ -100,7 +100,7 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
-    public void copyDataForChunkingMovesData() {
+    public void copyDataForSendingMovesData() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -115,7 +115,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataThree);
 
         // when copying data for later chunking
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // then the data was moved
         assertThat(target.getEventDataBeingSent(), is(equalTo(Arrays.asList(dataOne, dataFour))));
@@ -125,7 +125,7 @@ public class BeaconCacheEntryTest {
     }
 
     @Test
-    public void needsDataCopyBeforeChunkingGivesTrueBeforeDataIsCopied() {
+    public void needsDataCopyBeforeSendingGivesTrueBeforeDataIsCopied() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -140,11 +140,11 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataThree);
 
         // when, then
-        assertThat(target.needsDataCopyBeforeChunking(), is(true));
+        assertThat(target.needsDataCopyBeforeSending(), is(true));
     }
 
     @Test
-    public void needsDataCopyBeforeChunkingGivesFalseAfterDataHasBeenCopied() {
+    public void needsDataCopyBeforeSendingGivesFalseAfterDataHasBeenCopied() {
 
         // given
         BeaconCacheRecord dataOne = new BeaconCacheRecord(0L, "One");
@@ -158,22 +158,22 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when, then
-        assertThat(target.needsDataCopyBeforeChunking(), is(false));
+        assertThat(target.needsDataCopyBeforeSending(), is(false));
     }
 
     @Test
-    public void needsDataCopyBeforeChunkingGivesFalseEvenIfListsAreEmpty() {
+    public void needsDataCopyBeforeSendingGivesTrueIfListsAreEmpty() {
 
         // given
         BeaconCacheEntry target = new BeaconCacheEntry();
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when, then
-        assertThat(target.needsDataCopyBeforeChunking(), is(false));
+        assertThat(target.needsDataCopyBeforeSending(), is(true));
 
         // and all the lists are empty
         assertThat(target.getEventData(), is(empty()));
@@ -197,7 +197,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when retrieving data
         String obtained = target.getChunk("prefix", 1024, '&');
@@ -228,7 +228,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when getting data to send
         String obtained = target.getChunk("a", 2, '&');
@@ -280,7 +280,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when getting data to send
         String obtained = target.getChunk("a", 100, '&');
@@ -318,7 +318,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when requesting first chunk
         String obtained = target.getChunk("prefix", 1, '&');
@@ -404,7 +404,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when data is reset
         target.resetDataMarkedForSending();
@@ -431,7 +431,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when data is retrieved
         target.getChunk("", 1024, '&');
@@ -706,7 +706,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when
         int obtained = target.removeRecordsOlderThan(10000);
@@ -733,7 +733,7 @@ public class BeaconCacheEntryTest {
         target.addActionData(dataTwo);
         target.addActionData(dataThree);
 
-        target.copyDataForChunking();
+        target.copyDataForSending();
 
         // when
         int obtained = target.removeOldestRecords(10000);
@@ -742,5 +742,69 @@ public class BeaconCacheEntryTest {
         assertThat(obtained, is(0));
         assertThat(target.getEventDataBeingSent(), is(equalTo(Arrays.asList(dataOne, dataFour))));
         assertThat(target.getActionDataBeingSent(), is(equalTo(Arrays.asList(dataTwo, dataThree))));
+    }
+
+    @Test
+    public void hasDataForSendingReturnsFalseIfDataWasNotCopied() {
+        // given
+        BeaconCacheRecord dataOne = new BeaconCacheRecord(1000L, "One");
+        BeaconCacheRecord dataTwo = new BeaconCacheRecord(1500L, "Two");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(dataOne);
+        target.addEventData(dataTwo);
+
+        // when
+        boolean obtained = target.hasDataToSend();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void hasDataForSendingReturnsFalseIfNoDataWasAddedBeforeCopying() {
+        // given
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.copyDataForSending();
+
+        // when
+        boolean obtained = target.hasDataToSend();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void hasDataForSendingReturnsTrueIfEventDataWasAddedBeforeCopying() {
+        // given
+        BeaconCacheRecord record = new BeaconCacheRecord(1000L, "One");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addEventData(record);
+
+        target.copyDataForSending();
+
+        // when
+        boolean obtained = target.hasDataToSend();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void hasDataForSendingReturnsTrueIfActionDataWasAddedBeforeCopying() {
+        // given
+        BeaconCacheRecord record = new BeaconCacheRecord(1000L, "One");
+
+        BeaconCacheEntry target = new BeaconCacheEntry();
+        target.addActionData(record);
+
+        target.copyDataForSending();
+
+        // when
+        boolean obtained = target.hasDataToSend();
+
+        // then
+        assertThat(obtained, is(true));
     }
 }

@@ -757,7 +757,8 @@ public class Beacon {
         HTTPClient httpClient = provider.createClient(configuration.getHTTPClientConfiguration());
         StatusResponse response = null;
 
-        while (true) {
+        beaconCache.prepareDataForSending(beaconKey);
+        while (beaconCache.hasDataForSending(beaconKey)) {
 
             // prefix for this chunk - must be built up newly, due to changing timestamps
             String prefix = appendMutableBeaconData(immutableBasicBeaconData);

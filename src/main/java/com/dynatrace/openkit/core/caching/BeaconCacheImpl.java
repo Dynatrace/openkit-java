@@ -50,7 +50,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     /**
      * Create BeaconCache.
      *
-     * @param logger
+     * @param logger For trace messages.
      */
     public BeaconCacheImpl(Logger logger) {
         this.logger = logger;
@@ -134,6 +134,40 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         }
     }
 
+    @Override
+    public void prepareDataForSending(BeaconKey key) {
+        BeaconCacheEntry entry = getCachedEntry(key);
+        if (entry == null) {
+            // a cache entry for the given key does not exist
+            return;
+        }
+
+        if (entry.needsDataCopyBeforeSending()) {
+            // both entries are null, prepare data for sending
+            long numBytes;
+            try {
+                entry.lock();
+                numBytes = entry.getTotalNumberOfBytes();
+                entry.copyDataForSending();
+
+            } finally {
+                entry.unlock();
+            }
+            // assumption: sending will work fine, and everything we copied will be removed quite soon
+            cacheSizeInBytes.addAndGet(-1L * numBytes);
+        }
+    }
+
+    @Override
+    public boolean hasDataForSending(BeaconKey key) {
+        BeaconCacheEntry entry = getCachedEntry(key);
+        if (entry == null) {
+            // a cache entry for the given key does not exist
+            return false;
+        }
+
+        return entry.hasDataToSend();
+    }
 
     @Override
     public String getNextBeaconChunk(BeaconKey key, String chunkPrefix, int maxSize, char delimiter) {
@@ -142,21 +176,6 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         if (entry == null) {
             // a cache entry for the given key does not exist
             return null;
-        }
-
-        if (entry.needsDataCopyBeforeChunking()) {
-            // both entries are null, prepare data for sending
-            long numBytes;
-            try {
-                entry.lock();
-                numBytes = entry.getTotalNumberOfBytes();
-                entry.copyDataForChunking();
-
-            } finally {
-                entry.unlock();
-            }
-            // assumption: sending will work fine, and everything we copied will be removed quite soon
-            cacheSizeInBytes.addAndGet(-1L * numBytes);
         }
 
         // data for chunking is available
