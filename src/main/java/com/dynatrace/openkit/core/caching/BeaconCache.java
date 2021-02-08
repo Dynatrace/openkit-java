@@ -74,7 +74,7 @@ public interface BeaconCache {
     /**
      * Test if there is more data to send.
      *
-     * @param key key The beacon's ID (aka Session ID and Session seq. no.) for which to copy the collected data.
+     * @param key key The beacon's ID (aka Session ID and Session seq. no.) for which to test if there is more data to send.
      * @return {@code true} if there is data for sending,
      *         {@code false} if {@link BeaconKey} does not exist or there is no data for sending.
      */
