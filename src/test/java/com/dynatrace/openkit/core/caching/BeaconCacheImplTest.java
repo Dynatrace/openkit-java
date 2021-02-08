@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.core.caching;
 
 import com.dynatrace.openkit.api.Logger;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,12 +26,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
 
+import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyArray;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -353,7 +357,7 @@ public class BeaconCacheImplTest {
     }
 
     @Test
-    public void getNextBeaconChunkCopiesDataForSending() {
+    public void getNextBeaconChunkDoesNotCopyDataForSending() {
 
         // given
         BeaconCacheImpl target = new BeaconCacheImpl(logger);
@@ -366,18 +370,16 @@ public class BeaconCacheImplTest {
         target.addEventData(keyOne, 1000L, "b");
         target.addEventData(keyOne, 1001L, "jjj");
 
-        target.prepareDataForSending(keyOne);
-
         // when
         String obtained = target.getNextBeaconChunk(keyOne, "prefix", 0, '&');
 
         // then
-        assertThat(obtained, is("prefix"));
+        assertThat(obtained, isEmptyString());
 
-        assertThat(target.getActions(keyOne), is(emptyArray()));
-        assertThat(target.getEvents(keyOne), is(emptyArray()));
-        assertThat(target.getActionsBeingSent(keyOne), is(equalTo(Arrays.asList(new BeaconCacheRecord(1000L, "a"), new BeaconCacheRecord(1001L, "iii")))));
-        assertThat(target.getEventsBeingSent(keyOne), is(equalTo(Arrays.asList(new BeaconCacheRecord(1000L, "b"), new BeaconCacheRecord(1001L, "jjj")))));
+        assertThat(target.getActions(keyOne), is(arrayContaining("a", "iii")));
+        assertThat(target.getEvents(keyOne), is(arrayContaining("b", "jjj")));
+        assertThat(target.getActionsBeingSent(keyOne), is(nullValue()));
+        assertThat(target.getEventsBeingSent(keyOne), is(nullValue()));
     }
 
     @Test
