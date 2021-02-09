@@ -66,6 +66,11 @@ public enum ResponseAttribute {
     IS_CAPTURE_ERRORS,
 
     /**
+     * Sampling percentage for sessions.
+     */
+    TRAFFIC_CONTROL_PERCENTAGE,
+
+    /**
      * The ID of the application to which a configuration applies.
      */
     APPLICATION_ID,

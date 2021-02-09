@@ -71,6 +71,7 @@ public class ResponseAttributesImplTest {
         assertThat(obtained.isCapture(), is(defaults.isCapture()));
         assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
         assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+        assertThat(obtained.getTrafficControlPercentage(), is(defaults.getTrafficControlPercentage()));
         assertThat(obtained.getApplicationId(), is(defaults.getApplicationId()));
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
@@ -100,6 +101,7 @@ public class ResponseAttributesImplTest {
         assertThat(obtained.isCapture(), is(defaults.isCapture()));
         assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
         assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+        assertThat(obtained.getTrafficControlPercentage(), is(defaults.getTrafficControlPercentage()));
         assertThat(obtained.getApplicationId(), is(defaults.getApplicationId()));
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
@@ -394,6 +396,39 @@ public class ResponseAttributesImplTest {
 
         // when
         ResponseAttributes obtained = target.withCaptureErrors(!ResponseAttributesDefaults.JSON_RESPONSE.isCaptureErrors()).build();
+
+        // then
+        assertThat(obtained.isAttributeSet(attribute), is(true));
+
+        for (ResponseAttribute unsetAttribute : ResponseAttribute.values()) {
+            if (attribute == unsetAttribute) {
+                continue;
+            }
+            assertThat(obtained.isAttributeSet(unsetAttribute), is(false));
+        }
+    }
+
+    @Test
+    public void buildPropagatesTrafficControlPercentageToInstance() {
+        // given
+        int trafficControlPercentage = 65;
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
+
+        // when
+        ResponseAttributes obtained = target.withTrafficControlPercentage(trafficControlPercentage).build();
+
+        // then
+        assertThat(obtained.getTrafficControlPercentage(), is(equalTo(trafficControlPercentage)));
+    }
+
+    @Test
+    public void withTrafficControlPercentageSetsAttributeOnInstance() {
+        // given
+        ResponseAttribute attribute = ResponseAttribute.TRAFFIC_CONTROL_PERCENTAGE;
+        ResponseAttributesImpl.Builder target = ResponseAttributesImpl.withJsonDefaults();
+
+        // when
+        ResponseAttributes obtained = target.withTrafficControlPercentage(42).build();
 
         // then
         assertThat(obtained.isAttributeSet(attribute), is(true));
@@ -1041,6 +1076,55 @@ public class ResponseAttributesImplTest {
         // then
         assertThat(obtained, notNullValue());
         assertThat(obtained.isCaptureErrors(), is(captureErrors));
+    }
+
+    @Test
+    public void mergeTakesTrafficControlPercentageFromMergeTargetIfNotSetInSource() {
+        // given
+        int trafficControlPercentage = 73;
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults().build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withTrafficControlPercentage(trafficControlPercentage).build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
+    }
+
+    @Test
+    public void mergeTakesTrafficControlPercentageFromMergeSourceIfSetInSource() {
+        // given
+        int trafficControlPercentage = 73;
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withTrafficControlPercentage(trafficControlPercentage).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults().build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
+    }
+
+    @Test
+    public void mergeTakesTrafficControlPercentageFromMergeSourceIfSetInSourceAndTarget() {
+        // given
+        int trafficControlPercentage = 73;
+        ResponseAttributes source = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withTrafficControlPercentage(trafficControlPercentage).build();
+        ResponseAttributes target = ResponseAttributesImpl.withUndefinedDefaults()
+                                                          .withTrafficControlPercentage(37).build();
+
+        // when
+        ResponseAttributes obtained = target.merge(source);
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
     }
 
     @Test

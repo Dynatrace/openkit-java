@@ -42,4 +42,22 @@ public class FixedRandomNumberGeneratorTest {
             assertThat(obtained, is(randomNumber));
         }
     }
+
+    @Test
+    public void nextPercentageValueReturnsAlwaysTheSameNumber() {
+        // given
+        int randomPercentage = 42;
+        RandomNumberGenerator mockRng = mock(RandomNumberGenerator.class);
+        when(mockRng.nextPercentageValue()).thenReturn(randomPercentage, 1, 2, 4, 5);
+
+        FixedRandomNumberGenerator target = new FixedRandomNumberGenerator(mockRng);
+
+        for (int i = 0; i < 100; i++) {
+            // when
+            int obtained = target.nextPercentageValue();
+
+            // then
+            assertThat(obtained, is(randomPercentage));
+        }
+    }
 }

@@ -60,6 +60,7 @@ public class KeyValueResponseParserTest {
         assertThat(obtained.isCapture(), is(defaults.isCapture()));
         assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
         assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+        assertThat(obtained.getTrafficControlPercentage(), is(defaults.getTrafficControlPercentage()));
 
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
         assertThat(obtained.getServerId(), is(defaults.getServerId()));
@@ -399,6 +400,50 @@ public class KeyValueResponseParserTest {
     public void parsingReportErrorsWithTooBigValueThrowsException() {
         // given
         appendParameter(KeyValueResponseParser.RESPONSE_KEY_REPORT_ERRORS, 2147483648L);
+        expectedException.expect(NumberFormatException.class);
+
+        // when
+        KeyValueResponseParser.parse(inputBuilder.toString());
+    }
+
+    @Test
+    public void parseExtractsTrafficControlPercentage() {
+        // given
+        int trafficControlPercentage = 73;
+        appendParameter(KeyValueResponseParser.RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE, trafficControlPercentage);
+
+        // when
+        ResponseAttributes obtained = KeyValueResponseParser.parse(inputBuilder.toString());
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
+    }
+
+    @Test
+    public void parsingTrafficControlPercentageWithEmptyValueThrowsException() {
+        // given
+        appendParameter(KeyValueResponseParser.RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE, "");
+        expectedException.expect(NumberFormatException.class);
+
+        // when
+        KeyValueResponseParser.parse(inputBuilder.toString());
+    }
+
+    @Test
+    public void parsingTrafficControlPercentageWithNonNumericValueThrowsException() {
+        // given
+        appendParameter(KeyValueResponseParser.RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE, "a");
+        expectedException.expect(NumberFormatException.class);
+
+        // when
+        KeyValueResponseParser.parse(inputBuilder.toString());
+    }
+
+    @Test
+    public void parsingTrafficControlPercentageWithTooBigValueThrowsException() {
+        // given
+        appendParameter(KeyValueResponseParser.RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE, 2147483648L);
         expectedException.expect(NumberFormatException.class);
 
         // when

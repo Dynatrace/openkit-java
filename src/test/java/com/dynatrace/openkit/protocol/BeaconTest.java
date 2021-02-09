@@ -133,6 +133,7 @@ public class BeaconTest {
         when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(true);
         when(mockServerConfiguration.getServerID()).thenReturn(SERVER_ID);
         when(mockServerConfiguration.getBeaconSizeInBytes()).thenReturn(30 * 1024); // 30kB
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(100); // 100%
 
         HTTPClientConfiguration mockHttpClientConfiguration = mock(HTTPClientConfiguration.class);
         when(mockHttpClientConfiguration.getServerID()).thenReturn(SERVER_ID);
@@ -161,6 +162,7 @@ public class BeaconTest {
         when(parentOpenKitObject.getActionID()).thenReturn(0);
 
         mockRandom = mock(RandomNumberGenerator.class);
+        when(mockRandom.nextPercentageValue()).thenReturn(0);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -570,6 +572,25 @@ public class BeaconTest {
     }
 
     @Test
+    public void actionNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+        BaseActionImpl action = mock(BaseActionImpl.class);
+        when(action.getID()).thenReturn(ACTION_ID);
+        when(action.getName()).thenReturn("actionName");
+
+        // when
+        target.addAction(action);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
     public void actionNotReportedIfActionReportingDisallowed() {
         //given
         Beacon target = createBeacon().build();
@@ -628,9 +649,25 @@ public class BeaconTest {
     }
 
     @Test
-    public void sessionStartIsNotReportedReportedIfDataSendingIsDisallowed() {
+    public void sessionStartIsNotReportedIfDataSendingIsDisallowed() {
         // given
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.startSession();
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void sessionStartIsNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
         Beacon target = createBeacon().build();
 
         // when
@@ -686,6 +723,22 @@ public class BeaconTest {
         // given
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.endSession();
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void sessionNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
 
         // when
         target.endSession();
@@ -777,6 +830,22 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void intValueNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "test value", 123);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportValue(long) tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -860,6 +929,22 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void longValueNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportValue(double) tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -935,6 +1020,22 @@ public class BeaconTest {
         // given
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportValue(ACTION_ID, "test value", 2.71);
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void doubleValueIsNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
 
         // when
         target.reportValue(ACTION_ID, "test value", 2.71);
@@ -1051,6 +1152,22 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void stringValueIsNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.reportValue(ACTION_ID, "test value", "test data");
+
+        // then
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportEvent tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1124,6 +1241,22 @@ public class BeaconTest {
         // given
         Beacon target = createBeacon().build();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.reportEvent(ACTION_ID, "Event name");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void namedEventIsNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
 
         // when
         target.reportEvent(ACTION_ID, "Event name");
@@ -1221,6 +1354,23 @@ public class BeaconTest {
         //given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isErrorReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportError(ACTION_ID, "DivByZeroError", 127);
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void errorCodeNotReportedIfDisallowedByTrafficControl() {
+        //given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
 
         //when
         target.reportError(ACTION_ID, "DivByZeroError", 127);
@@ -1422,6 +1572,22 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void errorWithCauseNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportError with Throwable tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1552,6 +1718,23 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void errorWithThrowableNotReportedIfDisallowedByTrafficControl() {
+        //given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        //when
+        target.reportError(ACTION_ID, "error", new IllegalStateException("illegal"));
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportCrash with String tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1560,6 +1743,7 @@ public class BeaconTest {
     public void reportValidCrash() {
         // given
         final Beacon target = createBeacon().build();
+
         String errorName = "SomeEvent";
         String reason = "SomeReason";
         String stacktrace = "SomeStacktrace";
@@ -1714,6 +1898,23 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void reportCrashDoesNotReportIfDisallowedByTrafficControl() {
+        //given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        //when
+        target.reportCrash("Error name", "The reason for this error", "the stack trace");
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportCrash with Throwable tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1796,6 +1997,23 @@ public class BeaconTest {
         //given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isCrashReportingAllowed()).thenReturn(false);
+
+        //when
+        target.reportCrash(new IllegalStateException("illegal"));
+
+        //then
+        //verify error has not been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void reportCrashWithThrowableDoesNotReportDisallowedByTrafficControl() {
+        //given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
 
         //when
         target.reportCrash(new IllegalStateException("illegal"));
@@ -2151,6 +2369,29 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
+    @Test
+    public void noWebRequestIsReportedIfDisallowedByTrafficControl() {
+        // given
+        WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
+        when(webRequestTracer.getURL()).thenReturn("https://www.google.com");
+        when(webRequestTracer.getBytesSent()).thenReturn(13);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getResponseCode()).thenReturn(15);
+
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        //when
+        target.addWebRequest(ACTION_ID, webRequestTracer);
+
+        //then
+        //verify nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// identifyUser tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2246,6 +2487,23 @@ public class BeaconTest {
         //given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isUserIdentificationAllowed()).thenReturn(false);
+
+        //when
+        target.identifyUser("jane@doe.com");
+
+        //then
+        //verify nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void cannotIdentifyUserIfDisallowedByTrafficControl() {
+        //given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
 
         //when
         target.identifyUser("jane@doe.com");
@@ -2575,7 +2833,6 @@ public class BeaconTest {
 
         //then verify that device id is taken from configuration
         verify(mockOpenKitConfiguration, times(1)).getDeviceID();
-        verifyNoMoreInteractions(mockRandom);
         assertThat(obtained, is(testDeviceId));
     }
 
@@ -2662,7 +2919,7 @@ public class BeaconTest {
     }
 
     @Test
-    public void isDataCaptureEnabledReturnsFalseIfDataSendingIsDisallowed() {
+    public void isDataCapturingEnabledReturnsFalseIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
 
@@ -2675,13 +2932,167 @@ public class BeaconTest {
     }
 
     @Test
-    public void isDataCaptureEnabledReturnsTrueIfDataSendingIsAllowed() {
+    public void isDataCapturingEnabledReturnsFalseIfTcValueEqualToTcPercentageFromServerConfig() {
         // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlValue);
+        boolean obtained = target.isDataCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isDataCapturingEnabledReturnsFalseIfTcValueGreaterThanTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlValue - 1);
+        boolean obtained = target.isDataCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isDataCapturingEnabledReturnsTrueIfDataSendingIsAllowedAndTcValueGreaterThanTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
         Beacon target = createBeacon().build();
 
         // when
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(true);
         boolean obtained = target.isDataCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void isErrorCapturingEnabledReturnsFalseIfSendingErrorsIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(false);
+        boolean obtained = target.isErrorCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isErrorCapturingEnabledReturnsFalseIfTcValueEqualToTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(true);
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlValue);
+        boolean obtained = target.isErrorCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isErrorCapturingEnabledReturnsFalseIfTcValueGreaterThanTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(true);
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlValue - 1);
+        boolean obtained = target.isErrorCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isErrorCapturingEnabledReturnsTrueIfDataSendingIsAllowedAndTcValueGreaterThanTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingErrorsAllowed()).thenReturn(true);
+        boolean obtained = target.isErrorCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(true));
+    }
+
+    @Test
+    public void isCrashCapturingEnabledReturnsFalseIfSendingErrorsIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(false);
+        boolean obtained = target.isCrashCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isCrashCapturingEnabledReturnsFalseIfTcValueEqualToTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(true);
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlValue);
+        boolean obtained = target.isCrashCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isCrashCapturingEnabledReturnsFalseIfTcValueGreaterThanTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(true);
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlValue - 1);
+        boolean obtained = target.isCrashCapturingEnabled();
+
+        // then
+        assertThat(obtained, is(false));
+    }
+
+    @Test
+    public void isCrashCapturingEnabledReturnsTrueIfDataSendingIsAllowedAndTcValueGreaterThanTcPercentageFromServerConfig() {
+        // given
+        int trafficControlValue = 50;
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlValue);
+        Beacon target = createBeacon().build();
+
+        // when
+        when(mockServerConfiguration.isSendingCrashesAllowed()).thenReturn(true);
+        boolean obtained = target.isCrashCapturingEnabled();
 
         // then
         assertThat(obtained, is(true));

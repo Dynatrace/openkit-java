@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.1.0...HEAD)
 
+### Added
+- Support cost control configured in the Dynatrace UI.
+
 ### Changed
 - Provide a more reliable way to determine monotonic timestamps.
 - Fix potential endless loop in beacon sending, when lots of data

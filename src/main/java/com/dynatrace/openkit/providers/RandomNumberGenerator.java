@@ -25,4 +25,9 @@ public interface RandomNumberGenerator {
      * Returns a positive random long number (including {@code 0}).
      */
     long nextPositiveLong();
+
+    /**
+     * Returns a positive random integer number in range [{@code 0}, {@code 100}).
+     */
+    int nextPercentageValue();
 }

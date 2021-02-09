@@ -37,6 +37,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     private final boolean isCapture;
     private final boolean isCaptureCrashes;
     private final boolean isCaptureErrors;
+    private final int trafficControlPercentage;
     private final String applicationId;
 
     private final int multiplicity;
@@ -58,6 +59,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         isCapture = builder.isCapture;
         isCaptureCrashes = builder.isCaptureCrashes;
         isCaptureErrors = builder.isCaptureErrors;
+        trafficControlPercentage = builder.trafficControlPercentage;
         applicationId = builder.applicationId;
 
         multiplicity = builder.multiplicity;
@@ -113,6 +115,11 @@ public class ResponseAttributesImpl implements ResponseAttributes {
     }
 
     @Override
+    public int getTrafficControlPercentage() {
+        return trafficControlPercentage;
+    }
+
+    @Override
     public String getApplicationId() {
         return applicationId;
     }
@@ -155,6 +162,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         applyCapture(builder, responseAttributes);
         applyCaptureCrashes(builder, responseAttributes);
         applyCaptureErrors(builder, responseAttributes);
+        applyTrafficControlPercentage(builder, responseAttributes);
         applyApplicationId(builder, responseAttributes);
         applyMultiplicity(builder, responseAttributes);
         applyServerId(builder, responseAttributes);
@@ -234,6 +242,13 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         builder.withApplicationId(responseAttributes.getApplicationId());
     }
 
+    private void applyTrafficControlPercentage(Builder builder, ResponseAttributes responseAttributes) {
+        if (!responseAttributes.isAttributeSet(ResponseAttribute.TRAFFIC_CONTROL_PERCENTAGE)) {
+            return;
+        }
+        builder.withTrafficControlPercentage(responseAttributes.getTrafficControlPercentage());
+    }
+
     private void applyMultiplicity(Builder builder, ResponseAttributes responseAttributes) {
         if (!responseAttributes.isAttributeSet(ResponseAttribute.MULTIPLICITY)) {
             return;
@@ -296,6 +311,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         private boolean isCapture;
         private boolean isCaptureCrashes;
         private boolean isCaptureErrors;
+        private int trafficControlPercentage;
         private String applicationId;
 
         private int multiplicity;
@@ -315,6 +331,7 @@ public class ResponseAttributesImpl implements ResponseAttributes {
             isCapture = defaults.isCapture();
             isCaptureCrashes = defaults.isCaptureCrashes();
             isCaptureErrors = defaults.isCaptureErrors();
+            trafficControlPercentage = defaults.getTrafficControlPercentage();
             applicationId = defaults.getApplicationId();
 
             multiplicity = defaults.getMultiplicity();
@@ -443,6 +460,19 @@ public class ResponseAttributesImpl implements ResponseAttributes {
         public Builder withCaptureErrors(boolean isCaptureErrors) {
             this.isCaptureErrors = isCaptureErrors;
             setAttribute(ResponseAttribute.IS_CAPTURE_ERRORS);
+
+            return this;
+        }
+
+        /**
+         * Sets a session sampling percentage (known as Cost Control).
+         *
+         * @param trafficControlPercentage Percentage of sessions to capture
+         * @return {@code this}
+         */
+        public Builder withTrafficControlPercentage(int trafficControlPercentage) {
+            this.trafficControlPercentage = trafficControlPercentage;
+            setAttribute(ResponseAttribute.TRAFFIC_CONTROL_PERCENTAGE);
 
             return this;
         }

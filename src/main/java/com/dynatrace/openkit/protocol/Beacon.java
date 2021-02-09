@@ -128,6 +128,9 @@ public class Beacon {
     // Configuration object required for this Beacon
     private final BeaconConfiguration configuration;
 
+    // this Beacon's traffic control value
+    private final int trafficControlValue;
+
     private final Logger logger;
 
     private final BeaconCache beaconCache;
@@ -152,6 +155,8 @@ public class Beacon {
         this.sessionStartTime = timingProvider.provideTimestampInMilliseconds();
 
         this.deviceID = createDeviceID(initializer.getRandomNumberGenerator(), configuration);
+
+        this.trafficControlValue = initializer.getRandomNumberGenerator().nextPercentageValue();
 
         String ipAddress = initializer.getClientIpAddress();
         if (ipAddress == null) {
@@ -288,7 +293,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -343,7 +348,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -394,7 +399,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -427,7 +432,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -460,7 +465,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -494,7 +499,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingDataAllowed()) {
+        if (!isDataCapturingEnabled()) {
             return;
         }
 
@@ -526,7 +531,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingErrorsAllowed()) {
+        if (!isErrorCapturingEnabled()) {
             return;
         }
 
@@ -578,7 +583,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingErrorsAllowed()) {
+        if (!isErrorCapturingEnabled()) {
             return;
         }
 
@@ -644,7 +649,7 @@ public class Beacon {
             return;
         }
 
-        if (!configuration.getServerConfiguration().isSendingCrashesAllowed()) {
+        if (!isCrashCapturingEnabled()) {
             return;
         }
 
@@ -1217,7 +1222,30 @@ public class Beacon {
      * Indicates whether data capturing for this beacon is currently enabled or not.
      */
     public boolean isDataCapturingEnabled() {
-        return configuration.getServerConfiguration().isSendingDataAllowed();
+        ServerConfiguration serverConfiguration = configuration.getServerConfiguration();
+
+        return serverConfiguration.isSendingDataAllowed()
+            && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
+    }
+
+    /**
+     * Indicates whether error capturing for this beacon is currently enabled or not.
+     */
+    public boolean isErrorCapturingEnabled() {
+        ServerConfiguration serverConfiguration = configuration.getServerConfiguration();
+
+        return serverConfiguration.isSendingErrorsAllowed()
+            && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
+    }
+
+    /**
+     * Indicates whether crash capturing for this beacon is currently enabled or not.
+     */
+    public boolean isCrashCapturingEnabled() {
+        ServerConfiguration serverConfiguration = configuration.getServerConfiguration();
+
+        return serverConfiguration.isSendingCrashesAllowed()
+            && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
     }
 
     /**

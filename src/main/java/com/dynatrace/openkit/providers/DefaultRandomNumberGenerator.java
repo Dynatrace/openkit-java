@@ -27,6 +27,11 @@ public class DefaultRandomNumberGenerator implements RandomNumberGenerator {
 
     @Override
     public long nextPositiveLong() {
-        return random.nextLong() & 0x7fffffffffffffffL;
+        return random.nextLong() & Long.MAX_VALUE;
+    }
+
+    @Override
+    public int nextPercentageValue() {
+        return random.nextInt(100);
     }
 }

@@ -52,6 +52,7 @@ public class ServerConfigurationTest {
         when(responseAttributes.getMaxEventsPerSession()).thenReturn(DEFAULT_VALUES.getMaxEventsPerSession());
         when(responseAttributes.getSessionTimeoutInMilliseconds()).thenReturn(DEFAULT_VALUES.getSessionTimeoutInMilliseconds());
         when(responseAttributes.getVisitStoreVersion()).thenReturn(DEFAULT_VALUES.getVisitStoreVersion());
+        when(responseAttributes.getTrafficControlPercentage()).thenReturn(DEFAULT_VALUES.getTrafficControlPercentage());
 
         mockServerConfig = mock(ServerConfiguration.class);
         when(mockServerConfig.isCaptureEnabled()).thenReturn(DEFAULT_VALUES.isCapture());
@@ -66,6 +67,7 @@ public class ServerConfigurationTest {
         when(mockServerConfig.isSessionSplitByEventsEnabled()).thenReturn(false);
         when(mockServerConfig.getSessionTimeoutInMilliseconds()).thenReturn(DEFAULT_VALUES.getSessionTimeoutInMilliseconds());
         when(mockServerConfig.getVisitStoreVersion()).thenReturn(DEFAULT_VALUES.getVisitStoreVersion());
+        when(mockServerConfig.getTrafficControlPercentage()).thenReturn(DEFAULT_VALUES.getTrafficControlPercentage());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,6 +155,12 @@ public class ServerConfigurationTest {
     public void inDefaultServerConfigurationVisitStoreVersionIsOne() {
         // then
         assertThat(ServerConfiguration.DEFAULT.getVisitStoreVersion(), is(1));
+    }
+
+    @Test
+    public void inDefaultServerConfigurationTrafficControlPercentageIsOneHundred() {
+        // then
+        assertThat(ServerConfiguration.DEFAULT.getTrafficControlPercentage(), is(100));
     }
 
     @Test
@@ -454,7 +462,7 @@ public class ServerConfigurationTest {
     }
 
     @Test
-    public void creatingASessionConfigurationFromResponseAttributesCopiesVisitStoreVersion() {
+    public void creatingAServerConfigurationFromResponseAttributesCopiesVisitStoreVersion() {
         // given
         int visitStoreVersion = 73;
         when(responseAttributes.getVisitStoreVersion()).thenReturn(visitStoreVersion);
@@ -463,6 +471,18 @@ public class ServerConfigurationTest {
         // then
         assertThat(target.getVisitStoreVersion(), is(visitStoreVersion));
         verify(responseAttributes, times(1)).getVisitStoreVersion();
+    }
+
+    @Test
+    public void creatingAServerConfigurationFromResponseAttributesCopiesTrafficControlPercentage() {
+        // given
+        int trafficControlPercentage = 42;
+        when(responseAttributes.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+        ServerConfiguration target = ServerConfiguration.from(responseAttributes);
+
+        // then
+        assertThat(target.getTrafficControlPercentage(), is(trafficControlPercentage));
+        verify(responseAttributes, times(1)).getTrafficControlPercentage();
     }
 
     @Test
@@ -875,6 +895,18 @@ public class ServerConfigurationTest {
         // then
         assertThat(target.getVisitStoreVersion(), is(visitStoreVersion));
         verify(mockServerConfig, times(1)).getVisitStoreVersion();
+    }
+
+    @Test
+    public void builderFromServerConfigCopiesTrafficControlPercentage() {
+        // given
+        int trafficControlPercentage = 37;
+        when(mockServerConfig.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+        ServerConfiguration target = new ServerConfiguration.Builder(mockServerConfig).build();
+
+        // then
+        assertThat(target.getTrafficControlPercentage(), is(trafficControlPercentage));
+        verify(mockServerConfig, times(1)).getTrafficControlPercentage();
     }
 
     @Test
@@ -1376,6 +1408,22 @@ public class ServerConfigurationTest {
         assertThat(obtained.getVisitStoreVersion(), is(visitStoreVersion));
     }
 
+    @Test
+    public void mergeKeepsOriginalTrafficControlPercentage() {
+        // given
+        int trafficControlPercentage = 73;
+        ServerConfiguration target = new ServerConfiguration.Builder(DEFAULT_VALUES)
+            .withTrafficControlPercentage(trafficControlPercentage).build();
+        ServerConfiguration other = new ServerConfiguration.Builder(DEFAULT_VALUES)
+            .withTrafficControlPercentage(37).build();
+
+        // when
+        ServerConfiguration obtained = target.merge(other);
+
+        // then
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// empty builder tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1524,5 +1572,19 @@ public class ServerConfigurationTest {
 
         // then
         assertThat(obtained.getVisitStoreVersion(), is(visitStoreVersion));
+    }
+
+    @Test
+    public void buildPropagatesTrafficControlPercentageToInstance() {
+        // given
+        int trafficControlPercentage = 42;
+
+        // when
+        ServerConfiguration obtained = new ServerConfiguration.Builder(DEFAULT_VALUES)
+            .withTrafficControlPercentage(trafficControlPercentage)
+            .build();
+
+        // then
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
     }
 }

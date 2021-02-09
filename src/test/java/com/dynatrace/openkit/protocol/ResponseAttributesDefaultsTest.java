@@ -74,6 +74,11 @@ public class ResponseAttributesDefaultsTest {
     }
 
     @Test
+    public void defaultJsonTrafficControlPercentage() {
+        assertThat(ResponseAttributesDefaults.JSON_RESPONSE.getTrafficControlPercentage(), is(100));
+    }
+
+    @Test
     public void defaultJsonApplicationId() {
         assertThat(ResponseAttributesDefaults.JSON_RESPONSE.getApplicationId(), is(nullValue()));
     }
@@ -160,6 +165,11 @@ public class ResponseAttributesDefaultsTest {
     }
 
     @Test
+    public void defaultKeyValueTrafficControlPercentage() {
+        assertThat(ResponseAttributesDefaults.KEY_VALUE_RESPONSE.getTrafficControlPercentage(), is(100));
+    }
+
+    @Test
     public void defaultKeyValueApplicationId() {
         assertThat(ResponseAttributesDefaults.KEY_VALUE_RESPONSE.getApplicationId(), is(nullValue()));
     }
@@ -243,6 +253,11 @@ public class ResponseAttributesDefaultsTest {
     @Test
     public void defaultUndefinedIsCaptureErrors() {
         assertThat(ResponseAttributesDefaults.UNDEFINED.isCaptureErrors(), is(true));
+    }
+
+    @Test
+    public void defaultUndefinedTrafficControlPercentage() {
+        assertThat(ResponseAttributesDefaults.UNDEFINED.getTrafficControlPercentage(), is(100));
     }
 
     @Test

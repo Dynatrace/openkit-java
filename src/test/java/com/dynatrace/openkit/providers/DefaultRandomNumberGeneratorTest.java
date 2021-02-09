@@ -18,6 +18,7 @@ package com.dynatrace.openkit.providers;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
 public class DefaultRandomNumberGeneratorTest {
@@ -33,6 +34,21 @@ public class DefaultRandomNumberGeneratorTest {
 
             // then
             assertThat(obtained, greaterThanOrEqualTo(0L));
+        }
+    }
+
+    @Test
+    public void nextPercentageValueReturnsPercentageValue() {
+        // given
+        DefaultRandomNumberGenerator target = new DefaultRandomNumberGenerator();
+
+        for (int i = 0; i < 100; i++) {
+            // when
+            int obtained = target.nextPercentageValue();
+
+            // then
+            assertThat(obtained, greaterThanOrEqualTo(0));
+            assertThat(obtained, lessThan(100));
         }
     }
 }

@@ -19,13 +19,20 @@ package com.dynatrace.openkit.providers;
 public class FixedRandomNumberGenerator implements RandomNumberGenerator {
 
     private final long randomNumber;
+    private final int randomPercentage;
 
     public FixedRandomNumberGenerator(RandomNumberGenerator rng) {
         randomNumber = rng.nextPositiveLong();
+        randomPercentage = rng.nextPercentageValue();
     }
 
     @Override
     public long nextPositiveLong() {
         return randomNumber;
+    }
+
+    @Override
+    public int nextPercentageValue() {
+        return randomPercentage;
     }
 }

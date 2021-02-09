@@ -29,6 +29,7 @@ public class KeyValueResponseParser {
     static final String RESPONSE_KEY_CAPTURE = "cp";
     static final String RESPONSE_KEY_REPORT_CRASHES = "cr";
     static final String RESPONSE_KEY_REPORT_ERRORS = "er";
+    static final String RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE = "tc";
 
     static final String RESPONSE_KEY_SERVER_ID = "id";
     static final String RESPONSE_KEY_MULTIPLICITY = "mp";
@@ -46,6 +47,7 @@ public class KeyValueResponseParser {
         applyCapture(builder, keyValuePairs);
         applyReportCrashes(builder, keyValuePairs);
         applyReportErrors(builder, keyValuePairs);
+        applyTrafficControlPercentage(builder, keyValuePairs);
         applyServerId(builder, keyValuePairs);
         applyMultiplicity(builder, keyValuePairs);
 
@@ -123,6 +125,16 @@ public class KeyValueResponseParser {
 
         int reportErrors = Integer.parseInt(value);
         builder.withCaptureErrors(reportErrors != 0);
+    }
+
+    private static void applyTrafficControlPercentage(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {
+        String value = keyValuePairs.get(RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE);
+        if (value == null) {
+            return;
+        }
+
+        int trafficControlPercentage = Integer.parseInt(value);
+        builder.withTrafficControlPercentage(trafficControlPercentage);
     }
 
     private static void applyServerId(ResponseAttributesImpl.Builder builder, Map<String, String> keyValuePairs) {

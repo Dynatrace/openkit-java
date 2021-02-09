@@ -66,6 +66,17 @@ public interface ResponseAttributes {
     boolean isCaptureErrors();
 
     /**
+     * Gets a session sampling in percent.
+     *
+     * <p>
+     *     Value returned here is configured per application as Cost Control.
+     * </p>
+     *
+     * @return traffic control/cost control percentage in range [1, 100].
+     */
+    int getTrafficControlPercentage();
+
+    /**
      * Returns the ID of the application to which this configuration applies.
      *
      * <p>

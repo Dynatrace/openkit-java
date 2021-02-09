@@ -39,6 +39,7 @@ public class JsonResponseParser {
     static final String RESPONSE_KEY_CAPTURE = "capture";
     static final String RESPONSE_KEY_REPORT_CRASHES = "reportCrashes";
     static final String RESPONSE_KEY_REPORT_ERRORS = "reportErrors";
+    static final String RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE = "trafficControlPercentage";
     static final String RESPONSE_KEY_APPLICATION_ID = "applicationId";
 
     static final String RESPONSE_KEY_DYNAMIC_CONFIG = "dynamicConfig";
@@ -166,6 +167,7 @@ public class JsonResponseParser {
         applyCapture(builder, appConfigObject);
         applyReportCrashes(builder, appConfigObject);
         applyReportErrors(builder, appConfigObject);
+        applyTrafficControlPercentage(builder, appConfigObject);
         applyApplicationId(builder, appConfigObject);
     }
 
@@ -200,6 +202,17 @@ public class JsonResponseParser {
         JSONNumberValue numberValue = (JSONNumberValue) value;
         int reportErrors = numberValue.getIntValue();
         builder.withCaptureErrors(reportErrors != 0);
+    }
+
+    private static void applyTrafficControlPercentage(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {
+        JSONValue value = appConfigObject.get(RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE);
+        if (value == null) {
+            return;
+        }
+
+        JSONNumberValue numberValue = (JSONNumberValue) value;
+        int trafficControlPercentage = numberValue.getIntValue();
+        builder.withTrafficControlPercentage(trafficControlPercentage);
     }
 
     private static void applyApplicationId(ResponseAttributesImpl.Builder builder, JSONObjectValue appConfigObject) {

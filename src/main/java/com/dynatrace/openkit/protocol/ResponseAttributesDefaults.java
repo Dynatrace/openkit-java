@@ -116,6 +116,7 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
     private static final boolean DEFAULT_CAPTURE = true;
     private static final boolean DEFAULT_CAPTURE_CRASHES = true;
     private static final boolean DEFAULT_CAPTURE_ERRORS = true;
+    private static final int DEFAULT_TRAFFIC_CONTROL_PERCENTAGE = 100;
     private static final String DEFAULT_APPLICATION_ID = null;
     private static final int DEFAULT_MULTIPLICITY = 1;
     private static final int DEFAULT_SERVER_ID = 1;
@@ -149,6 +150,10 @@ public enum ResponseAttributesDefaults implements ResponseAttributes {
 
     public boolean isCaptureErrors() {
         return DEFAULT_CAPTURE_ERRORS;
+    }
+
+    public int getTrafficControlPercentage() {
+        return DEFAULT_TRAFFIC_CONTROL_PERCENTAGE;
     }
 
     public String getApplicationId() {

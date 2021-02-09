@@ -88,6 +88,10 @@ public class ServerConfiguration {
      * version of the visit store that should be used
      */
     private final int visitStoreVersion;
+    /**
+     * session rate limiting percentage
+     */
+    private final int trafficControlPercentage;
 
     /**
      * Create a server configuration from a builder.
@@ -109,6 +113,7 @@ public class ServerConfiguration {
         sessionTimeoutInMilliseconds = builder.sessionTimeoutInMilliseconds;
         isSessionSplitByIdleTimeoutEnabled = builder.isSessionSplitByIdleTimeoutEnabled;
         visitStoreVersion = builder.visitStoreVersion;
+        trafficControlPercentage = builder.trafficControlPercentage;
     }
 
     /**
@@ -252,6 +257,15 @@ public class ServerConfiguration {
     }
 
     /**
+     * Returns a percentage value that is used for session rate limiting.
+     *
+     * @return percentage of sessions to be captured.
+     */
+    public int getTrafficControlPercentage() {
+        return trafficControlPercentage;
+    }
+
+    /**
      * Get a boolean indicating whether sending arbitrary data to the server is allowed or not.
      *
      * <p>
@@ -312,6 +326,7 @@ public class ServerConfiguration {
      *     <li>{@link #maxSessionDurationInMilliseconds}</li>
      *     <li>{@link #sessionTimeoutInMilliseconds}</li>
      *     <li>{@link #visitStoreVersion}</li>
+     *     <li>{@link #trafficControlPercentage}</li>
      * </ul>
      *
      * @param other The other instance to merge with.
@@ -322,11 +337,12 @@ public class ServerConfiguration {
 
         // settings from this
         builder.withMultiplicity(this.getMultiplicity())
-                .withServerID(this.getServerID())
-                .withMaxSessionDurationInMilliseconds(this.getMaxSessionDurationInMilliseconds())
-                .withMaxEventsPerSession(this.getMaxEventsPerSession())
-                .withSessionTimeoutInMilliseconds(this.getSessionTimeoutInMilliseconds())
-                .withVisitStoreVersion(this.getVisitStoreVersion());
+               .withServerID(this.getServerID())
+               .withMaxSessionDurationInMilliseconds(this.getMaxSessionDurationInMilliseconds())
+               .withMaxEventsPerSession(this.getMaxEventsPerSession())
+               .withSessionTimeoutInMilliseconds(this.getSessionTimeoutInMilliseconds())
+               .withVisitStoreVersion(this.getVisitStoreVersion())
+               .withTrafficControlPercentage(this.getTrafficControlPercentage());
         builder.isSessionSplitByEventsEnabled = this.isSessionSplitByEventsEnabled();
         builder.isSessionSplitBySessionDurationEnabled = this.isSessionSplitBySessionDurationEnabled;
         builder.isSessionSplitByIdleTimeoutEnabled = this.isSessionSplitByIdleTimeoutEnabled;
@@ -352,6 +368,7 @@ public class ServerConfiguration {
         private int sessionTimeoutInMilliseconds;
         private boolean isSessionSplitByIdleTimeoutEnabled;
         private int visitStoreVersion;
+        private int trafficControlPercentage;
 
         /**
          * Construct and initialize fields from given {@link ResponseAttributes}.
@@ -373,6 +390,7 @@ public class ServerConfiguration {
             sessionTimeoutInMilliseconds = responseAttributes.getSessionTimeoutInMilliseconds();
             isSessionSplitByIdleTimeoutEnabled = responseAttributes.isAttributeSet(ResponseAttribute.SESSION_TIMEOUT);
             visitStoreVersion = responseAttributes.getVisitStoreVersion();
+            trafficControlPercentage = responseAttributes.getTrafficControlPercentage();
         }
 
         /**
@@ -393,6 +411,7 @@ public class ServerConfiguration {
             sessionTimeoutInMilliseconds = serverConfiguration.getSessionTimeoutInMilliseconds();
             isSessionSplitByIdleTimeoutEnabled = serverConfiguration.isSessionSplitByIdleTimeoutEnabled();
             visitStoreVersion = serverConfiguration.getVisitStoreVersion();
+            trafficControlPercentage = serverConfiguration.getTrafficControlPercentage();
         }
 
         /**
@@ -510,6 +529,21 @@ public class ServerConfiguration {
          */
         public Builder withVisitStoreVersion(int visitStoreVersion) {
             this.visitStoreVersion = visitStoreVersion;
+            return this;
+        }
+
+        /**
+         * Configures the traffic control/cost control percentage.
+         *
+         * <p>
+         *     This value is used as rate limit to limit the number of sessions being captured.
+         * </p>
+         *
+         * @param trafficControlPercentage Percentage of sessions being captured.
+         * @return {@code this}
+         */
+        public Builder withTrafficControlPercentage(int trafficControlPercentage) {
+            this.trafficControlPercentage = trafficControlPercentage;
             return this;
         }
 

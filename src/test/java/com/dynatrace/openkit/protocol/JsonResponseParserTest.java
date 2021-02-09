@@ -72,6 +72,8 @@ public class JsonResponseParserTest {
         assertThat(obtained.isCapture(), is(defaults.isCapture()));
         assertThat(obtained.isCaptureCrashes(), is(defaults.isCaptureCrashes()));
         assertThat(obtained.isCaptureErrors(), is(defaults.isCaptureErrors()));
+        assertThat(obtained.getTrafficControlPercentage(), is(defaults.getTrafficControlPercentage()));
+        assertThat(obtained.getApplicationId(), is(defaults.getApplicationId()));
         assertThat(obtained.getMultiplicity(), is(defaults.getMultiplicity()));
         assertThat(obtained.getServerId(), is(defaults.getServerId()));
         assertThat(obtained.getTimestampInMilliseconds(), is(defaults.getTimestampInMilliseconds()));
@@ -264,6 +266,22 @@ public class JsonResponseParserTest {
     }
 
     @Test
+    public void parseExtractsTrafficControlPercentage() throws ParserException {
+        // given
+        int trafficControlPercentage = 84;
+        begin(JsonResponseParser.RESPONSE_KEY_APP_CONFIG);
+        appendLastParameter(JsonResponseParser.RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE, trafficControlPercentage);
+        close(2);
+
+        // when
+        ResponseAttributes obtained = JsonResponseParser.parse(inputBuilder.toString());
+
+        // then
+        assertThat(obtained, notNullValue());
+        assertThat(obtained.getTrafficControlPercentage(), is(equalTo(trafficControlPercentage)));
+    }
+
+    @Test
     public void parseExtractsApplicationId() throws ParserException {
         // given
         String applicationId = UUID.randomUUID().toString();
@@ -356,8 +374,9 @@ public class JsonResponseParserTest {
         int serverId = 80;
         String status = "some status";
         long timestamp = 81;
+        int trafficControlPercentage = 82;
 
-        begin(JsonResponseParser.RESPONSE_KEY_AGENT_CONFIG);
+            begin(JsonResponseParser.RESPONSE_KEY_AGENT_CONFIG);
         appendParameter(JsonResponseParser.RESPONSE_KEY_MAX_BEACON_SIZE_IN_KB, beaconSize);
         appendParameter(JsonResponseParser.RESPONSE_KEY_MAX_SESSION_DURATION_IN_MIN, sessionDuration);
         appendParameter(JsonResponseParser.RESPONSE_KEY_MAX_EVENTS_PER_SESSION, eventsPerSession);
@@ -371,6 +390,7 @@ public class JsonResponseParserTest {
         appendParameter(JsonResponseParser.RESPONSE_KEY_CAPTURE, 0);
         appendParameter(JsonResponseParser.RESPONSE_KEY_REPORT_CRASHES, 1);
         appendParameter(JsonResponseParser.RESPONSE_KEY_REPORT_ERRORS, 0);
+        appendParameter(JsonResponseParser.RESPONSE_KEY_TRAFFIC_CONTROL_PERCENTAGE, trafficControlPercentage);
         appendLastParameter(JsonResponseParser.RESPONSE_KEY_APPLICATION_ID, applicationId);
         close();
         inputBuilder.append(",");
@@ -400,6 +420,7 @@ public class JsonResponseParserTest {
         assertThat(obtained.isCapture(), is(false));
         assertThat(obtained.isCaptureCrashes(), is(true));
         assertThat(obtained.isCaptureErrors(), is(false));
+        assertThat(obtained.getTrafficControlPercentage(), is(trafficControlPercentage));
         assertThat(obtained.getApplicationId(), is(equalTo(applicationId)));
 
         assertThat(obtained.getMultiplicity(), is(multiplicity));
