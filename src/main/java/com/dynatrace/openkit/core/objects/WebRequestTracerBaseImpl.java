@@ -27,7 +27,7 @@ import com.dynatrace.openkit.protocol.Beacon;
  *     This class is guaranteed to be thread safe.
  * </p>
  */
-public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, OpenKitObject {
+public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, CancelableOpenKitObject {
 
     static final String UNKNOWN_URL =  "<unknown>";
 
@@ -153,6 +153,11 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
         if (logger.isDebugEnabled()) {
             logger.debug(this + "stop(rc='" + responseCode + "')");
         }
+
+        doStop(responseCode, false);
+    }
+
+    private void doStop(int responseCode, boolean discardData) {
         synchronized (lockObject) {
             if (isStopped()) {
                 // stop has been called previously
@@ -164,7 +169,9 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
         }
 
         // add web request to beacon
-        beacon.addWebRequest(parentActionID, this);
+        if (!discardData) {
+            beacon.addWebRequest(parentActionID, this);
+        }
 
         // last but not least notify the parent & detach from parent
         parent.onChildClosed(this);
@@ -178,6 +185,15 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Open
     @Override
     public void stop() {
         stop(responseCode);
+    }
+
+    @Override
+    public void cancel() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "cancel()");
+        }
+
+        doStop(responseCode, true);
     }
 
     @Override

@@ -1249,6 +1249,221 @@ public class BaseActionImplTest {
         verify(beacon, times(2)).createSequenceNumber();
     }
 
+    @Test
+    public void afterCancellingAnActionItIsLeft() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.cancelAction();
+
+        // then
+        assertThat(target.isActionLeft(), is(true));
+    }
+
+    @Test
+    public void cancellingAnActionSetsTheEndTime() {
+        // given
+        when(beacon.getCurrentTimestamp()).thenReturn(1234L, 5678L, 9012L);
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.cancelAction();
+
+        // then
+        assertThat(target.getEndTime(), is(5678L));
+        verify(beacon, times(2)).getCurrentTimestamp();
+    }
+
+    @Test
+    public void cancellingAnActionSetsTheEndSequenceNumber() {
+        // given
+        when(beacon.createSequenceNumber()).thenReturn(1, 10, 20);
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.cancelAction();
+
+        // then
+        assertThat(target.getEndSequenceNo(), is(10));
+        verify(beacon, times(2)).createSequenceNumber();
+    }
+
+    @Test
+    public void cancellingAnActionDoesNotSerializeItself() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.cancelAction();
+
+        // then
+        verify(beacon, times(0)).addAction(target);
+    }
+
+    @Test
+    public void cancellingAnActionCancelsAllChildObjects() {
+        // given
+        CancelableOpenKitObject childObjectOne = mock(CancelableOpenKitObject.class);
+        CancelableOpenKitObject childObjectTwo = mock(CancelableOpenKitObject.class);
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        target.storeChildInList(childObjectOne);
+        target.storeChildInList(childObjectTwo);
+
+        // when
+        target.cancelAction();
+
+        // then
+        verify(childObjectOne, times(1)).cancel();
+        verify(childObjectTwo, times(1)).cancel();
+    }
+
+    @Test
+    public void cancellingAnActionClosesAllChildObjectsThatAreNotCancelable() throws IOException {
+        // given
+        OpenKitObject childObjectOne = mock(OpenKitObject.class);
+        OpenKitObject childObjectTwo = mock(OpenKitObject.class);
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        target.storeChildInList(childObjectOne);
+        target.storeChildInList(childObjectTwo);
+
+        // when
+        target.cancelAction();
+
+        // then
+        verify(logger, times(2)).warning(contains(" is not cancelable - falling back to close() instead"));
+        verify(childObjectOne, times(1)).close();
+        verify(childObjectTwo, times(1)).close();
+    }
+
+    @Test
+    public void cancellingAnActionNotifiesTheParentCompositeObject() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        reset(openKitComposite);
+
+        // when
+        target.cancelAction();
+
+        // then
+        verify(openKitComposite, times(1)).onChildClosed(target);
+        verifyNoMoreInteractions(openKitComposite);
+    }
+
+    @Test
+    public void cancellingAnActionReturnsTheParentAction() {
+        // given
+        Action parentAction = mock(Action.class);
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon, parentAction);
+
+        // when
+        Action obtained = target.cancelAction();
+
+        // then
+        assertThat(obtained, is(sameInstance(parentAction)));
+    }
+
+    @Test
+    public void cancellingAnAlreadyCanceledActionReturnsTheParentAction() {
+        // given
+        Action parentAction = mock(Action.class);
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon, parentAction);
+        target.cancelAction(); // cancelling the first time
+
+        // when leaving a second time
+        Action obtained = target.cancelAction();
+
+        // then
+        assertThat(obtained, is(sameInstance(parentAction)));
+    }
+
+    @Test
+    public void cancellingAnAlreadyCancelledActionReturnsImmediately() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        target.cancelAction(); // cancelling the first time
+        reset(beacon, openKitComposite);
+
+        // when
+        target.cancelAction();
+
+        // then
+        verifyZeroInteractions(beacon, openKitComposite);
+    }
+
+    @Test
+    public void cancellingActionLogsInvocation() {
+        // given
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.cancelAction();
+
+        // then
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("cancelAction(" + ACTION_NAME + ")"));
+    }
+
+    @Test
+    public void cancelCancelsTheAction() {
+        // given
+        when(beacon.getCurrentTimestamp()).thenReturn(1234L);
+        when(beacon.createSequenceNumber()).thenReturn(42);
+
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        // when
+        target.cancel();
+
+        // then
+        assertThat(target.getEndTime(), is(equalTo(1234L)));
+        assertThat(target.getEndSequenceNo(), is(equalTo(42)));
+
+        verify(beacon, times(0)).addAction(target);
+        verify(beacon, times(2)).getCurrentTimestamp();
+        verify(beacon, times(2)).createSequenceNumber();
+    }
+
+    @Test
+    public void getDurationInMillisecondsGivesDurationSinceStartIfActionIsNotLeft() {
+        // given
+        when(beacon.getCurrentTimestamp()).thenReturn(12L);
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+
+        reset(beacon);
+        when(beacon.getCurrentTimestamp()).thenReturn(42L);
+
+        // when
+        long obtained = target.getDurationInMilliseconds();
+
+        // then
+        assertThat(obtained, is(equalTo(30L)));
+
+        verify(beacon, times(1)).getCurrentTimestamp();
+    }
+
+    @Test
+    public void getDurationInMillisecondsGivesDurationBetweenEndAndStartTimeIfActionIsLeft() {
+        // given
+        when(beacon.getCurrentTimestamp()).thenReturn(12L, 42L);
+        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
+        target.leaveAction();
+
+        reset(beacon);
+
+        // when
+        long obtained = target.getDurationInMilliseconds();
+
+        // then
+        assertThat(obtained, is(equalTo(30L)));
+
+        verifyZeroInteractions(beacon);
+    }
+
     private static final class StubBaseActionImpl extends BaseActionImpl {
 
         private final Action parentAction;

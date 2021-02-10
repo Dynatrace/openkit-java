@@ -100,6 +100,16 @@ class NullAction implements Action {
     }
 
     @Override
+    public Action cancelAction() {
+        return parentAction;
+    }
+
+    @Override
+    public long getDurationInMilliseconds() {
+        return 0;
+    }
+
+    @Override
     public void close() {
         // nothing
     }

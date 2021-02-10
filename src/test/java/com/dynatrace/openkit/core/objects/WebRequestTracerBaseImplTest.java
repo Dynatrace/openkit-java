@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -415,7 +416,7 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
-    public void closingAWebRequestStopsIt() throws IOException {
+    public void closingAWebRequestStopsIt() {
 
         // given
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
@@ -428,6 +429,37 @@ public class WebRequestTracerBaseImplTest {
         assertThat(target.getEndSequenceNo(), is(42));
         verify(mockBeacon, times(2)).createSequenceNumber();
         verify(mockBeacon, times(1)).addWebRequest(0, target);
+    }
+
+    @Test
+    public void cancellingAWebRequestLogsInvocation() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        when(mockBeacon.createSequenceNumber()).thenReturn(42);
+
+        // when executed the first time
+        target.cancel();
+
+        // then
+        verify(logger, times(1)).isDebugEnabled();
+        verify(logger, times(1)).debug(endsWith("cancel()"));
+    }
+
+    @Test
+    public void cancellingAWebRequestStopsItWithoutReportingIt() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        when(mockBeacon.createSequenceNumber()).thenReturn(42);
+
+        // when executed the first time
+        target.cancel();
+
+        // then
+        assertThat(target.getEndSequenceNo(), is(42));
+        verify(mockBeacon, times(2)).createSequenceNumber();
+        verify(mockBeacon, times(0)).addWebRequest(0, target);
     }
 
     private static final class TestWebRequestTracerBaseImpl extends WebRequestTracerBaseImpl {

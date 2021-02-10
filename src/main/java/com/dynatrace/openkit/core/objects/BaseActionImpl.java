@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Abstract base class implementing the {@link Action} interface.
  */
-public abstract class BaseActionImpl extends OpenKitComposite implements Action {
+public abstract class BaseActionImpl extends OpenKitComposite implements CancelableOpenKitObject, Action {
 
     /** {@link Logger} for tracing log message */
     final Logger logger;
@@ -69,10 +69,7 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
      * @param name The action's name
      * @param beacon The beacon for retrieving certain data and sending data
      */
-    BaseActionImpl(Logger logger,
-                   OpenKitComposite parent,
-                   String name,
-                   Beacon beacon) {
+    BaseActionImpl(Logger logger, OpenKitComposite parent, String name, Beacon beacon) {
         this.logger = logger;
         this.parent = parent;
         parentActionID = parent.getActionID();
@@ -87,6 +84,11 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
         isActionLeft = false;
 
         this.beacon = beacon;
+    }
+
+    @Override
+    public void cancel() {
+        cancelAction();
     }
 
     @Override
@@ -287,6 +289,20 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
         if (logger.isDebugEnabled()) {
             logger.debug(this + "leaveAction(" + name + ")");
         }
+
+        return doLeaveAction(false);
+    }
+
+    @Override
+    public Action cancelAction() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "cancelAction(" + name + ")");
+        }
+
+        return doLeaveAction(true);
+    }
+
+    private Action doLeaveAction(boolean discardData) {
         synchronized (lockObject) {
             if (isActionLeft()) {
                 // leaveAction has been called previously
@@ -301,7 +317,16 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
         List<OpenKitObject> childObjects = getCopyOfChildObjects();
         for (OpenKitObject childObject : childObjects) {
             try {
-                childObject.close();
+                if (discardData) {
+                    if (childObject instanceof CancelableOpenKitObject) {
+                        ((CancelableOpenKitObject) childObject).cancel();
+                    } else {
+                        logger.warning(childObject.toString() + " is not cancelable - falling back to close() instead");
+                        childObject.close();
+                    }
+                } else {
+                    childObject.close();
+                }
             } catch (IOException e) {
                 // should not happen, nevertheless let's log an error
                 logger.error(this + "Caught IOException while closing OpenKitObject (" + childObject + ")", e);
@@ -312,8 +337,10 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
         endTime = beacon.getCurrentTimestamp();
         endSequenceNo = beacon.createSequenceNumber();
 
-        // serialize this action after setting all remaining information
-        beacon.addAction(this);
+        // handle this object
+        if (!discardData) {
+            beacon.addAction(this);
+        }
 
         // detach from parent
         parent.onChildClosed(this);
@@ -322,12 +349,21 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Action 
         return getParentAction();
     }
 
+    @Override
+    public long getDurationInMilliseconds() {
+        synchronized (lockObject) {
+            return isActionLeft()
+                ? endTime - startTime
+                : beacon.getCurrentTimestamp() - startTime;
+        }
+    }
+
     /**
      * Get the parent {@link} Action, which might be {@code null} in case the parent does not implement {@link Action}.
      *
      * @return The parent action object, or {@code null} if parent does not implement {@link Action}.
      */
-    protected abstract  Action getParentAction();
+    protected abstract Action getParentAction();
 
     @Override
     void onChildClosed(OpenKitObject childObject) {

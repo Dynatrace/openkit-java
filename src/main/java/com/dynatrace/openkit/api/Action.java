@@ -181,10 +181,34 @@ public interface Action extends Closeable {
     WebRequestTracer traceWebRequest(String url);
 
     /**
-     * Leaves this Action.
+     * Leaves this {@link Action}.
      *
-     * @return the parent Action, or null if there is no parent Action
+     * @return the parent Action, or {@code null} if there is no parent Action
      */
     Action leaveAction();
 
+    /**
+     * Cancels this {@link Action}.
+     *
+     * <p>
+     *     Canceling an action is similar to {@link #leaveAction() leaving an action}, except that
+     *     the data and all unfinished child objects are discarded instead of being sent.
+     * </p>
+     *
+     * @return the parent Action, or {@code null} if there is no parent Action
+     */
+    Action cancelAction();
+
+    /**
+     * Get the {@link Action action's} duration in milliseconds.
+     *
+     * <p>
+     *     The duration of an {@link Action} is equal to the {@code current timestamp - start timestamp}, if the
+     *     action is still open, or {@code end timestamp - start timestamp} if {@link #leaveAction()} or
+     *     {@link #cancelAction()} was already called.
+     * </p>
+     *
+     * @return The duration of this {@link Action}.
+     */
+    long getDurationInMilliseconds();
 }

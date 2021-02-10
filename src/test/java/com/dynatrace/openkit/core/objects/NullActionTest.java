@@ -202,8 +202,7 @@ public class NullActionTest {
         Action obtained = target.leaveAction();
 
         // then
-        assertThat(obtained, is(instanceOf(Action.class)));
-        assertThat((Action)obtained, is(sameInstance(mockParent)));
+        assertThat(obtained, is(sameInstance(mockParent)));
     }
 
     @Test
@@ -228,6 +227,42 @@ public class NullActionTest {
 
         // then
         verifyZeroInteractions(mockParent);
+    }
+
+    @Test
+    public void cancelActionReturnsParentAction() {
+        // given
+        NullAction target = createNullAction();
+
+        // when
+        Action obtained = target.cancelAction();
+
+        // then
+        assertThat(obtained, is(sameInstance(mockParent)));
+    }
+
+    @Test
+    public void cancelActionWithNullParent() {
+        // given
+        NullAction target = new NullAction(null);
+
+        // when
+        Action obtained = target.cancelAction();
+
+        // then
+        assertThat(obtained, is(nullValue()));
+    }
+
+    @Test
+    public void getDurationInMillisecondsReturnsZero() {
+        // given
+        NullRootAction target = NullRootAction.INSTANCE;
+
+        // when
+        long obtained = target.getDurationInMilliseconds();
+
+        // then
+        assertThat(obtained, is(0L));
     }
 
     private NullAction createNullAction() {

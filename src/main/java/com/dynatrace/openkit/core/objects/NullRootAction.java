@@ -101,6 +101,16 @@ public enum NullRootAction implements RootAction {
     }
 
     @Override
+    public Action cancelAction() {
+        return null;
+    }
+
+    @Override
+    public long getDurationInMilliseconds() {
+        return 0;
+    }
+
+    @Override
     public void close() {
     }
 }

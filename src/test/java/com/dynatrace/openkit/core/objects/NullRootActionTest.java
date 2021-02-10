@@ -212,4 +212,28 @@ public class NullRootActionTest {
         // then
         assertThat(obtained, is(nullValue()));
     }
+
+    @Test
+    public void cancelActionReturnsNull() {
+        // given
+        NullRootAction target = NullRootAction.INSTANCE;
+
+        // when
+        Action obtained = target.cancelAction();
+
+        // then
+        assertThat(obtained, is(nullValue()));
+    }
+
+    @Test
+    public void getDurationInMillisecondsReturnsZero() {
+        // given
+        NullRootAction target = NullRootAction.INSTANCE;
+
+        // when
+        long obtained = target.getDurationInMilliseconds();
+
+        // then
+        assertThat(obtained, is(0L));
+    }
 }

@@ -4,6 +4,9 @@
 
 ### Added
 - Support cost control configured in the Dynatrace UI.
+- It is possible to get the duration from an `Action`.
+- An `Action` can be cancelled.  
+  Cancelling an Action is similar to leaving it, without reporting it.
 
 ### Changed
 - Provide a more reliable way to determine monotonic timestamps.
