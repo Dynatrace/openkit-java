@@ -18,6 +18,10 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
+import com.dynatrace.openkit.protocol.http.NullHttpRequestInterceptor;
+import com.dynatrace.openkit.protocol.http.NullHttpResponseInterceptor;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -202,5 +206,33 @@ public class OpenKitConfigurationTest {
         // then
         assertThat(target.getSSLTrustManager(), is(sameInstance(trustManager)));
         verify(abstractOpenKitBuilder, times(1)).getTrustManager();
+    }
+
+    @Test
+    public void creatingAnOpenKitConfigurationFromBuilderCopiesHttpRequestInterceptor() {
+        // given
+        HttpRequestInterceptor requestInterceptor = mock(HttpRequestInterceptor.class);
+        when(abstractOpenKitBuilder.getHttpRequestInterceptor()).thenReturn(requestInterceptor);
+
+        // when
+        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+
+        // then
+        assertThat(target.getHttpRequestInterceptor(), is(sameInstance(requestInterceptor)));
+        verify(abstractOpenKitBuilder, times(1)).getHttpRequestInterceptor();
+    }
+
+    @Test
+    public void creatingAnOpenKitConfigurationFromBuilderCopiesHttpResponseInterceptor() {
+        // given
+        HttpResponseInterceptor responseInterceptor = mock(HttpResponseInterceptor.class);
+        when(abstractOpenKitBuilder.getHttpResponseInterceptor()).thenReturn(responseInterceptor);
+
+        // when
+        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+
+        // then
+        assertThat(target.getHttpResponseInterceptor(), is(sameInstance(responseInterceptor)));
+        verify(abstractOpenKitBuilder, times(1)).getHttpResponseInterceptor();
     }
 }

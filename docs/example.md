@@ -67,6 +67,8 @@ customize OpenKit. This includes device specific information like operating syst
 | `enableVerbose`                       | *Deprecated*, use `withLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `withLogLevel(LogLevel.DEBUG)`.  | `false` |
 | `withLogLevel`                        | sets the default log level if the default logger is used              | `LogLevel.WARN` |
 | `withLogger`                          | sets a custom logger, replacing the builtin default one.<br>Details are described in section [Logging](#logging). | `DefaultLogger` |
+| `withHttpRequestInterceptor`          | sets a custom `HttpRequestInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace/AppMon](#intercepting-http-traffic-to-dynatraceappmon). | `NullHttpRequestInterceptor` |
+| `withHttpResponseInterceptor`         | sets a custom `HttpResponseInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace/AppMon](#intercepting-http-traffic-to-dynatraceappmon). | `NullHttpResponseInterceptor` |
 
 
 :grey_exclamation: Please refer to the the JavaDoc for more information regarding possible configuration values.
@@ -80,6 +82,18 @@ passing an implementation of `SSLTrustManager` by calling the `withTrustManager`
 
 :warning: We do **NOT** recommend bypassing TLS/SSL server certificate validation, since this allows
 man-in-the-middle attacks.
+
+## Intercepting HTTP traffic to Dynatrace/AppMon
+
+When routing traffic through own network infrastructure it might be necessary  to intercept HTTP traffic
+to Dynatrace/AppMon and add or overwrite HTTP headers. This can be achieved by implementing the 
+`HttpRequestInterceptor` interface and passing an instance to the builder by calling 
+the `withHttpRequestInterceptor` method. OpenKit invokes the `HttpRequestInterceptor#intercept(HttpRequest)` 
+method for each request sent to Dynatrace/AppMon.
+It might be required to intercept the HTTP response and read custom response headers. This
+can be achieved by implementing the `HttpResponseInterceptor` interface and passing an instance to the builder
+by calling `withHttpResponseInterceptor`. OpenKit calls the `HttpResponseInterceptor#intercept(HttpResponse)`
+for each HTTP response received by the backend.
 
 ## Logging
 

@@ -17,6 +17,8 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -99,6 +101,40 @@ public class HttpClientConfigurationTest {
     }
 
     @Test
+    public void instanceFromOpenKitConfigTakesOverHttpRequestInterceptor() {
+        // given
+        HttpRequestInterceptor httpRequestInterceptor = mock(HttpRequestInterceptor.class);
+        OpenKitConfiguration openKitConfig = mock(OpenKitConfiguration.class);
+        when(openKitConfig.getHttpRequestInterceptor()).thenReturn(httpRequestInterceptor);
+
+        HTTPClientConfiguration target = HTTPClientConfiguration.from(openKitConfig);
+
+        // when
+        HttpRequestInterceptor obtained = target.getHttpRequestInterceptor();
+
+        // then
+        verify(openKitConfig, times(1)).getHttpRequestInterceptor();
+        assertThat(obtained, is(equalTo(httpRequestInterceptor)));
+    }
+
+    @Test
+    public void instanceFromOpenKitConfigTakesOverHttpResponseInterceptor() {
+        // given
+        HttpResponseInterceptor httpResponseInterceptor = mock(HttpResponseInterceptor.class);
+        OpenKitConfiguration openKitConfig = mock(OpenKitConfiguration.class);
+        when(openKitConfig.getHttpResponseInterceptor()).thenReturn(httpResponseInterceptor);
+
+        HTTPClientConfiguration target = HTTPClientConfiguration.from(openKitConfig);
+
+        // when
+        HttpResponseInterceptor obtained = target.getHttpResponseInterceptor();
+
+        // then
+        verify(openKitConfig, times(1)).getHttpResponseInterceptor();
+        assertThat(obtained, is(equalTo(httpResponseInterceptor)));
+    }
+
+    @Test
     public void builderFromHttpClientConfigTakesOverBaseUrl() {
         // given
         String baseUrl = "https://localhost:9999/1";
@@ -156,6 +192,36 @@ public class HttpClientConfigurationTest {
         // then
         verify(httpConfig, times(1)).getServerID();
         assertThat(target.getServerID(), is(equalTo(serverId)));
+    }
+
+    @Test
+    public void builderFromHttpClientConfigTakesHttpRequestInterceptor() {
+        // given
+        HttpRequestInterceptor httpRequestInterceptor = mock(HttpRequestInterceptor.class);
+        HTTPClientConfiguration httpConfig = mock(HTTPClientConfiguration.class);
+        when(httpConfig.getHttpRequestInterceptor()).thenReturn(httpRequestInterceptor);
+
+        // when
+        HTTPClientConfiguration target = HTTPClientConfiguration.modifyWith(httpConfig).build();
+
+        // then
+        verify(httpConfig, times(1)).getHttpRequestInterceptor();
+        assertThat(target.getHttpRequestInterceptor(), is(sameInstance(httpRequestInterceptor)));
+    }
+
+    @Test
+    public void builderFromHttpClientConfigTakesHttpResponseInterceptor() {
+        // given
+        HttpResponseInterceptor httpResponseInterceptor = mock(HttpResponseInterceptor.class);
+        HTTPClientConfiguration httpConfig = mock(HTTPClientConfiguration.class);
+        when(httpConfig.getHttpResponseInterceptor()).thenReturn(httpResponseInterceptor);
+
+        // when
+        HTTPClientConfiguration target = HTTPClientConfiguration.modifyWith(httpConfig).build();
+
+        // then
+        verify(httpConfig, times(1)).getHttpResponseInterceptor();
+        assertThat(target.getHttpResponseInterceptor(), is(sameInstance(httpResponseInterceptor)));
     }
 
     @Test
@@ -223,5 +289,33 @@ public class HttpClientConfigurationTest {
 
         // then
         assertThat(obtained.getServerID(), is(equalTo(serverId)));
+    }
+
+    @Test
+    public void builderWithHttpRequestInterceptorPropagatesToInstance() {
+        // given
+        HttpRequestInterceptor httpRequestInterceptor = mock(HttpRequestInterceptor.class);
+        HTTPClientConfiguration.Builder target = new HTTPClientConfiguration.Builder()
+            .withHttpRequestInterceptor(httpRequestInterceptor);
+
+        // when
+        HTTPClientConfiguration obtained = target.build();
+
+        // then
+        assertThat(obtained.getHttpRequestInterceptor(), is(sameInstance(httpRequestInterceptor)));
+    }
+
+    @Test
+    public void builderWithHttpResponseInterceptorPropagatesToInstance() {
+        // given
+        HttpResponseInterceptor httpResponseInterceptor = mock(HttpResponseInterceptor.class);
+        HTTPClientConfiguration.Builder target = new HTTPClientConfiguration.Builder()
+            .withHttpResponseInterceptor(httpResponseInterceptor);
+
+        // when
+        HTTPClientConfiguration obtained = target.build();
+
+        // then
+        assertThat(obtained.getHttpResponseInterceptor(), is(sameInstance(httpResponseInterceptor)));
     }
 }

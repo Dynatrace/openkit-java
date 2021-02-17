@@ -21,12 +21,20 @@ import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
 import com.dynatrace.openkit.core.objects.OpenKitImpl;
 import com.dynatrace.openkit.core.objects.OpenKitInitializerImpl;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.core.util.StringUtil;
+import com.dynatrace.openkit.protocol.http.NullHttpRequestInterceptor;
+import com.dynatrace.openkit.protocol.http.NullHttpResponseInterceptor;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Abstract base class for concrete builder. Using the builder a OpenKit instance can be created
@@ -51,6 +59,8 @@ public abstract class AbstractOpenKitBuilder {
     private long beaconCacheUpperMemoryBoundary = ConfigurationDefaults.DEFAULT_UPPER_MEMORY_BOUNDARY_IN_BYTES;
     private DataCollectionLevel dataCollectionLevel = ConfigurationDefaults.DEFAULT_DATA_COLLECTION_LEVEL;
     private CrashReportingLevel crashReportLevel = ConfigurationDefaults.DEFAULT_CRASH_REPORTING_LEVEL;
+    private HttpRequestInterceptor httpRequestInterceptor = NullHttpRequestInterceptor.INSTANCE;
+    private HttpResponseInterceptor httpResponseInterceptor = NullHttpResponseInterceptor.INSTANCE;
 
     /**
      * Creates a new instance of type AbstractOpenKitBuilder
@@ -282,6 +292,34 @@ public abstract class AbstractOpenKitBuilder {
     }
 
     /**
+     * Sets a custom {@link HttpRequestInterceptor}
+     *
+     * @param httpRequestInterceptor Interceptor for intercepting requests to Dynatrace/AppMon backends.
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withHttpRequestInterceptor(HttpRequestInterceptor httpRequestInterceptor) {
+        if (httpRequestInterceptor != null) {
+            this.httpRequestInterceptor = httpRequestInterceptor;
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets a custom {@link HttpResponseInterceptor}
+     *
+     * @param httpResponseInterceptor Interceptor for intercepting responses received from Dynatrace/AppMon backends.
+     * @return {@code this}
+     */
+    public AbstractOpenKitBuilder withHttpResponseInterceptor(HttpResponseInterceptor httpResponseInterceptor) {
+        if (httpResponseInterceptor != null) {
+            this.httpResponseInterceptor = httpResponseInterceptor;
+        }
+
+        return this;
+    }
+
+    /**
      * Builds a new {@code OpenKit} instance
      *
      * @return returns an {@code OpenKit} instance
@@ -480,6 +518,26 @@ public abstract class AbstractOpenKitBuilder {
      */
     public CrashReportingLevel getCrashReportLevel() {
         return crashReportLevel;
+    }
+
+    /**
+     * Get {@link HttpRequestInterceptor} that has been set with {@link #withHttpRequestInterceptor(HttpRequestInterceptor)}.
+     *
+     * @return Previously set HTTP request interceptor or {@link NullHttpRequestInterceptor#INSTANCE}
+     *         if nothing has been set.
+     */
+    public HttpRequestInterceptor getHttpRequestInterceptor() {
+        return httpRequestInterceptor;
+    }
+
+    /**
+     * Get {@link HttpResponseInterceptor} that has been set with {@link #withHttpResponseInterceptor(HttpResponseInterceptor)}.
+     *
+     * @return Previously set HTTP response interceptor or {@link NullHttpResponseInterceptor#INSTANCE}
+     *         if nothing has been set.
+     */
+    public HttpResponseInterceptor getHttpResponseInterceptor() {
+        return httpResponseInterceptor;
     }
 
     /**

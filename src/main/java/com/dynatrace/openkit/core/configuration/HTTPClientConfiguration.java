@@ -17,6 +17,8 @@
 package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 
 /**
  * The HTTPClientConfiguration holds all http client related settings
@@ -27,12 +29,16 @@ public class HTTPClientConfiguration {
     private final int serverID;
     private final String applicationID;
     private final SSLTrustManager sslTrustManager;
+    private final HttpRequestInterceptor httpRequestInterceptor;
+    private final HttpResponseInterceptor httpResponseInterceptor;
 
     private HTTPClientConfiguration(Builder builder) {
         this.baseURL = builder.baseURL;
         this.serverID = builder.serverID;
         this.applicationID = builder.applicationID;
         this.sslTrustManager = builder.sslTrustManager;
+        this.httpRequestInterceptor = builder.httpRequestInterceptor;
+        this.httpResponseInterceptor = builder.httpResponseInterceptor;
     }
 
     /**
@@ -57,7 +63,9 @@ public class HTTPClientConfiguration {
                 .withBaseURL(openKitConfig.getEndpointURL())
                 .withApplicationID(openKitConfig.getApplicationID())
                 .withSSLTrustManager(openKitConfig.getSSLTrustManager())
-                .withServerID(openKitConfig.getDefaultServerID());
+                .withServerID(openKitConfig.getDefaultServerID())
+                .withHttpRequestInterceptor(openKitConfig.getHttpRequestInterceptor())
+                .withHttpResponseInterceptor(openKitConfig.getHttpResponseInterceptor());
     }
 
     /**
@@ -71,7 +79,9 @@ public class HTTPClientConfiguration {
                 .withBaseURL(httpClientConfig.getBaseURL())
                 .withApplicationID(httpClientConfig.getApplicationID())
                 .withSSLTrustManager(httpClientConfig.getSSLTrustManager())
-                .withServerID(httpClientConfig.getServerID());
+                .withServerID(httpClientConfig.getServerID())
+                .withHttpRequestInterceptor(httpClientConfig.getHttpRequestInterceptor())
+                .withHttpResponseInterceptor(httpClientConfig.getHttpResponseInterceptor());
     }
 
     /**
@@ -109,6 +119,20 @@ public class HTTPClientConfiguration {
     }
 
     /**
+     * Returns an interface used to intercept HTTP requests, before they are sent to the Dynatrace backend.
+     */
+    public HttpRequestInterceptor getHttpRequestInterceptor() {
+        return httpRequestInterceptor;
+    }
+
+    /**
+     * Returns an interface used to intercept HTTP responses received from Dynatrace backend.
+     */
+    public HttpResponseInterceptor getHttpResponseInterceptor() {
+        return httpResponseInterceptor;
+    }
+
+    /**
      * Builder class for building {@link HTTPClientConfiguration}.
      */
     public static final class Builder {
@@ -117,6 +141,9 @@ public class HTTPClientConfiguration {
         private int serverID = -1;
         private String applicationID = null;
         private SSLTrustManager sslTrustManager = null;
+        private HttpRequestInterceptor httpRequestInterceptor = null;
+        private HttpResponseInterceptor httpResponseInterceptor = null;
+
 
         public Builder withBaseURL(String baseURL) {
             this.baseURL = baseURL;
@@ -135,6 +162,16 @@ public class HTTPClientConfiguration {
 
         public Builder withSSLTrustManager(SSLTrustManager sslTrustManager) {
             this.sslTrustManager = sslTrustManager;
+            return this;
+        }
+
+        public Builder withHttpRequestInterceptor(HttpRequestInterceptor httpRequestInterceptor) {
+            this.httpRequestInterceptor = httpRequestInterceptor;
+            return this;
+        }
+
+        public Builder withHttpResponseInterceptor(HttpResponseInterceptor httpResponseInterceptor) {
+            this.httpResponseInterceptor = httpResponseInterceptor;
             return this;
         }
 

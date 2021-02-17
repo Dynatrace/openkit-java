@@ -18,6 +18,8 @@ package com.dynatrace.openkit.core.configuration;
 
 import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 import com.dynatrace.openkit.core.util.PercentEncoder;
 
 /**
@@ -63,6 +65,10 @@ public class OpenKitConfiguration {
     private final int defaultServerID;
     /** SSL trust manager configured in OpenKit builder */
     private final SSLTrustManager sslTrustManager;
+    /** HTTP request interceptor configured in OpenKit builder */
+    private final HttpRequestInterceptor httpRequestInterceptor;
+    /** HTTP response interceptor configured in OpenKit builder */
+    private final HttpResponseInterceptor httpResponseInterceptor;
 
     /**
      * Initialize this configuration.
@@ -83,6 +89,8 @@ public class OpenKitConfiguration {
         modelID = builder.getModelID();
         defaultServerID = builder.getDefaultServerID();
         sslTrustManager = builder.getTrustManager();
+        httpRequestInterceptor = builder.getHttpRequestInterceptor();
+        httpResponseInterceptor = builder.getHttpResponseInterceptor();
     }
 
     /**
@@ -213,5 +221,23 @@ public class OpenKitConfiguration {
      */
     public SSLTrustManager getSSLTrustManager() {
         return sslTrustManager;
+    }
+
+    /**
+     * Get {@link HttpRequestInterceptor} configured in builder.
+     *
+     * @return {@link HttpRequestInterceptor}.
+     */
+    public HttpRequestInterceptor getHttpRequestInterceptor() {
+        return httpRequestInterceptor;
+    }
+
+    /**
+     * Get {@link HttpResponseInterceptor} configured in builder.
+     *
+     * @return {@link HttpResponseInterceptor}.
+     */
+    public HttpResponseInterceptor getHttpResponseInterceptor() {
+        return httpResponseInterceptor;
     }
 }

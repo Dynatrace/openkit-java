@@ -20,10 +20,15 @@ import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 import com.dynatrace.openkit.core.configuration.ConfigurationDefaults;
 import com.dynatrace.openkit.core.util.DefaultLogger;
 import com.dynatrace.openkit.core.util.StringUtil;
+import com.dynatrace.openkit.protocol.http.NullHttpRequestInterceptor;
+import com.dynatrace.openkit.protocol.http.NullHttpResponseInterceptor;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -590,6 +595,88 @@ public class AbstractOpenKitBuilderTest {
 
         // then
         assertThat(obtained, is(notNullValue()));
+    }
+
+    @Test
+    public void getHttpRequestInterceptorGivesNullHttpRequestInterceptorByDefault() {
+        // given
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
+
+        // when
+        HttpRequestInterceptor obtained = target.getHttpRequestInterceptor();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(NullHttpRequestInterceptor.class));
+    }
+
+    @Test
+    public void getHttpRequestInterceptorGivesPreviouslySetHttpRequestInterceptor() {
+        // given
+        HttpRequestInterceptor httpRequestInterceptor = mock(HttpRequestInterceptor.class);
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
+
+        // when
+        target.withHttpRequestInterceptor(httpRequestInterceptor);
+        HttpRequestInterceptor obtained = target.getHttpRequestInterceptor();
+
+        // then
+        assertThat(obtained, is(sameInstance(httpRequestInterceptor)));
+    }
+
+    @Test
+    public void httpRequestInterceptorCannotBeChangedToNull() {
+        // given
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
+
+        // when
+        target.withHttpRequestInterceptor(null);
+        HttpRequestInterceptor obtained = target.getHttpRequestInterceptor();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(NullHttpRequestInterceptor.class));
+    }
+
+    @Test
+    public void getHttpResponseInterceptorGivesNullHttpResponseInterceptorByDefault() {
+        // given
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
+
+        // when
+        HttpResponseInterceptor obtained = target.getHttpResponseInterceptor();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(NullHttpResponseInterceptor.class));
+    }
+
+    @Test
+    public void getHttpResponseInterceptorGivesPreviouslySetHttpResponseInterceptor() {
+        // given
+        HttpResponseInterceptor httpResponseInterceptor = mock(HttpResponseInterceptor.class);
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
+
+        // when
+        target.withHttpResponseInterceptor(httpResponseInterceptor);
+        HttpResponseInterceptor obtained = target.getHttpResponseInterceptor();
+
+        // then
+        assertThat(obtained, is(sameInstance(httpResponseInterceptor)));
+    }
+
+    @Test
+    public void httpResponseInterceptorCannotBeChangedToNull() {
+        // given
+        AbstractOpenKitBuilder target = new StubOpenKitBuilder(ENDPOINT_URL, DEVICE_ID);
+
+        // when
+        target.withHttpResponseInterceptor(null);
+        HttpResponseInterceptor obtained = target.getHttpResponseInterceptor();
+
+        // then
+        assertThat(obtained, is(notNullValue()));
+        assertThat(obtained, instanceOf(NullHttpResponseInterceptor.class));
     }
 
     /**

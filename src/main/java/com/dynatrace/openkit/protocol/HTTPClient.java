@@ -19,8 +19,12 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.api.LogLevel;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.SSLTrustManager;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.core.util.PercentEncoder;
+import com.dynatrace.openkit.protocol.http.HttpRequestHttpURLConnectionAdapter;
+import com.dynatrace.openkit.protocol.http.HttpResponseHttpURLConnectionAdapter;
 import com.dynatrace.openkit.protocol.ssl.SSLStrictTrustManager;
 import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 
@@ -40,8 +44,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -59,7 +61,7 @@ public class HTTPClient {
         BEACON("Beacon"),                // beacon send
         NEW_SESSION("NewSession");       // new session request
 
-        private String requestName;
+        private final String requestName;
 
         RequestType(String requestName) {
             this.requestName = requestName;
@@ -101,6 +103,9 @@ public class HTTPClient {
 
     private final SSLTrustManager sslTrustManager;
 
+    private final HttpRequestInterceptor httpRequestInterceptor;
+    private final HttpResponseInterceptor httpResponseInterceptor;
+
     private final Logger logger;
 
     // *** constructors ***
@@ -111,6 +116,8 @@ public class HTTPClient {
         monitorURL = buildMonitorURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
         newSessionURL = buildNewSessionURL(configuration.getBaseURL(), configuration.getApplicationID(), serverID);
         sslTrustManager = configuration.getSSLTrustManager();
+        httpRequestInterceptor = configuration.getHttpRequestInterceptor();
+        httpResponseInterceptor = configuration.getHttpResponseInterceptor();
     }
 
     // *** public methods ***
@@ -193,6 +200,9 @@ public class HTTPClient {
                 connection.setReadTimeout(READ_TIMEOUT);
                 connection.setRequestMethod(method);
 
+                // invoke request interceptor
+                httpRequestInterceptor.intercept(new HttpRequestHttpURLConnectionAdapter(connection));
+
                 // write the post body data
                 writePostBodyData(connection, data);
 
@@ -225,18 +235,27 @@ public class HTTPClient {
 
         byte[] gzippedData = gzip(data);
 
-        String decodedData = decodeData(data);
-
         if (logger.isDebugEnabled()) {
+            String decodedData = decodeData(data);
             logger.debug(getClass().getSimpleName() + " sendRequestInternal() - Beacon Payload: " + decodedData);
         }
 
         connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setRequestProperty("Content-Length", String.valueOf(gzippedData.length));
         connection.setDoOutput(true);
-        OutputStream outputStream = connection.getOutputStream();
-        outputStream.write(gzippedData);
-        outputStream.close();
+        OutputStream outputStream = null;
+        try {
+            outputStream = connection.getOutputStream();
+            outputStream.write(gzippedData);
+        } finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                logger.error("Caught IOException while trying to close output stream", e);
+            }
+        }
     }
 
     private String decodeData(byte[] data) {
@@ -260,6 +279,9 @@ public class HTTPClient {
             logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response: " + response);
             logger.debug(getClass().getSimpleName() + " handleResponse() - HTTP Response Code: " + responseCode);
         }
+
+        // invoke response interceptor
+        httpResponseInterceptor.intercept(new HttpResponseHttpURLConnectionAdapter(connection));
 
         // create typed response based on request type and response content
         if (requestType == RequestType.BEACON

@@ -17,12 +17,17 @@
 package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.http.HttpRequest;
+import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
+import com.dynatrace.openkit.api.http.HttpResponse;
+import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
 import com.dynatrace.openkit.core.configuration.HTTPClientConfiguration;
 import com.dynatrace.openkit.protocol.HTTPClient.RequestType;
 import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.io.BufferedReader;
@@ -66,16 +71,25 @@ public class HTTPClientTest {
     private HTTPClientConfiguration configuration;
     private HttpURLConnectionWrapper httpURLConnectionWrapper;
 
+    private HttpRequestInterceptor mockRequestInterceptor;
+    private HttpResponseInterceptor mockResponseInterceptor;
+
     private AdditionalQueryParameters mockAdditionalParameters;
 
     private Logger logger;
 
     @Before
     public void setUp() {
+
+        mockRequestInterceptor = mock(HttpRequestInterceptor.class);
+        mockResponseInterceptor = mock(HttpResponseInterceptor.class);
+
         configuration = mock(HTTPClientConfiguration.class);
         when(configuration.getApplicationID()).thenReturn(APP_ID);
         when(configuration.getServerID()).thenReturn(SERVER_ID);
         when(configuration.getBaseURL()).thenReturn(BASE_URL);
+        when(configuration.getHttpRequestInterceptor()).thenReturn(mockRequestInterceptor);
+        when(configuration.getHttpResponseInterceptor()).thenReturn(mockResponseInterceptor);
 
         httpURLConnectionWrapper = mock(HttpURLConnectionWrapper.class);
 
@@ -748,6 +762,40 @@ public class HTTPClientTest {
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));
         assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
+    }
+
+    @Test
+    public void sendRequestInvokesHttpRequestInterceptor() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+
+        // then
+        verify(mockRequestInterceptor, times(1)).intercept(any(HttpRequest.class));
+    }
+
+    @Test
+    public void sendRequestInvokesHttpResponseInterceptor() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+
+        // then
+        verify(mockResponseInterceptor, times(1)).intercept(any(HttpResponse.class));
     }
 
     private StringBuilder initializeBaseUrl() {
