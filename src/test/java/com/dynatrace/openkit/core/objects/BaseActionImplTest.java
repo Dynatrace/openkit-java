@@ -1262,7 +1262,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionSetsTheEndTime() {
+    public void cancelingAnActionSetsTheEndTime() {
         // given
         when(beacon.getCurrentTimestamp()).thenReturn(1234L, 5678L, 9012L);
 
@@ -1277,7 +1277,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionSetsTheEndSequenceNumber() {
+    public void cancelingAnActionSetsTheEndSequenceNumber() {
         // given
         when(beacon.createSequenceNumber()).thenReturn(1, 10, 20);
 
@@ -1292,7 +1292,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionDoesNotSerializeItself() {
+    public void cancelingAnActionDoesNotSerializeItself() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
@@ -1304,7 +1304,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionCancelsAllChildObjects() {
+    public void cancelingAnActionCancelsAllChildObjects() {
         // given
         CancelableOpenKitObject childObjectOne = mock(CancelableOpenKitObject.class);
         CancelableOpenKitObject childObjectTwo = mock(CancelableOpenKitObject.class);
@@ -1322,7 +1322,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionClosesAllChildObjectsThatAreNotCancelable() throws IOException {
+    public void cancelingAnActionClosesAllChildObjectsThatAreNotCancelable() throws IOException {
         // given
         OpenKitObject childObjectOne = mock(OpenKitObject.class);
         OpenKitObject childObjectTwo = mock(OpenKitObject.class);
@@ -1341,7 +1341,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionNotifiesTheParentCompositeObject() {
+    public void cancelingAnActionNotifiesTheParentCompositeObject() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
         reset(openKitComposite);
@@ -1355,7 +1355,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnActionReturnsTheParentAction() {
+    public void cancelingAnActionReturnsTheParentAction() {
         // given
         Action parentAction = mock(Action.class);
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon, parentAction);
@@ -1368,11 +1368,11 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnAlreadyCanceledActionReturnsTheParentAction() {
+    public void cancelingAnAlreadyCanceledActionReturnsTheParentAction() {
         // given
         Action parentAction = mock(Action.class);
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon, parentAction);
-        target.cancelAction(); // cancelling the first time
+        target.cancelAction(); // canceling the first time
 
         // when leaving a second time
         Action obtained = target.cancelAction();
@@ -1382,10 +1382,10 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingAnAlreadyCancelledActionReturnsImmediately() {
+    public void cancelingAnAlreadyCancelledActionReturnsImmediately() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
-        target.cancelAction(); // cancelling the first time
+        target.cancelAction(); // canceling the first time
         reset(beacon, openKitComposite);
 
         // when
@@ -1396,7 +1396,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancellingActionLogsInvocation() {
+    public void cancelingActionLogsInvocation() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 

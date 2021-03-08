@@ -277,7 +277,7 @@ Action parent = parentAction.cancelAction(); // will always return null
 ## Obtaining an Action duration
 
 To get the `Action` duration use the method `getDurationInMilliseconds`. The method returns
-the difference between the end time and start time, if the `Action` is left or cancelled.
+the difference between the end time and start time, if the `Action` is left or canceled.  
 If the `Action` is still ongoing, the duration is the difference between the current time and start time.
 
 ```java

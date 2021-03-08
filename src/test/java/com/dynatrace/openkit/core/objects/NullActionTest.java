@@ -256,7 +256,7 @@ public class NullActionTest {
     @Test
     public void getDurationInMillisecondsReturnsZero() {
         // given
-        NullRootAction target = NullRootAction.INSTANCE;
+        NullAction target = createNullAction();
 
         // when
         long obtained = target.getDurationInMilliseconds();

@@ -422,7 +422,7 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
-        // when executed the first time
+        // when
         target.close();
 
         // then
@@ -432,13 +432,13 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
-    public void cancellingAWebRequestLogsInvocation() {
+    public void cancelingAWebRequestLogsInvocation() {
 
         // given
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
-        // when executed the first time
+        // when
         target.cancel();
 
         // then
@@ -447,13 +447,13 @@ public class WebRequestTracerBaseImplTest {
     }
 
     @Test
-    public void cancellingAWebRequestStopsItWithoutReportingIt() {
+    public void cancelingAWebRequestStopsItWithoutReportingIt() {
 
         // given
         WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
         when(mockBeacon.createSequenceNumber()).thenReturn(42);
 
-        // when executed the first time
+        // when
         target.cancel();
 
         // then
