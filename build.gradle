@@ -24,10 +24,11 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'maven-publish'
+    id 'signing'
     id 'com.github.hierynomus.license' version '0.15.0'
-    id 'ru.vyarus.animalsniffer' version '1.4.6'
+    id 'ru.vyarus.animalsniffer' version '1.5.3'
     id 'com.github.kt3k.coveralls' version '2.8.2'
-    id 'com.jfrog.bintray' version '1.8.4'
+    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
 }
 
 group 'com.dynatrace.openkit'

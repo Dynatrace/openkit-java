@@ -26,6 +26,30 @@ publishing {
             artifact javadocJar {
                 classifier "javadoc"
             }
+            pom {
+                name = "${project.group}:${project.name}"
+                packaging = 'jar'
+                description = 'Dynatrace OpenKit - Java Reference Implementation'
+                url = 'https://github.com/Dynatrace/openkit-java'
+
+                scm {
+                    url = 'https://github.com/Dynatrace/openkit-java.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'Dynatrace'
+                        name = 'Dynatrace LLC'
+                        email = 'openkit@dynatrace.com'
+                    }
+                }
+            }
         }
     }
 }
@@ -34,36 +58,19 @@ artifacts {
     archives sourceJar, javadocZip, javadocJar
 }
 
-if (System.getenv('TRAVIS') != null && System.getenv('TRAVIS_TAG') != null // only for Travis CI
-    && System.getenv('BINTRAY_USER') != null && System.getenv('BINTRAY_KEY') != null) { // User/Key must be set
-    bintray {
-        user = System.getenv('BINTRAY_USER')
-        key = System.getenv('BINTRAY_KEY')
-
-        publications = ['mavenJava']
-
-        //Whether to override version artifacts already published
-        override = true
-
-        pkg {
-            repo = 'openkit'
-            userOrg = 'dynatrace'
-
-            name = 'com.dynatrace.openkit'
-            desc = 'Dynatrace OpenKit - Java Reference Implementation'
-            websiteUrl = 'https://github.com/Dynatrace/openkit-java'
-            issueTrackerUrl = 'https://github.com/Dynatrace/openkit-java/issues'
-            vcsUrl = 'https://github.com/Dynatrace/openkit-java.git'
-            licenses = ['Apache-2.0']
-            publicDownloadNumbers = true
-
-            githubRepo = 'Dynatrace/openkit-java' //Optional Github repository
-            githubReleaseNotesFile = 'README.md' //Optional Github readme file
-
-            version {
-                name = project.version //Bintray logical version name
-                released  = new Date()
-                vcsTag  = System.getenv('TRAVIS_TAG')
+if (project.hasProperty("ossrhUsername") && project.ossrhUsername && project.hasProperty("ossrhPassword") && project.ossrhPassword) {
+    signing {
+        sign publishing.publications.mavenJava
+    }
+    nexusPublishing {
+        packageGroup = "com.dynatrace"
+        useStaging = true
+        repositories {
+            sonatype {
+                nexusUrl = uri("https://oss.sonatype.org/service/local/")
+                snapshotRepositoryUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                username = ossrhUsername
+                password = ossrhPassword
             }
         }
     }
