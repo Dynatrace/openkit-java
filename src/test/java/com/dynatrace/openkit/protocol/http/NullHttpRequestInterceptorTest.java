@@ -33,7 +33,7 @@ public class NullHttpRequestInterceptorTest {
     }
 
     @Test
-    public void interceptDoesNotInteractHttpResponse() {
+    public void interceptDoesNotInteractWithHttpRequest() {
         // given
         NullHttpRequestInterceptor target = NullHttpRequestInterceptor.INSTANCE;
 

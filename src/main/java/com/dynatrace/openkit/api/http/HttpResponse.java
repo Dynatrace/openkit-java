@@ -70,6 +70,8 @@ public interface HttpResponse {
      * <p>
      *     If the header occurs multiple times, it depends on the underlying implementation
      *     which value is returned.
+	 *
+	 *     In this case prefer {@link #getHeaders()} instead.
      * </p>
      *
      * @return Value associated with HTTP response header {@code name} or {@code null}.

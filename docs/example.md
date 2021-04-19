@@ -262,9 +262,9 @@ Action parentAction = action.leaveAction(); // returns the appropriate RootActio
 Action parent = parentAction.leaveAction(); // will always return null
 ```
 
-## Cancelling Actions
+## Canceling Actions
 
-Cancelling an `Action` is similar to leaving an `Action`, except that the `Action` will be discarded
+Canceling an `Action` is similar to leaving an `Action`, except that the `Action` will be discarded
 and not reported to Dynatrace. Open child objects, like child actions and web request tracers, will be
 discarded as well.
 To cancel an `Action` simply use the method `cancelAction` as shown in the example below.

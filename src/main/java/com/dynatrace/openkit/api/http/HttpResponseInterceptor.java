@@ -20,7 +20,7 @@ package com.dynatrace.openkit.api.http;
  * An interface allowing to intercept an HTTP response from Dynatrace backends.
  *
  * <p>
- *     This interceptor is only applied to HTTP requests which are sent to Dynatrace backends.
+ *     This interceptor is only applied to HTTP responses coming from Dynatrace backend requests.
  * </p>
  */
 public interface HttpResponseInterceptor {

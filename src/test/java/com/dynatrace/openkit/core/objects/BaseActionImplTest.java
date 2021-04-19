@@ -1250,7 +1250,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void afterCancellingAnActionItIsLeft() {
+    public void afterCancelingAnActionItIsLeft() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
 
@@ -1382,7 +1382,7 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void cancelingAnAlreadyCancelledActionReturnsImmediately() {
+    public void cancelingAnAlreadyCanceledActionReturnsImmediately() {
         // given
         BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
         target.cancelAction(); // canceling the first time
