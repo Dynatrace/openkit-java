@@ -1,5 +1,9 @@
 # Upgrade guide for OpenKit Java
 
+## OpenKit Java 2.1 to 2.2
+There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
+to the latest 2.2 release.
+
 ## OpenKit Java 2.0 to 2.1
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
 to the latest 2.1 release.

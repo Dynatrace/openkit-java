@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.1.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.2.0...HEAD)
+
+## 2.2.0 [Release date: 2021-04-22]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.2.0)
 
 ### Added
 - Support cost control configured in the Dynatrace UI.
