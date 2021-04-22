@@ -1,6 +1,6 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.3...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.0.3...release/2.0)
 
 ### Changed
 - Provide a more reliable way to determine monotonic timestamps.
