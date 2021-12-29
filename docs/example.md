@@ -60,7 +60,7 @@ customize OpenKit. This includes device specific information like operating syst
 | `withModelID`                         | sets the model id                                                     | `"OpenKitDevice"` |
 | `withDataCollectionLevel`             | sets the data collection level                                        | `DataCollectionLevel.USER_BEHAVIOR` |
 | `withCrashReportingLevel`             | sets the crash reporting level                                        | `CrashReportingLevel.OPT_IN_CRASHES` |
-| `withBeaconCacheMaxRecordAge`         | sets the maximum age of an entry in the beacon cache in milliseconds  | 1 h 45 min |
+| `withBeaconCacheMaxRecordAge`         | sets the maximum age of an entry in the beacon cache in milliseconds  | 45 min |
 | `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes           | 80 MB |
 | `withBeaconCacheUpperMemoryBoundary`  | sets the upper memory boundary of the beacon cache in bytes          | 100 MB |
 | `withTrustManager`                    | sets a custom `SSLTrustManager` instance, replacing the builtin default one.<br>Details are described in section [SSL/TLS Security in OpenKit](#ssltls-security-in-openkit). | `SSLStrictTrustManager` |

@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.2.0...HEAD)
 
+### Changed
+- Default maximum age of an entry in the beacon cache changed from 1h 45m to 45m
+
 ## 2.2.0 [Release date: 2021-04-22]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.2.0)
 

@@ -92,7 +92,7 @@ shut down when OpenKit is terminated.
 
 Since Dynatrace/AppMon backend services does not process too old data, it make sense to not send such data to the
 backend system.
-By default records that are older than 1 hour and 45 minutes are evicted, but when initializing an
+By default records that are older than 45 minutes are evicted, but when initializing an
 OpenKit instance via the builder the value can be set by calling `withBeaconCacheMaxRecordAge` with an argument specifying the
 maximum record age in milliseconds.
 

@@ -31,7 +31,7 @@ public class ConfigurationDefaults {
      *
      * Default settings allow beacons which are max 2 hours old and unbounded memory limits.
      */
-    public static final long DEFAULT_MAX_RECORD_AGE_IN_MILLIS = TimeUnit.MINUTES.toMillis(105); // 1hour and 45 minutes
+    public static final long DEFAULT_MAX_RECORD_AGE_IN_MILLIS = TimeUnit.MINUTES.toMillis(45); // 1hour and 45 minutes
     /**
      * Defines the default upper memory boundary of the {@link com.dynatrace.openkit.core.caching.BeaconCache}.
      *
