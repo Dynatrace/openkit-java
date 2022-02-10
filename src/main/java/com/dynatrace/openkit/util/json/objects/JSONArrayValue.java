@@ -60,6 +60,30 @@ public class JSONArrayValue extends JSONValue {
         return true;
     }
 
+    @Override
+    void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        if (size() > 0) {
+            writer.openArray();
+
+            Iterator<JSONValue> it = jsonValues.iterator();
+            int writtenElements = 0;
+
+            while (it.hasNext()) {
+                JSONValue value = it.next();
+
+                if (config != JSONOutputConfig.IGNORE_NULL || !value.isNull()) {
+                    if (writtenElements++ > 0) {
+                        writer.insertElementSeperator();
+                    }
+
+                    value.writeJSONString(writer, config);
+                }
+            }
+
+            writer.closeArray();
+        }
+    }
+
     /**
      * Get the size of this JSON array.
      *

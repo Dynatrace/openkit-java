@@ -74,4 +74,30 @@ public abstract class JSONValue {
     public boolean isObject() {
         return false;
     }
+
+    /**
+     * Returns a string representation of the JSON value
+     * @return json string
+     */
+    public String toString() {
+        return toString(JSONOutputConfig.DEFAULT);
+    }
+
+    /**
+     * Returns a string representation of the JSON value but allows the option to pass a
+     * configuration which changes the string output
+     * @param config Configuration which changes the output
+     * @return json string
+     */
+    public String toString(JSONOutputConfig config){
+        JSONValueWriter jsonValueWriter = new JSONValueWriter();
+        writeJSONString(jsonValueWriter, config);
+        return jsonValueWriter.toString();
+    }
+
+    /**
+     * Writes the JSON string to a write which will be returned in the toString
+     * @param writer JSONWriter
+     */
+    abstract void writeJSONString(JSONValueWriter writer, JSONOutputConfig config);
 }

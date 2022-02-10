@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,13 +23,14 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.util.json.objects.*;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -45,6 +46,7 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -148,13 +150,13 @@ public class SessionImplTest {
         RootAction obtainedOne = target.enterAction("Some action");
 
         // then
-        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject)obtainedOne))));
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject) obtainedOne))));
 
         // and when entering a second time
         RootAction obtainedTwo = target.enterAction("Some action");
 
         // then
-        assertThat(target.getCopyOfChildObjects(), is(equalTo(Arrays.asList((OpenKitObject) obtainedOne, (OpenKitObject)obtainedTwo))));
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Arrays.asList((OpenKitObject) obtainedOne, (OpenKitObject) obtainedTwo))));
     }
 
     @Test
@@ -302,7 +304,7 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when reporting a crash, passing null values
-        target.reportCrash("errorName", "", "" );
+        target.reportCrash("errorName", "", "");
 
         // then verify the correct methods being called
         verify(mockBeacon, times(1)).reportCrash("errorName", "", "");
@@ -387,7 +389,118 @@ public class SessionImplTest {
         // verify the correct methods being called
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
-            "SessionImpl [sn=0] reportCrash(" + crash + ")");
+                "SessionImpl [sn=0] reportCrash(" + crash + ")");
+    }
+
+    @Test
+    public void sendEventWithNullEventName() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.sendEvent(null, new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
+        verify(mockBeacon, never()).sendEvent(anyString(), anyString());
+    }
+
+    @Test
+    public void sendEventWithEmptyEventName() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.sendEvent("", new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
+        verify(mockBeacon, never()).sendEvent(anyString(), anyString());
+    }
+
+    @Test
+    public void sendEventWithNameInPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("name", JSONStringValue.fromString("MyCustomValue"));
+
+        target.sendEvent("EventName", attributes);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        actualAttributes.put("name", JSONStringValue.fromString("EventName"));
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendEvent(EventName" + ", " + actualAttributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendEvent(eq("EventName"), eq("{\"name\":\"EventName\"}"));
+    }
+
+    @Test
+    public void sendEventWithValidPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+        attributes.put("name", JSONStringValue.fromString("EventName"));
+
+        target.sendEvent("EventName", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendEvent(anyString(), eq("{\"name\":\"EventName\",\"value\":\"MyCustomValue\"}"));
+    }
+
+    @Test
+    public void sendEventWithNullArrayValuesInPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+        attributes.put("name", JSONStringValue.fromString("EventName"));
+
+        ArrayList<JSONValue> jsonArray = new ArrayList<JSONValue>();
+        jsonArray.add(JSONNullValue.NULL);
+        jsonArray.add(JSONStringValue.fromString("Hello"));
+        jsonArray.add(JSONNullValue.NULL);
+
+        attributes.put("arrayWithNull", JSONArrayValue.fromList(jsonArray));
+
+        target.sendEvent("EventName", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendEvent(eq("EventName"),
+                eq(JSONObjectValue.fromMap(attributes).toString(JSONOutputConfig.IGNORE_NULL)));
+    }
+
+    @Test
+    public void sendEventWithNullObjectValuesInPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+        attributes.put("name", JSONStringValue.fromString("EventName"));
+        attributes.put("nullValue", JSONNullValue.NULL);
+
+        target.sendEvent("EventName", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendEvent(anyString(), eq("{\"name\":\"EventName\",\"value\":\"MyCustomValue\"}"));
     }
 
     @Test
@@ -427,7 +540,7 @@ public class SessionImplTest {
 
         // then
         verify(mockBeacon, times(1)).endSession();
-        assertThat(target.getState().isFinished(),  is(true));
+        assertThat(target.getState().isFinished(), is(true));
 
         reset(mockBeacon);
 
@@ -672,8 +785,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void aNotConfiguredNotFinishedSessionHasCorrectState()
-    {
+    public void aNotConfiguredNotFinishedSessionHasCorrectState() {
         // given
         when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
         SessionImpl target = createSession().build();
@@ -686,8 +798,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void aConfiguredNotFinishedSessionHasCorrectState()
-    {
+    public void aConfiguredNotFinishedSessionHasCorrectState() {
         // given
         when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
         SessionImpl target = createSession().build();
@@ -700,8 +811,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void aNotConfiguredFinishedSessionHasCorrectState()
-    {
+    public void aNotConfiguredFinishedSessionHasCorrectState() {
         // given
         when(mockBeacon.isServerConfigurationSet()).thenReturn(false);
         SessionImpl target = createSession().build();
@@ -715,8 +825,7 @@ public class SessionImplTest {
     }
 
     @Test
-    public void aConfiguredFinishedSessionHasCorrectState()
-    {
+    public void aConfiguredFinishedSessionHasCorrectState() {
         // given
         when(mockBeacon.isServerConfigurationSet()).thenReturn(true);
         SessionImpl target = createSession().build();
@@ -782,6 +891,19 @@ public class SessionImplTest {
     }
 
     @Test
+    public void sendEventDoesNothingIfSessionIsEnded() {
+        // given
+        SessionImpl target = createSession().build();
+        target.end();
+
+        // when trying to identify a user on an ended session
+        target.sendEvent("eventName", new HashMap<String, JSONValue>());
+
+        // then
+        verify(mockBeacon, times(0)).sendEvent(anyString(), anyString());
+    }
+
+    @Test
     public void closeSessionEndsTheSession() {
         // given
         when(mockBeacon.getCurrentTimestamp()).thenReturn(4321L);
@@ -816,7 +938,7 @@ public class SessionImplTest {
         WebRequestTracer obtained = target.traceWebRequest("https://www.google.com");
 
         // then
-        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject)obtained))));
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject) obtained))));
     }
 
     @Test
@@ -867,7 +989,7 @@ public class SessionImplTest {
 
         // and a warning message has been generated
         verify(mockLogger, times(1)).warning(
-            "SessionImpl [sn=0] traceWebRequest (String): url \"foobar/://\" does not have a valid scheme");
+                "SessionImpl [sn=0] traceWebRequest (String): url \"foobar/://\" does not have a valid scheme");
     }
 
     @Test
@@ -922,7 +1044,7 @@ public class SessionImplTest {
         WebRequestTracer obtained = target.traceWebRequest(mock(URLConnection.class));
 
         // then
-        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject)obtained))));
+        assertThat(target.getCopyOfChildObjects(), is(equalTo(Collections.singletonList((OpenKitObject) obtained))));
     }
 
     @Test
@@ -940,7 +1062,7 @@ public class SessionImplTest {
 
         // and a warning message has been generated
         verify(mockLogger, times(1)).warning(
-            "SessionImpl [sn=0] traceWebRequest (URLConnection): connection must not be null");
+                "SessionImpl [sn=0] traceWebRequest (URLConnection): connection must not be null");
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -1079,7 +1201,7 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when, then
-        for(int i = SessionImpl.MAX_NEW_SESSION_REQUESTS; i > 0; i--) {
+        for (int i = SessionImpl.MAX_NEW_SESSION_REQUESTS; i > 0; i--) {
             assertThat(target.canSendNewSessionRequest(), is(true));
 
             target.decreaseNumRemainingSessionRequests();

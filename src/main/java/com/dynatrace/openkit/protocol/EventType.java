@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -67,7 +67,11 @@ public enum EventType implements SerializableBeaconValue {
     /**
      * Identify user event
      */
-    IDENTIFY_USER(60);
+    IDENTIFY_USER(60),
+    /**
+     * Event API
+     */
+    EVENT(98);
 
     private final int value;
 

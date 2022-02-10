@@ -84,6 +84,11 @@ public class JSONBooleanValue extends JSONValue {
         return true;
     }
 
+    @Override
+    void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        writer.insertValue(getValue() ? JSONLiterals.BOOLEAN_TRUE_LITERAL : JSONLiterals.BOOLEAN_FALSE_LITERAL);
+    }
+
     /**
      * Get value represented by this instance.
      *

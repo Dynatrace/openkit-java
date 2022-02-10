@@ -65,7 +65,7 @@ public class JSONNumberValue extends JSONValue {
      */
     private JSONNumberValue(double doubleValue) {
         this.isInteger = false;
-        this.longValue = (long)doubleValue;
+        this.longValue = (long) doubleValue;
         this.doubleValue = doubleValue;
     }
 
@@ -124,6 +124,15 @@ public class JSONNumberValue extends JSONValue {
     }
 
     @Override
+    void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        if (isInteger()) {
+            writer.insertValue(String.valueOf(longValue));
+        } else {
+            writer.insertValue(String.valueOf(doubleValue));
+        }
+    }
+
+    @Override
     public boolean isNumber() {
         return true;
     }
@@ -144,7 +153,7 @@ public class JSONNumberValue extends JSONValue {
      */
     public boolean isIntValue() {
         return isInteger()
-            && longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE;
+                && longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE;
     }
 
     /**
@@ -157,7 +166,7 @@ public class JSONNumberValue extends JSONValue {
      * @return 32-bit integer value represented by this instance.
      */
     public int getIntValue() {
-        return (int)longValue;
+        return (int) longValue;
     }
 
     /**
@@ -179,7 +188,7 @@ public class JSONNumberValue extends JSONValue {
      * @return 32-bit floating point value represented by this instance.
      */
     public float getFloatValue() {
-        return (float)doubleValue;
+        return (float) doubleValue;
     }
 
     /**

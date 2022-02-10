@@ -63,5 +63,8 @@ public class JSONValueTest {
      * Stub class for testing JSONValue.
      */
     private static final class JSONStubValue extends JSONValue {
+        @Override
+        void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        }
     }
 }

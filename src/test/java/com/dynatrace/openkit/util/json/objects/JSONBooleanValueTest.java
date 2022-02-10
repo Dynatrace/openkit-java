@@ -122,4 +122,14 @@ public class JSONBooleanValueTest {
         // and when passed an empty string, then
         assertThat(JSONBooleanValue.fromLiteral(""), is(nullValue()));
     }
+
+    @Test
+    public void FalseJsonString(){
+        assertThat(JSONBooleanValue.fromValue(false).toString(), is("false"));
+    }
+
+    @Test
+    public void TrueJsonString(){
+        assertThat(JSONBooleanValue.fromValue(true).toString(), is("true"));
+    }
 }

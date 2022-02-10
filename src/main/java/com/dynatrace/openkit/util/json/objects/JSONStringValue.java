@@ -61,4 +61,9 @@ public class JSONStringValue extends JSONValue {
     public String getValue() {
         return stringValue;
     }
+
+    @Override
+    void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        writer.insertStringValue(getValue());
+    }
 }

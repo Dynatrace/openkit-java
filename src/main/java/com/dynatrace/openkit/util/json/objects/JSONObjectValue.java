@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.util.json.objects;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,7 +59,7 @@ public class JSONObjectValue extends JSONValue {
     /**
      * Returns a {@link Set} view of the keys contained in this JSON object.
      *
-     * @return  A set view of the keys contained in this map
+     * @return A set view of the keys contained in this map
      */
     public Set<String> keySet() {
         return jsonObjectMap.keySet();
@@ -92,5 +93,31 @@ public class JSONObjectValue extends JSONValue {
      */
     public JSONValue get(String key) {
         return jsonObjectMap.get(key);
+    }
+
+    @Override
+    void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        writer.openObject();
+
+        Iterator<Map.Entry<String, JSONValue>> it = jsonObjectMap.entrySet().iterator();
+        int writtenElements = 0;
+
+        while (it.hasNext()) {
+            Map.Entry<String, JSONValue> entry = it.next();
+
+            if (entry.getKey() != null) {
+                if (config != JSONOutputConfig.IGNORE_NULL || !entry.getValue().isNull()) {
+                    if (writtenElements++ > 0) {
+                        writer.insertElementSeperator();
+                    }
+
+                    writer.insertKey(entry.getKey());
+                    writer.insertKeyValueSeperator();
+                    entry.getValue().writeJSONString(writer, config);
+                }
+            }
+        }
+
+        writer.closeObject();
     }
 }

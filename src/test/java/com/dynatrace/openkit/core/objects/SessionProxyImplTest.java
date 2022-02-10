@@ -23,11 +23,15 @@ import com.dynatrace.openkit.core.SessionWatchdog;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.TimingProvider;
+import com.dynatrace.openkit.util.json.objects.JSONStringValue;
+import com.dynatrace.openkit.util.json.objects.JSONValue;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URLConnection;
+import java.util.HashMap;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -36,12 +40,14 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.endsWith;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -860,7 +866,121 @@ public class SessionProxyImplTest {
         verify(mockSessionCreator, times(3)).createSession(target);
         verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSplitSession1, mockServerConfiguration.getSendIntervalInMilliseconds());
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// sendEvent tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void sendEventWithNullEventName(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.sendEvent(null, new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be null or empty");
+        verify(mockSession, never()).sendEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendEventWithEmptyEventName(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.sendEvent("", new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be null or empty");
+        verify(mockSession, never()).sendEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendEventWithNameInPayload(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("name", JSONStringValue.fromString("MyCustomValue"));
+
+        target.sendEvent("EventName", attributes);
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
+        verify(mockSession, times(1)).sendEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendEventWithValidPayload(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+
+        target.sendEvent("EventName", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
+        verify(mockSession, times(1)).sendEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendEventDoesNothingIfSessionIsEnded() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        target.end();
+
+        // when trying to identify a user on an ended session
+        target.sendEvent("eventName", new HashMap<String, JSONValue>());
+
+        // then
+        verify(mockSession, times(0)).sendEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendEventDoesNotIncreaseTopLevelEventCount() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        assertThat(target.getTopLevelActionCount(), is(0));
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        target.sendEvent("eventName", new HashMap<String, JSONValue>());
+
+        // then
+        assertThat(target.getTopLevelActionCount(), is(0));
+    }
+
+    @Test
+    public void sendEventDoesNotSplitSession() {
+        // given
+        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        for (int i = 0; i < 10; i++) {
+            target.sendEvent("eventName" + i, new HashMap<String, JSONValue>());
+        }
+
+        // then
+        verifyNoMoreInteractions(mockSessionCreator);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// trace web request (with string url) tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

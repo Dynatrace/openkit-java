@@ -92,6 +92,10 @@ public class Beacon {
     private static final String BEACON_KEY_WEBREQUEST_BYTES_SENT = "bs";
     private static final String BEACON_KEY_WEBREQUEST_BYTES_RECEIVED = "br";
 
+    // events api
+    private static final String BEACON_KEY_EVENT_PAYLOAD = "pl";
+    private static final int EVENT_PAYLOAD_BYTES_LENGTH = 16 * 1024;
+
     // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
     static final String CHARSET = "UTF-8";
 
@@ -771,7 +775,7 @@ public class Beacon {
             // i guess that was the original intention, but i'm not sure about this
             // TODO stefan.eberl - This is a quite uncool algorithm and should be improved, avoid subtracting some "magic" number
             String chunk = beaconCache.getNextBeaconChunk(beaconKey, prefix, configuration.getServerConfiguration()
-                                                                                          .getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
+                    .getBeaconSizeInBytes() - 1024, BEACON_DATA_DELIMITER);
             if (chunk == null || chunk.isEmpty()) {
                 // no data added so far or no data to send
                 return response;
@@ -801,6 +805,38 @@ public class Beacon {
         }
 
         return response;
+    }
+
+    public void sendEvent(String name, String jsonPayload) {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("name is null or empty");
+        }
+
+        if (jsonPayload == null || jsonPayload.length() == 0){
+            throw new IllegalArgumentException("payload is null or empty");
+        }
+
+        if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
+            return;
+        }
+
+        if (!isDataCapturingEnabled()) {
+            return;
+        }
+
+        try {
+            if (jsonPayload.getBytes("UTF-8").length > EVENT_PAYLOAD_BYTES_LENGTH) {
+                throw new IllegalArgumentException("Event payload is exceeding " + EVENT_PAYLOAD_BYTES_LENGTH + " bytes!");
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("Unable to calculate the length of used event payload!");
+        }
+
+        StringBuilder eventBuilder = new StringBuilder();
+        addKeyValuePair(eventBuilder, BEACON_KEY_EVENT_TYPE, EventType.EVENT.protocolValue());
+        addKeyValuePair(eventBuilder, BEACON_KEY_EVENT_PAYLOAD, jsonPayload);
+
+        addEventData(timingProvider.provideTimestampInMilliseconds(), eventBuilder);
     }
 
     /**
@@ -1225,7 +1261,7 @@ public class Beacon {
         ServerConfiguration serverConfiguration = configuration.getServerConfiguration();
 
         return serverConfiguration.isSendingDataAllowed()
-            && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
+                && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
     }
 
     /**
@@ -1235,7 +1271,7 @@ public class Beacon {
         ServerConfiguration serverConfiguration = configuration.getServerConfiguration();
 
         return serverConfiguration.isSendingErrorsAllowed()
-            && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
+                && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
     }
 
     /**
@@ -1245,7 +1281,7 @@ public class Beacon {
         ServerConfiguration serverConfiguration = configuration.getServerConfiguration();
 
         return serverConfiguration.isSendingCrashesAllowed()
-            && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
+                && trafficControlValue < serverConfiguration.getTrafficControlPercentage();
     }
 
     /**

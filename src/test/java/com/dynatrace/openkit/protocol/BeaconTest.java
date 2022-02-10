@@ -38,6 +38,11 @@ import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+import com.dynatrace.openkit.util.json.objects.JSONBooleanValue;
+import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
+import com.dynatrace.openkit.util.json.objects.JSONStringValue;
+import com.dynatrace.openkit.util.json.objects.JSONValue;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +52,7 @@ import org.mockito.ArgumentCaptor;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.hamcrest.Matchers.emptyArray;
@@ -1263,6 +1269,166 @@ public class BeaconTest {
 
         // then ensure nothing has been serialized
         verifyZeroInteractions(mockBeaconCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// sendEvent tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void sendValidEvent() {
+        // given
+        final Beacon target = createBeacon().build();
+        String eventName = "SomeEvent";
+
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("TestString", JSONStringValue.fromString("Test"));
+        attributes.put("TestBool", JSONBooleanValue.fromValue(false));
+        attributes.put("name", JSONStringValue.fromString(eventName));
+
+        // when
+        target.sendEvent(eventName, JSONObjectValue.fromMap(attributes).toString());
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(attributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String expectedEventData =
+                "et=98&" +   // event type
+                    "pl=" + encodedPayload // event payload
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void sendEventWithNullEventNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("name is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.sendEvent(null, null);
+    }
+
+    @Test
+    public void sendEventWithEmptyEventNameThrowsException() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("name is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+
+        // when
+        target.sendEvent("", null);
+    }
+
+    @Test
+    public void sendEventWithEmptyPayload() {
+        // given
+        final Beacon target = createBeacon().build();
+        String eventName = "SomeEvent";
+
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("name", JSONStringValue.fromString(eventName));
+
+        // when
+        target.sendEvent(eventName, JSONObjectValue.fromMap(attributes).toString());
+
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(attributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String expectedEventData =
+                "et=98&" +   // event type
+                        "pl=" + encodedPayload // event payload
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void sendEventWithNullPayload() {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("payload is null or empty"));
+
+        // given
+        final Beacon target = createBeacon().build();
+        String eventName = "SomeEvent";
+
+        // when
+        target.sendEvent(eventName, null);
+    }
+
+    @Test
+    public void sendEventIsNotReportedIfEventReportingDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
+
+        // when
+        target.sendEvent("EventName", "{}");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void sendEventIsNotReportedIfDataSendingIsDisallowed() {
+        // given
+        Beacon target = createBeacon().build();
+        when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
+
+        // when
+        target.sendEvent("EventName", "{}");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    @Test
+    public void sendEventIsNotReportedIfDisallowedByTrafficControl() {
+        // given
+        int trafficControlPercentage = 50;
+        when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
+
+        when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
+        Beacon target = createBeacon().build();
+
+        // when
+        target.sendEvent("EventName", "{}");
+
+        // then ensure nothing has been serialized
+        verifyZeroInteractions(mockBeaconCache);
+    }
+
+    // Test about Length
+    @Test
+    public void sendEventPayloadIsToBig() throws UnsupportedEncodingException {
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(equalTo("Event payload is exceeding 16384 bytes!"));
+
+        // given
+        final Beacon target = createBeacon().build();
+        String eventName = "SomeEvent";
+
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+
+        for(int i = 0; i < 500; i++){
+            attributes.put("TestNameForOversizeMap"+i, JSONStringValue.fromString(eventName));
+        }
+
+        // when
+        target.sendEvent(eventName, JSONObjectValue.fromMap(attributes).toString());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

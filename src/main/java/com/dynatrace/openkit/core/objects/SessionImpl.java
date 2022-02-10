@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,10 +25,16 @@ import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
+import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
+import com.dynatrace.openkit.util.json.objects.JSONOutputConfig;
+import com.dynatrace.openkit.util.json.objects.JSONStringValue;
+import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.IOException;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -178,6 +184,33 @@ public class SessionImpl extends OpenKitComposite implements Session {
         }
 
         return NullWebRequestTracer.INSTANCE;
+    }
+
+    void sendEvent(String name, Map<String, JSONValue> attributes) {
+        if (name == null || name.isEmpty()) {
+            logger.warning(this + "sendEvent (String, Map): name must not be null or empty");
+            return;
+        }
+
+        if (attributes != null && attributes.containsKey("name")) {
+            logger.warning(this + "sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
+        }
+
+        if (attributes == null) {
+            attributes = new HashMap<String, JSONValue>();
+        }
+
+        attributes.put("name", JSONStringValue.fromString(name));
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "sendEvent(" + name + ", " + attributes.toString() + ")");
+        }
+
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
+                beacon.sendEvent(name, JSONObjectValue.fromMap(attributes).toString(JSONOutputConfig.IGNORE_NULL));
+            }
+        }
     }
 
     @Override

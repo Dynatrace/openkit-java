@@ -74,4 +74,15 @@ public class JSONStringValueTest {
         assertThat(JSONStringValue.fromString("a").getValue(), is(equalTo("a")));
         assertThat(JSONStringValue.fromString("foobar").getValue(), is(equalTo("foobar")));
     }
+
+    @Test
+    public void emptyValueJsonString() {
+        assertThat(JSONStringValue.fromString("").toString(), is("\"\""));
+    }
+
+    @Test
+    public void anyValueJsonString(){
+        assertThat(JSONStringValue.fromString("any").toString(), is("\"any\""));
+    }
+
 }

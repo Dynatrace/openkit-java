@@ -228,4 +228,19 @@ public class JSONNumberValueTest {
         assertThat(obtained.isInteger(), is(false));
         assertThat(obtained.getDoubleValue(), is(6.25));
     }
+
+    @Test
+    public void integerJsonString(){
+        assertThat(JSONNumberValue.fromNumberLiteral("17").toString(), is("17"));
+    }
+
+    @Test
+    public void longJsonString(){
+        assertThat(JSONNumberValue.fromLong(17l).toString(), is("17"));
+    }
+
+    @Test
+    public void doubleJsonString(){
+        assertThat(JSONNumberValue.fromDouble(0.33).toString(), is("0.33"));
+    }
 }

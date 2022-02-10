@@ -18,6 +18,7 @@ package com.dynatrace.openkit.util.json.objects;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -136,6 +137,47 @@ public class JSONArrayValueTest {
         assertThat(obtained, is(notNullValue()));
         verify(jsonValues, times(1)).iterator();
         verifyNoMoreInteractions(jsonValues);
+    }
+
+    @Test
+    public void emptyListJsonString(){
+        assertThat(JSONArrayValue.fromList(EMPTY_LIST).toString(), is(""));
+    }
+
+    @Test
+    public void singleElementListJsonString(){
+        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        values.add(JSONStringValue.fromString("Test"));
+
+        assertThat(JSONArrayValue.fromList(values).toString(), is("[\"Test\"]"));
+    }
+
+    @Test
+    public void multipleElementListJsonString(){
+        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        values.add(JSONStringValue.fromString("Test"));
+        values.add(JSONStringValue.fromString("Test2"));
+
+        assertThat(JSONArrayValue.fromList(values).toString(), is("[\"Test\",\"Test2\"]"));
+    }
+
+    @Test
+    public void singleNullElementListJsonStringWithIgnoreNullConfig(){
+        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        values.add(JSONNullValue.NULL);
+
+        assertThat(JSONArrayValue.fromList(values).toString(JSONOutputConfig.IGNORE_NULL), is("[]"));
+    }
+
+    @Test
+    public void multipleElementsWithNullListJsonStringWithIgnoreNullConfig(){
+        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        values.add(JSONStringValue.fromString("Test"));
+        values.add(JSONNullValue.NULL);
+        values.add(JSONStringValue.fromString("Test2"));
+        values.add(JSONNullValue.NULL);
+
+        assertThat(JSONArrayValue.fromList(values).toString(JSONOutputConfig.IGNORE_NULL), is("[\"Test\",\"Test2\"]"));
     }
 
     @SuppressWarnings("unchecked")

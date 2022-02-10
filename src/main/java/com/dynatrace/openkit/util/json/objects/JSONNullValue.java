@@ -16,6 +16,8 @@
 
 package com.dynatrace.openkit.util.json.objects;
 
+import com.dynatrace.openkit.util.json.constants.JSONLiterals;
+
 /**
  * JSON value class representing a null value.
  */
@@ -39,5 +41,10 @@ public class JSONNullValue extends JSONValue {
     @Override
     public boolean isNull() {
         return true;
+    }
+
+    @Override
+    void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
+        writer.insertValue(JSONLiterals.NULL_LITERAL);
     }
 }

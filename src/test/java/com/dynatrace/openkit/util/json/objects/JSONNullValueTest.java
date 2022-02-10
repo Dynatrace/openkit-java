@@ -58,4 +58,9 @@ public class JSONNullValueTest {
         // then
         assertThat(JSONNullValue.NULL.isObject(), is(false));
     }
+
+    @Test
+    public void nullJsonString() {
+        assertThat(JSONNullValue.NULL.toString(), is("null"));
+    }
 }

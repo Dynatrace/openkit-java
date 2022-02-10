@@ -19,6 +19,7 @@ package com.dynatrace.openkit.util.json.objects;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -157,5 +158,65 @@ public class JSONObjectValueTest {
         assertThat(obtained, is(notNullValue()));
         verify(jsonObjectMap, times(1)).get("bar");
         verifyNoMoreInteractions(jsonObjectMap);
+    }
+
+    @Test
+    public void emptyObjectJsonString() {
+        assertThat(JSONObjectValue.fromMap(EMPTY_MAP).toString(), is("{}"));
+    }
+
+    @Test
+    public void singleElementObjectJsonString() {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        map.put("Test", JSONBooleanValue.fromValue(false));
+
+        assertThat(JSONObjectValue.fromMap(map).toString(), is("{\"Test\":false}"));
+    }
+
+    @Test
+    public void multipleElementObjectJsonString() {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        map.put("Test", JSONBooleanValue.fromValue(false));
+        map.put("Test2", JSONStringValue.fromString("Value"));
+
+        assertThat(JSONObjectValue.fromMap(map).toString(), is("{\"Test\":false,\"Test2\":\"Value\"}"));
+    }
+
+    @Test
+    public void nullKeyElementObjectJsonString() {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        map.put(null, JSONBooleanValue.fromValue(false));
+
+        assertThat(JSONObjectValue.fromMap(map).toString(), is("{}"));
+    }
+
+    @Test
+    public void nestedObjectInObjectJsonString() {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        map.put("Test", JSONBooleanValue.fromValue(false));
+        HashMap<String, JSONValue> nestedObject = new HashMap<String, JSONValue>();
+        nestedObject.put("Test3", JSONNumberValue.fromLong(1));
+        map.put("Test2", JSONObjectValue.fromMap(nestedObject));
+
+        assertThat(JSONObjectValue.fromMap(map).toString(), is("{\"Test\":false,\"Test2\":{\"Test3\":1}}"));
+    }
+
+    @Test
+    public void singleNullElementObjectJsonStringWithIgnoreNullConfig() {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        map.put("Test", JSONNullValue.NULL);
+
+        assertThat(JSONObjectValue.fromMap(map).toString(JSONOutputConfig.IGNORE_NULL), is("{}"));
+    }
+
+    @Test
+    public void multipleElementsWithNullObjectJsonStringWithIgnoreNullConfig() {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        map.put("Test", JSONBooleanValue.fromValue(false));
+        map.put("TestNull", JSONNullValue.NULL);
+        map.put("Test2", JSONStringValue.fromString("Value"));
+        map.put("TestNull2", JSONNullValue.NULL);
+
+        assertThat(JSONObjectValue.fromMap(map).toString(JSONOutputConfig.IGNORE_NULL), is("{\"Test\":false,\"Test2\":\"Value\"}"));
     }
 }

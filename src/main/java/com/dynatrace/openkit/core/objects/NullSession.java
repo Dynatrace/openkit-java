@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,8 +20,10 @@ import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
 import com.dynatrace.openkit.api.WebRequestTracer;
+import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.net.URLConnection;
+import java.util.Map;
 
 /**
  * This {@link Session} implementation is returned by {@link OpenKit#createSession(String)} when the {@link OpenKit#shutdown()}
@@ -62,6 +64,10 @@ public enum NullSession implements Session {
     @Override
     public WebRequestTracer traceWebRequest(String url) {
         return NullWebRequestTracer.INSTANCE;
+    }
+
+    void sendEvent(String name, Map<String, JSONValue> attributes) {
+        // intentionally left empty, due to NullObject pattern
     }
 
     @Override

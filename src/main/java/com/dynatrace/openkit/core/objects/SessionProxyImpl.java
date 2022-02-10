@@ -25,10 +25,12 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.providers.TimingProvider;
+import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implements a surrogate for a {@link Session} to perform session splitting after:
@@ -212,6 +214,29 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return NullWebRequestTracer.INSTANCE;
     }
 
+    void sendEvent(String name, Map<String, JSONValue> attributes) {
+        if (name == null || name.isEmpty()) {
+            logger.warning(this + " sendEvent (String, Map): name must not be null or empty");
+            return;
+        }
+
+        if (attributes != null && attributes.containsKey("name")) {
+            logger.warning(this + " sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + " sendEvent(" + name + ", " + attributes.toString() + ")");
+        }
+
+        synchronized (lockObject) {
+            if (!isFinished) {
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
+                recordTopLevelEventInteraction();
+                session.sendEvent(name, attributes);
+            }
+        }
+    }
+
     @Override
     public void end() {
         if (logger.isDebugEnabled()) {
@@ -342,11 +367,11 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
      * Will end the current active session, enque the old one for closing, and create a new session.
      *
      * <p>
-     *     The new session is created using the {@see #createInitialSession}.
+     * The new session is created using the {@see #createInitialSession}.
      * </p>
      *
      * <p>
-     *     This method must be called only when the {@link #lockObject} is held.
+     * This method must be called only when the {@link #lockObject} is held.
      * </p>
      */
     private void splitAndCreateNewInitialSession() {
@@ -362,8 +387,8 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         // for grace period use half of the idle timeout
         // or fallback to session interval if not configured
         int closeGracePeriodInMillis = serverConfiguration.getSessionTimeoutInMilliseconds() > 0
-            ? serverConfiguration.getSessionTimeoutInMilliseconds() / 2
-            : serverConfiguration.getSendIntervalInMilliseconds();
+                ? serverConfiguration.getSessionTimeoutInMilliseconds() / 2
+                : serverConfiguration.getSendIntervalInMilliseconds();
 
         sessionWatchdog.closeOrEnqueueForClosing(currentSession, closeGracePeriodInMillis);
     }
