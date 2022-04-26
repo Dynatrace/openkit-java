@@ -40,10 +40,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -402,7 +399,7 @@ public class SessionImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
-        verify(mockBeacon, never()).sendEvent(anyString(), anyString());
+        verify(mockBeacon, never()).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
     }
 
     @Test
@@ -415,7 +412,7 @@ public class SessionImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
-        verify(mockBeacon, never()).sendEvent(anyString(), anyString());
+        verify(mockBeacon, never()).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
     }
 
     @Test
@@ -430,14 +427,14 @@ public class SessionImplTest {
         target.sendEvent("EventName", attributes);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("name", JSONStringValue.fromString("EventName"));
+        actualAttributes.put("name", JSONStringValue.fromString("MyCustomValue"));
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
                 "SessionImpl [sn=0] sendEvent(EventName" + ", " + actualAttributes.toString() + ")");
-        verify(mockBeacon, times(1)).sendEvent(eq("EventName"), eq("{\"name\":\"EventName\"}"));
+        verify(mockBeacon, times(1)).sendEvent(eq("EventName"), eq(attributes));
     }
 
     @Test
@@ -455,7 +452,7 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
                 "SessionImpl [sn=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
-        verify(mockBeacon, times(1)).sendEvent(anyString(), eq("{\"name\":\"EventName\",\"value\":\"MyCustomValue\"}"));
+        verify(mockBeacon, times(1)).sendEvent(anyString(), eq(attributes));
     }
 
     @Test
@@ -481,7 +478,7 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).debug(
                 "SessionImpl [sn=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
         verify(mockBeacon, times(1)).sendEvent(eq("EventName"),
-                eq(JSONObjectValue.fromMap(attributes).toString(JSONOutputConfig.IGNORE_NULL)));
+                eq(attributes));
     }
 
     @Test
@@ -500,7 +497,7 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
                 "SessionImpl [sn=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
-        verify(mockBeacon, times(1)).sendEvent(anyString(), eq("{\"name\":\"EventName\",\"value\":\"MyCustomValue\"}"));
+        verify(mockBeacon, times(1)).sendEvent(anyString(), eq(attributes));
     }
 
     @Test
@@ -900,7 +897,7 @@ public class SessionImplTest {
         target.sendEvent("eventName", new HashMap<String, JSONValue>());
 
         // then
-        verify(mockBeacon, times(0)).sendEvent(anyString(), anyString());
+        verify(mockBeacon, times(0)).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
     }
 
     @Test

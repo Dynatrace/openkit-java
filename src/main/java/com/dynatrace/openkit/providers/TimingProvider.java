@@ -27,6 +27,11 @@ public interface TimingProvider {
     long provideTimestampInMilliseconds();
 
     /**
+     * Provide the current timestamp in nanoseconds.
+     */
+    long provideTimestampInNanoseconds();
+
+    /**
      * Sleep given amount of milliseconds.
      *
      * @throws InterruptedException When the sleep call gets interrupted.

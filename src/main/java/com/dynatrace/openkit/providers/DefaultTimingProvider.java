@@ -38,6 +38,11 @@ public class DefaultTimingProvider implements TimingProvider {
     }
 
     @Override
+    public long provideTimestampInNanoseconds() {
+        return referenceTimestampNanos + System.nanoTime();
+    }
+
+    @Override
     public void sleep(long milliseconds) throws InterruptedException {
 
         Thread.sleep(milliseconds);

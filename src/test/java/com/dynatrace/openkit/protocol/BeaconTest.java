@@ -19,6 +19,7 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.caching.BeaconKey;
@@ -29,6 +30,7 @@ import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
+import com.dynatrace.openkit.core.objects.EventPayloadAttributes;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.CrashFormatter;
@@ -38,10 +40,7 @@ import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-import com.dynatrace.openkit.util.json.objects.JSONBooleanValue;
-import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
-import com.dynatrace.openkit.util.json.objects.JSONStringValue;
-import com.dynatrace.openkit.util.json.objects.JSONValue;
+import com.dynatrace.openkit.util.json.objects.*;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -87,6 +86,11 @@ public class BeaconTest {
     private static final int THREAD_ID = 1234567;
     private static final int SESSION_ID = 73;
     private static final int SESSION_SEQ_NO = 13;
+
+    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.application_id";
+    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.instance_id";
+    private static final String EVENT_PAYLOAD_SESSION_ID = "dt.sid";
+    private static final String EVENT_PAYLOAD_SEND_TIMESTAMP = "dt.send_timestamp";
 
     private BeaconConfiguration mockBeaconConfiguration;
     private OpenKitConfiguration mockOpenKitConfiguration;
@@ -1279,6 +1283,8 @@ public class BeaconTest {
     public void sendValidEvent() {
         // given
         final Beacon target = createBeacon().build();
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
         String eventName = "SomeEvent";
 
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
@@ -1287,10 +1293,29 @@ public class BeaconTest {
         attributes.put("name", JSONStringValue.fromString(eventName));
 
         // when
-        target.sendEvent(eventName, JSONObjectValue.fromMap(attributes).toString());
+        target.sendEvent(eventName, attributes);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        actualAttributes.put("TestString", JSONStringValue.fromString("Test"));
+        actualAttributes.put("name", JSONStringValue.fromString(eventName));
+        actualAttributes.put("TestBool", JSONBooleanValue.fromValue(false));
+
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
 
         // then
-        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(attributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
         String expectedEventData =
                 "et=98&" +   // event type
                     "pl=" + encodedPayload // event payload
@@ -1333,16 +1358,76 @@ public class BeaconTest {
         // given
         final Beacon target = createBeacon().build();
         String eventName = "SomeEvent";
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
 
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         attributes.put("name", JSONStringValue.fromString(eventName));
 
         // when
-        target.sendEvent(eventName, JSONObjectValue.fromMap(attributes).toString());
+        target.sendEvent(eventName, attributes);
 
+        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        actualAttributes.put("name", JSONStringValue.fromString(eventName));
+
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
 
         // then
-        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(attributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String expectedEventData =
+                "et=98&" +   // event type
+                "pl=" + encodedPayload // event payload
+
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void sendEventWithNullPayload() {
+        // given
+        final Beacon target = createBeacon().build();
+        String eventName = "SomeEvent";
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+
+        // when
+        target.sendEvent(eventName, null);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        actualAttributes.put("name", JSONStringValue.fromString(eventName));
+
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
         String expectedEventData =
                 "et=98&" +   // event type
                         "pl=" + encodedPayload // event payload
@@ -1355,27 +1440,14 @@ public class BeaconTest {
     }
 
     @Test
-    public void sendEventWithNullPayload() {
-        // expect
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(equalTo("payload is null or empty"));
-
-        // given
-        final Beacon target = createBeacon().build();
-        String eventName = "SomeEvent";
-
-        // when
-        target.sendEvent(eventName, null);
-    }
-
-    @Test
     public void sendEventIsNotReportedIfEventReportingDisallowed() {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
 
         // when
-        target.sendEvent("EventName", "{}");
+        target.sendEvent("EventName", attributes);
 
         // then ensure nothing has been serialized
         verifyZeroInteractions(mockBeaconCache);
@@ -1385,10 +1457,11 @@ public class BeaconTest {
     public void sendEventIsNotReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
-        target.sendEvent("EventName", "{}");
+        target.sendEvent("EventName", attributes);
 
         // then ensure nothing has been serialized
         verifyZeroInteractions(mockBeaconCache);
@@ -1398,13 +1471,14 @@ public class BeaconTest {
     public void sendEventIsNotReportedIfDisallowedByTrafficControl() {
         // given
         int trafficControlPercentage = 50;
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
 
         when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
         Beacon target = createBeacon().build();
 
         // when
-        target.sendEvent("EventName", "{}");
+        target.sendEvent("EventName", attributes);
 
         // then ensure nothing has been serialized
         verifyZeroInteractions(mockBeaconCache);
@@ -1428,7 +1502,7 @@ public class BeaconTest {
         }
 
         // when
-        target.sendEvent(eventName, JSONObjectValue.fromMap(attributes).toString());
+        target.sendEvent(eventName, attributes);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

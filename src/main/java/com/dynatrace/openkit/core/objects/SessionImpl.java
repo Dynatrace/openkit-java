@@ -25,9 +25,6 @@ import com.dynatrace.openkit.protocol.AdditionalQueryParameters;
 import com.dynatrace.openkit.protocol.Beacon;
 import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
-import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
-import com.dynatrace.openkit.util.json.objects.JSONOutputConfig;
-import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.IOException;
@@ -200,15 +197,13 @@ public class SessionImpl extends OpenKitComposite implements Session {
             attributes = new HashMap<String, JSONValue>();
         }
 
-        attributes.put("name", JSONStringValue.fromString(name));
-
         if (logger.isDebugEnabled()) {
             logger.debug(this + "sendEvent(" + name + ", " + attributes.toString() + ")");
         }
 
         synchronized (state) {
             if (!state.isFinishingOrFinished()) {
-                beacon.sendEvent(name, JSONObjectValue.fromMap(attributes).toString(JSONOutputConfig.IGNORE_NULL));
+                beacon.sendEvent(name, attributes);
             }
         }
     }

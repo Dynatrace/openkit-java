@@ -17,6 +17,7 @@
 package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
+import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconKey;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
@@ -26,6 +27,8 @@ import com.dynatrace.openkit.core.configuration.ServerConfiguration;
 import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallback;
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
+import com.dynatrace.openkit.core.objects.EventPayloadAttributes;
+import com.dynatrace.openkit.core.objects.EventPayloadBuilder;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
@@ -34,8 +37,13 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+import com.dynatrace.openkit.util.json.objects.JSONNumberValue;
+import com.dynatrace.openkit.util.json.objects.JSONStringValue;
+import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -95,6 +103,13 @@ public class Beacon {
     // events api
     private static final String BEACON_KEY_EVENT_PAYLOAD = "pl";
     private static final int EVENT_PAYLOAD_BYTES_LENGTH = 16 * 1024;
+    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.application_id";
+    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.instance_id";
+    private static final String EVENT_PAYLOAD_SESSION_ID = "dt.sid";
+    private static final String EVENT_PAYLOAD_SEND_TIMESTAMP = "dt.send_timestamp";
+
+    // Replacement for send timestamp. This will be replaced in the payload when data gets sent.
+    private static final String SEND_TIMESTAMP_PLACEHOLDER = "DT_SEND_TIMESTAMP_PLACEHOLDER";
 
     // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
     static final String CHARSET = "UTF-8";
@@ -807,13 +822,13 @@ public class Beacon {
         return response;
     }
 
-    public void sendEvent(String name, String jsonPayload) {
+    public void sendEvent(String name, Map<String, JSONValue> attributes) {
         if (name == null || name.length() == 0) {
             throw new IllegalArgumentException("name is null or empty");
         }
 
-        if (jsonPayload == null || jsonPayload.length() == 0){
-            throw new IllegalArgumentException("payload is null or empty");
+        if (attributes == null) {
+            attributes = new HashMap<String, JSONValue>();
         }
 
         if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
@@ -823,6 +838,24 @@ public class Beacon {
         if (!isDataCapturingEnabled()) {
             return;
         }
+
+        EventPayloadBuilder builder = new EventPayloadBuilder(logger, name, attributes);
+
+        builder.addOverridableAttribute(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(timingProvider.provideTimestampInNanoseconds()))
+                .addOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"))
+                .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
+                .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(deviceID))
+                .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(getSessionNumber()))
+                .addNonOverridableAttribute(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString(SEND_TIMESTAMP_PLACEHOLDER))
+                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString(OpenKitConstants.DEFAULT_APPLICATION_VERSION))
+                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"))
+                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"))
+                .addOverridableAttribute(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getApplicationVersion()))
+                .addOverridableAttribute(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getOperatingSystem()))
+                .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))
+                .addOverridableAttribute(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getModelID()));
+
+        String jsonPayload = builder.build();
 
         try {
             if (jsonPayload.getBytes("UTF-8").length > EVENT_PAYLOAD_BYTES_LENGTH) {
