@@ -219,4 +219,14 @@ public class JSONObjectValueTest {
 
         assertThat(JSONObjectValue.fromMap(map).toString(JSONOutputConfig.IGNORE_NULL), is("{\"Test\":false,\"Test2\":\"Value\"}"));
     }
+
+    @Test
+    public void parsingSpecialUnicodeCharacter()
+    {
+        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+
+        map.put("Test", JSONStringValue.fromString("/\b\f\n\r\t\"\\\ud834\uDD1E"));
+        assertThat(JSONObjectValue.fromMap(map).toString(), is("{\"Test\":\"\\/\\b\\f\\n\\r\\t\\\"\\\\𝄞\"}"));
+    }
+
 }

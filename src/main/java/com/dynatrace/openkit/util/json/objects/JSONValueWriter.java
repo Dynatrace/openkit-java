@@ -47,7 +47,7 @@ class JSONValueWriter {
      */
     void insertKey(String key) {
         stringBuilder.append("\"");
-        stringBuilder.append(key);
+        stringBuilder.append(escapeString(key));
         stringBuilder.append("\"");
     }
 
@@ -56,7 +56,7 @@ class JSONValueWriter {
      */
     void insertStringValue(String value) {
         stringBuilder.append("\"");
-        stringBuilder.append(value);
+        stringBuilder.append(escapeString(value));
         stringBuilder.append("\"");
     }
 
@@ -86,5 +86,44 @@ class JSONValueWriter {
      */
     public String toString() {
         return stringBuilder.toString();
+    }
+
+    /**
+     * Escaping the string used in JSON obj
+     * @param value string value which should be escaped
+     * @return Escaped string value
+     */
+    private String escapeString(String value)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < value.length(); i++)
+        {
+            switch (value.charAt(i))
+            {
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                case '/': sb.append("\\/"); break;
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                default:
+                    if (value.charAt(i) <= 0x1f)
+                    {
+                        sb.append("\\u");
+                        final String hex = "000" + Integer.toHexString(value.charAt(i));
+                        sb.append(hex.substring(hex.length() - 4));
+                    }
+                    else
+                    {
+                        sb.append(value.charAt(i));
+                    }
+                    break;
+            }
+        }
+
+        return sb.toString();
     }
 }
