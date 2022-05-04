@@ -390,6 +390,95 @@ public class SessionImplTest {
     }
 
     @Test
+    public void sendBizEventWithNullEventType() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.sendBizEvent(null, new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] sendBizEvent (String, Map): type must not be null or empty");
+        verify(mockBeacon, never()).sendBizEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+    }
+
+    @Test
+    public void sendBizEventWithEmptyEventType() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.sendBizEvent("", new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] sendBizEvent (String, Map): type must not be null or empty");
+        verify(mockBeacon, never()).sendBizEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+    }
+
+    @Test
+    public void sendBizEventWithValidPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+        attributes.put("name", JSONStringValue.fromString("EventName"));
+
+        target.sendBizEvent("EventType", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendBizEvent(EventType" + ", " + attributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendBizEvent(anyString(), eq(attributes));
+    }
+
+    @Test
+    public void sendBizEventWithNullArrayValuesInPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+        attributes.put("name", JSONStringValue.fromString("EventName"));
+
+        ArrayList<JSONValue> jsonArray = new ArrayList<JSONValue>();
+        jsonArray.add(JSONNullValue.NULL);
+        jsonArray.add(JSONStringValue.fromString("Hello"));
+        jsonArray.add(JSONNullValue.NULL);
+
+        attributes.put("arrayWithNull", JSONArrayValue.fromList(jsonArray));
+
+        target.sendBizEvent("EventType", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendBizEvent(EventType" + ", " + attributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendBizEvent(eq("EventType"),
+                eq(attributes));
+    }
+
+    @Test
+    public void sendBizEventWithNullObjectValuesInPayload() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+        attributes.put("name", JSONStringValue.fromString("EventName"));
+        attributes.put("nullValue", JSONNullValue.NULL);
+
+        target.sendBizEvent("EventType", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] sendBizEvent(EventType" + ", " + attributes.toString() + ")");
+        verify(mockBeacon, times(1)).sendBizEvent(anyString(), eq(attributes));
+    }
+
+    @Test
     public void sendEventWithNullEventName() {
         // given
         SessionImpl target = createSession().build();
@@ -413,28 +502,6 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
         verify(mockBeacon, never()).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
-    }
-
-    @Test
-    public void sendEventWithNameInPayload() {
-        // given
-        SessionImpl target = createSession().build();
-
-        // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
-        attributes.put("name", JSONStringValue.fromString("MyCustomValue"));
-
-        target.sendEvent("EventName", attributes);
-
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("name", JSONStringValue.fromString("MyCustomValue"));
-
-        verify(mockLogger, times(1)).warning(
-                "SessionImpl [sn=0] sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
-        verify(mockLogger, times(1)).isDebugEnabled();
-        verify(mockLogger, times(1)).debug(
-                "SessionImpl [sn=0] sendEvent(EventName" + ", " + actualAttributes.toString() + ")");
-        verify(mockBeacon, times(1)).sendEvent(eq("EventName"), eq(attributes));
     }
 
     @Test

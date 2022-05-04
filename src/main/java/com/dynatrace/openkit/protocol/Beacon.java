@@ -16,6 +16,9 @@
 
 package com.dynatrace.openkit.protocol;
 
+import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.DT_TYPE_BIZ;
+import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.DT_TYPE_CUSTOM;
+
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.caching.BeaconCache;
@@ -822,27 +825,10 @@ public class Beacon {
         return response;
     }
 
-    public void sendEvent(String name, Map<String, JSONValue> attributes) {
-        if (name == null || name.length() == 0) {
-            throw new IllegalArgumentException("name is null or empty");
-        }
-
-        if (attributes == null) {
-            attributes = new HashMap<String, JSONValue>();
-        }
-
-        if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
-            return;
-        }
-
-        if (!isDataCapturingEnabled()) {
-            return;
-        }
-
-        EventPayloadBuilder builder = new EventPayloadBuilder(logger, name, attributes);
+    private EventPayloadBuilder generateSendEventPayload(Map<String, JSONValue> attributes) {
+        EventPayloadBuilder builder = new EventPayloadBuilder(logger, attributes);
 
         builder.addOverridableAttribute(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(timingProvider.provideTimestampInNanoseconds()))
-                .addOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(deviceID))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(getSessionNumber()))
@@ -855,6 +841,10 @@ public class Beacon {
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getModelID()));
 
+        return builder;
+    }
+
+    private void sendEventPayload(EventPayloadBuilder builder) {
         String jsonPayload = builder.build();
 
         try {
@@ -870,6 +860,53 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_EVENT_PAYLOAD, jsonPayload);
 
         addEventData(timingProvider.provideTimestampInMilliseconds(), eventBuilder);
+    }
+
+    public void sendBizEvent(String type, Map<String, JSONValue> attributes) {
+        if (type == null || type.length() == 0) {
+            throw new IllegalArgumentException("type is null or empty");
+        }
+
+        if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
+            return;
+        }
+
+        if (!isDataCapturingEnabled()) {
+            return;
+        }
+
+        EventPayloadBuilder builder = generateSendEventPayload(attributes);
+        builder.addNonOverridableAttribute("type", JSONStringValue.fromString(type))
+                .addNonOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString(DT_TYPE_BIZ));
+
+        if (attributes != null && attributes.containsKey("name") && attributes.get("name").isString()
+                && !attributes.get("name").toString().isEmpty()) {
+            builder.addNonOverridableAttribute("name", attributes.get("name"));
+        } else {
+            builder.addNonOverridableAttribute("name", JSONStringValue.fromString(type));
+        }
+
+        sendEventPayload(builder);
+    }
+
+    public void sendEvent(String name, Map<String, JSONValue> attributes) {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("name is null or empty");
+        }
+
+        if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
+            return;
+        }
+
+        if (!isDataCapturingEnabled()) {
+            return;
+        }
+
+        EventPayloadBuilder builder = generateSendEventPayload(attributes);
+        builder.addNonOverridableAttribute("name", JSONStringValue.fromString(name))
+                .addOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString(DT_TYPE_CUSTOM));
+
+        sendEventPayload(builder);
     }
 
     /**

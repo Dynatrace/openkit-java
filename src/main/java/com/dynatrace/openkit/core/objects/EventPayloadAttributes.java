@@ -27,4 +27,8 @@ public class EventPayloadAttributes {
     public static final String DEVICE_MANUFACTURER = "device.manufacturer";
     public static final String DEVICE_MODEL_IDENTIFIER = "device.model.identifier";
     public static final String WINDOW_ORIENTATION = "window.orientation";
+
+    public static final String DT_TYPE_CUSTOM = "custom";
+    public static final String DT_TYPE_BIZ = "biz";
+
 }

@@ -41,8 +41,8 @@ public class EventPayloadBuilderTest {
 
     @Test
     public void createEmptyPayloadBuilder() {
-        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, "", new HashMap<String, JSONValue>());
-        assertThat(builder.build(), is("{\"name\":\"\"}"));
+        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, new HashMap<String, JSONValue>());
+        assertThat(builder.build(), is("{}"));
     }
 
     @Test
@@ -52,8 +52,7 @@ public class EventPayloadBuilderTest {
         attributes.put("dt.test", JSONStringValue.fromString("Removed"));
         attributes.put("dt.type", JSONStringValue.fromString("Override"));
 
-        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, "", attributes);
-        assertTrue("Attribute \"name\" was not found in the builder.", isStringAvailable(builder.build(), "\"name\":\"\""));
+        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
         assertTrue("Attribute \"dt.type\" was not found in the builder.", isStringAvailable(builder.build(), "\"dt.type\":\"Override\""));
         assertFalse("Attribute \"dt\" was wrongly found inside of the builder.", isStringAvailable(builder.build(), "\"dt\":\"Removed\""));
         assertFalse("Attribute \"dt.test\" was wrongly found inside of the builder.", isStringAvailable(builder.build(), "\"dt.test\":\"Removed\""));
@@ -64,17 +63,15 @@ public class EventPayloadBuilderTest {
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         attributes.put("dt.sid", JSONStringValue.fromString("SessionID"));
 
-        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, "", attributes);
+        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
         builder.addNonOverridableAttribute("dt.sid", JSONStringValue.fromString("NonOverridable"));
-        assertTrue("Attribute \"name\" was not found in the builder.", isStringAvailable(builder.build(), "\"name\":\"\""));
         assertTrue("Attribute \"dt.sid\" was not found in the builder.", isStringAvailable(builder.build(), "\"dt.sid\":\"NonOverridable\""));
     }
 
     @Test
     public void addNonOverridableAttributeWhichIsNotAvailable() {
-        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, "", new HashMap<String, JSONValue>());
+        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, new HashMap<String, JSONValue>());
         builder.addNonOverridableAttribute("NonOverridableKey", JSONStringValue.fromString("Value"));
-        assertTrue("Attribute \"name\" was not found in the builder.", isStringAvailable(builder.build(), "\"name\":\"\""));
         assertTrue("Attribute \"NonOverridableKey\" was not found in the builder.", isStringAvailable(builder.build(), "\"NonOverridableKey\":\"Value\""));
     }
 
@@ -83,19 +80,17 @@ public class EventPayloadBuilderTest {
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         attributes.put("timestamp", JSONStringValue.fromString("NewValue"));
 
-        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, "", attributes);
+        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
         builder.addOverridableAttribute("timestamp", JSONStringValue.fromString("Overridable"));
-        assertTrue("Attribute \"name\" was not found in the builder.", isStringAvailable(builder.build(), "\"name\":\"\""));
         assertTrue("Attribute \"timestamp\" was not found in the builder.", isStringAvailable(builder.build(), "\"timestamp\":\"NewValue\""));
         assertTrue("Attribute \"dt.overridden_keys\" was not found in the builder.", isStringAvailable(builder.build(), "\"dt.overridden_keys\":[\"timestamp\"]"));
     }
 
     @Test
     public void addOverridableAttributeWhichIsNotAvailable() {
-        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, "", new HashMap<String, JSONValue>());
+        EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, new HashMap<String, JSONValue>());
 
         builder.addOverridableAttribute("Overridable", JSONStringValue.fromString("Value"));
-        assertTrue("Attribute \"name\" was not found in the builder.", isStringAvailable(builder.build(), "\"name\":\"\""));
         assertTrue("Attribute \"Overridable\" was not found in the builder.", isStringAvailable(builder.build(), "\"Overridable\":\"Value\""));
     }
 

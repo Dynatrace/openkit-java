@@ -183,14 +183,32 @@ public class SessionImpl extends OpenKitComposite implements Session {
         return NullWebRequestTracer.INSTANCE;
     }
 
+    @Override
+    public void sendBizEvent(String type, Map<String, JSONValue> attributes) {
+        if (type == null || type.isEmpty()) {
+            logger.warning(this + "sendBizEvent (String, Map): type must not be null or empty");
+            return;
+        }
+
+        if (attributes == null) {
+            attributes = new HashMap<String, JSONValue>();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "sendBizEvent(" + type + ", " + attributes.toString() + ")");
+        }
+
+        synchronized (state) {
+            if (!state.isFinishingOrFinished()) {
+                beacon.sendBizEvent(type, attributes);
+            }
+        }
+    }
+
     void sendEvent(String name, Map<String, JSONValue> attributes) {
         if (name == null || name.isEmpty()) {
             logger.warning(this + "sendEvent (String, Map): name must not be null or empty");
             return;
-        }
-
-        if (attributes != null && attributes.containsKey("name")) {
-            logger.warning(this + "sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
         }
 
         if (attributes == null) {

@@ -66,6 +66,11 @@ public enum NullSession implements Session {
         return NullWebRequestTracer.INSTANCE;
     }
 
+    @Override
+    public void sendBizEvent(String type, Map<String, JSONValue> attributes) {
+        // intentionally left empty, due to NullObject pattern
+    }
+
     void sendEvent(String name, Map<String, JSONValue> attributes) {
         // intentionally left empty, due to NullObject pattern
     }

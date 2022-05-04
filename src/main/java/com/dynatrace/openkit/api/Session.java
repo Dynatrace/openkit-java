@@ -18,6 +18,9 @@ package com.dynatrace.openkit.api;
 
 import java.io.Closeable;
 import java.net.URLConnection;
+import java.util.Map;
+
+import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 /**
  * This interface provides functionality to create Actions in a Session.
@@ -100,6 +103,14 @@ public interface Session extends Closeable {
      * @return a WebRequestTracer which allows getting the tag value and adding timing information
      */
     WebRequestTracer traceWebRequest(String url);
+
+    /**
+     * Reports a BIZ event with a mandatory type and additional attributes
+     *
+     * @param type Type of the BIZ event which is mandatory
+     * @param attributes Additional attributes which are passed along side our internal attributes
+     */
+    void sendBizEvent(String type, Map<String, JSONValue> attributes);
 
     /**
      * Ends this Session and marks it as ready for immediate sending.

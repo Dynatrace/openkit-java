@@ -29,6 +29,7 @@ import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.IOException;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -214,14 +215,38 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         return NullWebRequestTracer.INSTANCE;
     }
 
+    @Override
+    public void sendBizEvent(String type, Map<String, JSONValue> attributes) {
+        if (type == null || type.isEmpty()) {
+            logger.warning(this + " sendBizEvent (String, Map): type must not be null or empty");
+            return;
+        }
+
+        if (attributes == null) {
+            attributes = new HashMap<String, JSONValue>();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + " sendBizEvent(" + type + ", " + attributes.toString() + ")");
+        }
+
+        synchronized (lockObject) {
+            if (!isFinished) {
+                SessionImpl session = getOrSplitCurrentSessionByEvents();
+                recordTopLevelEventInteraction();
+                session.sendBizEvent(type, attributes);
+            }
+        }
+    }
+
     void sendEvent(String name, Map<String, JSONValue> attributes) {
         if (name == null || name.isEmpty()) {
             logger.warning(this + " sendEvent (String, Map): name must not be null or empty");
             return;
         }
 
-        if (attributes != null && attributes.containsKey("name")) {
-            logger.warning(this + " sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
+        if (attributes == null) {
+            attributes = new HashMap<String, JSONValue>();
         }
 
         if (logger.isDebugEnabled()) {

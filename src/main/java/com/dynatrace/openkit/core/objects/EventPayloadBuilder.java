@@ -35,11 +35,11 @@ public class EventPayloadBuilder {
     /** List containing all keys which have been overridden by the customer */
     private final List<JSONValue> overriddenKeys;
 
-    public EventPayloadBuilder(Logger logger, String name, Map<String, JSONValue> attributes) {
+    public EventPayloadBuilder(Logger logger, Map<String, JSONValue> attributes) {
         this.logger = logger;
         overriddenKeys = new LinkedList<JSONValue>();
 
-        initializeInternalAttributes(attributes, name);
+        initializeInternalAttributes(attributes);
     }
 
     public EventPayloadBuilder addOverridableAttribute(String key, JSONValue value) {
@@ -77,17 +77,17 @@ public class EventPayloadBuilder {
      * Initialize the internal attribute Map and filter out the reserved internal keys already
      *
      * @param extAttributes External attributes coming from the API
-     * @param name Value used for the name attribute
      */
-    public void initializeInternalAttributes(Map<String, JSONValue> extAttributes, String name) {
-        for (Map.Entry<String, JSONValue> entry : extAttributes.entrySet()) {
-            if (isReservedForInternalAttributes(entry.getKey())) {
-                logger.warning("EventPayloadBuilder initializeInternalAttributes: " + entry.getKey() + " is reserved for internal values!");
-            } else {
-                this.attributes.put(entry.getKey(), entry.getValue());
+    public void initializeInternalAttributes(Map<String, JSONValue> extAttributes) {
+        if(extAttributes != null){
+            for (Map.Entry<String, JSONValue> entry : extAttributes.entrySet()) {
+                if (isReservedForInternalAttributes(entry.getKey())) {
+                    logger.warning("EventPayloadBuilder initializeInternalAttributes: " + entry.getKey() + " is reserved for internal values!");
+                } else {
+                    this.attributes.put(entry.getKey(), entry.getValue());
+                }
             }
         }
-        addNonOverridableAttribute("name", JSONStringValue.fromString(name));
     }
 
     public static boolean isReservedForInternalAttributes(String key) {

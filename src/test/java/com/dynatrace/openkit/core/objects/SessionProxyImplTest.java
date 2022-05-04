@@ -868,6 +868,115 @@ public class SessionProxyImplTest {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// sendBizEvent tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void sendBizEventWithNullEventType(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.sendBizEvent(null, new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] sendBizEvent (String, Map): type must not be null or empty");
+        verify(mockSession, never()).sendBizEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendBizEventWithEmptyEventType(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.sendBizEvent("", new HashMap<String, JSONValue>());
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] sendBizEvent (String, Map): type must not be null or empty");
+        verify(mockSession, never()).sendBizEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendBizEventWithNullAttributes(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.sendBizEvent("EventType", null);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] sendBizEvent(EventType" + ", {})");
+        verify(mockSession, times(1)).sendBizEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendBizEventWithValidPayload(){
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
+
+        target.sendBizEvent("EventType", attributes);
+
+        verify(mockLogger, times(1)).isDebugEnabled();
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] sendBizEvent(EventType" + ", " + attributes.toString() + ")");
+        verify(mockSession, times(1)).sendBizEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendBizEventDoesNothingIfSessionIsEnded() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        target.end();
+
+        // when trying to identify a user on an ended session
+        target.sendBizEvent("EventType", new HashMap<String, JSONValue>());
+
+        // then
+        verify(mockSession, times(0)).sendBizEvent(anyString(), anyMap());
+    }
+
+    @Test
+    public void sendBizEventDoesNotIncreaseTopLevelEventCount() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+        assertThat(target.getTopLevelActionCount(), is(0));
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        target.sendBizEvent("EventType", new HashMap<String, JSONValue>());
+
+        // then
+        assertThat(target.getTopLevelActionCount(), is(0));
+    }
+
+    @Test
+    public void sendBizEventDoesNotSplitSession() {
+        // given
+        when(mockServerConfiguration.isSessionSplitByEventsEnabled()).thenReturn(true);
+        when(mockServerConfiguration.getMaxEventsPerSession()).thenReturn(1);
+
+        SessionProxyImpl target = createSessionProxy();
+        verify(mockSessionCreator, times(1)).createSession(target);
+
+        target.onServerConfigurationUpdate(mockServerConfiguration);
+
+        // when
+        for (int i = 0; i < 10; i++) {
+            target.sendBizEvent("EventType" + i, new HashMap<String, JSONValue>());
+        }
+
+        // then
+        verifyNoMoreInteractions(mockSessionCreator);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// sendEvent tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -895,25 +1004,6 @@ public class SessionProxyImplTest {
         verify(mockLogger, times(1)).warning(
                 "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be null or empty");
         verify(mockSession, never()).sendEvent(anyString(), anyMap());
-    }
-
-    @Test
-    public void sendEventWithNameInPayload(){
-        // given
-        SessionProxyImpl target = createSessionProxy();
-
-        // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
-        attributes.put("name", JSONStringValue.fromString("MyCustomValue"));
-
-        target.sendEvent("EventName", attributes);
-
-        verify(mockLogger, times(1)).warning(
-                "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be used in the attributes as it will be overridden!");
-        verify(mockLogger, times(1)).isDebugEnabled();
-        verify(mockLogger, times(1)).debug(
-                "SessionProxyImpl [sn=0, seq=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
-        verify(mockSession, times(1)).sendEvent(anyString(), anyMap());
     }
 
     @Test
