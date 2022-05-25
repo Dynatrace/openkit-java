@@ -285,7 +285,16 @@ public class HTTPClient {
     }
 
     private void applySSLTrustManager(HttpsURLConnection connection) throws NoSuchAlgorithmException, KeyManagementException {
-        SSLContext context = SSLContext.getInstance("TLS");
+        String version = System.getProperty("java.version");
+        SSLContext context;
+
+        if(version != null && version.startsWith("1.7")) {
+            // With Java 7 we need to use this workaround to get TLS 1.2 support
+            context = SSLContext.getInstance("TLSv1.2");
+        } else {
+            context = SSLContext.getInstance("TLS");
+        }
+
         X509TrustManager x509TrustManager;
         if (sslTrustManager == null || sslTrustManager.getX509TrustManager() == null) {
             // if provided trust manager is null use a strict one by default
