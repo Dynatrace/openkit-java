@@ -879,8 +879,7 @@ public class Beacon {
         builder.addNonOverridableAttribute("type", JSONStringValue.fromString(type))
                 .addNonOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString(DT_TYPE_BIZ));
 
-        if (attributes != null && attributes.containsKey("name") && attributes.get("name").isString()
-                && !attributes.get("name").toString().isEmpty()) {
+        if (attributes != null && attributes.containsKey("name")) {
             builder.addNonOverridableAttribute("name", attributes.get("name"));
         } else {
             builder.addNonOverridableAttribute("name", JSONStringValue.fromString(type));
