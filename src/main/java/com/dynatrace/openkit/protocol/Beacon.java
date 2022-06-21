@@ -835,7 +835,7 @@ public class Beacon {
                 .addNonOverridableAttribute(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString(SEND_TIMESTAMP_PLACEHOLDER))
                 .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString(OpenKitConstants.DEFAULT_APPLICATION_VERSION))
                 .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"))
-                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"))
+                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"))
                 .addOverridableAttribute(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getApplicationVersion()))
                 .addOverridableAttribute(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getOperatingSystem()))
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))

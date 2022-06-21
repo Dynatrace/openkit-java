@@ -1313,7 +1313,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1358,7 +1358,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1404,7 +1404,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1477,7 +1477,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1520,7 +1520,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1638,7 +1638,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1690,7 +1690,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1764,7 +1764,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
@@ -1806,7 +1806,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
         actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("dotnet"));
+        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
