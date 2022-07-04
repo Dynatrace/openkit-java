@@ -19,7 +19,6 @@ package com.dynatrace.openkit.protocol;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
 import com.dynatrace.openkit.core.caching.BeaconKey;
@@ -40,16 +39,13 @@ import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
-import com.dynatrace.openkit.util.json.JSONParser;
 import com.dynatrace.openkit.util.json.objects.*;
-import com.dynatrace.openkit.util.json.parser.ParserException;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -1301,12 +1297,12 @@ public class BeaconTest {
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
         actualAttributes.put("TestString", JSONStringValue.fromString("Test"));
-        actualAttributes.put("type", JSONStringValue.fromString(eventType));
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
         actualAttributes.put("TestBool", JSONBooleanValue.fromValue(false));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("biz"));
-        actualAttributes.put("name", JSONStringValue.fromString(eventType));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1341,17 +1337,17 @@ public class BeaconTest {
         String eventType = "SomeType";
 
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
-        attributes.put("name", JSONStringValue.fromString("Test"));
+        attributes.put("event.name", JSONStringValue.fromString("Test"));
 
         // when
         target.sendBizEvent(eventType, attributes);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("type", JSONStringValue.fromString(eventType));
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put("name", JSONStringValue.fromString("Test"));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("biz"));
+        actualAttributes.put("event.name", JSONStringValue.fromString("Test"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1386,18 +1382,18 @@ public class BeaconTest {
         String eventType = "SomeType";
 
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
-        attributes.put("type", JSONStringValue.fromString("Test"));
-        attributes.put("dt.type", JSONStringValue.fromString("Test"));
+        attributes.put("event.type", JSONStringValue.fromString("Test"));
+        attributes.put("event.kind", JSONStringValue.fromString("Test"));
 
         // when
         target.sendBizEvent(eventType, attributes);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("type", JSONStringValue.fromString(eventType));
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("biz"));
-        actualAttributes.put("name", JSONStringValue.fromString(eventType));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1423,9 +1419,9 @@ public class BeaconTest {
         );
 
         verify(mockLogger, times(1)).warning(
-                "EventPayloadBuilder addNonOverrideableAttribute: type is reserved for internal values!");
+                "EventPayloadBuilder addNonOverrideableAttribute: event.type is reserved for internal values!");
         verify(mockLogger, times(1)).warning(
-                "EventPayloadBuilder addNonOverrideableAttribute: dt.type is reserved for internal values!");
+                "EventPayloadBuilder addNonOverrideableAttribute: event.kind is reserved for internal values!");
     }
 
     @Test
@@ -1466,11 +1462,11 @@ public class BeaconTest {
         target.sendBizEvent(eventType, new HashMap<String, JSONValue>());
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("type", JSONStringValue.fromString(eventType));
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("biz"));
-        actualAttributes.put("name", JSONStringValue.fromString(eventType));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1509,11 +1505,11 @@ public class BeaconTest {
         target.sendBizEvent(eventType, null);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("type", JSONStringValue.fromString(eventType));
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("biz"));
-        actualAttributes.put("name", JSONStringValue.fromString(eventType));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1620,18 +1616,18 @@ public class BeaconTest {
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         attributes.put("TestString", JSONStringValue.fromString("Test"));
         attributes.put("TestBool", JSONBooleanValue.fromValue(false));
-        attributes.put("name", JSONStringValue.fromString("Anything"));
+        attributes.put("event.name", JSONStringValue.fromString("Anything"));
 
         // when
         target.sendEvent(eventName, attributes);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
         actualAttributes.put("TestString", JSONStringValue.fromString("Test"));
-        actualAttributes.put("name", JSONStringValue.fromString(eventName));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
         actualAttributes.put("TestBool", JSONBooleanValue.fromValue(false));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1657,7 +1653,7 @@ public class BeaconTest {
         );
 
         verify(mockLogger, times(1)).warning(
-                "EventPayloadBuilder addNonOverrideableAttribute: name is reserved for internal values!");
+                "EventPayloadBuilder addNonOverrideableAttribute: event.name is reserved for internal values!");
     }
 
     @Test
@@ -1669,14 +1665,14 @@ public class BeaconTest {
         String eventName = "SomeEvent";
 
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
-        attributes.put("dt.type", JSONStringValue.fromString("Anything"));
+        attributes.put("event.kind", JSONStringValue.fromString("Anything"));
 
         // when
         target.sendEvent(eventName, attributes);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("name", JSONStringValue.fromString(eventName));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("Anything"));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("Anything"));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
@@ -1684,7 +1680,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
 
         ArrayList<JSONValue> values = new ArrayList<JSONValue>();
-        values.add(JSONStringValue.fromString("dt.type"));
+        values.add(JSONStringValue.fromString("event.kind"));
         actualAttributes.put("dt.overridden_keys", JSONArrayValue.fromList(values));
 
         actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
@@ -1748,16 +1744,16 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
 
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
-        attributes.put("name", JSONStringValue.fromString(eventName));
+        attributes.put("event.name", JSONStringValue.fromString(eventName));
 
         // when
         target.sendEvent(eventName, attributes);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("name", JSONStringValue.fromString(eventName));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
@@ -1796,10 +1792,10 @@ public class BeaconTest {
         target.sendEvent(eventName, null);
 
         HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
-        actualAttributes.put("name", JSONStringValue.fromString(eventName));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
-        actualAttributes.put(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString("custom"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));

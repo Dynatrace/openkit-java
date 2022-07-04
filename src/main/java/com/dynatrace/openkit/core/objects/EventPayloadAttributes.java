@@ -18,7 +18,7 @@ package com.dynatrace.openkit.core.objects;
 
 public class EventPayloadAttributes {
     public static final String TIMESTAMP = "timestamp";
-    public static final String DT_TYPE = "dt.type";
+    public static final String EVENT_KIND = "event.kind";
     public static final String DT_AGENT_VERSION = "dt.agent.version";
     public static final String DT_AGENT_TECHNOLOGY_TYPE = "dt.agent.technology_type";
     public static final String DT_AGENT_FLAVOR = "dt.agent.flavor";
@@ -28,7 +28,7 @@ public class EventPayloadAttributes {
     public static final String DEVICE_MODEL_IDENTIFIER = "device.model.identifier";
     public static final String WINDOW_ORIENTATION = "window.orientation";
 
-    public static final String DT_TYPE_CUSTOM = "custom";
-    public static final String DT_TYPE_BIZ = "biz";
+    public static final String EVENT_KIND_RUM = "RUM_EVENT";
+    public static final String EVENT_KIND_BIZ = "BIZ_EVENT";
 
 }

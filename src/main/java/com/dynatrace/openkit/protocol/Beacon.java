@@ -16,8 +16,8 @@
 
 package com.dynatrace.openkit.protocol;
 
-import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.DT_TYPE_BIZ;
-import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.DT_TYPE_CUSTOM;
+import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.EVENT_KIND_BIZ;
+import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.EVENT_KIND_RUM;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.OpenKitConstants;
@@ -45,7 +45,6 @@ import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -876,13 +875,13 @@ public class Beacon {
         }
 
         EventPayloadBuilder builder = generateSendEventPayload(attributes);
-        builder.addNonOverridableAttribute("type", JSONStringValue.fromString(type))
-                .addNonOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString(DT_TYPE_BIZ));
+        builder.addNonOverridableAttribute("event.type", JSONStringValue.fromString(type))
+                .addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ));
 
-        if (attributes != null && attributes.containsKey("name")) {
-            builder.addNonOverridableAttribute("name", attributes.get("name"));
+        if (attributes != null && attributes.containsKey("event.name")) {
+            builder.addNonOverridableAttribute("event.name", attributes.get("event.name"));
         } else {
-            builder.addNonOverridableAttribute("name", JSONStringValue.fromString(type));
+            builder.addNonOverridableAttribute("event.name", JSONStringValue.fromString(type));
         }
 
         sendEventPayload(builder);
@@ -902,8 +901,8 @@ public class Beacon {
         }
 
         EventPayloadBuilder builder = generateSendEventPayload(attributes);
-        builder.addNonOverridableAttribute("name", JSONStringValue.fromString(name))
-                .addOverridableAttribute(EventPayloadAttributes.DT_TYPE, JSONStringValue.fromString(DT_TYPE_CUSTOM));
+        builder.addNonOverridableAttribute("event.name", JSONStringValue.fromString(name))
+                .addOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_RUM));
 
         sendEventPayload(builder);
     }

@@ -50,10 +50,10 @@ public class EventPayloadBuilderTest {
         HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
         attributes.put("dt", JSONStringValue.fromString("Removed"));
         attributes.put("dt.test", JSONStringValue.fromString("Removed"));
-        attributes.put("dt.type", JSONStringValue.fromString("Override"));
+        attributes.put("event.kind", JSONStringValue.fromString("Override"));
 
         EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
-        assertTrue("Attribute \"dt.type\" was not found in the builder.", isStringAvailable(builder.build(), "\"dt.type\":\"Override\""));
+        assertTrue("Attribute \"event.kind\" was not found in the builder.", isStringAvailable(builder.build(), "\"event.kind\":\"Override\""));
         assertFalse("Attribute \"dt\" was wrongly found inside of the builder.", isStringAvailable(builder.build(), "\"dt\":\"Removed\""));
         assertFalse("Attribute \"dt.test\" was wrongly found inside of the builder.", isStringAvailable(builder.build(), "\"dt.test\":\"Removed\""));
     }

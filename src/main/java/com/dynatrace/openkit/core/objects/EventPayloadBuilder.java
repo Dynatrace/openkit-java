@@ -92,6 +92,6 @@ public class EventPayloadBuilder {
 
     public static boolean isReservedForInternalAttributes(String key) {
         return (key == "dt" ||
-            (key.startsWith("dt.") && !key.startsWith("dt.agent.") && key != EventPayloadAttributes.DT_TYPE));
+            (key.startsWith("dt.") && !key.startsWith("dt.agent.")));
     }
 }
