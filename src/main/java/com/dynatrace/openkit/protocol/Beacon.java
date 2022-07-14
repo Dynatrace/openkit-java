@@ -798,6 +798,10 @@ public class Beacon {
                 return response;
             }
 
+            // Check if the chunk contains timestamp that needs to be replaced
+            chunk = chunk.replace(PercentEncoder.encode("\"" + SEND_TIMESTAMP_PLACEHOLDER + "\"", CHARSET, RESERVED_CHARACTERS),
+                    String.valueOf(timingProvider.provideTimestampInNanoseconds()));
+
             byte[] encodedBeacon;
             try {
                 encodedBeacon = encodeBeaconChunk(chunk);
