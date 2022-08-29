@@ -30,7 +30,7 @@ public interface OpenKit extends Closeable {
      * The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      * {@link #shutdown()} method.
      *
-     * Be aware, if {@link com.dynatrace.openkit.AbstractOpenKitBuilder} is wrongly configured, for example when creating an
+     * Be aware, if {@link com.dynatrace.openkit.DynatraceOpenKitBuilder} is wrongly configured, for example when creating an
      * instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called.
      * </p>
      *
@@ -45,7 +45,7 @@ public interface OpenKit extends Closeable {
      * The calling thread is blocked until OpenKit is fully initialized or until OpenKit is shut down using the
      * {@link #shutdown()} method or the timeout expired..
      * <p>
-     * Be aware, if {@link com.dynatrace.openkit.AbstractOpenKitBuilder} is wrongly configured, for example when creating an
+     * Be aware, if {@link com.dynatrace.openkit.DynatraceOpenKitBuilder} is wrongly configured, for example when creating an
      * instance with an incorrect endpoint URL, then this method might hang indefinitely, unless {@link #shutdown()} is called or timeout expires.
      * </p>
      *

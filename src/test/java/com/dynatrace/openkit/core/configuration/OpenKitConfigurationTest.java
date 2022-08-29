@@ -16,12 +16,11 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
 import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
-import com.dynatrace.openkit.protocol.http.NullHttpRequestInterceptor;
-import com.dynatrace.openkit.protocol.http.NullHttpResponseInterceptor;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,21 +48,21 @@ public class OpenKitConfigurationTest {
     private static final String MODEL_ID = "Least Model";
     private static final int DEFAULT_SERVER_ID = 777;
 
-    private AbstractOpenKitBuilder abstractOpenKitBuilder;
+    private DynatraceOpenKitBuilder dynatraceOpenKitBuilder;
 
     @Before
     public void setUp() {
-        abstractOpenKitBuilder = mock(AbstractOpenKitBuilder.class);
-        when(abstractOpenKitBuilder.getEndpointURL()).thenReturn(ENDPOINT_URL);
-        when(abstractOpenKitBuilder.getDeviceID()).thenReturn(DEVICE_ID);
-        when(abstractOpenKitBuilder.getOpenKitType()).thenReturn(OPENKIT_TYPE);
-        when(abstractOpenKitBuilder.getApplicationID()).thenReturn(APPLICATION_ID);
-        when(abstractOpenKitBuilder.getApplicationName()).thenReturn(APPLICATION_NAME);
-        when(abstractOpenKitBuilder.getApplicationVersion()).thenReturn(APPLICATION_VERSION);
-        when(abstractOpenKitBuilder.getOperatingSystem()).thenReturn(OPERATING_SYSTEM);
-        when(abstractOpenKitBuilder.getManufacturer()).thenReturn(MANUFACTURER);
-        when(abstractOpenKitBuilder.getModelID()).thenReturn(MODEL_ID);
-        when(abstractOpenKitBuilder.getDefaultServerID()).thenReturn(DEFAULT_SERVER_ID);
+        dynatraceOpenKitBuilder = mock(DynatraceOpenKitBuilder.class);
+        when(dynatraceOpenKitBuilder.getEndpointURL()).thenReturn(ENDPOINT_URL);
+        when(dynatraceOpenKitBuilder.getDeviceID()).thenReturn(DEVICE_ID);
+        when(dynatraceOpenKitBuilder.getOpenKitType()).thenReturn(OPENKIT_TYPE);
+        when(dynatraceOpenKitBuilder.getApplicationID()).thenReturn(APPLICATION_ID);
+        when(dynatraceOpenKitBuilder.getApplicationName()).thenReturn(APPLICATION_NAME);
+        when(dynatraceOpenKitBuilder.getApplicationVersion()).thenReturn(APPLICATION_VERSION);
+        when(dynatraceOpenKitBuilder.getOperatingSystem()).thenReturn(OPERATING_SYSTEM);
+        when(dynatraceOpenKitBuilder.getManufacturer()).thenReturn(MANUFACTURER);
+        when(dynatraceOpenKitBuilder.getModelID()).thenReturn(MODEL_ID);
+        when(dynatraceOpenKitBuilder.getDefaultServerID()).thenReturn(DEFAULT_SERVER_ID);
     }
 
     @Test
@@ -75,7 +74,7 @@ public class OpenKitConfigurationTest {
     @Test
     public void creatingOpenKitFromNonNullBuilderGivesNonNullConfiguration() {
         // when
-        OpenKitConfiguration obtained = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration obtained = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(obtained, is(notNullValue()));
@@ -84,48 +83,48 @@ public class OpenKitConfigurationTest {
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesEndpointUrl() {
         // given, when
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getEndpointURL(), is(ENDPOINT_URL));
-        verify(abstractOpenKitBuilder, times(1)).getEndpointURL();
+        verify(dynatraceOpenKitBuilder, times(1)).getEndpointURL();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesDeviceId() {
         // given, when
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getDeviceID(), is(DEVICE_ID));
-        verify(abstractOpenKitBuilder, times(1)).getDeviceID();
+        verify(dynatraceOpenKitBuilder, times(1)).getDeviceID();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesType() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getOpenKitType(), is(OPENKIT_TYPE));
-        verify(abstractOpenKitBuilder, times(1)).getOpenKitType();
+        verify(dynatraceOpenKitBuilder, times(1)).getOpenKitType();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesApplicationID() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getApplicationID(), is(APPLICATION_ID));
-        verify(abstractOpenKitBuilder, times(1)).getApplicationID();
+        verify(dynatraceOpenKitBuilder, times(1)).getApplicationID();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderPercentEncodesApplicationId() {
         // given
-        when(abstractOpenKitBuilder.getApplicationID()).thenReturn("/App_ID%");
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        when(dynatraceOpenKitBuilder.getApplicationID()).thenReturn("/App_ID%");
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // when
         String obtained = target.getPercentEncodedApplicationID();
@@ -137,102 +136,102 @@ public class OpenKitConfigurationTest {
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesApplicationName() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getApplicationName(), is(APPLICATION_NAME));
-        verify(abstractOpenKitBuilder, times(1)).getApplicationName();
+        verify(dynatraceOpenKitBuilder, times(1)).getApplicationName();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesApplicationVersion() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getApplicationVersion(), is(APPLICATION_VERSION));
-        verify(abstractOpenKitBuilder, times(1)).getApplicationVersion();
+        verify(dynatraceOpenKitBuilder, times(1)).getApplicationVersion();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesOperatingSystem() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getOperatingSystem(), is(OPERATING_SYSTEM));
-        verify(abstractOpenKitBuilder, times(1)).getOperatingSystem();
+        verify(dynatraceOpenKitBuilder, times(1)).getOperatingSystem();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesManufacturer() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getManufacturer(), is(MANUFACTURER));
-        verify(abstractOpenKitBuilder, times(1)).getManufacturer();
+        verify(dynatraceOpenKitBuilder, times(1)).getManufacturer();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesModelID() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getModelID(), is(MODEL_ID));
-        verify(abstractOpenKitBuilder, times(1)).getModelID();
+        verify(dynatraceOpenKitBuilder, times(1)).getModelID();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesDefaultServerID() {
         // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getDefaultServerID(), is(DEFAULT_SERVER_ID));
-        verify(abstractOpenKitBuilder, times(1)).getDefaultServerID();
+        verify(dynatraceOpenKitBuilder, times(1)).getDefaultServerID();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesTrustManager() {
         // given
         SSLTrustManager trustManager = mock(SSLTrustManager.class);
-        when(abstractOpenKitBuilder.getTrustManager()).thenReturn(trustManager);
+        when(dynatraceOpenKitBuilder.getTrustManager()).thenReturn(trustManager);
 
         // when
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getSSLTrustManager(), is(sameInstance(trustManager)));
-        verify(abstractOpenKitBuilder, times(1)).getTrustManager();
+        verify(dynatraceOpenKitBuilder, times(1)).getTrustManager();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesHttpRequestInterceptor() {
         // given
         HttpRequestInterceptor requestInterceptor = mock(HttpRequestInterceptor.class);
-        when(abstractOpenKitBuilder.getHttpRequestInterceptor()).thenReturn(requestInterceptor);
+        when(dynatraceOpenKitBuilder.getHttpRequestInterceptor()).thenReturn(requestInterceptor);
 
         // when
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getHttpRequestInterceptor(), is(sameInstance(requestInterceptor)));
-        verify(abstractOpenKitBuilder, times(1)).getHttpRequestInterceptor();
+        verify(dynatraceOpenKitBuilder, times(1)).getHttpRequestInterceptor();
     }
 
     @Test
     public void creatingAnOpenKitConfigurationFromBuilderCopiesHttpResponseInterceptor() {
         // given
         HttpResponseInterceptor responseInterceptor = mock(HttpResponseInterceptor.class);
-        when(abstractOpenKitBuilder.getHttpResponseInterceptor()).thenReturn(responseInterceptor);
+        when(dynatraceOpenKitBuilder.getHttpResponseInterceptor()).thenReturn(responseInterceptor);
 
         // when
-        OpenKitConfiguration target = OpenKitConfiguration.from(abstractOpenKitBuilder);
+        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
 
         // then
         assertThat(target.getHttpResponseInterceptor(), is(sameInstance(responseInterceptor)));
-        verify(abstractOpenKitBuilder, times(1)).getHttpResponseInterceptor();
+        verify(dynatraceOpenKitBuilder, times(1)).getHttpResponseInterceptor();
     }
 }

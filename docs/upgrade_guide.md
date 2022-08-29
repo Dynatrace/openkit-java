@@ -1,5 +1,11 @@
 # Upgrade guide for OpenKit Java
 
+## OpenKit Java 2.2 to 3.0
+Appmon has been removed from OpenKit Java. If you don't want to replace your AppMon related code stay on the latest 2.2.x release.
+
+### Removed API
+* `AbstractOpenKitBuilder` has been removed as it was not needed anymore due to AppMon removal. All functionalities have been consolidated into the `DynatraceOpenKitBuilder`.
+
 ## OpenKit Java 2.1 to 2.2
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
 to the latest 2.2 release.
@@ -32,7 +38,5 @@ to the latest 1.4 release.
 ### Deprecated API
 * `DynatraceOpenKitBuilder(String endpointURL, String applicationID, String deviceID)`  
    Use `DynatraceOpenKitBuilder(String endpointURL, String applicationID, long deviceID)` instead.
-* `AppMonOpenKitBuilder(String endpointURL, String applicationName, String deviceID)`  
-   Use `AppMonOpenKitBuilder(String endpointURL, String applicationName, long deviceID)` instead.
 
 [update]: ./installing.md#Updating-OpenKit-Java

@@ -2,7 +2,7 @@
 
 ## Data Sending (Beacon Sending)
 
-All data sending, including synchronization with the backend (Dynatrace SaaS/Dynatrace Managed/AppMon)
+All data sending, including synchronization with the backend (Dynatrace SaaS/Dynatrace Managed)
 happens asynchronously by starting an own thread when OpenKit is initialized.  
 
 Beacon sending in OpenKit is implemented using a state pattern. The following 
@@ -90,7 +90,7 @@ shut down when OpenKit is terminated.
 
 #### Time Based Eviction
 
-Since Dynatrace/AppMon backend services does not process too old data, it make sense to not send such data to the
+Since Dynatrace backend services does not process too old data, it make sense to not send such data to the
 backend system.
 By default records that are older than 45 minutes are evicted, but when initializing an
 OpenKit instance via the builder the value can be set by calling `withBeaconCacheMaxRecordAge` with an argument specifying the

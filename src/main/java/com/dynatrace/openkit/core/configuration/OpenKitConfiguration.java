@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.SSLTrustManager;
 import com.dynatrace.openkit.api.http.HttpRequestInterceptor;
 import com.dynatrace.openkit.api.http.HttpResponseInterceptor;
@@ -24,7 +24,7 @@ import com.dynatrace.openkit.core.util.PercentEncoder;
 
 /**
  * Configuration class storing all configuration parameters that have been configured via
- * {@link com.dynatrace.openkit.DynatraceOpenKitBuilder} or {@link com.dynatrace.openkit.AppMonOpenKitBuilder}.
+ * {@link com.dynatrace.openkit.DynatraceOpenKitBuilder}.
  */
 public class OpenKitConfiguration {
 
@@ -75,7 +75,7 @@ public class OpenKitConfiguration {
      *
      * @param builder The OpenKit builder storing all configuration relevant data.
      */
-    private OpenKitConfiguration(AbstractOpenKitBuilder builder) {
+    private OpenKitConfiguration(DynatraceOpenKitBuilder builder) {
         endpointURL = builder.getEndpointURL();
         deviceID = builder.getDeviceID();
         origDeviceID = builder.getOrigDeviceID();
@@ -94,12 +94,12 @@ public class OpenKitConfiguration {
     }
 
     /**
-     * Create a {@link OpenKitConfiguration} from given {@link AbstractOpenKitBuilder}.
+     * Create a {@link OpenKitConfiguration} from given {@link DynatraceOpenKitBuilder}.
      *
      * @param builder The OpenKit builder for which to create a {@link PrivacyConfiguration}.
      * @return Newly created {@link PrivacyConfiguration} or {@code null} if given argument is {@code null}
      */
-    public static OpenKitConfiguration from(AbstractOpenKitBuilder builder) {
+    public static OpenKitConfiguration from(DynatraceOpenKitBuilder builder) {
         if (builder == null) {
             return null;
         }
@@ -206,9 +206,9 @@ public class OpenKitConfiguration {
     }
 
     /**
-     * Get default Dynatrace/AppMon server id to communicate with.
+     * Get default Dynatrace server id to communicate with.
      *
-     * @return Default Dynatrace/AppMon server id.
+     * @return Default Dynatrace server id.
      */
     public int getDefaultServerID() {
         return defaultServerID;

@@ -116,7 +116,7 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
      *
      * <p>
      *     This method starts the {@link BeaconSender} and is called directly after
-     *     the instance has been created in {@link com.dynatrace.openkit.AbstractOpenKitBuilder}.
+     *     the instance has been created in {@link com.dynatrace.openkit.DynatraceOpenKitBuilder}.
      * </p>
      */
     public void initialize() {

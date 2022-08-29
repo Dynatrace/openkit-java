@@ -492,7 +492,7 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      *     Mismatch check prevents a rare Jetty bug, where responses might be dispatched to the wrong receiver.
      * </p>
      *
-     * @param lastResponseAttributes The last response attributes received from Dynatrace/AppMon.
+     * @param lastResponseAttributes The last response attributes received from Dynatrace.
      *
      * @return {@code false} if application id is matching, {@code true} if a mismatch occurred.
      */

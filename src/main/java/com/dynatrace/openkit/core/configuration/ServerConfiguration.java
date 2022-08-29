@@ -21,7 +21,7 @@ import com.dynatrace.openkit.protocol.ResponseAttributes;
 import com.dynatrace.openkit.protocol.ResponseAttributesDefaults;
 
 /**
- * Configuration class storing all configuration parameters as returned by Dynatrace/AppMon.
+ * Configuration class storing all configuration parameters as returned by Dynatrace.
  */
 public class ServerConfiguration {
 
@@ -130,7 +130,7 @@ public class ServerConfiguration {
     }
 
     /**
-     * Get a boolean indicating whether capturing is enabled in Dynatrace/AppMon or not.
+     * Get a boolean indicating whether capturing is enabled in Dynatrace or not.
      *
      * @return {@code true} if capturing is enabled, {@code false} otherwise.
      */
@@ -139,7 +139,7 @@ public class ServerConfiguration {
     }
 
     /**
-     * Get a boolean indicating whether crash reporting is enabled in Dynatrace/AppMon or not.
+     * Get a boolean indicating whether crash reporting is enabled in Dynatrace or not.
      *
      * @return {@code true} if crash reporting is enabled, {@code false} otherwise.
      */
@@ -148,7 +148,7 @@ public class ServerConfiguration {
     }
 
     /**
-     * Get a boolean indicating whether error reporting is enabled in Dynatrace/AppMon or not.
+     * Get a boolean indicating whether error reporting is enabled in Dynatrace or not.
      *
      * @return {@code true} if error reporting is enabled, {@code false} otherwise.
      */

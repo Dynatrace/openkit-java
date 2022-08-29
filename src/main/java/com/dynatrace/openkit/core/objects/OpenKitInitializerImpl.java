@@ -15,7 +15,7 @@
  */
 package com.dynatrace.openkit.core.objects;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.BeaconSender;
 import com.dynatrace.openkit.core.SessionWatchdog;
@@ -48,7 +48,7 @@ public class OpenKitInitializerImpl implements OpenKitInitializer {
     private final BeaconSender beaconSender;
     private final SessionWatchdog sessionWatchdog;
 
-    public OpenKitInitializerImpl(AbstractOpenKitBuilder builder) {
+    public OpenKitInitializerImpl(DynatraceOpenKitBuilder builder) {
         logger = builder.getLogger();
         privacyConfiguration = PrivacyConfiguration.from(builder);
         openKitConfiguration = OpenKitConfiguration.from(builder);

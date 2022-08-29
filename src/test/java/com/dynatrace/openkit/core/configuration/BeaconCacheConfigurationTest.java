@@ -16,7 +16,6 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -26,6 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 
 public class BeaconCacheConfigurationTest {
 
@@ -42,7 +43,7 @@ public class BeaconCacheConfigurationTest {
     public void positiveMaxOrderAgeIsTakenOverFromOpenKitBuilder() {
         // given
         long maxRecordAge = 73;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
 
         // when
@@ -57,7 +58,7 @@ public class BeaconCacheConfigurationTest {
     public void negativeMaxOrderAgeIsTakenOverFromOpenKitBuilder() {
         // given
         long maxRecordAge = -73;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
 
         // when
@@ -72,7 +73,7 @@ public class BeaconCacheConfigurationTest {
     public void zeroMaxOrderAgeIsTakenOverFromOpenKitBuilder() {
         // given
         long maxRecordAge = 0;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
 
         // when
@@ -87,7 +88,7 @@ public class BeaconCacheConfigurationTest {
     public void positiveLowerCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
         // given
         long lowerBound = 73;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerBound);
 
         // when
@@ -102,7 +103,7 @@ public class BeaconCacheConfigurationTest {
     public void negativeLowerCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
         // given
         long lowerBound = -73;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerBound);
 
         // when
@@ -117,7 +118,7 @@ public class BeaconCacheConfigurationTest {
     public void zeroLowerCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
         // given
         long lowerBound = 0;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerBound);
 
         // when
@@ -132,7 +133,7 @@ public class BeaconCacheConfigurationTest {
     public void positiveUpperCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
         // given
         long upperBound = 73;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperBound);
 
         // when
@@ -147,7 +148,7 @@ public class BeaconCacheConfigurationTest {
     public void negativeUpperCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
         // given
         long upperBound = -73;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperBound);
 
         // when
@@ -162,7 +163,7 @@ public class BeaconCacheConfigurationTest {
     public void zeroUpperCacheSizeBoundIsTakenOverFromOpenKitBuilder() {
         // given
         long upperBound = 0;
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperBound);
 
         // when

@@ -3,8 +3,8 @@
 In this part the concepts used throughout OpenKit are explained. A short sample how to use OpenKit is
 also provided. For detailed code samples have a look into [example.md][example].
 
-## DynatraceOpenKitBuilder / AppMonOpenKitBuilder
-A `DynatraceOpenKitBuilder`/`AppMonOpenKitBuilder` instance is responsible for setting 
+## DynatraceOpenKitBuilder
+A `DynatraceOpenKitBuilder` instance is responsible for setting 
 application relevant information, e.g. the application's version and device specific information, and to create
 an `OpenKit` instance.
 
@@ -13,7 +13,7 @@ an `OpenKit` instance.
 The OpenKit is responsible for creating user sessions (see [Session](#session)).
   
 Although it would be possible to have multiple `OpenKit` instances connected to the same endpoint
-(Dynatrace/AppMon) within one process, there should be one unique instance. `OpenKit` is designed to be
+(Dynatrace) within one process, there should be one unique instance. `OpenKit` is designed to be
 thread safe and therefore the instance can be shared among threads.  
 
 On application shutdown, `shutdown()` needs to be called on the OpenKit instance.

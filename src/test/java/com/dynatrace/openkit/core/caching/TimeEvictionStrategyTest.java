@@ -17,7 +17,7 @@
 
 package com.dynatrace.openkit.core.caching;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import com.dynatrace.openkit.providers.TimingProvider;
@@ -33,7 +33,6 @@ import java.util.HashSet;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
@@ -326,7 +325,7 @@ public class TimeEvictionStrategyTest {
     }
 
     private BeaconCacheConfiguration mockBeaconCacheConfig(long maxRecordAge, long lowerSizeBound, long upperSizeBound) {
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
         when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerSizeBound);
         when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperSizeBound);

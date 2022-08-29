@@ -5,8 +5,7 @@ developer's point of view. It explains the usage of all the API methods.
 
 ## Obtaining an OpenKit Instance
 
-Depending on the backend a new OpenKit instance can be obtained by using either `DynatraceOpenKitBuilder` 
-or `AppMonOpenKitBuilder`. Despite from this, the developer does not need to distinguish between 
+Depending on the backend a new OpenKit instance can be obtained by using either `DynatraceOpenKitBuilder`. Despite from this, the developer does not need to distinguish between 
 different backend systems.
 
 ### Dynatrace
@@ -30,23 +29,6 @@ OpenKit openKit = new DynatraceOpenKitBuilder(endpointURL, applicationID, device
 
 :grey_exclamation: For Dynatrace Managed the endpoint URL looks a bit different.
 
-### AppMon
-
-An OpenKit instance for AppMon can be obtained by using the `AppMonOpenKitBuilder`.
-
-```java
-String applicationName = "My OpenKit application";
-long deviceID = 42;
-String endpointURL = "https://beaconurl.com/dynaTraceMonitor";
-
-// by default verbose logging is disabled
-OpenKit openKit = new AppMonOpenKitBuilder(endpointURL, applicationName, deviceID).build();
-```
-
-* The `endpointURL` denotes the AppMon endpoint OpenKit communicates with.
-* The `applicationName` parameter is the application's name in AppMon and is also used as the application's id.
-* The `deviceID` is a unique identifier, which might be used to uniquely identify a device.
-
 ### Optional Configuration
 
 In addition to the mandatory parameters described above, the builder provides additional methods to further 
@@ -55,7 +37,7 @@ customize OpenKit. This includes device specific information like operating syst
 | Method Name                           | Description                                                           | Default Value |
 | -------------                         | -------------                                                         | ---------- |
 | `withApplicationVersion`              | sets the application version                                          | `"2.3.0"` |
-| `withOperatingSystem`                 | sets the operating system name                                        | `"OpenKit 2.3.0"` |
+| `withOperatingSystem`                 | sets the operating system name                                        | `"OpenKit 3.0.0"` |
 | `withManufacturer`                    | sets the manufacturer                                                 | `"Dynatrace"` |
 | `withModelID`                         | sets the model id                                                     | `"OpenKitDevice"` |
 | `withDataCollectionLevel`             | sets the data collection level                                        | `DataCollectionLevel.USER_BEHAVIOR` |
@@ -67,8 +49,8 @@ customize OpenKit. This includes device specific information like operating syst
 | `enableVerbose`                       | *Deprecated*, use `withLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `withLogLevel(LogLevel.DEBUG)`.  | `false` |
 | `withLogLevel`                        | sets the default log level if the default logger is used              | `LogLevel.WARN` |
 | `withLogger`                          | sets a custom logger, replacing the builtin default one.<br>Details are described in section [Logging](#logging). | `DefaultLogger` |
-| `withHttpRequestInterceptor`          | sets a custom `HttpRequestInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace/AppMon](#intercepting-http-traffic-to-dynatraceappmon). | `NullHttpRequestInterceptor` |
-| `withHttpResponseInterceptor`         | sets a custom `HttpResponseInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace/AppMon](#intercepting-http-traffic-to-dynatraceappmon). | `NullHttpResponseInterceptor` |
+| `withHttpRequestInterceptor`          | sets a custom `HttpRequestInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace](#intercepting-http-traffic-to-dynatrace). | `NullHttpRequestInterceptor` |
+| `withHttpResponseInterceptor`         | sets a custom `HttpResponseInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace](#intercepting-http-traffic-to-dynatrace). | `NullHttpResponseInterceptor` |
 
 
 :grey_exclamation: Please refer to the the JavaDoc for more information regarding possible configuration values.
@@ -85,13 +67,13 @@ man-in-the-middle attacks.
 
 :warning: Dynatrace SaaS [supports only TLS 1.2+](https://www.dynatrace.com/support/help/whats-new/tls-1-0-and-1-1-end-of-support-for-rum-data). That means Java 6, which has no support for TLS 1.2 out of the box, is not working anymore with Dynatrace SaaS. If you prefer to continue with Java 6 and want TLS 1.2 support, create your own OpenKit Java HTTP implementation with Bouncy Castle.
 
-## Intercepting HTTP traffic to Dynatrace/AppMon
+## Intercepting HTTP traffic to Dynatrace
 
 When routing traffic through own network infrastructure it might be necessary  to intercept HTTP traffic
-to Dynatrace/AppMon and add or overwrite HTTP headers. This can be achieved by implementing the 
+to Dynatrace and add or overwrite HTTP headers. This can be achieved by implementing the 
 `HttpRequestInterceptor` interface and passing an instance to the builder by calling 
 the `withHttpRequestInterceptor` method. OpenKit invokes the `HttpRequestInterceptor#intercept(HttpRequest)` 
-method for each request sent to Dynatrace/AppMon.
+method for each request sent to Dynatrace.
 It might be required to intercept the HTTP response and read custom response headers. This
 can be achieved by implementing the `HttpResponseInterceptor` interface and passing an instance to the builder
 by calling `withHttpResponseInterceptor`. OpenKit calls the `HttpResponseInterceptor#intercept(HttpResponse)`
@@ -387,7 +369,7 @@ try {
 
 One of the most powerful OpenKit features is web request tracing. When the application starts a web
 request (e.g. HTTP GET) a special tag can be attached to the header. This special header allows
-Dynatrace SaaS/Dynatrace Managed/AppMon to correlate actions with a server side PurePath. 
+Dynatrace SaaS/Dynatrace Managed to correlate actions with a server side PurePath. 
 
 An example is shown below.
 ```java
@@ -442,5 +424,5 @@ webRequestTracer.stop(200);               // 200 was the response code
 When an OpenKit instance is no longer needed (e.g. the application using OpenKit is shut down), the previously
 obtained instance can be cleared by invoking the `shutdown` method.  
 Calling the `shutdown` method blocks the calling thread while the OpenKit flushes data which has not been
-transmitted yet to the backend (Dynatrace SaaS/Dynatrace Managed/AppMon).  
+transmitted yet to the backend (Dynatrace SaaS/Dynatrace Managed).  
 Details are explained in [internals.md](internals.md)

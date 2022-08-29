@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 
 /**
  * Configuration for beacon cache.
@@ -32,19 +32,19 @@ public class BeaconCacheConfiguration {
      *
      * @param builder OpenKit builder storing all necessary configuration information.
      */
-    private BeaconCacheConfiguration(AbstractOpenKitBuilder builder) {
+    private BeaconCacheConfiguration(DynatraceOpenKitBuilder builder) {
         this.maxRecordAge = builder.getBeaconCacheMaxRecordAge();
         this.cacheSizeLowerBound = builder.getBeaconCacheLowerMemoryBoundary();
         this.cacheSizeUpperBound = builder.getBeaconCacheUpperMemoryBoundary();
     }
 
     /**
-     * Create a {@link BeaconCacheConfiguration} from given {@link AbstractOpenKitBuilder}.
+     * Create a {@link BeaconCacheConfiguration} from given {@link DynatraceOpenKitBuilder}.
      *
      * @param builder The OpenKit builder for which to create a {@link BeaconCacheConfiguration}.
      * @return Newly created {@link BeaconCacheConfiguration} or {@code null} if given argument is {@code null}
      */
-    public static BeaconCacheConfiguration from(AbstractOpenKitBuilder builder) {
+    public static BeaconCacheConfiguration from(DynatraceOpenKitBuilder builder) {
         if (builder == null) {
             return null;
         }

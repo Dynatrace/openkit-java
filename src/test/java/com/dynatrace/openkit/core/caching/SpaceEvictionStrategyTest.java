@@ -16,7 +16,7 @@
 
 package com.dynatrace.openkit.core.caching;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.configuration.BeaconCacheConfiguration;
 import org.junit.Before;
@@ -369,7 +369,7 @@ public class SpaceEvictionStrategyTest {
     }
 
     private BeaconCacheConfiguration mockBeaconCacheConfig(long maxRecordAge, long lowerSizeBound, long upperSizeBound) {
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getBeaconCacheMaxRecordAge()).thenReturn(maxRecordAge);
         when(builder.getBeaconCacheLowerMemoryBoundary()).thenReturn(lowerSizeBound);
         when(builder.getBeaconCacheUpperMemoryBoundary()).thenReturn(upperSizeBound);

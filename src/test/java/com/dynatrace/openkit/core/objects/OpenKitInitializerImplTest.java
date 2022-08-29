@@ -15,7 +15,7 @@
  */
 package com.dynatrace.openkit.core.objects;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 import com.dynatrace.openkit.api.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,14 +32,14 @@ public class OpenKitInitializerImplTest {
     private final String APP_ID = "appId";
     private final String APP_NAME = "appName";
     private final String APP_VERSION = "1.2.3";
-    private AbstractOpenKitBuilder mockBuilder;
+    private DynatraceOpenKitBuilder mockBuilder;
     private Logger mockLogger;
 
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
 
-        mockBuilder = mock(AbstractOpenKitBuilder.class);
+        mockBuilder = mock(DynatraceOpenKitBuilder.class);
         when(mockBuilder.getLogger()).thenReturn(mockLogger);
         when(mockBuilder.getApplicationID()).thenReturn(APP_ID);
         when(mockBuilder.getApplicationName()).thenReturn(APP_NAME);

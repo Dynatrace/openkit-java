@@ -16,9 +16,9 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
 
 /**
  * Configuration class storing user configured privacy settings.
@@ -33,19 +33,19 @@ public class PrivacyConfiguration {
      *
      * @param builder Builder class used to configure all configuration related options.
      */
-    private PrivacyConfiguration(AbstractOpenKitBuilder builder) {
+    private PrivacyConfiguration(DynatraceOpenKitBuilder builder) {
 
         this.dataCollectionLevel = builder.getDataCollectionLevel();
         this.crashReportingLevel = builder.getCrashReportLevel();
     }
 
     /**
-     * Create a {@link PrivacyConfiguration} from given {@link AbstractOpenKitBuilder}.
+     * Create a {@link PrivacyConfiguration} from given {@link DynatraceOpenKitBuilder}.
      *
      * @param builder The OpenKit builder for which to create a {@link PrivacyConfiguration}.
      * @return Newly created {@link PrivacyConfiguration} or {@code null} if given argument is {@code null}
      */
-    public static PrivacyConfiguration from(AbstractOpenKitBuilder builder) {
+    public static PrivacyConfiguration from(DynatraceOpenKitBuilder builder) {
         if (builder == null) {
             return null;
         }

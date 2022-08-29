@@ -16,9 +16,10 @@
 
 package com.dynatrace.openkit.core.configuration;
 
-import com.dynatrace.openkit.AbstractOpenKitBuilder;
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
+import com.dynatrace.openkit.DynatraceOpenKitBuilder;
+
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -340,7 +341,7 @@ public class PrivacyConfigurationTest {
     }
 
     private PrivacyConfiguration newConfigWith(DataCollectionLevel dataCollectionLevel, CrashReportingLevel crashReportingLevel) {
-        AbstractOpenKitBuilder builder = mock(AbstractOpenKitBuilder.class);
+        DynatraceOpenKitBuilder builder = mock(DynatraceOpenKitBuilder.class);
         when(builder.getDataCollectionLevel()).thenReturn(dataCollectionLevel);
         when(builder.getCrashReportLevel()).thenReturn(crashReportingLevel);
 
