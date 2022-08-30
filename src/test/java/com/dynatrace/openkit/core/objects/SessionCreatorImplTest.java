@@ -17,7 +17,6 @@ package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
-import com.dynatrace.openkit.core.caching.BeaconKey;
 import com.dynatrace.openkit.core.configuration.OpenKitConfiguration;
 import com.dynatrace.openkit.core.configuration.PrivacyConfiguration;
 import com.dynatrace.openkit.protocol.Beacon;

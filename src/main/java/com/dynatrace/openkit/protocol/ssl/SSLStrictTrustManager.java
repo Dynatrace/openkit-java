@@ -65,9 +65,7 @@ public class SSLStrictTrustManager implements SSLTrustManager {
                     return (X509TrustManager) trustManager;
                 }
             }
-        } catch (NoSuchAlgorithmException e) {
-            // intentionally left empty
-        } catch (KeyStoreException e) {
+        } catch (NoSuchAlgorithmException | KeyStoreException e) {
             // intentionally left empty
         }
 

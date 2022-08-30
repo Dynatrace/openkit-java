@@ -79,7 +79,7 @@ public class HttpRequestHttpURLConnectionAdapterTest {
     @Test
     public void getHeadersDelegatesToUnderlyingHttpURLConnection() {
         // given
-        Map<String, List<String>> requestHeaders = new HashMap<String, List<String>>();
+        Map<String, List<String>> requestHeaders = new HashMap<>();
         when(mockUrlConnection.getRequestProperties()).thenReturn(requestHeaders);
 
         HttpRequestHttpURLConnectionAdapter target = new HttpRequestHttpURLConnectionAdapter(mockUrlConnection);

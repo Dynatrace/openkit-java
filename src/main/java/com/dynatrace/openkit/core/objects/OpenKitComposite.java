@@ -35,7 +35,7 @@ public abstract class OpenKitComposite implements OpenKitObject {
     /**
      * Container storing the children of this composite.
      */
-    private final List<OpenKitObject> children = new LinkedList<OpenKitObject>();
+    private final List<OpenKitObject> children = new LinkedList<>();
 
     /**
      * Add a child object to the list of children.
@@ -62,7 +62,7 @@ public abstract class OpenKitComposite implements OpenKitObject {
      * @return Shallow copy of child objects
      */
     List<OpenKitObject> getCopyOfChildObjects() {
-        return new LinkedList<OpenKitObject>(children);
+        return new LinkedList<>(children);
     }
 
     /**

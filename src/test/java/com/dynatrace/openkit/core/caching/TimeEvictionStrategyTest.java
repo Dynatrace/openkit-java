@@ -253,7 +253,7 @@ public class TimeEvictionStrategyTest {
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
         BeaconKey keyOne = new BeaconKey(1, 0);
         BeaconKey keyTwo = new BeaconKey(42, 0);
-        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<>(Arrays.asList(keyOne, keyTwo)));
 
         // when
         target.execute();
@@ -278,7 +278,7 @@ public class TimeEvictionStrategyTest {
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
         BeaconKey keyOne = new BeaconKey(1, 0);
         BeaconKey keyTwo = new BeaconKey(42, 0);
-        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<>(Arrays.asList(keyOne, keyTwo)));
         when(mockBeaconCache.evictRecordsByAge(eq(keyOne), anyLong())).thenReturn(2);
         when(mockBeaconCache.evictRecordsByAge(eq(keyTwo), anyLong())).thenReturn(5);
 
@@ -302,7 +302,7 @@ public class TimeEvictionStrategyTest {
 
         when(mockTimingProvider.provideTimestampInMilliseconds()).thenReturn(1000L, 2099L);
         when(mockBeaconCache.getBeaconKeys())
-                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(new BeaconKey(1, 0), new BeaconKey(42, 0))));
+                .thenReturn(new HashSet<>(Arrays.asList(new BeaconKey(1, 0), new BeaconKey(42, 0))));
         when(mockBeaconCache.evictRecordsByAge(any(BeaconKey.class), anyLong())).thenAnswer(new Answer<Integer>() {
             @Override
             public Integer answer(InvocationOnMock invocation) {

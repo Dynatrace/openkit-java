@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class HttpRequestHttpURLConnectionAdapter implements HttpRequest {
 
-    private static final Set<String> RESTRICTED_REQUEST_HEADERS = new HashSet<String>();
+    private static final Set<String> RESTRICTED_REQUEST_HEADERS = new HashSet<>();
     static  {
         // put all restricted header names in lower case, as HTTP headers are case insensitive
         // header names have been taken from sun.net.www.protocol.http.HttpURLConnection

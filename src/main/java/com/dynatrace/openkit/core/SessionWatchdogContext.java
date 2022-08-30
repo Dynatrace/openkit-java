@@ -40,9 +40,9 @@ public class SessionWatchdogContext {
     // timing provider for suspending the current thread for a certain amount of time
     private final TimingProvider timingProvider;
     // holds all sessions which are to be closed after a certain grace period
-    private final LinkedBlockingQueue<SessionImpl> sessionsToClose = new LinkedBlockingQueue<SessionImpl>();
+    private final LinkedBlockingQueue<SessionImpl> sessionsToClose = new LinkedBlockingQueue<>();
     // holds all session proxies which are to be split after expiration of either session duration or idle timeout.
-    private final LinkedBlockingQueue<SessionProxyImpl> sessionsToSplitByTimeout = new LinkedBlockingQueue<SessionProxyImpl>();
+    private final LinkedBlockingQueue<SessionProxyImpl> sessionsToSplitByTimeout = new LinkedBlockingQueue<>();
 
     public SessionWatchdogContext(TimingProvider timingProvider) {
         this.timingProvider = timingProvider;
@@ -87,7 +87,7 @@ public class SessionWatchdogContext {
 
     private long closeExpiredSessions() {
         long sleepTimeInMillis = DEFAULT_SLEEP_TIME_IN_MILLIS;
-        List<SessionImpl> sessionsToEnd = new LinkedList<SessionImpl>();
+        List<SessionImpl> sessionsToEnd = new LinkedList<>();
         Iterator<SessionImpl> sessionIterator = sessionsToClose.iterator();
         while (sessionIterator.hasNext()) {
             SessionImpl session = sessionIterator.next();

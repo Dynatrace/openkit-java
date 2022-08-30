@@ -55,7 +55,7 @@ public class KeyValueResponseParser {
     }
 
     private static Map<String, String> parseKeyValuePairs(String response) {
-        Map<String, String> resultMap = new HashMap<String, String>();
+        Map<String, String> resultMap = new HashMap<>();
 
         StringTokenizer tokenizer = new StringTokenizer(response, "&");
         while (tokenizer.hasMoreTokens()) {

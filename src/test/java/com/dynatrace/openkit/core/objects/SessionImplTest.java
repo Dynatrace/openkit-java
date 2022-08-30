@@ -421,7 +421,7 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
         attributes.put("name", JSONStringValue.fromString("EventName"));
 
@@ -439,11 +439,11 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
         attributes.put("name", JSONStringValue.fromString("EventName"));
 
-        ArrayList<JSONValue> jsonArray = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> jsonArray = new ArrayList<>();
         jsonArray.add(JSONNullValue.NULL);
         jsonArray.add(JSONStringValue.fromString("Hello"));
         jsonArray.add(JSONNullValue.NULL);
@@ -465,7 +465,7 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
         attributes.put("name", JSONStringValue.fromString("EventName"));
         attributes.put("nullValue", JSONNullValue.NULL);
@@ -510,7 +510,7 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
         attributes.put("name", JSONStringValue.fromString("EventName"));
 
@@ -528,11 +528,11 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
         attributes.put("name", JSONStringValue.fromString("EventName"));
 
-        ArrayList<JSONValue> jsonArray = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> jsonArray = new ArrayList<>();
         jsonArray.add(JSONNullValue.NULL);
         jsonArray.add(JSONStringValue.fromString("Hello"));
         jsonArray.add(JSONNullValue.NULL);
@@ -554,7 +554,7 @@ public class SessionImplTest {
         SessionImpl target = createSession().build();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
         attributes.put("name", JSONStringValue.fromString("EventName"));
         attributes.put("nullValue", JSONNullValue.NULL);

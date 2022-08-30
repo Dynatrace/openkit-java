@@ -146,7 +146,7 @@ public class JSONArrayValueTest {
 
     @Test
     public void singleElementListJsonString(){
-        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> values = new ArrayList<>();
         values.add(JSONStringValue.fromString("Test"));
 
         assertThat(JSONArrayValue.fromList(values).toString(), is("[\"Test\"]"));
@@ -154,7 +154,7 @@ public class JSONArrayValueTest {
 
     @Test
     public void multipleElementListJsonString(){
-        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> values = new ArrayList<>();
         values.add(JSONStringValue.fromString("Test"));
         values.add(JSONStringValue.fromString("Test2"));
 
@@ -163,7 +163,7 @@ public class JSONArrayValueTest {
 
     @Test
     public void singleNullElementListJsonStringWithIgnoreNullConfig(){
-        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> values = new ArrayList<>();
         values.add(JSONNullValue.NULL);
 
         assertThat(JSONArrayValue.fromList(values).toString(JSONOutputConfig.IGNORE_NULL), is("[]"));
@@ -171,7 +171,7 @@ public class JSONArrayValueTest {
 
     @Test
     public void multipleElementsWithNullListJsonStringWithIgnoreNullConfig(){
-        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> values = new ArrayList<>();
         values.add(JSONStringValue.fromString("Test"));
         values.add(JSONNullValue.NULL);
         values.add(JSONStringValue.fromString("Test2"));

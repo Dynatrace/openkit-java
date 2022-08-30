@@ -1288,14 +1288,14 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
         String eventType = "SomeType";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("TestString", JSONStringValue.fromString("Test"));
         attributes.put("TestBool", JSONBooleanValue.fromValue(false));
 
         // when
         target.sendBizEvent(eventType, attributes);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("TestString", JSONStringValue.fromString("Test"));
         actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
         actualAttributes.put("TestBool", JSONBooleanValue.fromValue(false));
@@ -1336,13 +1336,13 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
         String eventType = "SomeType";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("event.name", JSONStringValue.fromString("Test"));
 
         // when
         target.sendBizEvent(eventType, attributes);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
@@ -1381,14 +1381,14 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
         String eventType = "SomeType";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("event.type", JSONStringValue.fromString("Test"));
         attributes.put("event.kind", JSONStringValue.fromString("Test"));
 
         // when
         target.sendBizEvent(eventType, attributes);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
@@ -1461,7 +1461,7 @@ public class BeaconTest {
         // when
         target.sendBizEvent(eventType, new HashMap<String, JSONValue>());
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
@@ -1504,7 +1504,7 @@ public class BeaconTest {
         // when
         target.sendBizEvent(eventType, null);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
@@ -1540,7 +1540,7 @@ public class BeaconTest {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
 
         // when
         target.sendBizEvent("EventType", attributes);
@@ -1553,7 +1553,7 @@ public class BeaconTest {
     public void sendBizEventIsNotReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
@@ -1567,7 +1567,7 @@ public class BeaconTest {
     public void sendBizEventIsNotReportedIfDisallowedByTrafficControl() {
         // given
         int trafficControlPercentage = 50;
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
 
         when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
@@ -1591,7 +1591,7 @@ public class BeaconTest {
         final Beacon target = createBeacon().build();
         String eventType = "SomeType";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
 
         for(int i = 0; i < 500; i++){
             attributes.put("TestTypeForOversizeMap"+i, JSONStringValue.fromString(eventType));
@@ -1613,7 +1613,7 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
         String eventName = "SomeEvent";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("TestString", JSONStringValue.fromString("Test"));
         attributes.put("TestBool", JSONBooleanValue.fromValue(false));
         attributes.put("event.name", JSONStringValue.fromString("Anything"));
@@ -1621,7 +1621,7 @@ public class BeaconTest {
         // when
         target.sendEvent(eventName, attributes);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("TestString", JSONStringValue.fromString("Test"));
         actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
         actualAttributes.put("TestBool", JSONBooleanValue.fromValue(false));
@@ -1664,13 +1664,13 @@ public class BeaconTest {
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
         String eventName = "SomeEvent";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("event.kind", JSONStringValue.fromString("Anything"));
 
         // when
         target.sendEvent(eventName, attributes);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("Anything"));
 
@@ -1679,7 +1679,7 @@ public class BeaconTest {
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
 
-        ArrayList<JSONValue> values = new ArrayList<JSONValue>();
+        ArrayList<JSONValue> values = new ArrayList<>();
         values.add(JSONStringValue.fromString("event.kind"));
         actualAttributes.put("dt.overridden_keys", JSONArrayValue.fromList(values));
 
@@ -1743,13 +1743,13 @@ public class BeaconTest {
         String appVersion = "1111";
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("event.name", JSONStringValue.fromString(eventName));
 
         // when
         target.sendEvent(eventName, attributes);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
@@ -1791,7 +1791,7 @@ public class BeaconTest {
         // when
         target.sendEvent(eventName, null);
 
-        HashMap<String, JSONValue> actualAttributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
@@ -1826,7 +1826,7 @@ public class BeaconTest {
         // given
         Beacon target = createBeacon().build();
         when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
 
         // when
         target.sendEvent("EventName", attributes);
@@ -1839,7 +1839,7 @@ public class BeaconTest {
     public void sendEventIsNotReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
 
         // when
@@ -1853,7 +1853,7 @@ public class BeaconTest {
     public void sendEventIsNotReportedIfDisallowedByTrafficControl() {
         // given
         int trafficControlPercentage = 50;
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         when(mockServerConfiguration.getTrafficControlPercentage()).thenReturn(trafficControlPercentage);
 
         when(mockRandom.nextPercentageValue()).thenReturn(trafficControlPercentage);
@@ -1877,7 +1877,7 @@ public class BeaconTest {
         final Beacon target = createBeacon().build();
         String eventName = "SomeEvent";
 
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
 
         for(int i = 0; i < 500; i++){
             attributes.put("TestNameForOversizeMap"+i, JSONStringValue.fromString(eventName));

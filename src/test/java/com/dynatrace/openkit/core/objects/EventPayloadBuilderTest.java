@@ -47,7 +47,7 @@ public class EventPayloadBuilderTest {
 
     @Test
     public void removingReservedValuesAtInitializing() {
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("dt", JSONStringValue.fromString("Removed"));
         attributes.put("dt.test", JSONStringValue.fromString("Removed"));
         attributes.put("event.kind", JSONStringValue.fromString("Override"));
@@ -60,7 +60,7 @@ public class EventPayloadBuilderTest {
 
     @Test
     public void addNonOverridableAttributeWhichIsAlreadyAvailable() {
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("dt.sid", JSONStringValue.fromString("SessionID"));
 
         EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
@@ -77,7 +77,7 @@ public class EventPayloadBuilderTest {
 
     @Test
     public void addOverridableAttributeWhichIsAlreadyAvailable() {
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("timestamp", JSONStringValue.fromString("NewValue"));
 
         EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);

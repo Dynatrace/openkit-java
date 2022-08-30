@@ -191,7 +191,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
         }
 
         if (attributes == null) {
-            attributes = new HashMap<String, JSONValue>();
+            attributes = new HashMap<>();
         }
 
         if (logger.isDebugEnabled()) {
@@ -212,7 +212,7 @@ public class SessionImpl extends OpenKitComposite implements Session {
         }
 
         if (attributes == null) {
-            attributes = new HashMap<String, JSONValue>();
+            attributes = new HashMap<>();
         }
 
         if (logger.isDebugEnabled()) {

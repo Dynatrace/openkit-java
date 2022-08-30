@@ -10,18 +10,11 @@ sudo: false
 addons:
   apt:
     packages:
-      - openjdk-6-jdk
       - oracle-java8-installer
 
 # Job matrix
 matrix:
   include:
-    - name: "Java 6 compatible"
-      jdk: openjdk7 # start with OpenJDK7 and switch later to 6
-      env:
-        - INCLUDE_IN_COVERAGE=false
-        - GRADLE_DIST_URL=https://services.gradle.org/distributions/gradle-3.5.1-bin.zip
-        - SWITCH_TO_OPENJDK6=true
     - name: "Java 7 compatible"
       jdk: openjdk7
       env:
@@ -50,21 +43,6 @@ install:
   fi
   # next assemble
   ./gradlew assemble
-
-# Runs tests that check the implementation (unit tests)
-script:
-- |
-  # run tests
-  # check if switching to OpenJDK 6 is needed
-  $JAVA_6_HOME=""
-  if [ "$SWITCH_TO_OPENJDK6" = true ]; then
-      JAVA_6_HOME=$(jdk_switcher home openjdk6)
-      ./gradlew check -Ptest.executable=$JAVA_6_HOME --info
-  else
-      # no need to switch to Java 6
-      ./gradlew check --info
-  fi
-
 
 # Runs code coverage when everything else was successful
 

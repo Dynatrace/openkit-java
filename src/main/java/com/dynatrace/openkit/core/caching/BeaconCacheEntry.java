@@ -36,12 +36,12 @@ class BeaconCacheEntry {
     /**
      * List storing all active event data.
      */
-    private LinkedList<BeaconCacheRecord> eventData = new LinkedList<BeaconCacheRecord>();
+    private LinkedList<BeaconCacheRecord> eventData = new LinkedList<>();
 
     /**
      * List storing all active session data.
      */
-    private LinkedList<BeaconCacheRecord> actionData = new LinkedList<BeaconCacheRecord>();
+    private LinkedList<BeaconCacheRecord> actionData = new LinkedList<>();
 
     /**
      * Lock object for locking access to session & event data.
@@ -118,8 +118,8 @@ class BeaconCacheEntry {
     void copyDataForSending() {
         actionDataBeingSent = actionData;
         eventDataBeingSent = eventData;
-        actionData = new LinkedList<BeaconCacheRecord>();
-        eventData = new LinkedList<BeaconCacheRecord>();
+        actionData = new LinkedList<>();
+        eventData = new LinkedList<>();
         totalNumBytes = 0; // data which is being sent is not counted
     }
 
@@ -371,7 +371,7 @@ class BeaconCacheEntry {
      * </p>
      */
     List<BeaconCacheRecord> getEventData() {
-        return new LinkedList<BeaconCacheRecord>(eventData);
+        return new LinkedList<>(eventData);
     }
 
     /**
@@ -382,7 +382,7 @@ class BeaconCacheEntry {
      * </p>
      */
     List<BeaconCacheRecord> getActionData() {
-        return new LinkedList<BeaconCacheRecord>(actionData);
+        return new LinkedList<>(actionData);
     }
 
     /**

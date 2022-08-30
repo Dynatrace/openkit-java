@@ -79,7 +79,7 @@ public class StatusResponse {
     }
 
     private static Map<String, List<String>> responseHeadersWithLowerCaseKeys(Map<String, List<String>> headers) {
-        Map<String, List<String>> result = new HashMap<String, List<String>>(headers.size());
+        Map<String, List<String>> result = new HashMap<>(headers.size());
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null) {
                 result.put(entry.getKey().toLowerCase(), entry.getValue());

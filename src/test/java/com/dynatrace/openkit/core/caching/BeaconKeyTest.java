@@ -16,7 +16,6 @@
  */
 package com.dynatrace.openkit.core.caching;
 
-import com.dynatrace.openkit.protocol.Beacon;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.not;

@@ -917,7 +917,7 @@ public class SessionProxyImplTest {
         SessionProxyImpl target = createSessionProxy();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
 
         target.sendBizEvent("EventType", attributes);
@@ -1012,7 +1012,7 @@ public class SessionProxyImplTest {
         SessionProxyImpl target = createSessionProxy();
 
         // when
-        HashMap<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("value", JSONStringValue.fromString("MyCustomValue"));
 
         target.sendEvent("EventName", attributes);

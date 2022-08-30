@@ -27,7 +27,6 @@ import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.io.BufferedReader;
@@ -172,7 +171,7 @@ public class HTTPClientTest {
     @Test
     public void sendStatusRequestAndReadResponseHeaderFieldsOnSuccessResponse() throws IOException {
         // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> headerFields = new HashMap<>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
         headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
         headerFields.put("X-BAR", Collections.<String>emptyList());
@@ -191,7 +190,7 @@ public class HTTPClientTest {
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
 
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> expectedHeaderFields = new HashMap<>();
         expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
         expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
         expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
@@ -201,7 +200,7 @@ public class HTTPClientTest {
     @Test
     public void sendStatusRequestAndReadResponseHeaderFieldsOnErrorResponse() throws IOException {
         // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> headerFields = new HashMap<>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
         headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
         headerFields.put("X-BAR", Collections.<String>emptyList());
@@ -220,7 +219,7 @@ public class HTTPClientTest {
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
 
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> expectedHeaderFields = new HashMap<>();
         expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
         expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
         expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
@@ -266,7 +265,7 @@ public class HTTPClientTest {
     @Test
     public void sendNewSessionRequestAndReadResponseHeaderFieldsOnSuccessResponse() throws IOException {
         // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> headerFields = new HashMap<>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
         headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
         headerFields.put("X-BAR", Collections.<String>emptyList());
@@ -285,7 +284,7 @@ public class HTTPClientTest {
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
 
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> expectedHeaderFields = new HashMap<>();
         expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
         expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
         expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
@@ -295,7 +294,7 @@ public class HTTPClientTest {
     @Test
     public void sendNewSessionRequestAndReadResponseHeaderFieldsOnErrorResponse() throws IOException {
         // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> headerFields = new HashMap<>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
         headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
         headerFields.put("X-BAR", Collections.<String>emptyList());
@@ -314,7 +313,7 @@ public class HTTPClientTest {
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
 
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> expectedHeaderFields = new HashMap<>();
         expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
         expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
         expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
@@ -421,7 +420,7 @@ public class HTTPClientTest {
     @Test
     public void sendBeaconRequestAndReadResponseHeaderFieldsOnSuccessResponse() throws IOException {
         // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> headerFields = new HashMap<>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
         headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
         headerFields.put("X-BAR", Collections.<String>emptyList());
@@ -442,7 +441,7 @@ public class HTTPClientTest {
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
 
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> expectedHeaderFields = new HashMap<>();
         expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
         expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
         expectedHeaderFields.put("x-bar", Collections.<String>emptyList());
@@ -452,7 +451,7 @@ public class HTTPClientTest {
     @Test
     public void sendBeaconRequestAndReadResponseHeaderFieldsOnErrorResponse() throws IOException {
         // given
-        Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> headerFields = new HashMap<>();
         headerFields.put("Content-Length", Collections.singletonList("1234"));
         headerFields.put("X-someHeader", Arrays.asList("1", "foo"));
         headerFields.put("X-BAR", Collections.<String>emptyList());
@@ -473,7 +472,7 @@ public class HTTPClientTest {
         // then verify header field keys are transformed to lower case
         assertThat(response, notNullValue());
 
-        Map<String, List<String>> expectedHeaderFields = new HashMap<String, List<String>>();
+        Map<String, List<String>> expectedHeaderFields = new HashMap<>();
         expectedHeaderFields.put("content-length", Collections.singletonList("1234"));
         expectedHeaderFields.put("x-someheader", Arrays.asList("1", "foo"));
         expectedHeaderFields.put("x-bar", Collections.<String>emptyList());

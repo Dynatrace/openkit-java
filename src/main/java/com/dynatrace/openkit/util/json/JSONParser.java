@@ -52,9 +52,9 @@ public class JSONParser {
     private JSONValue parsedValue = null;
 
     /** stack storing JSON values (keep in mind there are nested values) */
-    private final LinkedList<JSONValueContainer> valueContainerStack = new LinkedList<JSONValueContainer>();
+    private final LinkedList<JSONValueContainer> valueContainerStack = new LinkedList<>();
     /** stack storing state. This is required to parse nested objects */
-    private final LinkedList<JSONParserState> stateStack = new LinkedList<JSONParserState>();
+    private final LinkedList<JSONParserState> stateStack = new LinkedList<>();
 
     /**
      * Constructor taking the JSON input string.
@@ -202,12 +202,12 @@ public class JSONParser {
                 state = JSONParserState.END;
                 break;
             case LEFT_SQUARE_BRACKET:
-                List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
+                List<JSONValue> jsonValueList = new LinkedList<>();
                 valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
                 state = JSONParserState.IN_ARRAY_START;
                 break;
             case LEFT_BRACE:
-                Map<String, JSONValue> jsonObjectMap = new HashMap<String, JSONValue>();
+                Map<String, JSONValue> jsonObjectMap = new HashMap<>();
                 valueContainerStack.addFirst(new JSONValueContainer(JSONObjectValue.fromMap(jsonObjectMap), jsonObjectMap));
                 state = JSONParserState.IN_OBJECT_START;
                 break;
@@ -315,7 +315,7 @@ public class JSONParser {
      */
     private void parseStartOfNestedObject() {
         stateStack.push(JSONParserState.IN_ARRAY_VALUE);
-        Map<String, JSONValue> jsonObjectMap = new HashMap<String, JSONValue>();
+        Map<String, JSONValue> jsonObjectMap = new HashMap<>();
         valueContainerStack.addFirst(new JSONValueContainer(JSONObjectValue.fromMap(jsonObjectMap), jsonObjectMap));
         state = JSONParserState.IN_OBJECT_START;
     }
@@ -329,7 +329,7 @@ public class JSONParser {
      */
     private void parseStartOfNestedArray() {
         stateStack.push(JSONParserState.IN_ARRAY_VALUE);
-        List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
+        List<JSONValue> jsonValueList = new LinkedList<>();
         valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
         state = JSONParserState.IN_ARRAY_START;
     }
@@ -398,14 +398,14 @@ public class JSONParser {
                 break;
             case LEFT_BRACE:
                 // value is an object
-                Map<String, JSONValue> jsonObjectMap = new HashMap<String, JSONValue>();
+                Map<String, JSONValue> jsonObjectMap = new HashMap<>();
                 valueContainerStack.addFirst(new JSONValueContainer(JSONObjectValue.fromMap(jsonObjectMap), jsonObjectMap));
                 stateStack.addFirst(JSONParserState.IN_OBJECT_VALUE);
                 state = JSONParserState.IN_OBJECT_START;
                 break;
             case LEFT_SQUARE_BRACKET:
                 // value is an array
-                List<JSONValue> jsonValueList = new LinkedList<JSONValue>();
+                List<JSONValue> jsonValueList = new LinkedList<>();
                 valueContainerStack.addFirst(new JSONValueContainer(JSONArrayValue.fromList(jsonValueList), jsonValueList));
                 stateStack.addFirst(JSONParserState.IN_OBJECT_VALUE);
                 state = JSONParserState.IN_ARRAY_START;

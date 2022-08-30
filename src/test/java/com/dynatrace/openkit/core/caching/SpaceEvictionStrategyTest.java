@@ -200,7 +200,7 @@ public class SpaceEvictionStrategyTest {
         BeaconKey keyOne = new BeaconKey(42, 0);
         BeaconKey keyTwo = new BeaconKey(1, 0);
         when(mockBeaconCache.getBeaconKeys())
-                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+                .thenReturn(new HashSet<>(Arrays.asList(keyOne, keyTwo)));
 
 
         // when executing the first time
@@ -228,7 +228,7 @@ public class SpaceEvictionStrategyTest {
 
         BeaconKey keyOne = new BeaconKey(42, 0);
         BeaconKey keyTwo = new BeaconKey(1, 0);
-        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<>(Arrays.asList(keyOne, keyTwo)));
         when(mockBeaconCache.evictRecordsByNumber(eq(keyTwo), anyInt())).thenReturn(5);
         when(mockBeaconCache.evictRecordsByNumber(eq(keyOne), anyInt())).thenReturn(1);
 
@@ -259,7 +259,7 @@ public class SpaceEvictionStrategyTest {
         );
         BeaconKey keyOne = new BeaconKey(42, 0);
         BeaconKey keyTwo = new BeaconKey(1, 0);
-        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<>(Arrays.asList(keyOne, keyTwo)));
         when(mockBeaconCache.evictRecordsByNumber(eq(keyTwo), anyInt())).thenReturn(5);
         when(mockBeaconCache.evictRecordsByNumber(eq(keyOne), anyInt())).thenReturn(1);
 
@@ -292,7 +292,7 @@ public class SpaceEvictionStrategyTest {
         );
         BeaconKey keyOne = new BeaconKey(42, 0);
         BeaconKey keyTwo = new BeaconKey(1, 0);
-        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<BeaconKey>(Arrays.asList(keyOne, keyTwo)));
+        when(mockBeaconCache.getBeaconKeys()).thenReturn(new HashSet<>(Arrays.asList(keyOne, keyTwo)));
 
         // when executing the first time
         target.execute();
@@ -321,7 +321,7 @@ public class SpaceEvictionStrategyTest {
             0L // just for safety
         );
         when(mockBeaconCache.getBeaconKeys())
-                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(new BeaconKey(42, 0), new BeaconKey(1, 0))));
+                .thenReturn(new HashSet<>(Arrays.asList(new BeaconKey(42, 0), new BeaconKey(1, 0))));
         when(mockBeaconCache.evictRecordsByNumber(any(BeaconKey.class), eq(1))).then(new Answer<Integer>() {
             @Override
             public Integer answer(InvocationOnMock invocation) {
@@ -358,7 +358,7 @@ public class SpaceEvictionStrategyTest {
             0L // just for safety
         );
         when(mockBeaconCache.getBeaconKeys())
-                .thenReturn(new HashSet<BeaconKey>(Arrays.asList(new BeaconKey(42, 0), new BeaconKey(1, 0))));
+                .thenReturn(new HashSet<>(Arrays.asList(new BeaconKey(42, 0), new BeaconKey(1, 0))));
 
         // when executing the first time
         target.execute();

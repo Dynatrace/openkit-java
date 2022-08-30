@@ -167,7 +167,7 @@ public class JSONObjectValueTest {
 
     @Test
     public void singleElementObjectJsonString() {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
         map.put("Test", JSONBooleanValue.fromValue(false));
 
         assertThat(JSONObjectValue.fromMap(map).toString(), is("{\"Test\":false}"));
@@ -175,7 +175,7 @@ public class JSONObjectValueTest {
 
     @Test
     public void multipleElementObjectJsonString() {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
         map.put("Test", JSONBooleanValue.fromValue(false));
         map.put("Test2", JSONStringValue.fromString("Value"));
 
@@ -184,7 +184,7 @@ public class JSONObjectValueTest {
 
     @Test
     public void nullKeyElementObjectJsonString() {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
         map.put(null, JSONBooleanValue.fromValue(false));
 
         assertThat(JSONObjectValue.fromMap(map).toString(), is("{}"));
@@ -192,9 +192,9 @@ public class JSONObjectValueTest {
 
     @Test
     public void nestedObjectInObjectJsonString() {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
         map.put("Test", JSONBooleanValue.fromValue(false));
-        HashMap<String, JSONValue> nestedObject = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> nestedObject = new HashMap<>();
         nestedObject.put("Test3", JSONNumberValue.fromLong(1));
         map.put("Test2", JSONObjectValue.fromMap(nestedObject));
 
@@ -203,7 +203,7 @@ public class JSONObjectValueTest {
 
     @Test
     public void singleNullElementObjectJsonStringWithIgnoreNullConfig() {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
         map.put("Test", JSONNullValue.NULL);
 
         assertThat(JSONObjectValue.fromMap(map).toString(JSONOutputConfig.IGNORE_NULL), is("{}"));
@@ -211,7 +211,7 @@ public class JSONObjectValueTest {
 
     @Test
     public void multipleElementsWithNullObjectJsonStringWithIgnoreNullConfig() {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
         map.put("Test", JSONBooleanValue.fromValue(false));
         map.put("TestNull", JSONNullValue.NULL);
         map.put("Test2", JSONStringValue.fromString("Value"));
@@ -223,7 +223,7 @@ public class JSONObjectValueTest {
     @Test
     public void parsingSpecialUnicodeCharacter()
     {
-        HashMap<String, JSONValue> map = new HashMap<String, JSONValue>();
+        HashMap<String, JSONValue> map = new HashMap<>();
 
         map.put("Test", JSONStringValue.fromString("/\b\f\n\r\t\"\\\ud834\uDD1E"));
         assertThat(JSONObjectValue.fromMap(map).toString(), is("{\"Test\":\"\\/\\b\\f\\n\\r\\t\\\"\\\\𝄞\"}"));

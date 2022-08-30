@@ -85,7 +85,7 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
     /**
      * container storing all sessions
      */
-    private final LinkedBlockingQueue<SessionImpl> sessions = new LinkedBlockingQueue<SessionImpl>();
+    private final LinkedBlockingQueue<SessionImpl> sessions = new LinkedBlockingQueue<>();
 
     /**
      * boolean indicating whether shutdown was requested or not
@@ -543,7 +543,7 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      */
     List<SessionImpl> getAllNotConfiguredSessions() {
 
-        List<SessionImpl> notConfiguredSessions = new LinkedList<SessionImpl>();
+        List<SessionImpl> notConfiguredSessions = new LinkedList<>();
 
         for (SessionImpl session : sessions) {
             SessionState state = session.getState();
@@ -560,7 +560,7 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      */
     List<SessionImpl> getAllOpenAndConfiguredSessions() {
 
-        List<SessionImpl> openSessions = new LinkedList<SessionImpl>();
+        List<SessionImpl> openSessions = new LinkedList<>();
 
         for (SessionImpl session : sessions) {
             SessionState state = session.getState();
@@ -577,7 +577,7 @@ public class BeaconSendingContext implements AdditionalQueryParameters {
      */
     List<SessionImpl> getAllFinishedAndConfiguredSessions() {
 
-        List<SessionImpl> finishedSessions = new LinkedList<SessionImpl>();
+        List<SessionImpl> finishedSessions = new LinkedList<>();
 
         for (SessionImpl session : sessions) {
             SessionState state = session.getState();

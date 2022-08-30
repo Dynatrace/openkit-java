@@ -30,14 +30,14 @@ public class EventPayloadBuilder {
     private final Logger logger;
 
     /** Map containing attributes for sendEvent API */
-    private final Map<String, JSONValue> attributes = new HashMap<String, JSONValue>();
+    private final Map<String, JSONValue> attributes = new HashMap<>();
 
     /** List containing all keys which have been overridden by the customer */
     private final List<JSONValue> overriddenKeys;
 
     public EventPayloadBuilder(Logger logger, Map<String, JSONValue> attributes) {
         this.logger = logger;
-        overriddenKeys = new LinkedList<JSONValue>();
+        overriddenKeys = new LinkedList<>();
 
         initializeInternalAttributes(attributes);
     }
@@ -91,7 +91,7 @@ public class EventPayloadBuilder {
     }
 
     public static boolean isReservedForInternalAttributes(String key) {
-        return (key == "dt" ||
+        return (key.equals("dt") ||
             (key.startsWith("dt.") && !key.startsWith("dt.agent.")));
     }
 }

@@ -55,7 +55,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     public BeaconCacheImpl(Logger logger) {
         this.logger = logger;
         globalCacheLock = new ReentrantReadWriteLock();
-        beacons = new HashMap<BeaconKey, BeaconCacheEntry>();
+        beacons = new HashMap<>();
         cacheSizeInBytes = new AtomicLong(0L);
     }
 
@@ -341,7 +341,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
     }
 
     private static String[] extractData(List<BeaconCacheRecord> eventData) {
-        List<String> result = new ArrayList<String>(eventData.size());
+        List<String> result = new ArrayList<>(eventData.size());
         for (BeaconCacheRecord record : eventData) {
             result.add(record.getData());
         }
@@ -377,7 +377,7 @@ public class BeaconCacheImpl extends Observable implements BeaconCache {
         Set<BeaconKey> result;
         try {
             globalCacheLock.readLock().lock();
-            result = new HashSet<BeaconKey>(beacons.keySet());
+            result = new HashSet<>(beacons.keySet());
         } finally {
             globalCacheLock.readLock().unlock();
         }

@@ -65,7 +65,7 @@ passing an implementation of `SSLTrustManager` by calling the `withTrustManager`
 :warning: We do **NOT** recommend bypassing TLS/SSL server certificate validation, since this allows
 man-in-the-middle attacks.
 
-:warning: Dynatrace SaaS [supports only TLS 1.2+](https://www.dynatrace.com/support/help/whats-new/tls-1-0-and-1-1-end-of-support-for-rum-data). That means Java 6, which has no support for TLS 1.2 out of the box, is not working anymore with Dynatrace SaaS. If you prefer to continue with Java 6 and want TLS 1.2 support, create your own OpenKit Java HTTP implementation with Bouncy Castle.
+:warning: Dynatrace SaaS [supports only TLS 1.2+](https://www.dynatrace.com/support/help/whats-new/tls-1-0-and-1-1-end-of-support-for-rum-data).
 
 ## Intercepting HTTP traffic to Dynatrace
 

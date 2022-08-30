@@ -108,7 +108,7 @@ class SpaceEvictionStrategy implements BeaconCacheEvictionStrategy {
      */
     private void doExecute() {
 
-        Map<BeaconKey, Integer> removedRecordsPerBeacon = new HashMap<BeaconKey, Integer>();
+        Map<BeaconKey, Integer> removedRecordsPerBeacon = new HashMap<>();
 
         while (!Thread.currentThread().isInterrupted()
             && beaconCache.getNumBytesInCache() > configuration.getCacheSizeLowerBound()) {

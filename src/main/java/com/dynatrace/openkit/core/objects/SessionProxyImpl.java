@@ -223,7 +223,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
 
         if (attributes == null) {
-            attributes = new HashMap<String, JSONValue>();
+            attributes = new HashMap<>();
         }
 
         if (logger.isDebugEnabled()) {
@@ -246,7 +246,7 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
         }
 
         if (attributes == null) {
-            attributes = new HashMap<String, JSONValue>();
+            attributes = new HashMap<>();
         }
 
         if (logger.isDebugEnabled()) {

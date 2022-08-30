@@ -236,7 +236,7 @@ public class JSONNumberValueTest {
 
     @Test
     public void longJsonString(){
-        assertThat(JSONNumberValue.fromLong(17l).toString(), is("17"));
+        assertThat(JSONNumberValue.fromLong(17L).toString(), is("17"));
     }
 
     @Test

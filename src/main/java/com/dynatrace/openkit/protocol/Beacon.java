@@ -45,6 +45,7 @@ import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -112,9 +113,7 @@ public class Beacon {
 
     // Replacement for send timestamp. This will be replaced in the payload when data gets sent.
     private static final String SEND_TIMESTAMP_PLACEHOLDER = "DT_SEND_TIMESTAMP_PLACEHOLDER";
-
-    // in Java 6 there is no constant for "UTF-8" in the JDK yet, so we define it ourselves
-    static final String CHARSET = "UTF-8";
+    static final String CHARSET = StandardCharsets.UTF_8.name();
 
     // max name length
     private static final int MAX_NAME_LEN = 250;

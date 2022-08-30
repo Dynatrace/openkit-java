@@ -17,7 +17,7 @@
 package com.dynatrace.openkit.core.caching;
 
 import com.dynatrace.openkit.api.Logger;
-import org.hamcrest.Matchers;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,10 +30,8 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.emptyArray;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;

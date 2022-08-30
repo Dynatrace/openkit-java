@@ -738,7 +738,7 @@ public class JSONLexerTest {
     @Test
     public void lexingStringWithInvalidEscapeSequenceThrowsException() throws LexerException {
         // given
-        JSONLexer target = new JSONLexer("\"Hello \\a World!\'");
+        JSONLexer target = new JSONLexer("\"Hello \\a World!'");
         expectedException.expect(LexerException.class);
         expectedException.expectMessage("Invalid escape sequence \"\\a\"");
 
