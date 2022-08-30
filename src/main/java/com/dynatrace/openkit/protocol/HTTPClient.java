@@ -200,6 +200,8 @@ public class HTTPClient {
                 connection.setReadTimeout(READ_TIMEOUT);
                 connection.setRequestMethod(method);
 
+                connection.setRequestProperty("User-Agent", "OpenKit/" + ProtocolConstants.OPENKIT_VERSION);
+
                 // invoke request interceptor
                 httpRequestInterceptor.intercept(new HttpRequestHttpURLConnectionAdapter(connection));
 

@@ -798,6 +798,40 @@ public class HTTPClientTest {
         verify(mockResponseInterceptor, times(1)).intercept(any(HttpResponse.class));
     }
 
+    @Test
+    public void sendStatusRequestContainsOpenKitUserAgentHeader() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        client.sendRequest(RequestType.STATUS, httpURLConnectionWrapper, null, null, "GET");
+
+        // then
+        verify(connection, times(1)).setRequestProperty("User-Agent", "OpenKit/" + ProtocolConstants.OPENKIT_VERSION);
+    }
+
+    @Test
+    public void sendNewSessionRequestContainsOpenKitUserAgentHeader() throws IOException {
+        // given
+        HTTPClient client = new HTTPClient(logger, configuration);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(httpURLConnectionWrapper.getHttpURLConnection()).thenReturn(connection);
+        when(connection.getResponseCode()).thenReturn(200);
+        InputStream is = new ByteArrayInputStream("type=m".getBytes(CHARSET));
+        when(connection.getInputStream()).thenReturn(is);
+
+        // when
+        client.sendRequest(RequestType.NEW_SESSION, httpURLConnectionWrapper, null, null, "GET");
+
+        // then (verify that we properly send the request and parsed the response)
+        verify(connection, times(1)).setRequestProperty("User-Agent", "OpenKit/" + ProtocolConstants.OPENKIT_VERSION);
+    }
+
     private StringBuilder initializeBaseUrl() {
         StringBuilder builder = new StringBuilder();
 
