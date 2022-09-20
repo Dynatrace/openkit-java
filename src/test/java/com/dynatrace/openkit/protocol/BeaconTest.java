@@ -80,7 +80,6 @@ import static org.mockito.Mockito.when;
 public class BeaconTest {
 
     private static final String APP_ID = "appID";
-    private static final String APP_NAME = "appName";
     private static final int ACTION_ID = 17;
     private static final int SERVER_ID = 123;
     private static final long DEVICE_ID = 456;
@@ -115,7 +114,6 @@ public class BeaconTest {
         mockOpenKitConfiguration = mock(OpenKitConfiguration.class);
         when(mockOpenKitConfiguration.getApplicationID()).thenReturn(APP_ID);
         when(mockOpenKitConfiguration.getPercentEncodedApplicationID()).thenReturn(APP_ID);
-        when(mockOpenKitConfiguration.getApplicationName()).thenReturn(APP_NAME);
         when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("");
         when(mockOpenKitConfiguration.getManufacturer()).thenReturn("");
         when(mockOpenKitConfiguration.getModelID()).thenReturn("");
@@ -3513,7 +3511,6 @@ public class BeaconTest {
         String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
             "&va=" + ProtocolConstants.OPENKIT_VERSION +
             "&ap=" + APP_ID +
-            "&an=" + APP_NAME +
             "&vn=" + appVersion +
             "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
             "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
@@ -3560,7 +3557,6 @@ public class BeaconTest {
         String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
                 "&va=" + ProtocolConstants.OPENKIT_VERSION +
                 "&ap=" + APP_ID +
-                "&an=" + APP_NAME +
                 "&vn=" + appVersion +
                 "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
                 "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +

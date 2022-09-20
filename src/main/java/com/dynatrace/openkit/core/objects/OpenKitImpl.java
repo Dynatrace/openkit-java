@@ -103,7 +103,6 @@ public class OpenKitImpl extends OpenKitComposite implements OpenKit, SessionCre
         }
         if (logger.isDebugEnabled()) {
             logger.debug(OpenKitImpl.class.getSimpleName()
-                    + " - applicationName=" + openKitConfiguration.getApplicationName()
                     + ", applicationID=" + openKitConfiguration.getApplicationID()
                     + ", deviceID=" + openKitConfiguration.getDeviceID()
                     + ", origDeviceID=" + openKitConfiguration.getOrigDeviceID()

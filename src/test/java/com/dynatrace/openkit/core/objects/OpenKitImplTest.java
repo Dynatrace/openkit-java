@@ -60,7 +60,6 @@ public class OpenKitImplTest {
 
     private static final String APP_ID = "appID";
     private static final long DEVICE_ID = 1234;
-    private static final String APP_NAME = "appName";
 
     private Logger logger;
     private PrivacyConfiguration privacyConfiguration;
@@ -86,7 +85,6 @@ public class OpenKitImplTest {
         openKitConfiguration = mock(OpenKitConfiguration.class);
         when(openKitConfiguration.getApplicationID()).thenReturn(APP_ID);
         when(openKitConfiguration.getDeviceID()).thenReturn(DEVICE_ID);
-        when(openKitConfiguration.getApplicationName()).thenReturn(APP_NAME);
         when(openKitConfiguration.getOperatingSystem()).thenReturn("");
         when(openKitConfiguration.getManufacturer()).thenReturn("");
         when(openKitConfiguration.getModelID()).thenReturn("");

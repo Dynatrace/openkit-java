@@ -64,12 +64,6 @@ public enum NullRootAction implements RootAction {
         return this;
     }
 
-    @Deprecated
-    @Override
-    public Action reportError(String errorName, int errorCode, String reason) {
-        return this;
-    }
-
     @Override
     public Action reportError(String errorName, int errorCode) {
         return this;

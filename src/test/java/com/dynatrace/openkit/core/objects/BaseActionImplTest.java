@@ -478,23 +478,6 @@ public class BaseActionImplTest {
     }
 
     @Test
-    public void deprecatedReportErrorCodeWithReasonDoesNotForwardReason() {
-        // given
-        String errorName = "FATAL ERROR";
-        int errorCode = 0x8005037;
-        String reason = "Some reason for this fatal error";
-
-        BaseActionImpl target = new StubBaseActionImpl(logger, openKitComposite, ACTION_NAME, beacon);
-
-        // when
-        Action obtained = target.reportError(errorName, errorCode, reason);
-
-        // verify that beacon within the action is called properly
-        verify(beacon, times(1)).reportError(eq(ID_BASE_OFFSET), eq(errorName), eq(errorCode));
-        assertThat(obtained, is(sameInstance((Action)target)));
-    }
-
-    @Test
     public void reportErrorCauseWithAllValuesSet() {
         // given
         String errorName = "FATAL ERROR";

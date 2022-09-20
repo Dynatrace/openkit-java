@@ -65,7 +65,6 @@ This small example provides a rough overview how OpenKit can be used.
 Detailed explanation is available in [example.md][example].
 
 ```java
-String applicationName = "My OpenKit application";              // Your application's name
 String applicationID = "application-id";                        // Your application's ID
 long deviceID = 42;                                             // Replace with a unique value per device/installation
 String endpointURL = "https://tenantid.beaconurl.com/mbeacon";  // Dynatrace endpoint URL

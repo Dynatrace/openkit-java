@@ -124,19 +124,6 @@ public class NullRootActionTest {
     }
 
     @Test
-    public void deprecatedReportErrorReturnsSelf() {
-        // given
-        NullRootAction target = NullRootAction.INSTANCE;
-
-        // when
-        Action obtained = target.reportError("error name", 1337, "something bad");
-
-        // then
-        assertThat(obtained, is(instanceOf(NullRootAction.class)));
-        assertThat((NullRootAction)obtained, is(sameInstance(target)));
-    }
-
-    @Test
     public void reportErrorReturnsSelf() {
         // given
         NullRootAction target = NullRootAction.INSTANCE;

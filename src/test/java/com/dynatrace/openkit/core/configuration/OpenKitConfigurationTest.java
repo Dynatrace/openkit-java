@@ -41,7 +41,6 @@ public class OpenKitConfigurationTest {
     private static final long DEVICE_ID = 37;
     private static final String OPENKIT_TYPE = "Dynatrace NextGen";
     private static final String APPLICATION_ID = "Application-ID";
-    private static final String APPLICATION_NAME = "Application Name";
     private static final String APPLICATION_VERSION = "1.2.3.4-b4321";
     private static final String OPERATING_SYSTEM = "Linux #253-Microsoft Mon Dec 31 17:49:00 PST 2018 x86_64 GNU/Linux";
     private static final String MANUFACTURER = "Dynatrace";
@@ -57,7 +56,6 @@ public class OpenKitConfigurationTest {
         when(dynatraceOpenKitBuilder.getDeviceID()).thenReturn(DEVICE_ID);
         when(dynatraceOpenKitBuilder.getOpenKitType()).thenReturn(OPENKIT_TYPE);
         when(dynatraceOpenKitBuilder.getApplicationID()).thenReturn(APPLICATION_ID);
-        when(dynatraceOpenKitBuilder.getApplicationName()).thenReturn(APPLICATION_NAME);
         when(dynatraceOpenKitBuilder.getApplicationVersion()).thenReturn(APPLICATION_VERSION);
         when(dynatraceOpenKitBuilder.getOperatingSystem()).thenReturn(OPERATING_SYSTEM);
         when(dynatraceOpenKitBuilder.getManufacturer()).thenReturn(MANUFACTURER);
@@ -131,16 +129,6 @@ public class OpenKitConfigurationTest {
 
         // then
         assertThat(obtained, is(equalTo("%2FApp%5FID%25")));
-    }
-
-    @Test
-    public void creatingAnOpenKitConfigurationFromBuilderCopiesApplicationName() {
-        // given
-        OpenKitConfiguration target = OpenKitConfiguration.from(dynatraceOpenKitBuilder);
-
-        // then
-        assertThat(target.getApplicationName(), is(APPLICATION_NAME));
-        verify(dynatraceOpenKitBuilder, times(1)).getApplicationName();
     }
 
     @Test

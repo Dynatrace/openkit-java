@@ -69,7 +69,6 @@ public class DynatraceOpenKitBuilder {
     private HttpResponseInterceptor httpResponseInterceptor = NullHttpResponseInterceptor.INSTANCE;
 
     private final String applicationID;
-    private String applicationName = null;
 
     /**
      * Creates a new instance of type DynatraceOpenKitBuilder
@@ -83,55 +82,6 @@ public class DynatraceOpenKitBuilder {
         this.deviceID = deviceID;
         this.origDeviceID = String.valueOf(deviceID);
         this.applicationID = applicationID;
-    }
-
-    /**
-     * Creates a new instance of type DynatraceOpenKitBuilder
-     *
-     * <p>
-     *     If the given {@code deviceID} does not correspond to a numeric value it will be hashed accordingly to a
-     *     64 bit number.
-     * </p>
-     *
-     * @param endpointURL   endpoint OpenKit connects to
-     * @param applicationID unique application id
-     * @param deviceID      unique device id
-     *
-     * @deprecated  use {@link #DynatraceOpenKitBuilder(String, String, long)} instead
-     */
-    @Deprecated
-    public DynatraceOpenKitBuilder(String endpointURL, String applicationID, String deviceID) {
-        this.endpointURL = endpointURL;
-        this.deviceID = deviceIdFromString(deviceID);
-        this.origDeviceID = deviceID;
-        this.applicationID = applicationID;
-    }
-
-    /**
-     * Sets the application name. The value is only set if it is not null.
-     *
-     * @param applicationName name of the application
-     * @return {@code this}
-     *
-     * @deprecated with version 2.0.0 This value is set in Dynatrace when creating a Custom application.
-     */
-    @Deprecated
-    public DynatraceOpenKitBuilder withApplicationName(String applicationName) {
-        this.applicationName = applicationName;
-        return this;
-    }
-
-    /**
-     * Enables verbose mode. Verbose mode is only enabled if the the default logger is used.
-     * If a custom logger is provided by calling  {@code withLogger} debug and info log output
-     * depends on the values returned by {@code isDebugEnabled} and {@code isInfoEnabled}.
-     *
-     * @deprecated {@link #withLogLevel(LogLevel)}
-     * @return {@code this}
-     */
-    @Deprecated
-    public DynatraceOpenKitBuilder enableVerbose() {
-        return withLogLevel(LogLevel.DEBUG);
     }
 
     /**
@@ -151,7 +101,7 @@ public class DynatraceOpenKitBuilder {
 
     /**
      * Sets the logger. If no logger is set the default console logger is used. For the default
-     * logger verbose mode is enabled by calling {@code enableVerbose}.
+     * logger verbose mode is enabled by calling {@code withLogLevel}.
      *
      * @param logger the logger
      * @return {@code this}
@@ -368,15 +318,6 @@ public class DynatraceOpenKitBuilder {
      */
     public String getApplicationID() {
         return applicationID;
-    }
-
-    /**
-     * Get the application name
-     *
-     * @return The application's name
-     */
-    public String getApplicationName() {
-        return applicationName;
     }
 
     /**

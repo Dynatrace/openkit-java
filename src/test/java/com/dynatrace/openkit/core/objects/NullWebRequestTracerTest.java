@@ -39,19 +39,6 @@ public class NullWebRequestTracerTest {
     }
 
     @Test
-    public void setResponseCodeReturnsSelf() {
-        // given
-        NullWebRequestTracer target = NullWebRequestTracer.INSTANCE;
-
-        // when
-        WebRequestTracer obtained = target.setResponseCode(200);
-
-        // then
-        assertThat(obtained, instanceOf(NullWebRequestTracer.class));
-        assertThat((NullWebRequestTracer)obtained, is(sameInstance(target)));
-    }
-
-    @Test
     public void setBytesSentReturnsSelf() {
         // given
         NullWebRequestTracer target = NullWebRequestTracer.INSTANCE;

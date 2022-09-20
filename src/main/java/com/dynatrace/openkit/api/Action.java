@@ -90,23 +90,6 @@ public interface Action extends Closeable {
     Action reportValue(String valueName, String value);
 
     /**
-     * Reports an error with a specified name, error code and reason.
-     *
-     * <p>
-     *     If given {@code errorName} is {@code null} or an empty String then no event is reported to the system.
-     * </p>
-     *
-     * @param errorName name of this error
-     * @param errorCode numeric error code of this error
-     * @param reason    reason for this error
-     * @return this Action (for usage as fluent API)
-     *
-     * @deprecated with version 2.1.0 Prefer {@link #reportError(String, int)}, since {@code reason} is unhandled.
-     */
-    @Deprecated
-    Action reportError(String errorName, int errorCode, String reason);
-
-    /**
      * Reports an error with a specified name and error code.
      *
      * <p>

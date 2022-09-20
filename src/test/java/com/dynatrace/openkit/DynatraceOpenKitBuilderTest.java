@@ -50,7 +50,6 @@ public class DynatraceOpenKitBuilderTest {
 
     private static final String ENDPOINT_URL = "https://www.google.at";
     private static final String APPLICATION_ID = "the-application-identifier";
-    private static final String APPLICATION_NAME = "the-application-name";
     private static final long DEVICE_ID = 777;
     private static final String APPLICATION_VERSION = "application-version";
     private static final String OPERATING_SYSTEM = "ultimate-operating-system";
@@ -67,16 +66,6 @@ public class DynatraceOpenKitBuilderTest {
 
         // then
         assertThat(target.getApplicationID(), is(equalTo(APPLICATION_ID)));
-    }
-
-    @Test
-    public void constructorInitializesDeviceIdString() {
-        // given, when
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_NAME, String.valueOf(DEVICE_ID));
-
-        // then
-        assertThat(target.getDeviceID(), is(DEVICE_ID));
-        assertThat(target.getOrigDeviceID(), is(String.valueOf(DEVICE_ID)));
     }
 
     @Test
@@ -98,39 +87,6 @@ public class DynatraceOpenKitBuilderTest {
     }
 
     @Test
-    public void constructorInitializesAndHashesDeviceIdString() {
-        // given
-        final String deviceIdAsString = "stringDeviceID";
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, deviceIdAsString);
-
-        // when, then
-        long hashedDeviceId = StringUtil.to64BitHash(deviceIdAsString);
-        assertThat(target.getDeviceID(), is(hashedDeviceId));
-        assertThat(target.getOrigDeviceID(), is(deviceIdAsString));
-    }
-
-    @Test
-    public void constructorInitializesNumericDeviceIdString() {
-        // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, String.valueOf(DEVICE_ID));
-
-        // when, then
-        Assert.assertThat(target.getDeviceID(), is(DEVICE_ID));
-        Assert.assertThat(target.getOrigDeviceID(), is(String.valueOf(DEVICE_ID)));
-    }
-
-    @Test
-    public void constructorTrimsDeviceIdString() {
-        // given
-        final String deviceIdString = " 42 ";
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, deviceIdString);
-
-        // when, then
-        assertThat(target.getDeviceID(), is(42L));
-        assertThat(target.getOrigDeviceID(), is(deviceIdString));
-    }
-
-    @Test
     public void getOpenKitTypeGivesAppropriateValue() {
         // given
         DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
@@ -146,38 +102,6 @@ public class DynatraceOpenKitBuilderTest {
 
         // then
         assertThat(target.getDefaultServerID(), is(equalTo(DynatraceOpenKitBuilder.DEFAULT_SERVER_ID)));
-    }
-
-    @Test
-    public void defaultApplicationNameIsNull() {
-        // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
-
-        // then
-        assertThat(target.getApplicationName(), is(nullValue()));
-    }
-
-    @Test
-    public void getApplicationNameGivesPreviouslySetApplicationName() {
-        // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
-        target.withApplicationName(APPLICATION_NAME);
-
-        // then
-        assertThat(target.getApplicationName(), is(equalTo(APPLICATION_NAME)));
-    }
-
-    @Test
-    public void withApplicationNameAllowsOverwritingWithNull() {
-        // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
-        target.withApplicationName(APPLICATION_NAME); // initialize with non-null value
-
-        // when
-        target.withApplicationName(null);
-
-        // then
-        assertThat(target.getApplicationName(), is(nullValue()));
     }
 
     @Test
@@ -207,23 +131,6 @@ public class DynatraceOpenKitBuilderTest {
         assertThat(obtained.isWarnEnabled(), is(true));
         assertThat(obtained.isInfoEnabled(), is(false));
         assertThat(obtained.isDebugEnabled(), is(false));
-    }
-
-    @Test
-    public void whenEnablingVerboseAllLogLevelsAreEnabledInDefaultLogger() {
-        // given
-        DynatraceOpenKitBuilder target = new DynatraceOpenKitBuilder(ENDPOINT_URL, APPLICATION_ID, DEVICE_ID);
-
-        // when
-        target.enableVerbose();
-        Logger obtained = target.getLogger();
-
-        // then
-        assertThat(obtained, is(notNullValue()));
-        assertThat(obtained.isErrorEnabled(), is(true));
-        assertThat(obtained.isWarnEnabled(), is(true));
-        assertThat(obtained.isInfoEnabled(), is(true));
-        assertThat(obtained.isDebugEnabled(), is(true));
     }
 
     @Test

@@ -5,6 +5,21 @@ Appmon has been removed from OpenKit Java. If you don't want to replace your App
 
 ### Removed API
 * `AbstractOpenKitBuilder` has been removed as it was not needed anymore due to AppMon removal. All functionalities have been consolidated into the `DynatraceOpenKitBuilder`.
+* `DynatraceOpenKitBuilder(String endpointURL, String applicationID, String deviceID)`
+  Use `DynatraceOpenKitBuilder(String endpointURL, String applicationID, long deviceID)` instead.
+* `DynatraceOpenKitBuilder#withApplicationName(String applicationName)`
+  The application name is configured in Dynatrace Web UI.
+* `DynatraceOpenKitBuilder#getApplicationName()`
+  The application name is configured in Dynatrace Web UI.
+* `OpenKitConfiguration#getApplicationName()`
+  The application name is configured in Dynatrace Web UI.
+* ` Action#reportError(String errorName, int errorCode, String reason)`
+  Use ` Action#reportError(String errorName, int errorCode)` without `String reason` argument, as
+  `reason` is unhandled in Dynatrace.
+* `WebRequestTracer#setResponseCode(int responseCode)` and `WebRequestTracer#stop()`
+  Use `WebRequestTracer#stop(int responseCode)` instead as replacement.
+* `DynatraceOpenKitBuilder#enableVerbose()`
+  Use `DynatraceOpenKitBuilder#withLogLevel(LogLevel.DEBUG)` instead.
 
 ## OpenKit Java 2.1 to 2.2
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library

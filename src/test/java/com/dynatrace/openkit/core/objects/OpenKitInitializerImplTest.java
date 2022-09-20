@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 public class OpenKitInitializerImplTest {
 
     private final String APP_ID = "appId";
-    private final String APP_NAME = "appName";
     private final String APP_VERSION = "1.2.3";
     private DynatraceOpenKitBuilder mockBuilder;
     private Logger mockLogger;
@@ -42,7 +41,6 @@ public class OpenKitInitializerImplTest {
         mockBuilder = mock(DynatraceOpenKitBuilder.class);
         when(mockBuilder.getLogger()).thenReturn(mockLogger);
         when(mockBuilder.getApplicationID()).thenReturn(APP_ID);
-        when(mockBuilder.getApplicationName()).thenReturn(APP_NAME);
         when(mockBuilder.getApplicationVersion()).thenReturn(APP_VERSION);
     }
 

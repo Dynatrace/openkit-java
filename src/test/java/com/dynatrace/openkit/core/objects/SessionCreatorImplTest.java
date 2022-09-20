@@ -58,7 +58,6 @@ public class SessionCreatorImplTest {
         mockLogger = mock(Logger.class);
         mockOpenKitConfiguration = mock(OpenKitConfiguration.class);
         when(mockOpenKitConfiguration.getApplicationID()).thenReturn("");
-        when(mockOpenKitConfiguration.getApplicationName()).thenReturn("");
         when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn("");
         when(mockOpenKitConfiguration.getDeviceID()).thenReturn(DEVICE_ID);
 

@@ -36,15 +36,6 @@ public enum NullWebRequestTracer implements WebRequestTracer {
         return "";
     }
 
-    /**
-     * @deprecated see {@link WebRequestTracer#setResponseCode(int)}
-     */
-    @Deprecated
-    @Override
-    public WebRequestTracer setResponseCode(int responseCode) {
-        return this;
-    }
-
     @Override
     public WebRequestTracer setBytesSent(int bytesSent) {
         return this;
@@ -58,15 +49,6 @@ public enum NullWebRequestTracer implements WebRequestTracer {
     @Override
     public WebRequestTracer start() {
         return this;
-    }
-
-    /**
-     * @deprecated see {@link WebRequestTracer#stop()}
-     */
-    @Deprecated
-    @Override
-    public void stop() {
-        // intentionally left empty, due to NullObject pattern
     }
 
     @Override

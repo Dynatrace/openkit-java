@@ -11,6 +11,17 @@
 - Maximum length of reported error/crash stacktrace has been limited to 128k.
 - Maximum length of reported error/crash reason has been limited to 1000.
 
+### Removed
+
+* `Action.reportError(String errorName, int errorCode, String reason)`
+* `DynatraceOpenKitBuilder(String endpointURL, String applicationID, String deviceID)`
+* `DynatraceOpenKitBuilder.enableVerbose()`
+* `DynatraceOpenKitBuilder.getApplicationName()`
+* `DynatraceOpenKitBuilder.withApplicationName(String applicationName)`
+* `OpenKitConfiguration.getApplicationName()`
+* `WebRequestTracer.setResponseCode(int responseCode)`
+* `WebRequestTracer.stop()`
+
 ## 2.2.0 [Release date: 2021-04-22]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v2.2.0)
 

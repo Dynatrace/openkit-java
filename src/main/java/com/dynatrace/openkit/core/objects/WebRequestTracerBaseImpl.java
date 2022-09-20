@@ -59,7 +59,7 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
 
     /** Start time of the web request, set in {@link #start()} */
     private long startTime;
-    /** End time of the web request, set in {@link #stop()} */
+    /** End time of the web request, set in {@link #stop(int)} */
     private long endTime = - 1;
     /** starting sequence number */
     private final int startSequenceNo;
@@ -99,20 +99,6 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
             logger.debug(this + "getTag() returning '" + tag + "'");
         }
         return tag;
-    }
-
-    /**
-     * @deprecated see {@link WebRequestTracer#setResponseCode(int)}
-     */
-    @Deprecated
-    @Override
-    public WebRequestTracer setResponseCode(int responseCode) {
-        synchronized (lockObject) {
-            if (!isStopped()) {
-                this.responseCode = responseCode;
-            }
-        }
-        return this;
     }
 
     @Override
@@ -176,15 +162,6 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
         // last but not least notify the parent & detach from parent
         parent.onChildClosed(this);
         parent = null;
-    }
-
-    /**
-     * @deprecated see {@link WebRequestTracer#stop()}
-     */
-    @Deprecated
-    @Override
-    public void stop() {
-        stop(responseCode);
     }
 
     @Override

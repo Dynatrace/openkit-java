@@ -51,8 +51,6 @@ public class OpenKitConfiguration {
     private final String applicationID;
     /** Percent encoded {@link #applicationID} */
     private final String percentEncodedApplicationID;
-    /** Application's name */
-    private final String applicationName;
     /** Application's version */
     private final String applicationVersion;
     /** Operating system */
@@ -82,7 +80,6 @@ public class OpenKitConfiguration {
         openKitType = builder.getOpenKitType();
         applicationID = builder.getApplicationID();
         percentEncodedApplicationID = PercentEncoder.encode(applicationID, ENCODING_CHARSET, RESERVED_CHARACTERS);
-        applicationName = builder.getApplicationName();
         applicationVersion = builder.getApplicationVersion();
         operatingSystem = builder.getOperatingSystem();
         manufacturer = builder.getManufacturer();
@@ -158,15 +155,6 @@ public class OpenKitConfiguration {
      */
     public String getPercentEncodedApplicationID() {
         return percentEncodedApplicationID;
-    }
-
-    /**
-     * Get application name.
-     *
-     * @return Custom application name.
-     */
-    public String getApplicationName() {
-        return applicationName;
     }
 
     /**

@@ -46,7 +46,6 @@ customize OpenKit. This includes device specific information like operating syst
 | `withBeaconCacheLowerMemoryBoundary`  | sets the lower memory boundary of the beacon cache in bytes           | 80 MB |
 | `withBeaconCacheUpperMemoryBoundary`  | sets the upper memory boundary of the beacon cache in bytes          | 100 MB |
 | `withTrustManager`                    | sets a custom `SSLTrustManager` instance, replacing the builtin default one.<br>Details are described in section [SSL/TLS Security in OpenKit](#ssltls-security-in-openkit). | `SSLStrictTrustManager` |
-| `enableVerbose`                       | *Deprecated*, use `withLogLevel` instead.<br>Enables extended log output for OpenKit if the default logger is used.<br>Is equivalent to `withLogLevel(LogLevel.DEBUG)`.  | `false` |
 | `withLogLevel`                        | sets the default log level if the default logger is used              | `LogLevel.WARN` |
 | `withLogger`                          | sets a custom logger, replacing the builtin default one.<br>Details are described in section [Logging](#logging). | `DefaultLogger` |
 | `withHttpRequestInterceptor`          | sets a custom `HttpRequestInterceptor` instance,  replacing the builtin default one.<br>Details are described in section [Intercepting HTTP traffic to Dynatrace](#intercepting-http-traffic-to-dynatrace). | `NullHttpRequestInterceptor` |
@@ -86,7 +85,7 @@ minimum log level can be set by calling `withLogLevel` in the builder, and only 
 priorities are logged.
 
 A custom logger can be set by calling `withLogger` in the builder. When a custom logger is used, a call to 
-`withLogLevel` or `enableVerbose` has no effect. In that case, debug and info logs are logged depending on the values returned 
+`withLogLevel` has no effect. In that case, debug and info logs are logged depending on the values returned
 in `isDebugEnabled` and `isInfoEnabled`.
 
 ## Initializing OpenKit

@@ -181,12 +181,6 @@ public abstract class BaseActionImpl extends OpenKitComposite implements Cancela
         return this;
     }
 
-    @Deprecated
-    @Override
-    public Action reportError(String errorName, int errorCode, String reason) {
-        return reportError(errorName, errorCode);
-    }
-
     @Override
     public Action reportError(String errorName, int errorCode) {
         if (errorName == null || errorName.isEmpty()) {
