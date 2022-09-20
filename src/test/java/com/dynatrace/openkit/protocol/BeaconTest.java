@@ -2065,6 +2065,100 @@ public class BeaconTest {
     }
 
     @Test
+    public void reportErrorIsTruncatingReasonIfTooLong() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeStackTrace = "HereComesTheTrace";
+
+        String causeReason = new String(new char[1001]).replace('\0', 'a');
+        String causeReasonTruncated = new String(new char[1000]).replace('\0', 'a');
+
+        // when
+        target.reportError(ACTION_ID, errorName, null, causeReason, causeStackTrace);
+
+        // then
+        String expectedEventData =
+                "et=42&" +                      // event type
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "na=" + errorName + "&" +       // name of error event
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of error event
+                        "t0=0&" +                       // timestamp of error event since session start
+                        "rs=" + causeReasonTruncated + "&" +     // reported error reason
+                        "st=" + causeStackTrace + "&" + // reported error stack trace
+                        "tt=c"                          // error technology type
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // error event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportErrorIsTruncatingStacktraceIfTooLong() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeReason = "SomeReason";
+        String causeStacktrace = new String(new char[128001]).replace('\0', 'a');
+        String causeStacktraceTruncated = new String(new char[128000]).replace('\0', 'a');
+
+        // when
+        target.reportError(ACTION_ID, errorName, null, causeReason, causeStacktrace);
+
+        // then
+        String expectedEventData =
+                "et=42&" +                      // event type
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "na=" + errorName + "&" +       // name of error event
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of error event
+                        "t0=0&" +                       // timestamp of error event since session start
+                        "rs=" + causeReason + "&" +     // reported error reason
+                        "st=" + causeStacktraceTruncated + "&" + // reported error stack trace
+                        "tt=c"                          // error technology type
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // error event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportErrorIsTruncatingStacktraceUntilLastBreakIfTooLong() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String causeReason = "SomeReason";
+        String causeStacktraceTruncated = new String(new char[127900]).replace('\0', 'a');
+        String causeStacktrace = causeStacktraceTruncated + '\n' + new String(new char[1000]).replace('\0', 'a');
+
+        // when
+        target.reportError(ACTION_ID, errorName, null, causeReason, causeStacktrace);
+
+        // then
+        String expectedEventData =
+                "et=42&" +                      // event type
+                        "it=" + THREAD_ID + "&" +       // thread ID
+                        "na=" + errorName + "&" +       // name of error event
+                        "pa=" + ACTION_ID + "&" +       // parent action ID
+                        "s0=1&" +                       // sequence number of error event
+                        "t0=0&" +                       // timestamp of error event since session start
+                        "rs=" + causeReason + "&" +     // reported error reason
+                        "st=" + causeStacktraceTruncated + "&" + // reported error stack trace
+                        "tt=c"                          // error technology type
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // error event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
     public void reportErrorWithNullCauseNameWorks() {
         // given
         final Beacon target = createBeacon().build();
@@ -2223,7 +2317,7 @@ public class BeaconTest {
         CrashFormatter crashFormatter = new CrashFormatter(t);
         String causeName = crashFormatter.getName();
         String causeReason = crashFormatter.getReason();
-        String causeStackTrace = PercentEncoder.encode(crashFormatter.getStackTrace(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String causeStackTrace = PercentEncoder.encode(crashFormatter.getStackTrace().trim(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
 
         // when
         target.reportError(ACTION_ID, errorName, t);
@@ -2453,6 +2547,102 @@ public class BeaconTest {
     }
 
     @Test
+    public void reportCrashIsTruncatingReasonIfTooLong() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String stacktrace = "SomeStacktrace";
+
+        String reason = new String(new char[1001]).replace('\0', 'a');
+        String reasonTruncated = new String(new char[1000]).replace('\0', 'a');
+
+        // when
+        target.reportCrash(errorName, reason, stacktrace);
+
+        // then
+        String expectedEventData =
+                "et=50&" +                  // event type
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "na=" + errorName + "&" +   // reported crash name
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // sequence number of reported crash
+                        "t0=0&" +                   // timestamp of crash since session start
+                        "rs=" + reasonTruncated + "&" +      // reported reason
+                        "st=" + stacktrace + "&" +  // reported stacktrace
+                        "tt=c"                      // crash technology type
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // crash event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportCrashIsTruncatingStacktraceIfTooLong() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String reason = "SomeReason";
+
+        String stacktrace = new String(new char[128001]).replace('\0', 'a');
+        String stacktraceTruncated = new String(new char[128000]).replace('\0', 'a');
+
+        // when
+        target.reportCrash(errorName, reason, stacktrace);
+
+        // then
+        String expectedEventData =
+                "et=50&" +                  // event type
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "na=" + errorName + "&" +   // reported crash name
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // sequence number of reported crash
+                        "t0=0&" +                   // timestamp of crash since session start
+                        "rs=" + reason + "&" +      // reported reason
+                        "st=" + stacktraceTruncated + "&" +  // reported stacktrace
+                        "tt=c"                      // crash technology type
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // crash event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
+    public void reportCrashIsTruncatingStacktraceUntilLastBreakIfTooLong() {
+        // given
+        final Beacon target = createBeacon().build();
+        String errorName = "SomeEvent";
+        String reason = "SomeReason";
+
+        String stacktraceTruncated = new String(new char[127900]).replace('\0', 'a');
+        String stacktrace = stacktraceTruncated + '\n' + new String(new char[1000]).replace('\0', 'a');
+
+        // when
+        target.reportCrash(errorName, reason, stacktrace);
+
+        // then
+        String expectedEventData =
+                "et=50&" +                  // event type
+                        "it=" + THREAD_ID + "&" +   // thread ID
+                        "na=" + errorName + "&" +   // reported crash name
+                        "pa=0&" +                   // parent action ID
+                        "s0=1&" +                   // sequence number of reported crash
+                        "t0=0&" +                   // timestamp of crash since session start
+                        "rs=" + reason + "&" +      // reported reason
+                        "st=" + stacktraceTruncated + "&" +  // reported stacktrace
+                        "tt=c"                      // crash technology type
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                     // crash event timestamp
+                eq(expectedEventData)
+        );
+    }
+
+    @Test
     public void reportCrashWithNullStacktraceWorks() {
         // given
         final Beacon target = createBeacon().build();
@@ -2548,7 +2738,7 @@ public class BeaconTest {
         CrashFormatter crashFormatter = new CrashFormatter(t);
         String errorName = crashFormatter.getName();
         String reason = crashFormatter.getReason();
-        String stacktrace = PercentEncoder.encode(crashFormatter.getStackTrace(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String stacktrace = PercentEncoder.encode(crashFormatter.getStackTrace().trim(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
 
         final Beacon target = createBeacon().build();
 

@@ -63,6 +63,10 @@ public interface Session extends Closeable {
      * <p>
      *     If the given {@code errorName} is {@code null} or an empty string,
      *     no crash report will be sent to the server.
+     *     If the {@code reason} is longer than 1000 characters,
+     *     it is truncated to this value.
+     *     If the {@code stacktrace} is longer than 128.000 characters,
+     *     it is truncated according to the last line break.
      * </p>
      *
      * @param errorName  name of the error leading to the crash (e.g. Exception class)

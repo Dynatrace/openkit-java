@@ -124,6 +124,8 @@ public interface Action extends Closeable {
      *
      * <p>
      *     If given {@code errorName} is {@code null} or an empty string then no event is reported to the system.
+     *     If the {@code causeDescription} is longer than 1000 characters, it is truncated to this value.
+     *     If the {@code causeStackTrace} is longer than 128.000 characters, it is truncated according to the last line break.
      * </p>
      *
      * @param errorName name of this error

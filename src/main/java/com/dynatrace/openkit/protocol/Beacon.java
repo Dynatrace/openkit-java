@@ -117,6 +117,8 @@ public class Beacon {
 
     // max name length
     private static final int MAX_NAME_LEN = 250;
+    private static final int MAX_STACKTRACE_LEN = 128 * 1000;
+    private static final int MAX_REASON_LEN = 1000;
 
     // web request tag prefix constant
     private static final String TAG_PREFIX = "MT";
@@ -607,6 +609,18 @@ public class Beacon {
             return;
         }
 
+        int maxStackTraceLength = MAX_STACKTRACE_LEN;
+
+        // Truncating stacktrace at last line break
+        if (causeStackTrace != null && causeStackTrace.length() > MAX_STACKTRACE_LEN)
+        {
+            int lastLineBreakIndex = causeStackTrace.lastIndexOf('\n', MAX_STACKTRACE_LEN);
+            if (lastLineBreakIndex != -1)
+            {
+                maxStackTraceLength = lastLineBreakIndex;
+            }
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.EXCEPTION, errorName);
@@ -616,8 +630,8 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
         addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_VALUE, causeName);
-        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, causeDescription);
-        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, causeStackTrace);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, truncateNullSafe(causeDescription, MAX_REASON_LEN));
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, truncateNullSafe(causeStackTrace, maxStackTraceLength));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, errorTechnologyType);
 
         addEventData(timestamp, eventBuilder);
@@ -673,6 +687,18 @@ public class Beacon {
             return;
         }
 
+        int maxStackTraceLength = MAX_STACKTRACE_LEN;
+
+        // Truncating stacktrace at last line break
+        if (stacktrace != null && stacktrace.length() > MAX_STACKTRACE_LEN)
+        {
+            int lastLineBreakIndex = stacktrace.lastIndexOf('\n', MAX_STACKTRACE_LEN);
+            if (lastLineBreakIndex != -1)
+            {
+                maxStackTraceLength = lastLineBreakIndex;
+            }
+        }
+
         StringBuilder eventBuilder = new StringBuilder();
 
         buildBasicEventData(eventBuilder, EventType.CRASH, errorName);
@@ -681,8 +707,8 @@ public class Beacon {
         addKeyValuePair(eventBuilder, BEACON_KEY_PARENT_ACTION_ID, 0);                                  // no parent action
         addKeyValuePair(eventBuilder, BEACON_KEY_START_SEQUENCE_NUMBER, createSequenceNumber());
         addKeyValuePair(eventBuilder, BEACON_KEY_TIME_0, getTimeSinceSessionStartTime(timestamp));
-        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, reason);
-        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, stacktrace);
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_REASON, truncateNullSafe(reason, MAX_REASON_LEN));
+        addKeyValuePairIfNotNull(eventBuilder, BEACON_KEY_ERROR_STACKTRACE, truncateNullSafe(stacktrace, maxStackTraceLength));
         addKeyValuePair(eventBuilder, BEACON_KEY_ERROR_TECHNOLOGY_TYPE, crashTechnologyType);
 
         addEventData(timestamp, eventBuilder);
@@ -1260,12 +1286,31 @@ public class Beacon {
      * helper method for truncating name at max name size
      */
     private static String truncate(String name) {
+        return truncate(name, MAX_NAME_LEN);
+    }
+
+    /**
+     * helper method for truncating
+     */
+    private static String truncate(String name, int length) {
         name = name.trim();
-        if (name.length() > MAX_NAME_LEN) {
-            name = name.substring(0, MAX_NAME_LEN);
+        if (name.length() > length) {
+            name = name.substring(0, length);
         }
         return name;
     }
+
+    /**
+     * helper method for truncating null safe
+     */
+    private static String truncateNullSafe(String name, int length) {
+        if(name == null){
+            return null;
+        }
+
+        return truncate(name, length);
+    }
+
 
     /**
      * Get a timestamp relative to the time this session (aka. beacon) was created.
