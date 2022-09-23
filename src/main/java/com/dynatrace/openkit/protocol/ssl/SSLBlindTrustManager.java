@@ -36,6 +36,7 @@ import java.security.cert.X509Certificate;
  * NOTE: DO NOT USE THIS IN PRODUCTION!!
  * </p>
  */
+@SuppressWarnings("all")
 public class SSLBlindTrustManager implements SSLTrustManager {
 
     private final X509TrustManager blindX509TrustManager = new BlindX509TrustManager();
