@@ -34,7 +34,10 @@ class EventPayloadMatcher extends ArgumentMatcher<String> {
 		}
 
 		String expectedPayload = expectedEventPayload.substring(expectedEventPayload.indexOf("pl=") + "pl=".length());
+		expectedPayload = removeEncodedBrackets(expectedPayload);
+
 		String actualPayload = actualEventPayload.substring(actualEventPayload.indexOf("pl=") + "pl=".length());
+		actualPayload = removeEncodedBrackets(actualPayload);
 
 		String[] expectedPayloadValues = expectedPayload.split("%2C");
 		Arrays.sort(expectedPayloadValues);
@@ -43,5 +46,11 @@ class EventPayloadMatcher extends ArgumentMatcher<String> {
 		Arrays.sort(actualPayloadValues);
 
 		return Arrays.equals(expectedPayloadValues, actualPayloadValues);
+	}
+
+	private String removeEncodedBrackets(String payload){
+		String editedPayload = payload.replaceAll("%7B", "");
+		editedPayload = editedPayload.replaceAll("%7D", "");
+		return editedPayload;
 	}
 }

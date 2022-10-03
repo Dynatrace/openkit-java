@@ -83,7 +83,6 @@ public class EventPayloadBuilderTest {
         EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
         builder.addOverridableAttribute("timestamp", JSONStringValue.fromString("Overridable"));
         assertTrue("Attribute \"timestamp\" was not found in the builder.", isStringAvailable(builder.build(), "\"timestamp\":\"NewValue\""));
-        assertTrue("Attribute \"dt.overridden_keys\" was not found in the builder.", isStringAvailable(builder.build(), "\"dt.overridden_keys\":[\"timestamp\"]"));
     }
 
     @Test

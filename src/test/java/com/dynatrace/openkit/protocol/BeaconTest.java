@@ -87,10 +87,9 @@ public class BeaconTest {
     private static final int SESSION_ID = 73;
     private static final int SESSION_SEQ_NO = 13;
 
-    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.application_id";
-    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.instance_id";
-    private static final String EVENT_PAYLOAD_SESSION_ID = "dt.sid";
-    private static final String EVENT_PAYLOAD_SEND_TIMESTAMP = "dt.send_timestamp";
+    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.rum.application_id";
+    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.rum.instance_id";
+    private static final String EVENT_PAYLOAD_SESSION_ID = "dt.rum.sid";
 
     private BeaconConfiguration mockBeaconConfiguration;
     private OpenKitConfiguration mockOpenKitConfiguration;
@@ -1300,18 +1299,16 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1344,19 +1341,60 @@ public class BeaconTest {
         actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put("event.name", JSONStringValue.fromString("Test"));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String expectedEventData =
+                "et=98&" +   // event type
+                        "pl=" + encodedPayload // event payload
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                argThat(new EventPayloadMatcher(expectedEventData))
+        );
+    }
+
+    @Test
+    public void sendBizEventWithEventProviderInAttributes(){
+        // given
+        final Beacon target = createBeacon().build();
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        String eventType = "SomeType";
+
+        HashMap<String, JSONValue> attributes = new HashMap<>();
+        attributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString("Test"));
+
+        // when
+        target.sendBizEvent(eventType, attributes);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
+
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString("Test"));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1391,18 +1429,16 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1420,6 +1456,52 @@ public class BeaconTest {
                 "EventPayloadBuilder addNonOverrideableAttribute: event.type is reserved for internal values!");
         verify(mockLogger, times(1)).warning(
                 "EventPayloadBuilder addNonOverrideableAttribute: event.kind is reserved for internal values!");
+    }
+
+    @Test
+    public void sendBizEventWithDtRumSchemaVersionInAttributes(){
+        // given
+        final Beacon target = createBeacon().build();
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        String eventType = "SomeType";
+
+        HashMap<String, JSONValue> attributes = new HashMap<>();
+        attributes.put("dt.rum.schema_version", JSONStringValue.fromString("Test"));
+
+        // when
+        target.sendBizEvent(eventType, attributes);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
+        actualAttributes.put("event.type", JSONStringValue.fromString(eventType));
+
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        String expectedEventData =
+                "et=98&" +   // event type
+                        "pl=" + encodedPayload // event payload
+                ;
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                argThat(new EventPayloadMatcher(expectedEventData))
+        );
+
+        verify(mockLogger, times(1)).warning(
+                "EventPayloadBuilder initializeInternalAttributes: dt.rum.schema_version is reserved for internal values!");
     }
 
     @Test
@@ -1464,18 +1546,16 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1507,18 +1587,16 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("BIZ_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put("event.name", JSONStringValue.fromString(eventType));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1578,7 +1656,6 @@ public class BeaconTest {
         verifyZeroInteractions(mockBeaconCache);
     }
 
-    // Test about Length
     @Test
     public void sendBizEventPayloadIsToBig() throws UnsupportedEncodingException {
         // expect
@@ -1626,17 +1703,15 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1671,24 +1746,16 @@ public class BeaconTest {
         HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("Anything"));
-
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-
-        ArrayList<JSONValue> values = new ArrayList<>();
-        values.add(JSONStringValue.fromString("event.kind"));
-        actualAttributes.put("dt.overridden_keys", JSONArrayValue.fromList(values));
-
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1705,6 +1772,96 @@ public class BeaconTest {
 
         verify(mockLogger, times(0)).warning(
                 "EventPayloadBuilder addNonOverrideableAttribute: dt.type is reserved for internal values!");
+    }
+
+    @Test
+    public void sendEventWithEventProviderInAttributes() {
+        // given
+        final Beacon target = createBeacon().build();
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        String eventName = "SomeEvent";
+
+        HashMap<String, JSONValue> attributes = new HashMap<>();
+        attributes.put("event.provider", JSONStringValue.fromString("Anything"));
+
+        // when
+        target.sendEvent(eventName, attributes);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        final String expectedEventData =
+                "et=98&" +   // event type
+                        "pl=" + encodedPayload // event payload
+                ;
+
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                argThat(new EventPayloadMatcher(expectedEventData))
+        );
+
+        verify(mockLogger, times(1)).warning(
+                "EventPayloadBuilder addNonOverrideableAttribute: event.provider is reserved for internal values!");
+    }
+
+    @Test
+    public void sendEventWithDtRumSchemaInAttributes() {
+        // given
+        final Beacon target = createBeacon().build();
+        String appVersion = "1111";
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        String eventName = "SomeEvent";
+
+        HashMap<String, JSONValue> attributes = new HashMap<>();
+        attributes.put("dt.rum.schema_version", JSONStringValue.fromString("Anything"));
+
+        // when
+        target.sendEvent(eventName, attributes);
+
+        HashMap<String, JSONValue> actualAttributes = new HashMap<>();
+        actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
+        actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
+        actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
+        actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
+        actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
+        actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
+        actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
+
+        // then
+        String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
+        final String expectedEventData =
+                "et=98&" +   // event type
+                        "pl=" + encodedPayload // event payload
+                ;
+
+        verify(mockBeaconCache, times(1)).addEventData(
+                eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
+                eq(0L),                         // event timestamp
+                argThat(new EventPayloadMatcher(expectedEventData))
+        );
+
+        verify(mockLogger, times(1)).warning(
+                "EventPayloadBuilder initializeInternalAttributes: dt.rum.schema_version is reserved for internal values!");
     }
 
     @Test
@@ -1752,17 +1909,15 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);
@@ -1794,17 +1949,15 @@ public class BeaconTest {
 
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
         actualAttributes.put(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(SESSION_ID));
-        actualAttributes.put(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString("DT_SEND_TIMESTAMP_PLACEHOLDER"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString("<unknown version>-<unknown version>"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"));
-        actualAttributes.put(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"));
         actualAttributes.put(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(appVersion));
         actualAttributes.put(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(""));
         actualAttributes.put(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(""));
+        actualAttributes.put("dt.rum.schema_version", JSONStringValue.fromString("1.0"));
 
         // then
         String encodedPayload = PercentEncoder.encode(JSONObjectValue.fromMap(actualAttributes).toString(), Beacon.CHARSET, Beacon.RESERVED_CHARACTERS);

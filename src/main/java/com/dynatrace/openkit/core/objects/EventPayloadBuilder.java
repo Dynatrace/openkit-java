@@ -32,21 +32,15 @@ public class EventPayloadBuilder {
     /** Map containing attributes for sendEvent API */
     private final Map<String, JSONValue> attributes = new HashMap<>();
 
-    /** List containing all keys which have been overridden by the customer */
-    private final List<JSONValue> overriddenKeys;
-
     public EventPayloadBuilder(Logger logger, Map<String, JSONValue> attributes) {
         this.logger = logger;
-        overriddenKeys = new LinkedList<>();
 
         initializeInternalAttributes(attributes);
     }
 
     public EventPayloadBuilder addOverridableAttribute(String key, JSONValue value) {
         if (value != null) {
-            if (attributes.containsKey(key)) {
-                overriddenKeys.add(JSONStringValue.fromString(key));
-            } else {
+            if (!attributes.containsKey(key)) {
                 attributes.put(key, value);
             }
         }
@@ -66,10 +60,6 @@ public class EventPayloadBuilder {
     }
 
     public String build() {
-        if (overriddenKeys.size() > 0) {
-            addNonOverridableAttribute("dt.overridden_keys", JSONArrayValue.fromList(overriddenKeys));
-        }
-
         return JSONObjectValue.fromMap(attributes).toString();
     }
 
@@ -91,7 +81,6 @@ public class EventPayloadBuilder {
     }
 
     public static boolean isReservedForInternalAttributes(String key) {
-        return (key.equals("dt") ||
-            (key.startsWith("dt.") && !key.startsWith("dt.agent.")));
+        return (key.equals("dt") || key.startsWith("dt."));
     }
 }

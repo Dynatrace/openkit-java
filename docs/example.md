@@ -269,6 +269,29 @@ action.leaveAction();
 durationInMilliseconds = action.getDurationInMilliseconds(); // gives action end time - action start time
 ```
 
+## Business events capturing
+
+With `sendBizEvent`, you can report business events. These events are standalone events, as OneAgent sends them detached from user actions or user sessions.
+
+For more information on business events, see [dynatrace documentation](https://www.dynatrace.com/support/help/how-to-use-dynatrace/business-analytics/ba-events-capturing#expand--example-configuration-files-for-rum--2).
+
+```java
+Map <String, JSONValue> attributes = new HashMap<String, JSONValue>();
+attributes.put("event.name", JSONStringValue.fromString("Confirmed Booking"));
+attributes.put("screen", JSONStringValue.fromString("booking-confirmation"));
+attributes.put("product", JSONStringValue.fromString("Hotel Passy Eiffel"));
+attributes.put("amount", JSONNumberValue.fromDouble(358.35));
+attributes.put("currency", JSONStringValue.fromString("USD"));
+attributes.put("reviewScore", JSONNumberValue.fromDouble(4.8));
+attributes.put("arrivalDate", JSONStringValue.fromString("2022-11-05"));
+attributes.put("departureDate", JSONStringValue.fromString("2022-11-15"));
+attributes.put("journeyDuration", JSONNumberValue.fromLong(10));
+attributes.put("adultTravelers", JSONNumberValue.fromLong(2));
+attributes.put("childrenTravelers", JSONNumberValue.fromLong(0));
+
+session.sendBizEvent('com.easytravel.funnel.booking-finished', attributes);
+```
+
 ## Report Named Event
 
 To report a named event use the `reportEvent` method on `Action`.

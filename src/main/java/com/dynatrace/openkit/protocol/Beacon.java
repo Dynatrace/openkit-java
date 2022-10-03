@@ -105,13 +105,10 @@ public class Beacon {
     // events api
     private static final String BEACON_KEY_EVENT_PAYLOAD = "pl";
     private static final int EVENT_PAYLOAD_BYTES_LENGTH = 16 * 1024;
-    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.application_id";
-    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.instance_id";
-    private static final String EVENT_PAYLOAD_SESSION_ID = "dt.sid";
-    private static final String EVENT_PAYLOAD_SEND_TIMESTAMP = "dt.send_timestamp";
+    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.rum.application_id";
+    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.rum.instance_id";
+    private static final String EVENT_PAYLOAD_SESSION_ID = "dt.rum.sid";
 
-    // Replacement for send timestamp. This will be replaced in the payload when data gets sent.
-    private static final String SEND_TIMESTAMP_PLACEHOLDER = "DT_SEND_TIMESTAMP_PLACEHOLDER";
     static final String CHARSET = StandardCharsets.UTF_8.name();
 
     // max name length
@@ -822,10 +819,6 @@ public class Beacon {
                 return response;
             }
 
-            // Check if the chunk contains timestamp that needs to be replaced
-            chunk = chunk.replace(PercentEncoder.encode("\"" + SEND_TIMESTAMP_PLACEHOLDER + "\"", CHARSET, RESERVED_CHARACTERS),
-                    String.valueOf(timingProvider.provideTimestampInNanoseconds()));
-
             byte[] encodedBeacon;
             try {
                 encodedBeacon = encodeBeaconChunk(chunk);
@@ -859,10 +852,7 @@ public class Beacon {
                 .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(deviceID))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(getSessionNumber()))
-                .addNonOverridableAttribute(EVENT_PAYLOAD_SEND_TIMESTAMP, JSONStringValue.fromString(SEND_TIMESTAMP_PLACEHOLDER))
-                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_VERSION, JSONStringValue.fromString(OpenKitConstants.DEFAULT_APPLICATION_VERSION))
-                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_TECHNOLOGY_TYPE, JSONStringValue.fromString("openkit"))
-                .addOverridableAttribute(EventPayloadAttributes.DT_AGENT_FLAVOR, JSONStringValue.fromString("java"))
+                .addNonOverridableAttribute("dt.rum.schema_version", JSONStringValue.fromString("1.0"))
                 .addOverridableAttribute(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getApplicationVersion()))
                 .addOverridableAttribute(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getOperatingSystem()))
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))
@@ -904,7 +894,8 @@ public class Beacon {
 
         EventPayloadBuilder builder = generateSendEventPayload(attributes);
         builder.addNonOverridableAttribute("event.type", JSONStringValue.fromString(type))
-                .addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ));
+                .addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ))
+                .addOverridableAttribute(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()));
 
         if (attributes != null && attributes.containsKey("event.name")) {
             builder.addNonOverridableAttribute("event.name", attributes.get("event.name"));
@@ -930,6 +921,7 @@ public class Beacon {
 
         EventPayloadBuilder builder = generateSendEventPayload(attributes);
         builder.addNonOverridableAttribute("event.name", JSONStringValue.fromString(name))
+                .addNonOverridableAttribute(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
                 .addOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_RUM));
 
         sendEventPayload(builder);

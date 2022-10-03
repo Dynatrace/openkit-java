@@ -4,6 +4,7 @@
 
 ### Added
 - User-Agent header for http requests
+- Business events capturing API `sendBizEvent`
 ### Changed
 - Default maximum age of an entry in the beacon cache changed from 1h 45m to 45m
 - Removed AppMon functionality
