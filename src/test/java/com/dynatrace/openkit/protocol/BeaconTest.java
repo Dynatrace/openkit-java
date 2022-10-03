@@ -87,8 +87,8 @@ public class BeaconTest {
     private static final int SESSION_ID = 73;
     private static final int SESSION_SEQ_NO = 13;
 
-    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.rum.application_id";
-    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.rum.instance_id";
+    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.rum.application.id";
+    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.rum.instance.id";
     private static final String EVENT_PAYLOAD_SESSION_ID = "dt.rum.sid";
 
     private BeaconConfiguration mockBeaconConfiguration;

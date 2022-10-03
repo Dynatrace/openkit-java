@@ -117,10 +117,8 @@ public interface Session extends Closeable {
      * Note: Business events are only supported on Dynatrace SaaS deployments currently.
      *
      * @param type Mandatory event type
-     * @param attributes Must be a valid JSON object and cannot contain functions, undefined,
-     * Infinity, or NaN as values, otherwise they will be removed. Attributes need to be serializable using JSON.stringify.
-     * The resulting event will be populated with the 'attributes'-parameter and enriched with additional properties.
-     * Therefore, even empty objects are valid.
+     * @param attributes Must be a valid JSON object. The resulting event will be populated with the 'attributes'-parameter 
+     * and enriched with additional properties. Therefore, even empty objects are valid.
      */
     void sendBizEvent(String type, Map<String, JSONValue> attributes);
 

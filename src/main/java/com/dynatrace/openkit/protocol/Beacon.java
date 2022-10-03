@@ -105,8 +105,8 @@ public class Beacon {
     // events api
     private static final String BEACON_KEY_EVENT_PAYLOAD = "pl";
     private static final int EVENT_PAYLOAD_BYTES_LENGTH = 16 * 1024;
-    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.rum.application_id";
-    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.rum.instance_id";
+    private static final String EVENT_PAYLOAD_APPLICATION_ID = "dt.rum.application.id";
+    private static final String EVENT_PAYLOAD_INSTANCE_ID = "dt.rum.instance.id";
     private static final String EVENT_PAYLOAD_SESSION_ID = "dt.rum.sid";
 
     static final String CHARSET = StandardCharsets.UTF_8.name();
