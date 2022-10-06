@@ -1783,7 +1783,7 @@ public class BeaconTest {
         String eventName = "SomeEvent";
 
         HashMap<String, JSONValue> attributes = new HashMap<>();
-        attributes.put("event.provider", JSONStringValue.fromString("Anything"));
+        attributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString("Anything"));
 
         // when
         target.sendEvent(eventName, attributes);
@@ -1791,7 +1791,7 @@ public class BeaconTest {
         HashMap<String, JSONValue> actualAttributes = new HashMap<>();
         actualAttributes.put("event.name", JSONStringValue.fromString(eventName));
         actualAttributes.put(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString("RUM_EVENT"));
-        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(APP_ID));
+        actualAttributes.put(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString("Anything"));
         actualAttributes.put(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(0));
         actualAttributes.put(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(APP_ID));
         actualAttributes.put(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(DEVICE_ID));
@@ -1814,9 +1814,6 @@ public class BeaconTest {
                 eq(0L),                         // event timestamp
                 argThat(new EventPayloadMatcher(expectedEventData))
         );
-
-        verify(mockLogger, times(1)).warning(
-                "EventPayloadBuilder addNonOverrideableAttribute: event.provider is reserved for internal values!");
     }
 
     @Test
