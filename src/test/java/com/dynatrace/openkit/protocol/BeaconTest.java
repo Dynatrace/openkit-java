@@ -18,6 +18,7 @@ package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.CrashReportingLevel;
 import com.dynatrace.openkit.DataCollectionLevel;
+import com.dynatrace.openkit.api.ConnectionType;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconCacheImpl;
@@ -31,6 +32,7 @@ import com.dynatrace.openkit.core.configuration.ServerConfigurationUpdateCallbac
 import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.EventPayloadAttributes;
 import com.dynatrace.openkit.core.objects.OpenKitComposite;
+import com.dynatrace.openkit.core.objects.SupplementaryBasicData;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.core.util.PercentEncoder;
@@ -104,6 +106,7 @@ public class BeaconTest {
 
     private Logger mockLogger;
     private BeaconCache mockBeaconCache;
+    private SupplementaryBasicData mockSupplementaryData;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -171,6 +174,8 @@ public class BeaconTest {
 
         mockRandom = mock(RandomNumberGenerator.class);
         when(mockRandom.nextPercentageValue()).thenReturn(0);
+
+        mockSupplementaryData = mock(SupplementaryBasicData.class);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2036,6 +2041,163 @@ public class BeaconTest {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// report mutable supplementary basic data
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportNetworkTechnology() {
+        // given
+        int sessionSequence = 1213;
+        int visitStoreVersion = 2;
+        String appVersion = "1111";
+        String ipAddress = "192.168.0.1";
+
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
+        when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
+        when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
+        when(mockSupplementaryData.getNetworkTechnology()).thenReturn("TestValue");
+
+        Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
+
+        // when
+        target.send(mock(HTTPClientProvider.class), null);
+
+        // then
+        String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
+                "&va=" + ProtocolConstants.OPENKIT_VERSION +
+                "&ap=" + APP_ID +
+                "&vn=" + appVersion +
+                "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
+                "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
+                "&vi=" + DEVICE_ID +
+                "&sn=" + SESSION_ID +
+                "&ip=" + ipAddress +
+                "&os=system" +
+                "&mf=manufacturer" +
+                "&md=model" +
+                "&dl=2" +
+                "&cl=2" +
+                "&vs=" + visitStoreVersion +
+                "&ss=" + sessionSequence +
+                "&tx=0" +
+                "&tv=0" +
+                "&mp=1" +
+                "&np=TestValue";
+
+        BeaconKey expectedBeaconKey = new BeaconKey(SESSION_ID, sessionSequence);
+        verify(mockBeaconCache, times(1)).prepareDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1)).hasDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1))
+                .getNextBeaconChunk(eq(expectedBeaconKey), eq(expectedPrefix), anyInt(), anyChar());
+    }
+
+    @Test
+    public void reportNetworkCarrier() {
+        // given
+        int sessionSequence = 1213;
+        int visitStoreVersion = 2;
+        String appVersion = "1111";
+        String ipAddress = "192.168.0.1";
+
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
+        when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
+        when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
+        when(mockSupplementaryData.getCarrier()).thenReturn("TestValue");
+
+        Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
+
+        // when
+        target.send(mock(HTTPClientProvider.class), null);
+
+        // then
+        String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
+                "&va=" + ProtocolConstants.OPENKIT_VERSION +
+                "&ap=" + APP_ID +
+                "&vn=" + appVersion +
+                "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
+                "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
+                "&vi=" + DEVICE_ID +
+                "&sn=" + SESSION_ID +
+                "&ip=" + ipAddress +
+                "&os=system" +
+                "&mf=manufacturer" +
+                "&md=model" +
+                "&dl=2" +
+                "&cl=2" +
+                "&vs=" + visitStoreVersion +
+                "&ss=" + sessionSequence +
+                "&tx=0" +
+                "&tv=0" +
+                "&mp=1" +
+                "&cr=TestValue";
+
+        BeaconKey expectedBeaconKey = new BeaconKey(SESSION_ID, sessionSequence);
+        verify(mockBeaconCache, times(1)).prepareDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1)).hasDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1))
+                .getNextBeaconChunk(eq(expectedBeaconKey), eq(expectedPrefix), anyInt(), anyChar());
+    }
+
+    @Test
+    public void reportConnectionType() {
+        // given
+        int sessionSequence = 1213;
+        int visitStoreVersion = 2;
+        String appVersion = "1111";
+        String ipAddress = "192.168.0.1";
+
+        when(mockOpenKitConfiguration.getApplicationVersion()).thenReturn(appVersion);
+        when(mockOpenKitConfiguration.getOperatingSystem()).thenReturn("system");
+        when(mockOpenKitConfiguration.getManufacturer()).thenReturn("manufacturer");
+        when(mockOpenKitConfiguration.getModelID()).thenReturn("model");
+        when(mockBeaconCache.hasDataForSending(any(BeaconKey.class))).thenReturn(true, false);
+        when(mockBeaconCache.getNextBeaconChunk(any(BeaconKey.class), anyString(), anyInt(), anyChar())).thenReturn(null);
+        when(mockServerConfiguration.getVisitStoreVersion()).thenReturn(visitStoreVersion);
+        when(mockSupplementaryData.getConnectionType()).thenReturn(ConnectionType.Lan);
+
+        Beacon target = createBeacon().withIpAddress(ipAddress).withSessionSequenceNumber(sessionSequence).build();
+
+        // when
+        target.send(mock(HTTPClientProvider.class), null);
+
+        // then
+        String expectedPrefix = "vv=" + ProtocolConstants.PROTOCOL_VERSION +
+                "&va=" + ProtocolConstants.OPENKIT_VERSION +
+                "&ap=" + APP_ID +
+                "&vn=" + appVersion +
+                "&pt=" + ProtocolConstants.PLATFORM_TYPE_OPENKIT +
+                "&tt=" + ProtocolConstants.AGENT_TECHNOLOGY_TYPE +
+                "&vi=" + DEVICE_ID +
+                "&sn=" + SESSION_ID +
+                "&ip=" + ipAddress +
+                "&os=system" +
+                "&mf=manufacturer" +
+                "&md=model" +
+                "&dl=2" +
+                "&cl=2" +
+                "&vs=" + visitStoreVersion +
+                "&ss=" + sessionSequence +
+                "&tx=0" +
+                "&tv=0" +
+                "&mp=1" +
+                "&ct=l";
+
+        BeaconKey expectedBeaconKey = new BeaconKey(SESSION_ID, sessionSequence);
+        verify(mockBeaconCache, times(1)).prepareDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1)).hasDataForSending(eq(expectedBeaconKey));
+        verify(mockBeaconCache, times(1))
+                .getNextBeaconChunk(eq(expectedBeaconKey), eq(expectedPrefix), anyInt(), anyChar());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// reportError with errorCode tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3573,6 +3735,7 @@ public class BeaconTest {
         when(beaconInitializer.getThreadIdProvider()).thenReturn(mockThreadIDProvider);
         when(beaconInitializer.getTimingProvider()).thenReturn(mockTimingProvider);
         when(beaconInitializer.getRandomNumberGenerator()).thenReturn(mockRandom);
+        when(beaconInitializer.getSupplementaryBasicData()).thenReturn(mockSupplementaryData);
 
         Beacon target = new Beacon(beaconInitializer, mockBeaconConfiguration) {
             @Override
@@ -4130,6 +4293,7 @@ public class BeaconTest {
         builder.timingProvider = mockTimingProvider;
         builder.sessionSequenceNumber = SESSION_SEQ_NO;
         builder.random = mockRandom;
+        builder.supplementaryBasicData = mockSupplementaryData;
 
         return builder;
     }
@@ -4144,6 +4308,7 @@ public class BeaconTest {
         private TimingProvider timingProvider;
         private RandomNumberGenerator random;
         private int sessionSequenceNumber;
+        private SupplementaryBasicData supplementaryBasicData;
 
         private BeaconBuilder withIpAddress(String ipAddress) {
             this.ipAddress = ipAddress;
@@ -4152,11 +4317,6 @@ public class BeaconTest {
 
         private BeaconBuilder with(BeaconCache beaconCache) {
             this.beaconCache = beaconCache;
-            return this;
-        }
-
-        private BeaconBuilder with(BeaconConfiguration configuration) {
-            this.configuration = configuration;
             return this;
         }
 
@@ -4180,6 +4340,7 @@ public class BeaconTest {
             when(beaconInitializer.getThreadIdProvider()).thenReturn(threadIdProvider);
             when(beaconInitializer.getTimingProvider()).thenReturn(timingProvider);
             when(beaconInitializer.getRandomNumberGenerator()).thenReturn(random);
+            when(beaconInitializer.getSupplementaryBasicData()).thenReturn(supplementaryBasicData);
 
             return new Beacon(beaconInitializer, configuration);
         }

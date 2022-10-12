@@ -440,6 +440,15 @@ webRequestTracer.setBytesReceived(67890); // 67890 bytes received
 webRequestTracer.stop(200);               // 200 was the response code
 ```
 
+## Reporting optional metrics
+
+After creating a `Session` object, it provides APIs to set additional mutable metrics like network technology, connection type or network carrier:
+
+```java
+session.reportNetworkTechnology('technology');
+session.reportCarrier('carrier');
+session.reportConnectionType(ConnectionType.LAN);
+```
 
 ## Terminating the OpenKit Instance
 

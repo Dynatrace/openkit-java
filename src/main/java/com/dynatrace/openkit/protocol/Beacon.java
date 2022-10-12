@@ -20,7 +20,6 @@ import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.EVENT_KI
 import static com.dynatrace.openkit.core.objects.EventPayloadAttributes.EVENT_KIND_RUM;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.core.caching.BeaconCache;
 import com.dynatrace.openkit.core.caching.BeaconKey;
 import com.dynatrace.openkit.core.configuration.BeaconConfiguration;
@@ -32,6 +31,7 @@ import com.dynatrace.openkit.core.objects.BaseActionImpl;
 import com.dynatrace.openkit.core.objects.SessionImpl;
 import com.dynatrace.openkit.core.objects.EventPayloadAttributes;
 import com.dynatrace.openkit.core.objects.EventPayloadBuilder;
+import com.dynatrace.openkit.core.objects.SupplementaryBasicData;
 import com.dynatrace.openkit.core.objects.WebRequestTracerBaseImpl;
 import com.dynatrace.openkit.core.util.CrashFormatter;
 import com.dynatrace.openkit.core.util.InetAddressValidator;
@@ -74,6 +74,11 @@ public class Beacon {
     private static final String BEACON_KEY_DEVICE_OS = "os";
     private static final String BEACON_KEY_DEVICE_MANUFACTURER = "mf";
     private static final String BEACON_KEY_DEVICE_MODEL = "md";
+
+    // additional metadata
+    private static final String BEACON_KEY_CONNECTION_TYPE = "ct";
+    private static final String BEACON_KEY_NETWORK_TECHNOLOGY = "np";
+    private static final String BEACON_KEY_CARRIER = "cr";
 
     // timestamp constants
     private static final String BEACON_KEY_SESSION_START_TIME = "tv";
@@ -153,6 +158,8 @@ public class Beacon {
 
     private final BeaconCache beaconCache;
 
+    private final SupplementaryBasicData supplementaryBasicData;
+
     /**
      * Creates a new beacon instance
      *
@@ -189,6 +196,8 @@ public class Beacon {
             }
             this.clientIPAddress = null; // determined on server side, based on remote IP address
         }
+
+        this.supplementaryBasicData = initializer.getSupplementaryBasicData();
 
         immutableBasicBeaconData = createImmutableBasicBeaconData();
     }
@@ -942,7 +951,6 @@ public class Beacon {
     }
 
     private String appendMutableBeaconData(String immutableBasicBeaconData) {
-
         StringBuilder mutableBeaconDataBuilder = new StringBuilder(immutableBasicBeaconData);
         addKeyValuePair(mutableBeaconDataBuilder, BEACON_KEY_VISIT_STORE_VERSION, getVisitStoreVersion());
         if (getVisitStoreVersion() > 1) {
@@ -956,6 +964,16 @@ public class Beacon {
 
         // append multiplicity
         mutableBeaconDataBuilder.append(BEACON_DATA_DELIMITER).append(createMultiplicityData());
+
+        // append supplementary basic data
+        addKeyValuePairIfNotNull(mutableBeaconDataBuilder, BEACON_KEY_NETWORK_TECHNOLOGY,
+                supplementaryBasicData.getNetworkTechnology());
+        addKeyValuePairIfNotNull(mutableBeaconDataBuilder, BEACON_KEY_CARRIER, supplementaryBasicData.getCarrier());
+
+        if (supplementaryBasicData.getConnectionType() != null) {
+            addKeyValuePairIfNotNull(mutableBeaconDataBuilder, BEACON_KEY_CONNECTION_TYPE,
+                    supplementaryBasicData.getConnectionType().getValue());
+        }
 
         return mutableBeaconDataBuilder.toString();
     }

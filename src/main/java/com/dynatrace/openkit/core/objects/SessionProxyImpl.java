@@ -15,6 +15,7 @@
  */
 package com.dynatrace.openkit.core.objects;
 
+import com.dynatrace.openkit.api.ConnectionType;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
@@ -167,6 +168,55 @@ public class SessionProxyImpl extends OpenKitComposite implements Session, Serve
 
                 // create new session after crash report
                 splitAndCreateNewInitialSession();
+            }
+        }
+    }
+
+    @Override
+    public void reportNetworkTechnology(String technology) {
+        if (technology != null && technology.isEmpty()) {
+            logger.warning(this + " reportNetworkTechnology (String): technology must be null or non-empty string");
+            return;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + " reportNetworkTechnology (String) (" + technology + ")");
+        }
+
+        synchronized (lockObject) {
+            if (!isFinished) {
+                currentSession.reportNetworkTechnology(technology);
+            }
+        }
+    }
+
+    @Override
+    public void reportConnectionType(ConnectionType connectionType) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + " reportConnectionType (ConnectionType) (" + connectionType + ")");
+        }
+
+        synchronized (lockObject) {
+            if (!isFinished) {
+                currentSession.reportConnectionType(connectionType);
+            }
+        }
+    }
+
+    @Override
+    public void reportCarrier(String carrier) {
+        if (carrier != null && carrier.isEmpty()) {
+            logger.warning(this + " reportCarrier (String): carrier must be null or non-empty string");
+            return;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + " reportCarrier (String) (" + carrier + ")");
+        }
+
+        synchronized (lockObject) {
+            if (!isFinished) {
+                currentSession.reportCarrier(carrier);
             }
         }
     }

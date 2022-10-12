@@ -15,6 +15,7 @@
  */
 package com.dynatrace.openkit.core.objects;
 
+import com.dynatrace.openkit.api.ConnectionType;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
@@ -865,6 +866,114 @@ public class SessionProxyImplTest {
         verify(mockSplitSession1, times(1)).reportCrash(crash);
         verify(mockSessionCreator, times(3)).createSession(target);
         verify(mockSessionWatchdog, times(1)).closeOrEnqueueForClosing(mockSplitSession1, mockServerConfiguration.getSendIntervalInMilliseconds());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// report mutable supplementary basic data tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportEmptyNetworkTechnology() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportNetworkTechnology("");
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] reportNetworkTechnology (String): technology must be null or non-empty string");
+        verify(mockSession, never()).reportNetworkTechnology(anyString());
+    }
+
+    @Test
+    public void reportNullNetworkTechnology() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportNetworkTechnology(null);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] reportNetworkTechnology (String) (null)");
+        verify(mockSession, times(1)).reportNetworkTechnology(null);
+    }
+
+    @Test
+    public void reportValidNetworkTechnology() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportNetworkTechnology("Test");
+
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] reportNetworkTechnology (String) (Test)");
+        verify(mockSession, times(1)).reportNetworkTechnology("Test");
+    }
+
+    @Test
+    public void reportEmptyCarrier() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportCarrier("");
+
+        verify(mockLogger, times(1)).warning(
+                "SessionProxyImpl [sn=0, seq=0] reportCarrier (String): carrier must be null or non-empty string");
+        verify(mockSession, never()).reportCarrier(anyString());
+    }
+
+    @Test
+    public void reportNullCarrier() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportCarrier(null);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] reportCarrier (String) (null)");
+        verify(mockSession, times(1)).reportCarrier(null);
+    }
+
+    @Test
+    public void reportValidCarrier() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportCarrier("Test");
+
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] reportCarrier (String) (Test)");
+        verify(mockSession, times(1)).reportCarrier("Test");
+    }
+
+    @Test
+    public void reportNullConnectionType() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportConnectionType(null);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] reportConnectionType (ConnectionType) (null)");
+        verify(mockSession, times(1)).reportConnectionType(null);
+    }
+
+    @Test
+    public void reportValidConnectionType() {
+        // given
+        SessionProxyImpl target = createSessionProxy();
+
+        // when
+        target.reportConnectionType(ConnectionType.Lan);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionProxyImpl [sn=0, seq=0] reportConnectionType (ConnectionType) (Lan)");
+        verify(mockSession, times(1)).reportConnectionType(ConnectionType.Lan);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

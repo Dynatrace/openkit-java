@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.objects;
 
+import com.dynatrace.openkit.api.ConnectionType;
 import com.dynatrace.openkit.api.OpenKit;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
@@ -53,6 +54,21 @@ public enum NullSession implements Session {
 
     @Override
     public void reportCrash(Throwable throwable) {
+        // intentionally left empty, due to NullObject pattern
+    }
+
+    @Override
+    public void reportNetworkTechnology(String technology) {
+        // intentionally left empty, due to NullObject pattern
+    }
+
+    @Override
+    public void reportConnectionType(ConnectionType connectionType) {
+        // intentionally left empty, due to NullObject pattern
+    }
+
+    @Override
+    public void reportCarrier(String carrier) {
         // intentionally left empty, due to NullObject pattern
     }
 

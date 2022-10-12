@@ -58,6 +58,8 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
 
     private int sessionSequenceNumber;
 
+    private final SupplementaryBasicData supplementaryBasicData;
+
     SessionCreatorImpl(SessionCreatorInput input, String clientIpAddress) {
         this.logger = input.getLogger();
         this.openKitConfiguration = input.getOpenKitConfiguration();
@@ -70,6 +72,8 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
         this.serverId = input.getCurrentServerId();
         this.continuousSessionIdProvider = input.getSessionIdProvider();
         this.continuousRandomGenerator = new DefaultRandomNumberGenerator();
+        this.supplementaryBasicData = new SupplementaryBasicDataImpl();
+
 
         initializeFixedNumberProviders();
     }
@@ -88,7 +92,7 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
         );
 
         Beacon beacon = new Beacon(this, configuration);
-        SessionImpl session = new SessionImpl(logger, parent, beacon);
+        SessionImpl session = new SessionImpl(logger, parent, beacon, supplementaryBasicData);
 
         sessionSequenceNumber++;
 
@@ -143,5 +147,10 @@ public class SessionCreatorImpl implements SessionCreator, BeaconInitializer {
     @Override
     public RandomNumberGenerator getRandomNumberGenerator() {
         return fixedRandomNumberGenerator;
+    }
+
+    @Override
+    public SupplementaryBasicData getSupplementaryBasicData() {
+        return supplementaryBasicData;
     }
 }

@@ -87,6 +87,34 @@ public interface Session extends Closeable {
     void reportCrash(Throwable throwable);
 
     /**
+     * Reports the network technology in use (e.g. 2G, 3G, 802.11x, offline, ...)
+     * Use {@code null} to clear the value again and it will no longer be sent with the next beacon.
+     *
+     * @param technology the used network technology
+     */
+    void reportNetworkTechnology(String technology);
+
+    /**
+     * Reports the type of connection with which the device is connected to the network.
+     * Use {@code null} to clear the value again and it will no longer be sent with the next beacon.
+     *
+     * @param connectionType the type of connection
+     */
+    void reportConnectionType(ConnectionType connectionType);
+
+    /**
+     * Reports the name of the cellular network carrier.
+     * Use {@code null} to clear the value again and it will no longer be sent with the next beacon.
+     *
+     * <p>
+     * The given value will be truncated to 250 characters.
+     * </p>
+     *
+     * @param carrier the cellular network carrier
+     */
+    void reportCarrier(String carrier);
+
+    /**
      * Traces a web request - which is provided as a URLConnection - and allows adding timing information to this request.
      * If the web request is continued on a server-side Agent (e.g. Java, .NET, ...) this Session will be correlated to
      * the resulting server-side PurePath.

@@ -18,6 +18,7 @@ package com.dynatrace.openkit.protocol;
 
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.core.caching.BeaconCache;
+import com.dynatrace.openkit.core.objects.SupplementaryBasicData;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.SessionIDProvider;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
@@ -68,4 +69,9 @@ public interface BeaconInitializer {
      * Returns the {@link RandomNumberGenerator} to obtain random numbers (e.g. for randomizing device IDs)
      */
     RandomNumberGenerator getRandomNumberGenerator();
+
+    /**
+     * Returns the {@link SupplementaryBasicData} to obtain additional mutable basic data
+     */
+    SupplementaryBasicData getSupplementaryBasicData();
 }

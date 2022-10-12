@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.objects;
 
+import com.dynatrace.openkit.api.ConnectionType;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.WebRequestTracer;
@@ -62,6 +63,7 @@ public class SessionImplTest {
     private OpenKitComposite mockParent;
     private Beacon mockBeacon;
     private AdditionalQueryParameters mockAdditionalParameters;
+    private SupplementaryBasicData mockSupplementaryData;
 
     @Before
     public void setUp() {
@@ -77,6 +79,7 @@ public class SessionImplTest {
         mockBeacon = mock(Beacon.class);
 
         mockAdditionalParameters = mock(AdditionalQueryParameters.class);
+        mockSupplementaryData = mock(SupplementaryBasicData.class);
     }
 
     @Test
@@ -388,6 +391,115 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).debug(
                 "SessionImpl [sn=0] reportCrash(" + crash + ")");
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// report mutable supplementary basic data tests
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void reportEmptyNetworkTechnology() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportNetworkTechnology("");
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] reportNetworkTechnology (String): technology must be null or non-empty string");
+        verify(mockSupplementaryData, never()).setNetworkTechnology(anyString());
+    }
+
+    @Test
+    public void reportNullNetworkTechnology() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportNetworkTechnology(null);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportNetworkTechnology (String) (null)");
+        verify(mockSupplementaryData, times(1)).setNetworkTechnology(null);
+    }
+
+    @Test
+    public void reportValidNetworkTechnology() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportNetworkTechnology("Test");
+
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportNetworkTechnology (String) (Test)");
+        verify(mockSupplementaryData, times(1)).setNetworkTechnology("Test");
+    }
+
+    @Test
+    public void reportEmptyCarrier() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportCarrier("");
+
+        verify(mockLogger, times(1)).warning(
+                "SessionImpl [sn=0] reportCarrier (String): carrier must be null or non-empty string");
+        verify(mockSupplementaryData, never()).setCarrier(anyString());
+    }
+
+    @Test
+    public void reportNullCarrier() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportCarrier(null);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportCarrier (String) (null)");
+        verify(mockSupplementaryData, times(1)).setCarrier(null);
+    }
+
+    @Test
+    public void reportValidCarrier() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportCarrier("Test");
+
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportCarrier (String) (Test)");
+        verify(mockSupplementaryData, times(1)).setCarrier("Test");
+    }
+
+    @Test
+    public void reportNullConnectionType() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportConnectionType(null);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportConnectionType (ConnectionType) (null)");
+        verify(mockSupplementaryData, times(1)).setConnectionType(null);
+    }
+
+    @Test
+    public void reportValidConnectionType() {
+        // given
+        SessionImpl target = createSession().build();
+
+        // when
+        target.reportConnectionType(ConnectionType.Lan);
+
+        verify(mockLogger, times(1)).debug(
+                "SessionImpl [sn=0] reportConnectionType (ConnectionType) (Lan)");
+        verify(mockSupplementaryData, times(1)).setConnectionType(ConnectionType.Lan);
+    }
+
 
     @Test
     public void sendBizEventWithNullEventType() {
@@ -1387,6 +1499,7 @@ public class SessionImplTest {
         builder.logger = mockLogger;
         builder.parent = mockParent;
         builder.beacon = mockBeacon;
+        builder.supplementaryBasicData = mockSupplementaryData;
 
         return builder;
     }
@@ -1395,6 +1508,7 @@ public class SessionImplTest {
         private Logger logger;
         private OpenKitComposite parent;
         private Beacon beacon;
+        private SupplementaryBasicData supplementaryBasicData;
 
         private SessionBuilder with(Logger logger) {
             this.logger = logger;
@@ -1411,8 +1525,13 @@ public class SessionImplTest {
             return this;
         }
 
+        private SessionBuilder with(SupplementaryBasicData supplementaryBasicData) {
+            this.supplementaryBasicData = supplementaryBasicData;
+            return this;
+        }
+
         private SessionImpl build() {
-            return new SessionImpl(logger, parent, beacon);
+            return new SessionImpl(logger, parent, beacon, supplementaryBasicData);
         }
     }
 }

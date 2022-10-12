@@ -16,6 +16,7 @@
 
 package com.dynatrace.openkit.core.objects;
 
+import com.dynatrace.openkit.api.ConnectionType;
 import com.dynatrace.openkit.api.Logger;
 import com.dynatrace.openkit.api.RootAction;
 import com.dynatrace.openkit.api.Session;
@@ -61,11 +62,15 @@ public class SessionImpl extends OpenKitComposite implements Session {
     /** the time when the session is to be ended (including a grace period from when the session was split by events) */
     private final AtomicLong splitByEventsGracePeriodEndTimeInMillis = new AtomicLong(-1);
 
-    SessionImpl(Logger logger, OpenKitComposite parent, Beacon beacon) {
+    /** Container for additional mutable basic data which can be set via session */
+    private final SupplementaryBasicData supplementaryBasicData;
+
+    SessionImpl(Logger logger, OpenKitComposite parent, Beacon beacon, SupplementaryBasicData supplementaryBasicData) {
         this.state = new SessionStateImpl(this);
         this.logger = logger;
         this.parent = parent;
         this.beacon = beacon;
+        this.supplementaryBasicData = supplementaryBasicData;
 
         beacon.startSession();
     }
@@ -137,6 +142,43 @@ public class SessionImpl extends OpenKitComposite implements Session {
                 beacon.reportCrash(throwable);
             }
         }
+    }
+
+    @Override
+    public void reportNetworkTechnology(String technology) {
+        if (technology != null && technology.isEmpty()) {
+            logger.warning(this + "reportNetworkTechnology (String): technology must be null or non-empty string");
+            return;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportNetworkTechnology (String) (" + technology + ")");
+        }
+
+        supplementaryBasicData.setNetworkTechnology(technology);
+    }
+
+    @Override
+    public void reportConnectionType(ConnectionType connectionType) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportConnectionType (ConnectionType) (" + connectionType + ")");
+        }
+
+        supplementaryBasicData.setConnectionType(connectionType);
+    }
+
+    @Override
+    public void reportCarrier(String carrier) {
+        if (carrier != null && carrier.isEmpty()) {
+            logger.warning(this + "reportCarrier (String): carrier must be null or non-empty string");
+            return;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(this + "reportCarrier (String) (" + carrier + ")");
+        }
+
+        supplementaryBasicData.setCarrier(carrier);
     }
 
     @Override
