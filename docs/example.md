@@ -279,7 +279,7 @@ For more information on business events, see [dynatrace documentation](https://w
 Map <String, JSONValue> attributes = new HashMap<String, JSONValue>();
 attributes.put("event.name", JSONStringValue.fromString("Confirmed Booking"));
 attributes.put("screen", JSONStringValue.fromString("booking-confirmation"));
-attributes.put("product", JSONStringValue.fromString("Hotel Passy Eiffel"));
+attributes.put("product", JSONStringValue.fromString("Danube Anna Hotel"));
 attributes.put("amount", JSONNumberValue.fromDouble(358.35));
 attributes.put("currency", JSONStringValue.fromString("USD"));
 attributes.put("reviewScore", JSONNumberValue.fromDouble(4.8));
