@@ -46,13 +46,14 @@ public class EventPayloadBuilderTest {
     }
 
     @Test
-    public void removingReservedValuesAtInitializing() {
+    public void removingReservedInternalValues() {
         HashMap<String, JSONValue> attributes = new HashMap<>();
         attributes.put("dt", JSONStringValue.fromString("Removed"));
         attributes.put("dt.test", JSONStringValue.fromString("Removed"));
         attributes.put("event.kind", JSONStringValue.fromString("Override"));
 
         EventPayloadBuilder builder = new EventPayloadBuilder(mockLogger, attributes);
+        builder.cleanReservedInternalAttributes();
         assertTrue("Attribute \"event.kind\" was not found in the builder.", isStringAvailable(builder.build(), "\"event.kind\":\"Override\""));
         assertFalse("Attribute \"dt\" was wrongly found inside of the builder.", isStringAvailable(builder.build(), "\"dt\":\"Removed\""));
         assertFalse("Attribute \"dt.test\" was wrongly found inside of the builder.", isStringAvailable(builder.build(), "\"dt.test\":\"Removed\""));

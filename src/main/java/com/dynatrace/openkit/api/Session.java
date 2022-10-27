@@ -141,6 +141,9 @@ public interface Session extends Closeable {
      * 
      * With sendBizEvent, you can report a business event. These standalone events are being sent detached
      * from user actions or sessions.
+     * 
+     * Note: The 'dt' key, as well as all 'dt.' prefixed keys are considered reserved by Dynatrace
+     * and will be stripped from the passed in attributes.
      *
      * Note: Business events are only supported on Dynatrace SaaS deployments currently.
      *

@@ -854,9 +854,7 @@ public class Beacon {
         return response;
     }
 
-    private EventPayloadBuilder generateSendEventPayload(Map<String, JSONValue> attributes) {
-        EventPayloadBuilder builder = new EventPayloadBuilder(logger, attributes);
-
+    private void generateSendEventPayload(EventPayloadBuilder builder) {
         builder.addOverridableAttribute(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(timingProvider.provideTimestampInNanoseconds()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(deviceID))
@@ -867,8 +865,6 @@ public class Beacon {
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MODEL_IDENTIFIER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getModelID()))
                 .addOverridableAttribute(EventPayloadAttributes.EVENT_PROVIDER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()));
-
-        return builder;
     }
 
     private void sendEventPayload(EventPayloadBuilder builder) {
@@ -902,9 +898,16 @@ public class Beacon {
             return;
         }
 
-        EventPayloadBuilder builder = generateSendEventPayload(attributes);
-        builder.addNonOverridableAttribute("event.type", JSONStringValue.fromString(type))
-                .addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ));
+        EventPayloadBuilder builder = new EventPayloadBuilder(logger, attributes);
+        builder.addNonOverridableAttribute("event.type", JSONStringValue.fromString(type));
+        JSONNumberValue sizeAttribute = JSONNumberValue.fromLong(builder.build().getBytes(StandardCharsets.UTF_8).length);
+
+        builder.cleanReservedInternalAttributes()
+                .addNonOverridableAttribute("dt.rum.custom_attributes_size", sizeAttribute);
+
+        generateSendEventPayload(builder);
+
+        builder.addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ));
 
         if (attributes != null && attributes.containsKey("event.name")) {
             builder.addNonOverridableAttribute("event.name", attributes.get("event.name"));
@@ -928,7 +931,10 @@ public class Beacon {
             return;
         }
 
-        EventPayloadBuilder builder = generateSendEventPayload(attributes);
+        EventPayloadBuilder builder = new EventPayloadBuilder(logger, attributes);
+        builder.cleanReservedInternalAttributes();
+        generateSendEventPayload(builder);
+
         builder.addNonOverridableAttribute("event.name", JSONStringValue.fromString(name))
                 .addOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_RUM));
 

@@ -17,9 +17,7 @@
 package com.dynatrace.openkit.core.objects;
 
 import com.dynatrace.openkit.api.Logger;
-import com.dynatrace.openkit.util.json.objects.JSONArrayValue;
 import com.dynatrace.openkit.util.json.objects.JSONObjectValue;
-import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.util.*;
@@ -30,12 +28,16 @@ public class EventPayloadBuilder {
     private final Logger logger;
 
     /** Map containing attributes for sendEvent API */
-    private final Map<String, JSONValue> attributes = new HashMap<>();
+    private final Map<String, JSONValue> attributes;
 
     public EventPayloadBuilder(Logger logger, Map<String, JSONValue> attributes) {
         this.logger = logger;
 
-        initializeInternalAttributes(attributes);
+        if(attributes == null) {
+            this.attributes = new HashMap<>();
+        } else {
+            this.attributes = new HashMap<>(attributes);
+        }
     }
 
     public EventPayloadBuilder addOverridableAttribute(String key, JSONValue value) {
@@ -64,22 +66,28 @@ public class EventPayloadBuilder {
     }
 
     /**
-     * Initialize the internal attribute Map and filter out the reserved internal keys already
-     *
-     * @param extAttributes External attributes coming from the API
+     * Removes reservered internal attributes from the provided attributes
      */
-    public void initializeInternalAttributes(Map<String, JSONValue> extAttributes) {
-        if(extAttributes != null){
-            for (Map.Entry<String, JSONValue> entry : extAttributes.entrySet()) {
-                if (isReservedForInternalAttributes(entry.getKey())) {
-                    logger.warning("EventPayloadBuilder initializeInternalAttributes: " + entry.getKey() + " is reserved for internal values!");
-                } else {
-                    this.attributes.put(entry.getKey(), entry.getValue());
-                }
+    public EventPayloadBuilder cleanReservedInternalAttributes() {
+        Iterator<String> it = this.attributes.keySet().iterator();
+
+        while (it.hasNext()) {
+            String key = it.next();
+
+            if (isReservedForInternalAttributes(key)) {
+                logger.warning("EventPayloadBuilder cleanReservedInternalAttributes: " + key + " is reserved for internal values!");
+                it.remove();
             }
         }
+
+        return this;
     }
 
+    /**
+     * Checks if an attribute is actually reserved for internal purpose 
+     * @param key Key to check
+     * @return True means the key is in use for internal purpose
+     */
     public static boolean isReservedForInternalAttributes(String key) {
         return (key.equals("dt") || key.startsWith("dt."));
     }
