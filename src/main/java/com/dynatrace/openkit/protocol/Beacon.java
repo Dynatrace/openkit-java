@@ -857,8 +857,8 @@ public class Beacon {
     private void generateSendEventPayload(EventPayloadBuilder builder) {
         builder.addOverridableAttribute(EventPayloadAttributes.TIMESTAMP, JSONNumberValue.fromLong(timingProvider.provideTimestampInNanoseconds()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
-                .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONNumberValue.fromLong(deviceID))
-                .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONNumberValue.fromLong(getSessionNumber()))
+                .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONStringValue.fromString(String.valueOf(deviceID)))
+                .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONStringValue.fromString(String.valueOf(getSessionNumber())))
                 .addNonOverridableAttribute("dt.rum.schema_version", JSONStringValue.fromString("1.0"))
                 .addOverridableAttribute(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getApplicationVersion()))
                 .addOverridableAttribute(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getOperatingSystem()))
