@@ -839,7 +839,7 @@ public class Beacon {
             }
 
             // send the request
-            response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon, additionalParameters);
+            response = httpClient.sendBeaconRequest(clientIPAddress, encodedBeacon, additionalParameters, getSessionNumber());
             if (response == null || response.isErroneousResponse()) {
                 // error happened - but don't know what exactly
                 // reset the previously retrieved chunk (restore it in internal cache) & retry another time

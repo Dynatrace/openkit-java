@@ -31,6 +31,7 @@ public class HTTPClientConfiguration {
     private final SSLTrustManager sslTrustManager;
     private final HttpRequestInterceptor httpRequestInterceptor;
     private final HttpResponseInterceptor httpResponseInterceptor;
+    private final long deviceID;
 
     private HTTPClientConfiguration(Builder builder) {
         this.baseURL = builder.baseURL;
@@ -39,6 +40,7 @@ public class HTTPClientConfiguration {
         this.sslTrustManager = builder.sslTrustManager;
         this.httpRequestInterceptor = builder.httpRequestInterceptor;
         this.httpResponseInterceptor = builder.httpResponseInterceptor;
+        this.deviceID = builder.deviceID;
     }
 
     /**
@@ -65,7 +67,8 @@ public class HTTPClientConfiguration {
                 .withSSLTrustManager(openKitConfig.getSSLTrustManager())
                 .withServerID(openKitConfig.getDefaultServerID())
                 .withHttpRequestInterceptor(openKitConfig.getHttpRequestInterceptor())
-                .withHttpResponseInterceptor(openKitConfig.getHttpResponseInterceptor());
+                .withHttpResponseInterceptor(openKitConfig.getHttpResponseInterceptor())
+                .withDeviceID(openKitConfig.getDeviceID());
     }
 
     /**
@@ -81,7 +84,8 @@ public class HTTPClientConfiguration {
                 .withSSLTrustManager(httpClientConfig.getSSLTrustManager())
                 .withServerID(httpClientConfig.getServerID())
                 .withHttpRequestInterceptor(httpClientConfig.getHttpRequestInterceptor())
-                .withHttpResponseInterceptor(httpClientConfig.getHttpResponseInterceptor());
+                .withHttpResponseInterceptor(httpClientConfig.getHttpResponseInterceptor())
+                .withDeviceID(httpClientConfig.getDeviceID());
     }
 
     /**
@@ -133,6 +137,11 @@ public class HTTPClientConfiguration {
     }
 
     /**
+     * Returns the unique device identifier
+     */
+    public long getDeviceID() { return deviceID; }
+
+    /**
      * Builder class for building {@link HTTPClientConfiguration}.
      */
     public static final class Builder {
@@ -143,6 +152,7 @@ public class HTTPClientConfiguration {
         private SSLTrustManager sslTrustManager = null;
         private HttpRequestInterceptor httpRequestInterceptor = null;
         private HttpResponseInterceptor httpResponseInterceptor = null;
+        private long deviceID;
 
 
         public Builder withBaseURL(String baseURL) {
@@ -172,6 +182,11 @@ public class HTTPClientConfiguration {
 
         public Builder withHttpResponseInterceptor(HttpResponseInterceptor httpResponseInterceptor) {
             this.httpResponseInterceptor = httpResponseInterceptor;
+            return this;
+        }
+
+        public Builder withDeviceID(long deviceID) {
+            this.deviceID = deviceID;
             return this;
         }
 

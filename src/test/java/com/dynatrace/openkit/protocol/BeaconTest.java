@@ -217,7 +217,7 @@ public class BeaconTest {
         // then
         ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
         verify(httpClient, times(1))
-                .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters));
+                .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters), anyInt());
 
         String capturedIp = ipCaptor.getValue();
         assertThat(capturedIp, is(nullValue()));
@@ -248,7 +248,7 @@ public class BeaconTest {
         // then
         ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
         verify(httpClient, times(1))
-                .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters));
+                .sendBeaconRequest(ipCaptor.capture(), any(byte[].class), eq(mockAdditionalParameters), anyInt());
 
         String capturedIp = ipCaptor.getValue();
         assertThat(capturedIp, is(nullValue()));
@@ -3726,7 +3726,7 @@ public class BeaconTest {
                 responseCode,
                 Collections.<String, List<String>>emptyMap()
         );
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class), anyInt()))
                 .thenReturn(successResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
@@ -3737,7 +3737,7 @@ public class BeaconTest {
         // then
         assertThat(response, notNullValue());
         assertThat(response.getResponseCode(), is(responseCode));
-        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class), eq(mockAdditionalParameters));
+        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class), eq(mockAdditionalParameters), anyInt());
     }
 
     @Test
@@ -3753,7 +3753,7 @@ public class BeaconTest {
         HTTPClient httpClient = mock(HTTPClient.class);
         int responseCode = 418;
         StatusResponse errorResponse = StatusResponse.createErrorResponse(mockLogger, responseCode);
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class), anyInt()))
                 .thenReturn(errorResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
@@ -3764,7 +3764,7 @@ public class BeaconTest {
         // then
         assertThat(response, notNullValue());
         assertThat(response.getResponseCode(), is(responseCode));
-        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class), eq(mockAdditionalParameters));
+        verify(httpClient, times(1)).sendBeaconRequest(eq(ipAddress), any(byte[].class), eq(mockAdditionalParameters), anyInt());
     }
 
     @Test
@@ -3831,7 +3831,7 @@ public class BeaconTest {
             responseCode,
             Collections.<String, List<String>>emptyMap()
         );
-        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+        when(httpClient.sendBeaconRequest(any(String.class), any(byte[].class), any(AdditionalQueryParameters.class), anyInt()))
             .thenReturn(firstResponse, secondResponse);
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(httpClient);
 
@@ -3844,7 +3844,7 @@ public class BeaconTest {
         assertThat(response, is(notNullValue()));
         assertThat(response, is(sameInstance(secondResponse)));
 
-        verify(httpClient, times(2)).sendBeaconRequest(any(String.class), any(byte[].class), eq(mockAdditionalParameters));
+        verify(httpClient, times(2)).sendBeaconRequest(any(String.class), any(byte[].class), eq(mockAdditionalParameters), anyInt());
 
         verify(mockBeaconCache, times(1)).prepareDataForSending(any(BeaconKey.class));
         verify(mockBeaconCache, times(3)).hasDataForSending(any(BeaconKey.class));

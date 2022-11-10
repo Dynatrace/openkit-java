@@ -85,6 +85,7 @@ public class HTTPClient {
     private static final String QUERY_KEY_RESPONSE_TYPE = "resp";
     private static final String QUERY_KEY_CONFIG_TIMESTAMP = "cts";
     private static final String QUERY_KEY_NEW_SESSION = "ns";
+    private static final String QUERY_KEY_SESSION_IDENTIFIER = "si";
 
     // additional reserved characters for URL encoding
     private static final char[] QUERY_RESERVED_CHARACTERS = {'_'};
@@ -100,6 +101,7 @@ public class HTTPClient {
     private final String newSessionURL;
 
     private final int serverID;
+    private final long deviceID;
 
     private final SSLTrustManager sslTrustManager;
 
@@ -118,6 +120,7 @@ public class HTTPClient {
         sslTrustManager = configuration.getSSLTrustManager();
         httpRequestInterceptor = configuration.getHttpRequestInterceptor();
         httpResponseInterceptor = configuration.getHttpResponseInterceptor();
+        deviceID = configuration.getDeviceID();
     }
 
     // *** public methods ***
@@ -143,8 +146,11 @@ public class HTTPClient {
     public StatusResponse sendBeaconRequest(
             String clientIPAddress,
             byte[] data,
-            AdditionalQueryParameters additionalParameters) {
+            AdditionalQueryParameters additionalParameters,
+            int sessionNumber) {
         String url = appendAdditionalQueryParameters(monitorURL, additionalParameters);
+        url = appendSessionIdentifierParameter(url, String.valueOf(sessionNumber), String.valueOf(deviceID));
+
         StatusResponse response = sendRequest(RequestType.BEACON, url, clientIPAddress, data, "POST");
         return response == null
                 ? StatusResponse.createErrorResponse(logger, Integer.MAX_VALUE)
@@ -367,6 +373,13 @@ public class HTTPClient {
 
         StringBuilder builder = new StringBuilder(baseUrl);
         appendQueryParam(builder, QUERY_KEY_CONFIG_TIMESTAMP, Long.toString(parameters.getConfigurationTimestamp()));
+
+        return builder.toString();
+    }
+
+    private static String appendSessionIdentifierParameter(String baseUrl, String sessionNumber, String deviceID) {
+        StringBuilder builder = new StringBuilder(baseUrl);
+        appendQueryParam(builder, QUERY_KEY_SESSION_IDENTIFIER, deviceID + "_" + sessionNumber);
 
         return builder.toString();
     }

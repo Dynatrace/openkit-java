@@ -46,8 +46,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -80,7 +79,7 @@ public class BeaconSendingContextTest {
                 200,
                 Collections.<String, List<String>>emptyMap()
         );
-        when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class), any(AdditionalQueryParameters.class)))
+        when(httpClient.sendBeaconRequest(isA(String.class), any(byte[].class), any(AdditionalQueryParameters.class), anyInt()))
                 .thenReturn(statusResponse);
 
         httpClientProvider = mock(HTTPClientProvider.class);

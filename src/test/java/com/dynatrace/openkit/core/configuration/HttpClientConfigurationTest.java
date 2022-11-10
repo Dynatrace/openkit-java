@@ -135,6 +135,22 @@ public class HttpClientConfigurationTest {
     }
 
     @Test
+    public void instanceFromOpenKitConfigTakesOverDeviceId() {
+        // given
+        OpenKitConfiguration openKitConfig = mock(OpenKitConfiguration.class);
+        when(openKitConfig.getDeviceID()).thenReturn(42l);
+
+        HTTPClientConfiguration target = HTTPClientConfiguration.from(openKitConfig);
+
+        // when
+        long obtained = target.getDeviceID();
+
+        // then
+        verify(openKitConfig, times(1)).getDeviceID();
+        assertThat(obtained, is(equalTo(42l)));
+    }
+
+    @Test
     public void builderFromHttpClientConfigTakesOverBaseUrl() {
         // given
         String baseUrl = "https://localhost:9999/1";
@@ -225,6 +241,23 @@ public class HttpClientConfigurationTest {
     }
 
     @Test
+    public void builderFromHttpClientConfigTakesDeviceId() {
+        // given
+        HTTPClientConfiguration httpConfig = mock(HTTPClientConfiguration.class);
+        when(httpConfig.getDeviceID()).thenReturn(42l);
+
+        // when
+        HTTPClientConfiguration target = HTTPClientConfiguration.modifyWith(httpConfig).build();
+
+        // when
+        long obtained = target.getDeviceID();
+
+        // then
+        verify(httpConfig, times(1)).getDeviceID();
+        assertThat(obtained, is(equalTo(42l)));
+    }
+
+    @Test
     public void emptyBuilderCreatesEmptyInstance() {
         // given
         HTTPClientConfiguration.Builder target = new HTTPClientConfiguration.Builder();
@@ -237,6 +270,7 @@ public class HttpClientConfigurationTest {
         assertThat(obtained.getApplicationID(), is(nullValue()));
         assertThat(obtained.getSSLTrustManager(), is(nullValue()));
         assertThat(obtained.getServerID(), is(equalTo(-1)));
+        assertThat(obtained.getDeviceID(), is(equalTo(0l)));
     }
 
     @Test
@@ -317,5 +351,18 @@ public class HttpClientConfigurationTest {
 
         // then
         assertThat(obtained.getHttpResponseInterceptor(), is(sameInstance(httpResponseInterceptor)));
+    }
+
+    @Test
+    public void builderWithDeviceIdPropagatesToInstance() {
+        // given
+        HTTPClientConfiguration.Builder target = new HTTPClientConfiguration.Builder()
+                .withDeviceID(42l);
+
+        // when
+        HTTPClientConfiguration obtained = target.build();
+
+        // then
+        assertThat(obtained.getDeviceID(), is(equalTo(42l)));
     }
 }
