@@ -859,7 +859,7 @@ public class Beacon {
                 .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONStringValue.fromString(String.valueOf(deviceID)))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONStringValue.fromString(String.valueOf(getSessionNumber())))
-                .addNonOverridableAttribute("dt.rum.schema_version", JSONStringValue.fromString("1.0"))
+                .addNonOverridableAttribute("dt.rum.schema_version", JSONStringValue.fromString("1.1"))
                 .addOverridableAttribute(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getApplicationVersion()))
                 .addOverridableAttribute(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getOperatingSystem()))
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))
@@ -908,12 +908,6 @@ public class Beacon {
         generateSendEventPayload(builder);
 
         builder.addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ));
-
-        if (attributes != null && attributes.containsKey("event.name")) {
-            builder.addNonOverridableAttribute("event.name", attributes.get("event.name"));
-        } else {
-            builder.addNonOverridableAttribute("event.name", JSONStringValue.fromString(type));
-        }
 
         sendEventPayload(builder);
     }
