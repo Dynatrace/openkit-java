@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v2.2.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.0.0...HEAD)
+
+## 3.0.0 [Release date: 2022-12-06]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.0.0)
 
 ### Added
 - User-Agent header for http requests
