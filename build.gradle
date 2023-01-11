@@ -27,7 +27,7 @@ plugins {
     id 'signing'
     id 'com.github.hierynomus.license' version '0.15.0'
     id 'ru.vyarus.animalsniffer' version '1.5.3'
-    id 'com.github.kt3k.coveralls' version '2.8.2'
+    id 'com.github.nbaztec.coveralls-jacoco' version '1.2.15'
     id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
 }
 
@@ -142,7 +142,6 @@ task javadocJar(type: Jar) {
     from javadoc
 }
 
-apply from: "gradle/coverage.gradle"
 apply from: "gradle/publish.gradle"
 
 // run each test for every JAVA_HOME_* environment which is specified and set as environment
