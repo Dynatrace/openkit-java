@@ -142,6 +142,7 @@ task javadocJar(type: Jar) {
     from javadoc
 }
 
+apply from: "gradle/coverage.gradle"
 apply from: "gradle/publish.gradle"
 
 // run each test for every JAVA_HOME_* environment which is specified and set as environment

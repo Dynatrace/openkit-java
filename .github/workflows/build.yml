@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8', '11', '17' ]
+        java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} Build
 
     steps:
@@ -42,4 +42,4 @@ jobs:
     - name: Code Coverage
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      run: ./gradlew jacocoTestReport coverallsJacoco
+      run: ./gradlew test jacocoTestReport coverallsJacoco
