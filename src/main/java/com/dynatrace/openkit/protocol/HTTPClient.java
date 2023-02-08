@@ -249,7 +249,9 @@ public class HTTPClient {
         }
 
         connection.setRequestProperty("Content-Encoding", "gzip");
-        connection.setRequestProperty("Content-Length", String.valueOf(gzippedData.length));
+        connection.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
+        connection.setFixedLengthStreamingMode(gzippedData.length);
+
         connection.setDoOutput(true);
         OutputStream outputStream = null;
         try {
