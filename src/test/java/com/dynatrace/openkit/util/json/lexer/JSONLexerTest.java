@@ -19,7 +19,7 @@ package com.dynatrace.openkit.util.json.lexer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -32,6 +32,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -984,9 +986,9 @@ public class JSONLexerTest {
         Throwable t = new IOException("Does not work");
         Reader mockReader = mock(Reader.class);
         when(mockReader.read()).thenThrow(t);
-        when(mockReader.read(Matchers.any(char[].class))).thenThrow(t);
-        when(mockReader.read(Matchers.any(CharBuffer.class))).thenThrow(t);
-        when(mockReader.read(Matchers.any(char[].class), Matchers.anyInt(), Matchers.anyInt())).thenThrow(t);
+        when(mockReader.read(any(char[].class))).thenThrow(t);
+        when(mockReader.read(any(CharBuffer.class))).thenThrow(t);
+        when(mockReader.read(any(char[].class), anyInt(), anyInt())).thenThrow(t);
 
         expectedException.expect(LexerException.class);
         expectedException.expectMessage("IOException occurred");
@@ -1004,9 +1006,9 @@ public class JSONLexerTest {
         Throwable t = new IOException("Does not work");
         Reader mockReader = mock(Reader.class);
         when(mockReader.read()).thenThrow(t);
-        when(mockReader.read(Matchers.any(char[].class))).thenThrow(t);
-        when(mockReader.read(Matchers.any(CharBuffer.class))).thenThrow(t);
-        when(mockReader.read(Matchers.any(char[].class), Matchers.anyInt(), Matchers.anyInt())).thenThrow(t);
+        when(mockReader.read(any(char[].class))).thenThrow(t);
+        when(mockReader.read(any(CharBuffer.class))).thenThrow(t);
+        when(mockReader.read(any(char[].class), anyInt(), anyInt())).thenThrow(t);
 
         JSONLexer target = new JSONLexer(mockReader);
 

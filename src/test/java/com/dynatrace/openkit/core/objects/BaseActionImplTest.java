@@ -39,21 +39,21 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Matchers.endsWith;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyDouble;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.endsWith;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -1064,7 +1064,7 @@ public class BaseActionImplTest {
         target.leaveAction();
 
         // then
-        verifyZeroInteractions(beacon, openKitComposite);
+        verifyNoInteractions(beacon, openKitComposite);
     }
 
     @Test
@@ -1375,7 +1375,7 @@ public class BaseActionImplTest {
         target.cancelAction();
 
         // then
-        verifyZeroInteractions(beacon, openKitComposite);
+        verifyNoInteractions(beacon, openKitComposite);
     }
 
     @Test
@@ -1444,7 +1444,7 @@ public class BaseActionImplTest {
         // then
         assertThat(obtained, is(equalTo(30L)));
 
-        verifyZeroInteractions(beacon);
+        verifyNoInteractions(beacon);
     }
 
     private static final class StubBaseActionImpl extends BaseActionImpl {

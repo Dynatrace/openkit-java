@@ -31,6 +31,7 @@ import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -43,7 +44,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -162,7 +163,7 @@ public class OpenKitImplTest {
     @Test
     public void waitForInitCompletionWithTimeoutForwardsTheCallToTheBeaconSender() {
         // given
-        when(beaconSender.waitForInit(anyInt())).thenReturn(false, true);
+        when(beaconSender.waitForInit(ArgumentMatchers.anyLong())).thenReturn(false, true);
         OpenKitImpl target = createOpenKit().build();
 
         // when called first time
@@ -171,13 +172,14 @@ public class OpenKitImplTest {
         // then
         assertThat(obtained, is(false));
 
+        verify(beaconSender, times(1)).waitForInit(100L);
+
         // when called second time
         obtained = target.waitForInitCompletion(200L);
 
         // then
         assertThat(obtained, is(true));
 
-        verify(beaconSender, times(1)).waitForInit(100L);
         verify(beaconSender, times(1)).waitForInit(200L);
         verifyNoMoreInteractions(beaconSender);
     }

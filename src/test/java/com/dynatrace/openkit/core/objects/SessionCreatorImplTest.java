@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.junit.Assert.assertThat;
@@ -86,7 +86,7 @@ public class SessionCreatorImplTest {
 
         // then
         verify(mockInput, times(1)).getLogger();
-        verifyZeroInteractions(mockLogger);
+        verifyNoInteractions(mockLogger);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class SessionCreatorImplTest {
 
         // then
         verify(mockInput, times(1)).getOpenKitConfiguration();
-        verifyZeroInteractions(mockOpenKitConfiguration);
+        verifyNoInteractions(mockOpenKitConfiguration);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class SessionCreatorImplTest {
 
         // then
         verify(mockInput, times(1)).getPrivacyConfiguration();
-        verifyZeroInteractions(mockPrivacyConfiguration);
+        verifyNoInteractions(mockPrivacyConfiguration);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class SessionCreatorImplTest {
 
         // then
         verify(mockInput, times(1)).getBeaconCache();
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class SessionCreatorImplTest {
 
         // then
         verify(mockInput, times(1)).getThreadIdProvider();
-        verifyZeroInteractions(mockThreadIdProvider);
+        verifyNoInteractions(mockThreadIdProvider);
     }
 
     @Test
@@ -136,7 +136,7 @@ public class SessionCreatorImplTest {
 
         // then
         verify(mockInput, times(1)).getTimingProvider();
-        verifyZeroInteractions(mockTimingProvider);
+        verifyNoInteractions(mockTimingProvider);
     }
 
     @Test

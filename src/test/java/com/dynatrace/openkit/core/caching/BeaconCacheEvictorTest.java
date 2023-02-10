@@ -152,7 +152,7 @@ public class BeaconCacheEvictorTest {
 
                 return null;
             }
-        }).when(mockBeaconCache).addObserver(org.mockito.Matchers.any(Observer.class));
+        }).when(mockBeaconCache).addObserver(org.mockito.Mockito.any(Observer.class));
 
         doAnswer(new Answer<Void>() {
             @Override

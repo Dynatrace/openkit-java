@@ -29,6 +29,7 @@ import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 import java.io.IOException;
 import java.net.URLConnection;
@@ -40,12 +41,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Matchers.endsWith;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.endsWith;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -53,7 +54,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class SessionProxyImplTest {
@@ -990,7 +991,7 @@ public class SessionProxyImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionProxyImpl [sn=0, seq=0] sendBizEvent (String, Map): type must not be null or empty");
-        verify(mockSession, never()).sendBizEvent(anyString(), anyMap());
+        verify(mockSession, never()).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1003,7 +1004,7 @@ public class SessionProxyImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionProxyImpl [sn=0, seq=0] sendBizEvent (String, Map): type must not be null or empty");
-        verify(mockSession, never()).sendBizEvent(anyString(), anyMap());
+        verify(mockSession, never()).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1017,7 +1018,7 @@ public class SessionProxyImplTest {
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
                 "SessionProxyImpl [sn=0, seq=0] sendBizEvent(EventType" + ", {})");
-        verify(mockSession, times(1)).sendBizEvent(anyString(), anyMap());
+        verify(mockSession, times(1)).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1034,7 +1035,7 @@ public class SessionProxyImplTest {
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
                 "SessionProxyImpl [sn=0, seq=0] sendBizEvent(EventType" + ", " + attributes.toString() + ")");
-        verify(mockSession, times(1)).sendBizEvent(anyString(), anyMap());
+        verify(mockSession, times(1)).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1047,7 +1048,7 @@ public class SessionProxyImplTest {
         target.sendBizEvent("EventType", new HashMap<String, JSONValue>());
 
         // then
-        verify(mockSession, times(0)).sendBizEvent(anyString(), anyMap());
+        verify(mockSession, times(0)).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1099,7 +1100,7 @@ public class SessionProxyImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be null or empty");
-        verify(mockSession, never()).sendEvent(anyString(), anyMap());
+        verify(mockSession, never()).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1112,7 +1113,7 @@ public class SessionProxyImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionProxyImpl [sn=0, seq=0] sendEvent (String, Map): name must not be null or empty");
-        verify(mockSession, never()).sendEvent(anyString(), anyMap());
+        verify(mockSession, never()).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1129,7 +1130,7 @@ public class SessionProxyImplTest {
         verify(mockLogger, times(1)).isDebugEnabled();
         verify(mockLogger, times(1)).debug(
                 "SessionProxyImpl [sn=0, seq=0] sendEvent(EventName" + ", " + attributes.toString() + ")");
-        verify(mockSession, times(1)).sendEvent(anyString(), anyMap());
+        verify(mockSession, times(1)).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1142,7 +1143,7 @@ public class SessionProxyImplTest {
         target.sendEvent("eventName", new HashMap<String, JSONValue>());
 
         // then
-        verify(mockSession, times(0)).sendEvent(anyString(), anyMap());
+        verify(mockSession, times(0)).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -2022,7 +2023,7 @@ public class SessionProxyImplTest {
         // then
         verify(mockFirstConfig, times(1)).merge(mockSecondConfig);
         verifyNoMoreInteractions(mockFirstConfig);
-        verifyZeroInteractions(mockSecondConfig);
+        verifyNoInteractions(mockSecondConfig);
     }
 
     @Test
@@ -2062,7 +2063,7 @@ public class SessionProxyImplTest {
         target.onServerConfigurationUpdate(mockServerConfiguration);
 
         // then
-        verifyZeroInteractions(mockSessionWatchdog);
+        verifyNoInteractions(mockSessionWatchdog);
     }
 
     @Test
@@ -2082,7 +2083,7 @@ public class SessionProxyImplTest {
         target.onServerConfigurationUpdate(mockServerConfigTwo);
 
         // then
-        verifyZeroInteractions(mockSessionWatchdog);
+        verifyNoInteractions(mockSessionWatchdog);
     }
 
     @Test

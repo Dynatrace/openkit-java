@@ -27,6 +27,7 @@ import com.dynatrace.openkit.providers.HttpURLConnectionWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.io.BufferedReader;
@@ -51,8 +52,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -651,7 +652,7 @@ public class HTTPClientTest {
         target.sendStatusRequest(null);
 
         // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         assertThat(urlCaptor.getValue(), is(expectedUrl.toString()));
@@ -673,7 +674,7 @@ public class HTTPClientTest {
         target.sendStatusRequest(additionalQueryParameters);
 
         // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));
@@ -695,8 +696,8 @@ public class HTTPClientTest {
         // when
         target.sendStatusRequest(additionalQueryParameters);
 
-        // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        // they
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));
@@ -715,7 +716,7 @@ public class HTTPClientTest {
         target.sendNewSessionRequest(null);
 
         // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "ns", "1");
@@ -738,7 +739,7 @@ public class HTTPClientTest {
         target.sendNewSessionRequest(additionalQueryParameters);
 
         // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "ns", "1");
@@ -758,7 +759,7 @@ public class HTTPClientTest {
         target.sendBeaconRequest(null, null, null, 1);
 
         // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "si", "0%5F1");
@@ -781,7 +782,7 @@ public class HTTPClientTest {
         target.sendBeaconRequest(null, null, additionalQueryParameters, 1);
 
         // then
-        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), anyString(), any(byte[].class), anyString());
+        verify(target, times(1)).sendRequest(any(RequestType.class), urlCaptor.capture(), ArgumentMatchers.<String>any(), ArgumentMatchers.<byte[]>any(), anyString());
 
         StringBuilder expectedUrl = initializeBaseUrl();
         appendUrlParameter(expectedUrl, "cts", String.valueOf(timestamp));

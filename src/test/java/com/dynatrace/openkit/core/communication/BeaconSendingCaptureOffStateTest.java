@@ -29,8 +29,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -96,7 +96,7 @@ public class BeaconSendingCaptureOffStateTest {
         verify(mockContext, times(1)).disableCaptureAndClear();
 
         // also verify that lastStatusCheckTime was updated
-        verify(mockContext, times(1)).setLastStatusCheckTime(org.mockito.Matchers.anyLong());
+        verify(mockContext, times(1)).setLastStatusCheckTime(org.mockito.Mockito.anyLong());
         //verifyNoMoreInteractions(mockContext);
         verify(mockContext, times(1)).setNextState(isA(BeaconSendingCaptureOnState.class));
     }

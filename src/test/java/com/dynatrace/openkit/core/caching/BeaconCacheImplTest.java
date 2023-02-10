@@ -38,7 +38,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class BeaconCacheImplTest {
@@ -305,7 +305,7 @@ public class BeaconCacheImplTest {
         target.deleteCacheEntry(keyTwo);
 
         // then
-        verifyZeroInteractions(observer);
+        verifyNoInteractions(observer);
     }
 
     @Test
@@ -332,7 +332,7 @@ public class BeaconCacheImplTest {
         assertThat(target.getBeaconKeys(), containsInAnyOrder(keyOne, keyTwo));
         assertThat(target.getNumBytesInCache(), is(equalTo(cachedSize)));
 
-        verifyZeroInteractions(observer);
+        verifyNoInteractions(observer);
     }
 
     @Test
@@ -610,7 +610,7 @@ public class BeaconCacheImplTest {
 
         // then
         assertThat(target.getNumBytesInCache(), is(12L));
-        verifyZeroInteractions(observer);
+        verifyNoInteractions(observer);
     }
 
     @Test

@@ -32,7 +32,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class BeaconConfigurationTest {
@@ -151,7 +151,7 @@ public class BeaconConfigurationTest {
 
         // then
         assertThat(target.isServerConfigurationSet(), is(equalTo(false)));
-        verifyZeroInteractions(serverConfig);
+        verifyNoInteractions(serverConfig);
     }
 
     @Test
@@ -178,7 +178,7 @@ public class BeaconConfigurationTest {
         target.initializeServerConfiguration(null);
 
         // then
-        verifyZeroInteractions(updateCallback);
+        verifyNoInteractions(updateCallback);
         assertThat(target.getServerConfiguration(), is(equalTo(ServerConfiguration.DEFAULT)));
     }
 
@@ -193,7 +193,7 @@ public class BeaconConfigurationTest {
         target.initializeServerConfiguration(ServerConfiguration.DEFAULT);
 
         // then
-        verifyZeroInteractions(updateCallback);
+        verifyNoInteractions(updateCallback);
     }
 
     @Test
@@ -323,7 +323,7 @@ public class BeaconConfigurationTest {
         target.updateServerConfiguration(null);
 
         // then
-        verifyZeroInteractions(httpConfig);
+        verifyNoInteractions(httpConfig);
         assertThat(target.isServerConfigurationSet(), is(false));
         assertThat(target.getServerConfiguration(), is(sameInstance(ServerConfiguration.DEFAULT)));
     }
@@ -356,7 +356,7 @@ public class BeaconConfigurationTest {
         target.updateServerConfiguration(serverConfig);
 
         // then
-        verifyZeroInteractions(callback);
+        verifyNoInteractions(callback);
     }
 
     @Test

@@ -16,7 +16,7 @@
  */
 package com.dynatrace.openkit.core;
 
-import static org.mockito.Matchers.endsWith;
+import static org.mockito.Mockito.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;

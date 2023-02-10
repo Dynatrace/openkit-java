@@ -32,7 +32,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class HttpRequestHttpURLConnectionAdapterTest {
@@ -135,7 +135,7 @@ public class HttpRequestHttpURLConnectionAdapterTest {
         target.setHeader(null, requestHeaderValue);
 
         // then
-        verifyZeroInteractions(mockUrlConnection);
+        verifyNoInteractions(mockUrlConnection);
     }
 
     @Test
@@ -164,7 +164,7 @@ public class HttpRequestHttpURLConnectionAdapterTest {
         }
 
         // then
-        verifyZeroInteractions(mockUrlConnection);
+        verifyNoInteractions(mockUrlConnection);
 
         // when using all lower case
         for (String restrictedHeaderName : restrictedHeaders) {
@@ -172,7 +172,7 @@ public class HttpRequestHttpURLConnectionAdapterTest {
         }
 
         // then
-        verifyZeroInteractions(mockUrlConnection);
+        verifyNoInteractions(mockUrlConnection);
 
         // when using all upper case
         for (String restrictedHeaderName : restrictedHeaders) {
@@ -180,6 +180,6 @@ public class HttpRequestHttpURLConnectionAdapterTest {
         }
 
         // then
-        verifyZeroInteractions(mockUrlConnection);
+        verifyNoInteractions(mockUrlConnection);
     }
 }

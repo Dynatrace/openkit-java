@@ -28,6 +28,7 @@ import com.dynatrace.openkit.util.json.objects.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 import java.io.IOException;
 import java.net.URLConnection;
@@ -41,7 +42,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -266,7 +267,7 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
-        verifyZeroInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockBeacon);
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -282,7 +283,7 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] reportCrash: errorName must not be null or empty");
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
-        verifyZeroInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockBeacon);
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -357,7 +358,7 @@ public class SessionImplTest {
         verify(mockLogger, times(1)).warning("SessionImpl [sn=0] reportCrash: throwable must not be null");
         verify(mockBeacon, times(1)).getSessionNumber();
         verify(mockBeacon, times(1)).startSession();
-        verifyZeroInteractions(mockBeacon);
+        verifyNoMoreInteractions(mockBeacon);
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -511,7 +512,7 @@ public class SessionImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendBizEvent (String, Map): type must not be null or empty");
-        verify(mockBeacon, never()).sendBizEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+        verify(mockBeacon, never()).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -524,7 +525,7 @@ public class SessionImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendBizEvent (String, Map): type must not be null or empty");
-        verify(mockBeacon, never()).sendBizEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+        verify(mockBeacon, never()).sendBizEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -600,7 +601,7 @@ public class SessionImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
-        verify(mockBeacon, never()).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+        verify(mockBeacon, never()).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -613,7 +614,7 @@ public class SessionImplTest {
 
         verify(mockLogger, times(1)).warning(
                 "SessionImpl [sn=0] sendEvent (String, Map): name must not be null or empty");
-        verify(mockBeacon, never()).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+        verify(mockBeacon, never()).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test
@@ -1076,7 +1077,7 @@ public class SessionImplTest {
         target.sendEvent("eventName", new HashMap<String, JSONValue>());
 
         // then
-        verify(mockBeacon, times(0)).sendEvent(anyString(), anyMapOf(String.class, JSONValue.class));
+        verify(mockBeacon, times(0)).sendEvent(anyString(), ArgumentMatchers.<String, JSONValue>anyMap());
     }
 
     @Test

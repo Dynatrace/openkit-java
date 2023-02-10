@@ -20,11 +20,12 @@ import com.dynatrace.openkit.core.objects.SessionProxyImpl;
 import com.dynatrace.openkit.providers.TimingProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -487,7 +488,7 @@ public class SessionWatchdogContextTest {
     @Test
     public void executeRequestsShutdownIfInterruptedDuringSleep() throws InterruptedException {
         // given
-        doThrow(new InterruptedException()).when(mockTimingProvider).sleep(anyInt());
+        doThrow(new InterruptedException()).when(mockTimingProvider).sleep(ArgumentMatchers.anyLong());
 
         SessionWatchdogContext target = createContext();
         assertThat(target.isShutdownRequested(), is(false));

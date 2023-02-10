@@ -46,13 +46,15 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class BeaconSendingContextTest {
@@ -116,7 +118,7 @@ public class BeaconSendingContextTest {
     public void executeCurrentStateCallsExecuteOnCurrentState() {
         // given
         BeaconSendingContext target = createBeaconSendingContext().with(mockState).build();
-        verifyZeroInteractions(mockState);
+        verifyNoInteractions(mockState);
 
         // when
         target.executeCurrentState();
@@ -314,7 +316,7 @@ public class BeaconSendingContextTest {
         when(httpClientProvider.createClient(any(HTTPClientConfiguration.class))).thenReturn(mockClient);
 
         BeaconSendingContext target = createBeaconSendingContext().build();
-        verifyZeroInteractions(httpClientConfig, httpClientProvider);
+        verifyNoInteractions(httpClientConfig, httpClientProvider);
 
         // when
         HTTPClient obtained = target.getHTTPClient();
@@ -325,7 +327,7 @@ public class BeaconSendingContextTest {
 
         verify(httpClientProvider, times(1)).createClient(httpClientConfig);
         verifyNoMoreInteractions(httpClientProvider);
-        verifyZeroInteractions(mockClient, httpClientConfig);
+        verifyNoInteractions(mockClient, httpClientConfig);
     }
 
     @Test
@@ -335,7 +337,7 @@ public class BeaconSendingContextTest {
         when(timingProvider.provideTimestampInMilliseconds()).thenReturn(timeStamp);
 
         BeaconSendingContext target = createBeaconSendingContext().build();
-        verifyZeroInteractions(timingProvider);
+        verifyNoInteractions(timingProvider);
 
         // when
         long obtained = target.getCurrentTimestamp();
@@ -350,7 +352,7 @@ public class BeaconSendingContextTest {
     public void sleepDefaultTime() throws InterruptedException {
         // given
         BeaconSendingContext target = createBeaconSendingContext().build();
-        verifyZeroInteractions(timingProvider);
+        verifyNoInteractions(timingProvider);
 
         // when
         target.sleep();
@@ -365,7 +367,7 @@ public class BeaconSendingContextTest {
         // given
         long sleepTime = 1234L;
         BeaconSendingContext target = createBeaconSendingContext().build();
-        verifyZeroInteractions(timingProvider);
+        verifyNoInteractions(timingProvider);
 
         // when
         target.sleep(sleepTime);
@@ -667,7 +669,7 @@ public class BeaconSendingContextTest {
         int obtained = target.getSendInterval();
 
         // then
-        verifyZeroInteractions(session);
+        verifyNoInteractions(session);
         assertThat(obtained, is(sendInterval));
     }
 
@@ -720,7 +722,7 @@ public class BeaconSendingContextTest {
         target.handleStatusResponse(response);
 
         // then
-        verifyZeroInteractions(session);
+        verifyNoInteractions(session);
         assertThat(target.isCaptureOn(), is(true));
     }
 
@@ -742,7 +744,7 @@ public class BeaconSendingContextTest {
         );
 
         BeaconSendingContext target = spy(createBeaconSendingContext().build());
-        verifyZeroInteractions(httpClientConfig);
+        verifyNoInteractions(httpClientConfig);
 
         // when
         target.handleStatusResponse(response);

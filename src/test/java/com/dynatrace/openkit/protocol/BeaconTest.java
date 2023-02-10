@@ -48,10 +48,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -64,19 +65,19 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyChar;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyChar;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class BeaconTest {
@@ -581,7 +582,7 @@ public class BeaconTest {
         target.addAction(action);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -600,7 +601,7 @@ public class BeaconTest {
         target.addAction(action);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -617,7 +618,7 @@ public class BeaconTest {
 
         //then
         //verify action has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -671,7 +672,7 @@ public class BeaconTest {
         target.startSession();
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -687,7 +688,7 @@ public class BeaconTest {
         target.startSession();
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -728,7 +729,7 @@ public class BeaconTest {
 
         //then
         //verify session has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -741,7 +742,7 @@ public class BeaconTest {
         target.endSession();
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -757,7 +758,7 @@ public class BeaconTest {
         target.endSession();
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -827,7 +828,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 123);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -840,7 +841,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 123);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -856,7 +857,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 123);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -926,7 +927,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -939,7 +940,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -955,7 +956,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", Long.MIN_VALUE);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1025,7 +1026,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1038,7 +1039,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1054,7 +1055,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", 2.71);
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1149,7 +1150,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", "test data");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1162,7 +1163,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", "test data");
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1178,7 +1179,7 @@ public class BeaconTest {
         target.reportValue(ACTION_ID, "test value", "test data");
 
         // then
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1246,7 +1247,7 @@ public class BeaconTest {
         target.reportEvent(ACTION_ID, "test event");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1259,7 +1260,7 @@ public class BeaconTest {
         target.reportEvent(ACTION_ID, "Event name");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1275,7 +1276,7 @@ public class BeaconTest {
         target.reportEvent(ACTION_ID, "Event name");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1324,7 +1325,7 @@ public class BeaconTest {
         verify(mockBeaconCache, times(1)).addEventData(
                 eq(new BeaconKey(SESSION_ID, SESSION_SEQ_NO)), // beacon key
                 eq(0L),                         // event timestamp
-                argThat(new EventPayloadMatcher(expectedEventData))
+                ArgumentMatchers.argThat(new EventPayloadMatcher(expectedEventData))
         );
     }
 
@@ -1630,7 +1631,7 @@ public class BeaconTest {
         target.sendBizEvent("EventType", attributes);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1644,7 +1645,7 @@ public class BeaconTest {
         target.sendBizEvent("EventType", attributes);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1661,7 +1662,7 @@ public class BeaconTest {
         target.sendBizEvent("EventType", attributes);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -1988,7 +1989,7 @@ public class BeaconTest {
         target.sendEvent("EventName", attributes);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2002,7 +2003,7 @@ public class BeaconTest {
         target.sendEvent("EventName", attributes);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2019,7 +2020,7 @@ public class BeaconTest {
         target.sendEvent("EventName", attributes);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     // Test about Length
@@ -2268,7 +2269,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "Error name", 123);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2281,7 +2282,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "Error name", 123);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2295,7 +2296,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2312,7 +2313,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2571,7 +2572,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2584,7 +2585,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2598,7 +2599,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2614,7 +2615,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "error", "causeName", "causeDescription", "stackTrace");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2717,7 +2718,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "error", new IllegalStateException("illegal"));
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2730,7 +2731,7 @@ public class BeaconTest {
         target.reportError(ACTION_ID, "error", new IllegalStateException("illegal"));
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2744,7 +2745,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -2761,7 +2762,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2993,7 +2994,7 @@ public class BeaconTest {
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3006,7 +3007,7 @@ public class BeaconTest {
         target.reportCrash("Error name", "The reason for this error", "the stack trace");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3020,7 +3021,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3037,7 +3038,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3101,7 +3102,7 @@ public class BeaconTest {
         target.reportCrash(new IllegalStateException("illegal"));
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3114,7 +3115,7 @@ public class BeaconTest {
         target.reportCrash(new IllegalStateException("illegal"));
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3128,7 +3129,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3145,7 +3146,7 @@ public class BeaconTest {
 
         //then
         //verify error has not been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3470,7 +3471,7 @@ public class BeaconTest {
         target.addWebRequest(ACTION_ID, webRequestTracer);
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3491,7 +3492,7 @@ public class BeaconTest {
 
         //then
         //verify nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3514,7 +3515,7 @@ public class BeaconTest {
 
         //then
         //verify nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3604,7 +3605,7 @@ public class BeaconTest {
         target.identifyUser("jane.doe@acme.com");
 
         // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3618,7 +3619,7 @@ public class BeaconTest {
 
         //then
         //verify nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     @Test
@@ -3635,7 +3636,7 @@ public class BeaconTest {
 
         //then
         //verify nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
+        verifyNoInteractions(mockBeaconCache);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4002,7 +4003,7 @@ public class BeaconTest {
         // then
         verify(mockBeaconConfiguration, times(1)).initializeServerConfiguration(serverConfig);
         verifyNoMoreInteractions(mockBeaconConfiguration);
-        verifyZeroInteractions(serverConfig);
+        verifyNoInteractions(serverConfig);
     }
 
     @Test
@@ -4018,7 +4019,7 @@ public class BeaconTest {
         // then
         verify(mockBeaconConfiguration, times(1)).updateServerConfiguration(serverConfig);
         verifyNoMoreInteractions(mockBeaconConfiguration);
-        verifyZeroInteractions(serverConfig);
+        verifyNoInteractions(serverConfig);
     }
 
     @Test

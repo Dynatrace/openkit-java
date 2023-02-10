@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class NullHttpResponseInterceptorTest {
 
@@ -41,6 +41,6 @@ public class NullHttpResponseInterceptorTest {
         target.intercept(mockHttpResponse);
 
         // then
-        verifyZeroInteractions(mockHttpResponse);
+        verifyNoInteractions(mockHttpResponse);
     }
 }

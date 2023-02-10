@@ -7,7 +7,7 @@ import org.mockito.ArgumentMatcher;
 /**
  * @author matthias.hochrieser
  */
-class EventPayloadMatcher extends ArgumentMatcher<String> {
+public class EventPayloadMatcher implements ArgumentMatcher<String> {
 
 	private final String expectedEventPayload;
 
@@ -16,7 +16,7 @@ class EventPayloadMatcher extends ArgumentMatcher<String> {
 	}
 
 	@Override
-	public boolean matches(Object argument) {
+	public boolean matches(String argument) {
 		String actualEventPayload = (String) argument;
 
 		if(expectedEventPayload.contentEquals(actualEventPayload)){

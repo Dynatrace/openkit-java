@@ -23,6 +23,7 @@ import com.dynatrace.openkit.protocol.StatusResponse;
 import com.dynatrace.openkit.providers.HTTPClientProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 import java.util.Arrays;
 
@@ -30,7 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -142,11 +143,11 @@ public class BeaconSendingFlushSessionsStateTest {
 
         // verify that beacons are sent
         verify(mockSession1Open, times(1))
-                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+                .sendBeacon(ArgumentMatchers.<HTTPClientProvider>any(), any(AdditionalQueryParameters.class));
         verify(mockSession2Open, times(1))
-                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+                .sendBeacon(ArgumentMatchers.<HTTPClientProvider>any(), any(AdditionalQueryParameters.class));
         verify(mockSession3Closed, times(1))
-                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+                .sendBeacon(ArgumentMatchers.<HTTPClientProvider>any(), any(AdditionalQueryParameters.class));
     }
 
     @Test
@@ -195,7 +196,7 @@ public class BeaconSendingFlushSessionsStateTest {
         verify(mockSession2Open, times(0))
                 .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession3Closed, times(1))
-                .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
+                .sendBeacon(ArgumentMatchers.<HTTPClientProvider>any(), any(AdditionalQueryParameters.class));
         verify(mockSession1Open, times(1)).clearCapturedData();
         verify(mockSession2Open, times(1)).clearCapturedData();
         verify(mockSession3Closed, times(1)).clearCapturedData();

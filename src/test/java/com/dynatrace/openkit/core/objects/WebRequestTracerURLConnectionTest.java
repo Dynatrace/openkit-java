@@ -21,6 +21,7 @@ import com.dynatrace.openkit.api.OpenKitConstants;
 import com.dynatrace.openkit.protocol.Beacon;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,7 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -148,7 +149,7 @@ public class WebRequestTracerURLConnectionTest {
         createConnectionUrl();
 
         // then
-        verify(mockURLConnection, times(1)).setRequestProperty(anyString(), anyString());
+        verify(mockURLConnection, times(1)).setRequestProperty(anyString(), ArgumentMatchers.<String>any());
     }
 
     @Test

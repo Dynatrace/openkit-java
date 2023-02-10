@@ -37,13 +37,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -207,7 +207,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // then
-        verifyZeroInteractions(contextAttributes);
+        verifyNoInteractions(contextAttributes);
         verify(mockSession5New, times(0)).updateServerConfiguration(any(ServerConfiguration.class));
     }
 
@@ -271,10 +271,10 @@ public class BeaconSendingCaptureOnStateTest {
         verifyNoMoreInteractions(mockSession5New);
 
         // verify second new session was not used at all
-        verifyZeroInteractions(mockSession6New);
+        verifyNoInteractions(mockSession6New);
 
         // verify any other session was not invoked
-        verifyZeroInteractions(mockSession1Open, mockSession2Open, mockSession3Finished, mockSession4Finished);
+        verifyNoInteractions(mockSession1Open, mockSession2Open, mockSession3Finished, mockSession4Finished);
 
         // ensure also transition to CaptureOffState
         ArgumentCaptor<BeaconSendingCaptureOffState> argumentCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);
@@ -427,10 +427,10 @@ public class BeaconSendingCaptureOnStateTest {
         verifyNoMoreInteractions(mockSession3Finished);
 
         // verify no interaction with second finished session
-        verifyZeroInteractions(mockSession4Finished);
+        verifyNoInteractions(mockSession4Finished);
 
         // verify no interactions with open sessions
-        verifyZeroInteractions(mockSession1Open, mockSession2Open);
+        verifyNoInteractions(mockSession1Open, mockSession2Open);
 
         verify(mockContext, times(1)).getAllFinishedAndConfiguredSessions();
         verify(mockContext, times(0)).removeSession(any(SessionImpl.class));
@@ -456,7 +456,7 @@ public class BeaconSendingCaptureOnStateTest {
                 .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession2Open, times(1))
                 .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
-        verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
+        verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Mockito.anyLong());
     }
 
     @Test
@@ -475,7 +475,7 @@ public class BeaconSendingCaptureOnStateTest {
                 .sendBeacon(any(HTTPClientProvider.class), any(AdditionalQueryParameters.class));
         verify(mockSession1Open, times(1)).clearCapturedData();
         verify(mockSession2Open, times(1)).clearCapturedData();
-        verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Matchers.anyLong());
+        verify(mockContext, times(1)).setLastOpenSessionBeaconSendTime(org.mockito.Mockito.anyLong());
     }
 
     @Test
@@ -504,7 +504,7 @@ public class BeaconSendingCaptureOnStateTest {
         verifyNoMoreInteractions(mockSession1Open);
 
         // ensure that second session was not invoked at all
-        verifyZeroInteractions(mockSession2Open);
+        verifyNoInteractions(mockSession2Open);
 
         // ensure also transition to CaptureOffState
         ArgumentCaptor<BeaconSendingCaptureOffState> argumentCaptor = ArgumentCaptor.forClass(BeaconSendingCaptureOffState.class);
@@ -523,7 +523,7 @@ public class BeaconSendingCaptureOnStateTest {
         target.execute(mockContext);
 
         // then verify that capturing is set to disabled
-        verify(mockContext, times(1)).handleStatusResponse(org.mockito.Matchers.any(StatusResponse.class));
+        verify(mockContext, times(1)).handleStatusResponse(org.mockito.Mockito.any(StatusResponse.class));
         verify(mockContext, times(1)).isCaptureOn();
 
         verify(mockContext, times(1)).setNextState(isA(BeaconSendingCaptureOffState.class));

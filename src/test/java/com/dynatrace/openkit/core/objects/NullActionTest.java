@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class NullActionTest {
 
@@ -47,7 +47,7 @@ public class NullActionTest {
         createNullAction();
 
         // then
-        verifyZeroInteractions(mockParent);
+        verifyNoInteractions(mockParent);
     }
 
     @Test
@@ -213,7 +213,7 @@ public class NullActionTest {
         target.close();
 
         // then
-        verifyZeroInteractions(mockParent);
+        verifyNoInteractions(mockParent);
     }
 
     @Test

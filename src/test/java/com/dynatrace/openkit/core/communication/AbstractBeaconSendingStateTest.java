@@ -36,7 +36,7 @@ public class AbstractBeaconSendingStateTest {
     @Before
     public void setUp() {
         mockState = mock(AbstractBeaconSendingState.class);
-        doCallRealMethod().when(mockState).execute(org.mockito.Matchers.any(BeaconSendingContext.class));
+        doCallRealMethod().when(mockState).execute(org.mockito.Mockito.any(BeaconSendingContext.class));
         mockContext = mock(BeaconSendingContext.class);
     }
 

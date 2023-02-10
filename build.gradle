@@ -25,7 +25,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'signing'
-    id 'com.github.hierynomus.license' version '0.15.0'
+    id 'com.github.hierynomus.license' version '0.16.1'
     id 'ru.vyarus.animalsniffer' version '1.5.3'
     id 'com.github.nbaztec.coveralls-jacoco' version '1.2.15'
     id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
@@ -44,28 +44,71 @@ repositories {
 }
 
 def jvmsToTest = System.getenv("JVMS_TO_TEST") ?: "JAVA_HOME"
-def isGradle5OrAbove = getGradleMajorVersion() >= 5
 
-def minJavaCompatibilityVersion = getMinJavaCompatibilityVersion()
+def minJavaCompatibilityVersion = JavaVersion.VERSION_1_7
 sourceCompatibility = minJavaCompatibilityVersion
 targetCompatibility = minJavaCompatibilityVersion
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
+testing {
+    suites {
+        test(JvmTestSuite) {
+            dependencies {
+                implementation group: 'junit', name: 'junit', version: '4.12'
+                implementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+                implementation group: 'org.mockito', name: 'mockito-core', version: '4.11.0'
+            }
+
+            sources {
+                java {
+                    srcDirs = [ 'src/test' ]
+                }
+            }
+        }
+
+        test7(JvmTestSuite) {
+            useJUnit()
+
+            dependencies {
+                implementation(project)
+                implementation group: 'junit', name: 'junit', version: '4.12'
+                implementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+                implementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+            }
+
+            sources {
+                java {
+                    srcDirs = ['src/test7', 'src/test']
+                    exclude {
+                        FileTreeElement file -> {
+                            if(file.directory) {
+                                // We only check files not directories
+                                return false;
+                            } else {
+                                // Check if the same test is available in the normal test folder
+                                if(file.file.absolutePath.contains("${File.separator}test${File.separator}")) {
+                                    return new File(file.file.absolutePath.replace("${File.separator}test${File.separator}",
+                                            "${File.separator}test7${File.separator}")).exists()
+                                } else {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 dependencies {
     signature 'org.codehaus.mojo.signature:java17:1.0@signature'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 }
 
 jar {
-    if (isGradle5OrAbove) {
-        archiveBaseName = 'openkit'
-    } else {
-        baseName = 'openkit'
-    }
+    archiveBaseName = 'openkit'
 
     // split version into specification & implementation version
     def specVersion = version
@@ -78,10 +121,10 @@ jar {
 
     // append build information to the spec version
     def buildNumber
-    if (System.getenv('TRAVIS') != null) {
-        // if the build is running on Travis CI, then the
-        // build number can be retrieved via TRAVIS_BUILD_NUMBER
-        buildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
+    if (System.getenv('GITHUB_ACTIONS') != null) {
+        // if the build is running on Github, then the
+        // build number can be retrieved via GITHUB_RUN_NUMBER
+        buildNumber = System.getenv('GITHUB_RUN_NUMBER')
     } else {
         // otherwise via BUILD_NUMBER
         buildNumber = System.getenv('BUILD_NUMBER')
@@ -112,33 +155,18 @@ jar {
 }
 
 task sourceJar(type: Jar) {
-    if (isGradle5OrAbove) {
-        archiveClassifier = 'sources'
-    } else {
-        classifier = 'sources'
-    }
-
+    archiveClassifier = 'sources'
     from sourceSets.main.allJava
 }
 
 task javadocZip(type: Zip, dependsOn: javadoc) {
-    if (isGradle5OrAbove) {
-        archiveBaseName = 'openkit'
-        archiveClassifier = 'javadoc'
-    } else {
-        baseName = 'openkit'
-        classifier = 'sources'
-    }
-
+    archiveBaseName = 'openkit'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
 task javadocJar(type: Jar) {
-    if (isGradle5OrAbove) {
-        archiveClassifier = 'javadoc'
-    } else {
-        classifier = 'javadoc'
-    }
+    archiveClassifier = 'javadoc'
     from javadoc
 }
 
@@ -151,6 +179,11 @@ jvmsToTest.split(",").each { envJVM ->
         task "test-${envJVM}"(type: Test) {
             exclude '**/local/*.class'
             executable = System.getenv(envJVM) + "/bin/java"
+
+            if(envJVM == "JAVA_HOME_7") {
+                testClassesDirs = sourceSets.test7.output.classesDirs
+                classpath = sourceSets.test7.runtimeClasspath
+            }
         }
         tasks.test.dependsOn tasks."test-${envJVM}"
     } else {
@@ -161,6 +194,7 @@ jvmsToTest.split(",").each { envJVM ->
 test {
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 }
+
 if (project.findProperty('test.executable') != null) {
     test.executable = project.findProperty('test.executable') + "/bin/java"
 }
@@ -186,24 +220,4 @@ def getGradleMajorVersion() {
     } else {
         return Integer.parseInt(gradle.gradleVersion)
     }
-}
-
-def getMinJavaCompatibilityVersion() {
-    def currentJavaVersion = JavaVersion.current()
-    switch (currentJavaVersion) {
-        case JavaVersion.VERSION_1_1:
-        case JavaVersion.VERSION_1_2:
-        case JavaVersion.VERSION_1_3:
-        case JavaVersion.VERSION_1_4:
-        case JavaVersion.VERSION_1_5:
-        case JavaVersion.VERSION_1_6:
-        case JavaVersion.VERSION_1_7:
-        case JavaVersion.VERSION_1_8:
-        case JavaVersion.VERSION_1_9:
-        case JavaVersion.VERSION_1_10:
-        case JavaVersion.VERSION_11:
-        case JavaVersion.VERSION_12:
-            return JavaVersion.VERSION_1_7
-    }
-    throw new IllegalStateException("Unhandled JAVA version " + currentJavaVersion)
 }
