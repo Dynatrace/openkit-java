@@ -382,7 +382,8 @@ public class HTTPClientTest {
 
         // ensure that Content-Type and Content-Length were set
         verify(connection, times(1)).setRequestProperty("Content-Encoding", "gzip");
-        verify(connection, times(1)).setRequestProperty("Content-Length", Integer.toString(compressedText.length));
+        verify(connection, times(1)).setRequestProperty("Content-Type", "text/plain; charset=utf-8");
+        verify(connection, times(1)).setFixedLengthStreamingMode(compressedText.length);
 
         // ensure that the message body is as expected
         assertThat(os.toByteArray(), is(equalTo(compressedText)));
