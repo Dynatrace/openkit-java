@@ -40,6 +40,7 @@ import com.dynatrace.openkit.providers.HTTPClientProvider;
 import com.dynatrace.openkit.providers.RandomNumberGenerator;
 import com.dynatrace.openkit.providers.ThreadIDProvider;
 import com.dynatrace.openkit.providers.TimingProvider;
+import com.dynatrace.openkit.util.json.objects.JSONBooleanValue;
 import com.dynatrace.openkit.util.json.objects.JSONNumberValue;
 import com.dynatrace.openkit.util.json.objects.JSONStringValue;
 import com.dynatrace.openkit.util.json.objects.JSONValue;
@@ -859,7 +860,7 @@ public class Beacon {
                 .addNonOverridableAttribute(EVENT_PAYLOAD_APPLICATION_ID, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getPercentEncodedApplicationID()))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_INSTANCE_ID, JSONStringValue.fromString(String.valueOf(deviceID)))
                 .addNonOverridableAttribute(EVENT_PAYLOAD_SESSION_ID, JSONStringValue.fromString(String.valueOf(getSessionNumber())))
-                .addNonOverridableAttribute("dt.rum.schema_version", JSONStringValue.fromString("1.1"))
+                .addNonOverridableAttribute("dt.rum.schema_version", JSONStringValue.fromString("1.2"))
                 .addOverridableAttribute(EventPayloadAttributes.APP_VERSION, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getApplicationVersion()))
                 .addOverridableAttribute(EventPayloadAttributes.OS_NAME, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getOperatingSystem()))
                 .addOverridableAttribute(EventPayloadAttributes.DEVICE_MANUFACTURER, JSONStringValue.fromString(configuration.getOpenKitConfiguration().getManufacturer()))
@@ -909,6 +910,10 @@ public class Beacon {
 
         builder.addNonOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_BIZ));
 
+        if(builder.isEventPayloadContainingNonFiniteValues()) {
+            builder.addNonOverridableAttribute("dt.rum.has_nfn_values", JSONBooleanValue.fromValue(true));
+        }
+
         sendEventPayload(builder);
     }
 
@@ -931,6 +936,10 @@ public class Beacon {
 
         builder.addNonOverridableAttribute("event.name", JSONStringValue.fromString(name))
                 .addOverridableAttribute(EventPayloadAttributes.EVENT_KIND, JSONStringValue.fromString(EVENT_KIND_RUM));
+
+        if(builder.isEventPayloadContainingNonFiniteValues()) {
+            builder.addNonOverridableAttribute("dt.rum.has_nfn_values", JSONBooleanValue.fromValue(true));
+        }
 
         sendEventPayload(builder);
     }

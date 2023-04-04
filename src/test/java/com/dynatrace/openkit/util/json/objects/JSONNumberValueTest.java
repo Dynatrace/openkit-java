@@ -21,7 +21,9 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class JSONNumberValueTest {
 
@@ -242,5 +244,61 @@ public class JSONNumberValueTest {
     @Test
     public void doubleJsonString(){
         assertThat(JSONNumberValue.fromDouble(0.33).toString(), is("0.33"));
+    }
+
+    @Test
+    public void isFiniteReturnsFalseWhenUsingNaN() {
+        assertFalse(JSONNumberValue.fromDouble(Double.NaN).isFinite());
+    }
+
+    @Test
+    public void isFiniteReturnsFalseWhenUsingNegativeInfinity() {
+        assertFalse(JSONNumberValue.fromDouble(Double.NEGATIVE_INFINITY).isFinite());
+    }
+
+    @Test
+    public void isFiniteReturnsFalseWhenUsingPositiveInfinity() {
+        assertFalse(JSONNumberValue.fromDouble(Double.POSITIVE_INFINITY).isFinite());
+    }
+
+    @Test
+    public void isFiniteReturnTrueWhenUsingSpecialPatternLongNaN() {
+        assertTrue(JSONNumberValue.fromLong(Double.doubleToRawLongBits(Double.NaN)).isFinite());
+    }
+
+    @Test
+    public void isFiniteReturnTrueWhenUsingSpecialPatternLongPositiveInfinity() {
+        assertTrue(JSONNumberValue.fromLong(Double.doubleToRawLongBits(Double.POSITIVE_INFINITY)).isFinite());
+    }
+
+    @Test
+    public void isFiniteReturnTrueWhenUsingSpecialPatternLongNegativeInfinity() {
+        assertTrue(JSONNumberValue.fromLong(Double.doubleToRawLongBits(Double.NEGATIVE_INFINITY)).isFinite());
+    }
+
+    @Test
+    public void isFiniteReturnsTrueWhenUsingFiniteValue() {
+        assertTrue(JSONNumberValue.fromDouble(42.0).isFinite());
+    }
+
+    @Test
+    public void writeJSONStringReturnsNullWhenUsingNaN() {
+        JSONValueWriter writer = new JSONValueWriter();
+        JSONNumberValue.fromDouble(Double.NaN).writeJSONString(writer, null);
+        assertThat(writer.toString(), is("null"));
+    }
+
+    @Test
+    public void writeJSONStringReturnsNullWhenUsingNegativeInfinity() {
+        JSONValueWriter writer = new JSONValueWriter();
+        JSONNumberValue.fromDouble(Double.NEGATIVE_INFINITY).writeJSONString(writer, null);
+        assertThat(writer.toString(), is("null"));
+    }
+
+    @Test
+    public void writeJSONStringReturnsNullWhenUsingPositiveInfinity() {
+        JSONValueWriter writer = new JSONValueWriter();
+        JSONNumberValue.fromDouble(Double.POSITIVE_INFINITY).writeJSONString(writer, null);
+        assertThat(writer.toString(), is("null"));
     }
 }

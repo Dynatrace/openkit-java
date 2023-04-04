@@ -22,6 +22,8 @@ import com.dynatrace.openkit.util.json.objects.JSONValue;
 
 import java.util.*;
 
+import static com.dynatrace.openkit.core.util.EventPayloadBuilderUtil.isItemContainingNonFiniteNumericValues;
+
 public class EventPayloadBuilder {
 
     /** {@link Logger} for tracing log message */
@@ -90,5 +92,19 @@ public class EventPayloadBuilder {
      */
     public static boolean isReservedForInternalAttributes(String key) {
         return (key.equals("dt") || key.startsWith("dt."));
+    }
+
+    /**
+     * Checks if the attributes contain a non-finite value
+     * @return True if non-finite values is within attributes
+     */
+    public boolean isEventPayloadContainingNonFiniteValues() {
+        for (JSONValue value : attributes.values()) {
+            if(isItemContainingNonFiniteNumericValues(value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

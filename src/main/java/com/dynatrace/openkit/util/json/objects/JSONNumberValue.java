@@ -125,10 +125,14 @@ public class JSONNumberValue extends JSONValue {
 
     @Override
     void writeJSONString(JSONValueWriter writer, JSONOutputConfig config) {
-        if (isInteger()) {
-            writer.insertValue(String.valueOf(longValue));
+        if (!isFinite()) {
+            writer.insertValue("null");
         } else {
-            writer.insertValue(String.valueOf(doubleValue));
+            if (isInteger()) {
+                writer.insertValue(String.valueOf(longValue));
+            } else {
+                writer.insertValue(String.valueOf(doubleValue));
+            }
         }
     }
 
@@ -198,5 +202,14 @@ public class JSONNumberValue extends JSONValue {
      */
     public double getDoubleValue() {
         return doubleValue;
+    }
+
+    /**
+     * Checks if the number is finite.
+     *
+     * @return True if number is finite.
+     */
+    public boolean isFinite() {
+        return isInteger || !Double.isNaN(doubleValue) && !Double.isInfinite(doubleValue);
     }
 }
