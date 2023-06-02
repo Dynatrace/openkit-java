@@ -1,6 +1,9 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.0.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.1.0...HEAD)
+
+## 3.1.0 [Release date: 2023-06-05]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.1.0)
 
 ### Changed
 

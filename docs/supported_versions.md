@@ -9,6 +9,7 @@ Example: Version `1.4.3` supersedes `1.4.2` and therefore only `1.4.3` will be m
 ## Active maintenance
 | Version | Bug fixes          | Security fixes     | Remarks          |
 |---------|:------------------:|:------------------:|------------------|
+| 3.1.X   | :heavy_check_mark: | :heavy_check_mark: |                  |
 | 3.0.X   | :heavy_check_mark: | :heavy_check_mark: |                  |
 | 2.2.X   | :heavy_check_mark: | :heavy_check_mark: |                  |
 | 2.1.X   |        :x:         |        :x:         | Upgrade to 2.2.X | 

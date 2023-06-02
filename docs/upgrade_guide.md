@@ -1,5 +1,9 @@
 # Upgrade guide for OpenKit Java
 
+## OpenKit Java 3.0 to 3.1
+There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
+to the latest 3.1 release.
+
 ## OpenKit Java 2.2 to 3.0
 Appmon has been removed from OpenKit Java. If you don't want to replace your AppMon related code stay on the latest 2.2.x release.
 
