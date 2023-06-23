@@ -891,10 +891,6 @@ public class Beacon {
             throw new IllegalArgumentException("type is null or empty");
         }
 
-        if (!configuration.getPrivacyConfiguration().isEventReportingAllowed()) {
-            return;
-        }
-
         if (!isDataCapturingEnabled()) {
             return;
         }

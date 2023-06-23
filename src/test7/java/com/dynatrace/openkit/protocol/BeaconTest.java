@@ -1620,20 +1620,6 @@ public class BeaconTest {
     }
 
     @Test
-    public void sendBizEventIsNotReportedIfEventReportingDisallowed() {
-        // given
-        Beacon target = createBeacon().build();
-        when(mockPrivacyConfiguration.isEventReportingAllowed()).thenReturn(false);
-        HashMap<String, JSONValue> attributes = new HashMap<>();
-
-        // when
-        target.sendBizEvent("EventType", attributes);
-
-        // then ensure nothing has been serialized
-        verifyZeroInteractions(mockBeaconCache);
-    }
-
-    @Test
     public void sendBizEventIsNotReportedIfDataSendingIsDisallowed() {
         // given
         Beacon target = createBeacon().build();

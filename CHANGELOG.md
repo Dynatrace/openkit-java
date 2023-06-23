@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.1.0...HEAD)
 
+### Changed
+- `Session.sendBizEvent` will always send an event regardless of the `DataCollectionLevel` 
+
 ## 3.1.0 [Release date: 2023-06-05]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.1.0)
 
