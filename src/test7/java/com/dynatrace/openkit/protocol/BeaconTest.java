@@ -3233,8 +3233,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         final Beacon target = createBeacon().build();
@@ -3315,8 +3315,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(0);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(0L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         final Beacon target = createBeacon().build();
@@ -3352,8 +3352,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(-1);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(-1L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         final Beacon target = createBeacon().build();
@@ -3388,8 +3388,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(0);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(0L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         final Beacon target = createBeacon().build();
@@ -3425,8 +3425,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(-1);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(-1L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         final Beacon target = createBeacon().build();
@@ -3461,8 +3461,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(0);
 
         final Beacon target = createBeacon().build();
@@ -3498,8 +3498,8 @@ public class BeaconTest {
         String encodedUrl = URLEncoder.encode(rawUrl, "UTF-8");
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn(rawUrl);
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(-1);
 
         final Beacon target = createBeacon().build();
@@ -3532,8 +3532,8 @@ public class BeaconTest {
         // given
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn("https://www.google.com");
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         when(mockServerConfiguration.isSendingDataAllowed()).thenReturn(false);
@@ -3552,8 +3552,8 @@ public class BeaconTest {
         // given
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn("https://www.google.com");
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         when(mockPrivacyConfiguration.isWebRequestTracingAllowed()).thenReturn(false);
@@ -3573,8 +3573,8 @@ public class BeaconTest {
         // given
         WebRequestTracerBaseImpl webRequestTracer = mock(WebRequestTracerBaseImpl.class);
         when(webRequestTracer.getURL()).thenReturn("https://www.google.com");
-        when(webRequestTracer.getBytesSent()).thenReturn(13);
-        when(webRequestTracer.getBytesReceived()).thenReturn(14);
+        when(webRequestTracer.getBytesSent()).thenReturn(13L);
+        when(webRequestTracer.getBytesReceived()).thenReturn(14L);
         when(webRequestTracer.getResponseCode()).thenReturn(15);
 
         int trafficControlPercentage = 50;

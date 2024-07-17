@@ -52,12 +52,38 @@ public class NullWebRequestTracerTest {
     }
 
     @Test
+    public void setBytesSentLongReturnsSelf() {
+        // given
+        NullWebRequestTracer target = NullWebRequestTracer.INSTANCE;
+
+        // when
+        WebRequestTracer obtained = target.setBytesSent(37L);
+
+        // then
+        assertThat(obtained, instanceOf(NullWebRequestTracer.class));
+        assertThat((NullWebRequestTracer)obtained, is(sameInstance(target)));
+    }
+
+    @Test
     public void setBytesReceivedReturnsSelf() {
         // given
         NullWebRequestTracer target = NullWebRequestTracer.INSTANCE;
 
         // when
         WebRequestTracer obtained = target.setBytesReceived(73);
+
+        // then
+        assertThat(obtained, instanceOf(NullWebRequestTracer.class));
+        assertThat((NullWebRequestTracer)obtained, is(sameInstance(target)));
+    }
+
+    @Test
+    public void setBytesReceivedLongReturnsSelf() {
+        // given
+        NullWebRequestTracer target = NullWebRequestTracer.INSTANCE;
+
+        // when
+        WebRequestTracer obtained = target.setBytesReceived(73L);
 
         // then
         assertThat(obtained, instanceOf(NullWebRequestTracer.class));

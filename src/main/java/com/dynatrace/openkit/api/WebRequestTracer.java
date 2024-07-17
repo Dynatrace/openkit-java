@@ -35,16 +35,38 @@ public interface WebRequestTracer extends Closeable {
     /**
      * Sets the amount of sent data of this web request. Has to be called before {@link WebRequestTracer#stop(int)}.
      *
+     * @deprecated
+     * This method should no longer be used due its datatype limitation. Use {@link WebRequestTracer#setBytesSent(long)} instead.
+     *
      * @param bytesSent number of bytes
      */
+    @Deprecated
     WebRequestTracer setBytesSent(int bytesSent);
+
+    /**
+     * Sets the amount of sent data of this web request. Has to be called before {@link WebRequestTracer#stop(int)}.
+     *
+     * @param bytesSent number of bytes
+     */
+    WebRequestTracer setBytesSent(long bytesSent);
+
+    /**
+     * Sets the amount of received data of this web request. Has to be called before {@link WebRequestTracer#stop(int)}.
+     *
+     * @deprecated
+     * This method should no longer be used due its datatype limitation. Use {@link WebRequestTracer#setBytesReceived(long)} instead.
+     *
+     * @param bytesReceived number of bytes
+     */
+    @Deprecated
+    WebRequestTracer setBytesReceived(int bytesReceived);
 
     /**
      * Sets the amount of received data of this web request. Has to be called before {@link WebRequestTracer#stop(int)}.
      *
      * @param bytesReceived number of bytes
      */
-    WebRequestTracer setBytesReceived(int bytesReceived);
+    WebRequestTracer setBytesReceived(long bytesReceived);
 
     /**
      * Starts the web request timing. Should be called when the web request is initiated.

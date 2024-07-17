@@ -42,7 +42,17 @@ public enum NullWebRequestTracer implements WebRequestTracer {
     }
 
     @Override
+    public WebRequestTracer setBytesSent(long bytesSent) {
+        return this;
+    }
+
+    @Override
     public WebRequestTracer setBytesReceived(int bytesReceived) {
+        return this;
+    }
+
+    @Override
+    public WebRequestTracer setBytesReceived(long bytesReceived) {
         return this;
     }
 

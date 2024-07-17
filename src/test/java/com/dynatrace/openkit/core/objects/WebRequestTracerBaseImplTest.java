@@ -71,8 +71,8 @@ public class WebRequestTracerBaseImplTest {
         assertThat(target.getEndTime(), is(-1L));
         assertThat(target.getStartSequenceNo(), is(SEQUENCE_NUMBER));
         assertThat(target.getEndSequenceNo(), is(-1));
-        assertThat(target.getBytesSent(), is(-1));
-        assertThat(target.getBytesReceived(), is(-1));
+        assertThat(target.getBytesSent(), is(-1L));
+        assertThat(target.getBytesReceived(), is(-1L));
         assertThat(target.getParent(), is(sameInstance(parentOpenKitObject)));
 
         // and verify that the sequence number was retrieved from beacon, as well as the tag
@@ -158,7 +158,21 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesSent(1234);
 
         // then
-        assertThat(target.getBytesSent(), is(1234));
+        assertThat(target.getBytesSent(), is(1234L));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void setBytesSentLongSetsTheNumberOfSentBytes() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+
+        // when setting the sent bytes
+        WebRequestTracer obtained = target.setBytesSent(1234L);
+
+        // then
+        assertThat(target.getBytesSent(), is(1234L));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
@@ -173,7 +187,22 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesSent(1234);
 
         // then
-        assertThat(target.getBytesSent(), is(-1));
+        assertThat(target.getBytesSent(), is(-1L));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void setBytesSentLongDoesNotSetAnythingIfStoppedWithResponseCode() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        target.stop(200);
+
+        // when setting the sent bytes
+        WebRequestTracer obtained = target.setBytesSent(1234L);
+
+        // then
+        assertThat(target.getBytesSent(), is(-1L));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
@@ -187,7 +216,21 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesReceived(4321);
 
         // then
-        assertThat(target.getBytesReceived(), is(4321));
+        assertThat(target.getBytesReceived(), is(4321L));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void setBytesReceivedLongSetsTheNumberOfReceivedBytes() {
+
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+
+        // when setting the received bytes
+        WebRequestTracer obtained = target.setBytesReceived(4321L);
+
+        // then
+        assertThat(target.getBytesReceived(), is(4321L));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
@@ -201,7 +244,21 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesReceived(4321);
 
         // then
-        assertThat(target.getBytesReceived(), is(-1));
+        assertThat(target.getBytesReceived(), is(-1L));
+        assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
+    }
+
+    @Test
+    public void setBytesReceivedLongDoesNotSetAnythingIfStoppedWithResponseCode() {
+        // given
+        WebRequestTracerBaseImpl target = new TestWebRequestTracerBaseImpl(logger, parentOpenKitObject, mockBeacon);
+        target.stop(200);
+
+        // when setting the received bytes
+        WebRequestTracer obtained = target.setBytesReceived(4321L);
+
+        // then
+        assertThat(target.getBytesReceived(), is(-1L));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 

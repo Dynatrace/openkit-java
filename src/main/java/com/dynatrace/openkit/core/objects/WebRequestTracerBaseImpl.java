@@ -53,9 +53,9 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
     /** The response code received from the request */
     private int responseCode = -1;
     /** The number of bytes sent */
-    private int bytesSent = -1;
+    private long bytesSent = -1;
     /** The number of bytes received */
-    private int bytesReceived = -1;
+    private long bytesReceived = -1;
 
     /** Start time of the web request, set in {@link #start()} */
     private long startTime;
@@ -103,6 +103,11 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
 
     @Override
     public WebRequestTracer setBytesSent(int bytesSent) {
+        return setBytesSent((long) bytesSent);
+    }
+
+    @Override
+    public WebRequestTracer setBytesSent(long bytesSent) {
         synchronized (lockObject) {
             if (!isStopped()) {
                 this.bytesSent = bytesSent;
@@ -113,6 +118,11 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
 
     @Override
     public WebRequestTracer setBytesReceived(int bytesReceived) {
+        return setBytesReceived((long) bytesReceived);
+    }
+
+    @Override
+    public WebRequestTracer setBytesReceived(long bytesReceived) {
         synchronized (lockObject) {
             if (!isStopped()) {
                 this.bytesReceived = bytesReceived;
@@ -201,11 +211,11 @@ public abstract class WebRequestTracerBaseImpl implements WebRequestTracer, Canc
         return endSequenceNo;
     }
 
-    public int getBytesSent() {
+    public long getBytesSent() {
         return bytesSent;
     }
 
-    public int getBytesReceived() {
+    public long getBytesReceived() {
         return bytesReceived;
     }
 

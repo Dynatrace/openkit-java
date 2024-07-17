@@ -1267,6 +1267,20 @@ public class Beacon {
         }
     }
 
+    /**
+     * Serialization helper method for adding key/value pairs with int values
+     *
+     * the key value pair is only added to the string builder when the int is not negative
+     *
+     * @param builder The string builder storing serialized data.
+     * @param key The key to add.
+     * @param longValue The value to add.
+     */
+    private void addKeyValuePairIfNotNegative(StringBuilder builder, String key, long longValue) {
+        if (longValue >= 0) {
+            addKeyValuePair(builder, key, longValue);
+        }
+    }
 
     /**
      * Serialization helper method for adding key/value pairs with double values

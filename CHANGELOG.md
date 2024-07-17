@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.2.0...HEAD)
 
+### Added
+- `WebRequestTracer.setBytesSent(long bytes)` to increase the size range
+- `WebRequestTracer.setBytesReceived(long bytes)` to increase the size range
+
+### Changed
+- Deprecated `WebRequestTracer.setBytesSent(int bytes)` due to datatype limitations
+- Deprecated `WebRequestTracer.setBytesReceived(int bytes)` due to datatype limitations
+
 ## 3.2.0 [Release date: 2023-12-06]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.2.0)
 

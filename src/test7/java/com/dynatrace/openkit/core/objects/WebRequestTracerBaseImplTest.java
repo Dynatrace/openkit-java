@@ -71,8 +71,8 @@ public class WebRequestTracerBaseImplTest {
         assertThat(target.getEndTime(), is(-1L));
         assertThat(target.getStartSequenceNo(), is(SEQUENCE_NUMBER));
         assertThat(target.getEndSequenceNo(), is(-1));
-        assertThat(target.getBytesSent(), is(-1));
-        assertThat(target.getBytesReceived(), is(-1));
+        assertThat(target.getBytesSent(), is(-1l));
+        assertThat(target.getBytesReceived(), is(-1l));
         assertThat(target.getParent(), is(sameInstance(parentOpenKitObject)));
 
         // and verify that the sequence number was retrieved from beacon, as well as the tag
@@ -158,7 +158,7 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesSent(1234);
 
         // then
-        assertThat(target.getBytesSent(), is(1234));
+        assertThat(target.getBytesSent(), is(1234l));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
@@ -173,7 +173,7 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesSent(1234);
 
         // then
-        assertThat(target.getBytesSent(), is(-1));
+        assertThat(target.getBytesSent(), is(-1l));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
@@ -187,7 +187,7 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesReceived(4321);
 
         // then
-        assertThat(target.getBytesReceived(), is(4321));
+        assertThat(target.getBytesReceived(), is(4321l));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
@@ -201,7 +201,7 @@ public class WebRequestTracerBaseImplTest {
         WebRequestTracer obtained = target.setBytesReceived(4321);
 
         // then
-        assertThat(target.getBytesReceived(), is(-1));
+        assertThat(target.getBytesReceived(), is(-1l));
         assertThat(obtained, is(sameInstance((WebRequestTracer)target)));
     }
 
