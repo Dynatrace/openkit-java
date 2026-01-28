@@ -1,6 +1,13 @@
 # OpenKit Java Changelog
 
-## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.3.0...HEAD)
+## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.4.0...HEAD)
+
+## 3.4.0 [Release date: 2026-01-28]
+[GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.4.0)
+
+### Changed
+
+- Updated Business events specification
 
 ## 3.3.0 [Release date: 2024-08-02]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.3.0)

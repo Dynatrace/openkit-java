@@ -1,8 +1,12 @@
 # Upgrade guide for OpenKit Java
 
+## OpenKit Java 3.3 to 3.4
+There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
+to the latest 3.4 release.
+
 ## OpenKit Java 3.2 to 3.3
 There are no breaking API changes and upgrading is straightforward, by [updating][update] the library
-to the latest 3.2 release.
+to the latest 3.3 release.
 
 ### Deprecated API
 * `WebRequestTracer#setBytesSent(int bytes)`
