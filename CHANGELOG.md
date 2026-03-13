@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/Dynatrace/openkit-java/compare/v3.4.0...HEAD)
 
-## 3.4.0 [Release date: 2026-01-28]
+## 3.4.0 [Release date: 2026-03-13]
 [GitHub Releases](https://github.com/Dynatrace/openkit-java/releases/tag/v3.4.0)
 
 ### Changed
