@@ -273,7 +273,7 @@ durationInMilliseconds = action.getDurationInMilliseconds(); // gives action end
 
 With `sendBizEvent`, you can report business events. These events are standalone events, as OneAgent sends them detached from user actions or user sessions.
 
-For more information on business events, see [dynatrace documentation](https://docs.dynatrace.com/docs/observe/business-observability/bo-events-capturing).
+For more information on business events, see [dynatrace documentation](https://dt-url.net/vf739x4).
 
 ```java
 Map <String, JSONValue> attributes = new HashMap<String, JSONValue>();
